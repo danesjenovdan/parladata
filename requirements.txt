@@ -1,0 +1,9 @@
+django_autoslug == 1.7.2.egg
+Django == 1.8.4
+django_geojson == 2.6.0.egg
+django_leaflet == 0.15.2.egg
+django_model_utils == 2.2.egg
+simplejson == 3.6.5.egg
+django_taggit == 0.17.0
+numpy == 1.10.1
+Requests == 2.8.1
