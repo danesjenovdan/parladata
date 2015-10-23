@@ -84,8 +84,8 @@ WSGI_APPLICATION = 'parladata_project.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'HOST': 'localhost',
-        'NAME': 'p6',
+        'HOST': '192.168.110.31',
+        'NAME': 'parladata',
         'USER': 'parladaddy',
         'PASSWORD': 'razvrat',
     }
@@ -95,9 +95,9 @@ DATABASES = {
 # Internationalization
 # https://docs.djangoproject.com/en/1.8/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'sl-si'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Europe/Ljubljana'
 
 USE_I18N = True
 
