@@ -10,7 +10,6 @@ urlpatterns = patterns('',
     # url(r'^blog/', include('blog.urls')),
 
     (r'^admin/', include(admin.site.urls)),
-    (r'^grappelli/', include('grappelli.urls')),
     (r'^api/', include('parladata.urls')),
 
 )
