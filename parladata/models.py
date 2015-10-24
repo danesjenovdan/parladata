@@ -178,8 +178,7 @@ class Organization(Timestampable, Taggable, models.Model):
     A group with a common purpose or reason for existence that goes beyond the set of people belonging to it
     """
 
-    name = models.CharField(_('name'),
-                            max_length=128,
+    name = models.TextField(_('name'),
                             help_text=_('A primary name, e.g. a legally recognized name'))
 
     # array of items referencing "http://popoloproject.com/schemas/other_name.json#"
