@@ -22,4 +22,7 @@ urlpatterns = patterns('',
     url(r'^getAllPeople/',getAllPeople),
     url(r'^getAllBallots/',getAllBallots),
     url(r'^getAllVotes/',getAllVotes),
+    url(r'^motionOfSession/(?P<id_se>\d+)',motionOfSession),
+    url(r'^getVotesOfSession/(?P<id_se>\d+)',getVotesOfSession),
+
 )
