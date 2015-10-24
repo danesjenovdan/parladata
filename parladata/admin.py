@@ -166,6 +166,8 @@ class MembershipAdmin(admin.ModelAdmin):
         SourceMembershipInline,
         LinkMembershipInline,
     ]
+    list_filter = ('post__role', 'organization')
+    search_fields = ['post__role', 'organization__name']
 
 class SessionAdmin(admin.ModelAdmin):
     inlines = [
