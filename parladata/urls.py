@@ -20,4 +20,6 @@ urlpatterns = patterns('',
     url(r'^getAllPGs/',getAllPGs),
     url(r'^getAllOrganizations/',getAllOrganizations),
     url(r'^getAllPeople/',getAllPeople),
+    url(r'^getAllBallots/',getAllBallots),
+    url(r'^getAllVotes/',getAllVotes),
 )

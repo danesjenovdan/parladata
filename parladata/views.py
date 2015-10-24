@@ -279,6 +279,27 @@ def getAllSpeeches(requests):
 
     return JsonResponse(data, safe=False)
 
+
+def getAllVotes(requests):
+    data = []
+
+    votes=Vote.objects.all()
+    for vote in votes:
+        data.append({'id': vote.id, 'motion': vote.motion.text, 'party': vote.organization.id, 'session': vote.session.id, 'start_time': vote.start_time, 'end_time': vote.end_time, 'result': vote.result})
+
+    return JsonResponse(data, safe=False)
+
+
+def getAllBallots(requests):
+    data = []
+
+    ballots = Ballot.objects.all()
+    for ballot in ballots:
+        data.append(model_to_dict(ballot, fields=['id', 'vote', 'voter', 'option'], exclude=[]))
+
+    return JsonResponse(data, safe=False)
+
+
 def getAllPeople(requests):
     parliamentary_group = Organization.objects.filter(classification="poslanska skupina")
     data = []
