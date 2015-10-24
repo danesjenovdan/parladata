@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/1.8/ref/settings/
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 import os
+import raven
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -42,6 +43,7 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
     'parladata',
     'django_extensions',
+    'raven.contrib.django.raven_compat',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -109,3 +111,11 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/1.8/howto/static-files/
 
 STATIC_URL = '/static/'
+STATIC_ROOT = '/home/parladaddy/parladata/static/'
+
+RAVEN_CONFIG = {
+    'dsn': 'http://338491150ce2417fb770eb4afa77102f:b9b2bf8011b14643b4bd8eabd3e367f4@sentry.ilol.si/40',
+    # If you are using git, you can also automatically configure the
+    # release based on the git info.
+#    'release': raven.fetch_git_sha(os.path.dirname(__file__)),
+}
