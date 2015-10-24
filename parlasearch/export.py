@@ -3,10 +3,12 @@ import json
 from parladata.models import Speech
 
 def export():
+    
+    speeches = Speech.objects.all()
+    
     i = 0
-
-    while i < 100:
-        speech = Speech.objects.all()[i]
+    
+    for speech in speeches:
         output = [{
             'id': 'g' + str(speech.id),
             'speaker_i': speech.speaker.id,
@@ -21,13 +23,13 @@ def export():
 
         output = json.dumps(output)
 
-        i = i + 1
-
         if i%100 == 0:
             r = requests.post('http://127.0.0.1:8983/solr/knedl/update?commit=true', data=output, headers={'Content-Type': 'application/json'})
         else:
              r = requests.post('http://127.0.0.1:8983/solr/knedl/update', data=output, headers={'Content-Type': 'application/json'})
         print r.text
+        
+        i = i + 1
         
     return 1
         
