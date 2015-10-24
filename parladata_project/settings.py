@@ -32,7 +32,6 @@ ALLOWED_HOSTS = []
 
 INSTALLED_APPS = (
     'taggit',
-    'grappelli',
     'djgeojson',
     'leaflet',
     'django.contrib.admin',
