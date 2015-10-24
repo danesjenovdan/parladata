@@ -10,6 +10,6 @@ urlpatterns = patterns('',
     # url(r'^blog/', include('blog.urls')),
 
     (r'^admin/', include(admin.site.urls)),
-    (r'^', include('parladata.urls')),
+    (r'^v1/', include('parladata.urls')),
 
 )
