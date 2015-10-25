@@ -295,7 +295,7 @@ def getAllBallots(requests):
 
     ballots = Ballot.objects.all()
     for ballot in ballots:
-        data.append(model_to_dict(ballot, fields=['id', 'vote', 'voter', 'option'], exclude=[]))
+        data.append(model_to_dict(ballot, fields=['id', 'vote', 'voter', 'option', 'vote_start_date'], exclude=[]))
 
     return JsonResponse(data, safe=False)
 
@@ -312,17 +312,3 @@ def getAllPeople(requests):
         data.append({'id': i.id, 'name':i.name, 'membership':pg, 'classification':i.classification,'family_name':i.family_name,'given_name':i.given_name,'additional_name':i.additional_name,'honorific_prefix':i.honorific_prefix,'honorific_suffix':i.honorific_suffix,'patronymic_name':i.patronymic_name,'sort_name':i.sort_name,'email':i.email,'gender':i.gender,'birth_date':str(i.birth_date),'death_date':str(i.death_date),'summary':i.summary,'biography':i.biography,'image':i.image,'district':'','gov_id':i.gov_id,'gov_picture_url':i.gov_picture_url,'voters':i.voters,'active':i.active})
         pg=None
     return  JsonResponse(data, safe=False)
-
-def motionOfSession(request, id_se):
-    motion = Vote.objects.filter(motion__session__id = id_se)
-    data = {}
-    data = [{'id':mot.motion.id,'text':mot.motion.text,'result':mot.result} for mot in motion]
-    return JsonResponse(data, safe=False)
-
-def getVotesOfSession(request, id_se):
-    votes = Vote.objects.filter(motion__session__id = str(id_se))
-    data = []
-    tab = []
-    for bal in Ballot.objects.filter(vote__session__id = str(id_se)):
-            data.append({'mo_id':bal.vote.motion.id,"mp_id":bal.voter.id,"Acronym":bal.voterparty.acronym, "option":bal.option, "pg_id":bal.voterparty.id})
-    return JsonResponse(data,safe = False)
