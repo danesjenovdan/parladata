@@ -39,12 +39,12 @@ def getVotesDict():
 #				f.write(str(b.option) + ',' + str(b.vote.id) + ',' + str(b.id))
 #				f.write('\n')
 
-		ballots=list(Ballot.objects.filter(voter = m ).values_list('option', 'vote_id').order_by('-id'))
+		ballots = list(Ballot.objects.filter(voter=m).values_list('option', 'vote_id').order_by('-id'))
 		if ballots:
 			votes[m.id] = {ballot[1]: ballot[0] for ballot in ballots}
         #Work around if ther is no ballots for member
 		else:
-			votes[m.id] = ["ni",]
+			votes[m.id] = {}
 
 #	f.close()
 
