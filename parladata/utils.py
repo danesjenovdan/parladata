@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 from parladata.models import *
 import numpy
+from django.db.models import Q
+from datetime import datetime
 
 #returns average from list of integers
 def AverageList(list):
@@ -24,6 +26,7 @@ MP = Members of parlament
 def getMPObjects():
     parliamentary_group = Organization.objects.filter(classification="poslanska skupina")
     members = Membership.objects.filter(organization__in=parliamentary_group)
+    members = members.filter(Q(end_time=None) | Q(end_time__gt=datetime.now()))
     return [i.person for i in members if i.person.active == True]
 
 def getCurrentMandate():
