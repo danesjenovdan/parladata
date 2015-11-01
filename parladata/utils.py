@@ -94,6 +94,28 @@ def fillVoteResult():
 			votes[i].result = "ne"
 		votes[i].save()
 
+def makeVoteResults():
+    votes = Vote.objects.all()
+    
+    for vote in votes:
+        za = vote.ballot_set.filter(option='za')
+        proti = vote.ballot_set.filter(option='proti')
+        kvorum = vote.ballot_set.filter(option='kvorum')
+        
+        print len(za), len(proti), len(kvorum), vote.result
+        
+        
+        if kvorum < 45:
+            vote.result = 'ni kvoruma'
+            vote.save()
+        else:
+            if len(za) > len(proti):
+                vote.result = 'yes'
+                vote.save()
+            else:
+                vote.result = 'no'
+                vote.save()
+
 def getPMMemberships():
 	f = open('memberships.tsv', 'w')
 	f.write("person\tmember of\trole\n")
