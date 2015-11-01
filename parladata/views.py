@@ -341,4 +341,10 @@ def getNumberOfPersonsSessions(request, person_id):
         
         sessions = set(sessions_with_vote + sessions_with_speech)
         
-        return HttpResponse(len(sessions))
+        result = {
+            'sessions_with_vote': len(sessions_with_vote),
+            'sessions_with_speech': len(sessions_with_speech),
+            'all_sessions': len(sessions)
+        }
+        
+        return JsonResponse(result, safe=False)
