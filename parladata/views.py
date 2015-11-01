@@ -326,3 +326,19 @@ def getVotesOfSession(request, id_se):
     for bal in Ballot.objects.filter(vote__session__id = str(id_se)):
             data.append({'mo_id':bal.vote.motion.id,"mp_id":bal.voter.id,"Acronym":bal.voterparty.acronym, "option":bal.option, "pg_id":bal.voterparty.id})
     return JsonResponse(data,safe = False)
+
+def getNumberOfPersonsSessions(request, person_id):
+    
+    person = Person.objects.filter(id=person_id)
+    
+    if len(person) < 1:
+        return HttpResponse('wrong id')
+    
+    else:
+        person = person[0]
+        sessions_with_vote = list(set([ballot.vote.session for ballot in person.ballot_set.all()]))
+        sessions_with_speech = list(set([speech.session for speech in person.speech_set.all()]))
+        
+        sessions = set(sessions_with_vote + sessions_with_speech)
+        
+        return HttpResponse(len(sessions))
