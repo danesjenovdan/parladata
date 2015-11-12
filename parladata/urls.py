@@ -24,5 +24,6 @@ urlpatterns = patterns('',
     url(r'^getAllVotes/',getAllVotes),
     url(r'^motionOfSession/(?P<id_se>\d+)',motionOfSession),
     url(r'^getVotesOfSession/(?P<id_se>\d+)',getVotesOfSession),
+    url(r'^getNumberOfPersonsSessions/(?P<person_id>\d+)', getNumberOfPersonsSessions),
 
 )
