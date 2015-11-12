@@ -3,6 +3,7 @@ from django.http import JsonResponse, HttpResponse
 from django.core import serializers
 from datetime import date,datetime
 from parladata.models import *
+from django.db.models import Q
 from django.forms.models import model_to_dict
 import json, simplejson
 from utils import *
@@ -173,7 +174,7 @@ return list of member's id for each PG
 '''
 def getMembersOfPGs(request):
 	parliamentary_group = Organization.objects.filter(classification="poslanska skupina")
-	members = Membership.objects.filter(organization__in=parliamentary_group)
+	members = Membership.objects.filter(Q(end_time=None) | Q(end_time__gt=datetime.now()), organization__in=parliamentary_group)
 	data = {pg.id:[member.person.id for member in members.filter(organization=pg)] for pg in parliamentary_group}
 	return JsonResponse(data)
 
