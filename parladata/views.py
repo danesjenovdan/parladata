@@ -8,6 +8,7 @@ from django.forms.models import model_to_dict
 import json, simplejson
 from utils import *
 import requests
+from raven.contrib.django.raven_compat.models import client
 
 
 """return all ballots and speaches agregated by date
@@ -88,14 +89,17 @@ def getMPStatic(request, person_id):
                 groups.append(group)
 
             print groups
-
-            birth_date = str(member.birth_date)
             #creates a list of all memberships of MP
 #            for i in parliamentary_group:
 #                groups.append(i.organization)
             #calcutaes age of MP
-            age = date.today() - date(int(birth_date[:4]),int(birth_date[5:7]),int(birth_date[8:10]))
-            age = age.days / 365
+            try:
+                birth_date = str(member.birth_date)
+                age = date.today() - date(int(birth_date[:4]),int(birth_date[5:7]),int(birth_date[8:10]))
+                age = age.days / 365
+            except:
+                client.captureException()
+                age = None
 
             twitter = member.link_set.filter(tags__name__in=['twitter'])
             facebook = member.link_set.filter(tags__name__in=['facebook'])
