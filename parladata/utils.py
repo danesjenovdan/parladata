@@ -24,7 +24,7 @@ MP = Members of parlament
 '''
 # getMPObject return objects of all parlament members
 def getMPObjects():
-    parliamentary_group = Organization.objects.filter(classification="poslanska skupina")
+    parliamentary_group = Organization.objects.filter(Q(classification="poslanska skupina") | Q(classification="nepovezani poslanec"))
     members = Membership.objects.filter(organization__in=parliamentary_group)
     members = members.filter(Q(end_time=None) | Q(end_time__gt=datetime.now()))
     return [i.person for i in members if i.person.active == True]

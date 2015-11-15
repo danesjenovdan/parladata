@@ -63,7 +63,7 @@ MP = Members of parlament
 '''
 def getMPs(request):
 	data = []
-	parliamentary_group = Organization.objects.filter(classification="poslanska skupina")
+	parliamentary_group = Organization.objects.filter(Q(classification="poslanska skupina") | Q(classification="nepovezani poslanec"))
 	for i in getMPObjects():
 		district = ''
 
@@ -173,7 +173,7 @@ PG = Parlamentary group
 return list of member's id for each PG
 '''
 def getMembersOfPGs(request):
-	parliamentary_group = Organization.objects.filter(classification="poslanska skupina")
+	parliamentary_group = Organization.objects.filter(Q(classification="poslanska skupina") | Q(classification="nepovezani poslanec"))
 	members = Membership.objects.filter(Q(end_time=None) | Q(end_time__gt=datetime.now()), organization__in=parliamentary_group)
 	data = {pg.id:[member.person.id for member in members.filter(organization=pg)] for pg in parliamentary_group}
 	return JsonResponse(data)
@@ -302,7 +302,7 @@ def getAllBallots(requests):
 
 
 def getAllPeople(requests):
-    parliamentary_group = Organization.objects.filter(classification="poslanska skupina")
+    parliamentary_group = Organization.objects.filter(Q(classification="poslanska skupina") | Q(classification="nepovezani poslanec"))
     data = []
     pg=''
     person = Person.objects.all()
