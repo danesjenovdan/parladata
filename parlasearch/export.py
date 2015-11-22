@@ -25,9 +25,11 @@ def export():
 
         if i%100 == 0:
             r = requests.post('http://127.0.0.1:8983/solr/knedl/update?commit=true', data=output, headers={'Content-Type': 'application/json'})
+            
+            print r.text
+            
         else:
              r = requests.post('http://127.0.0.1:8983/solr/knedl/update', data=output, headers={'Content-Type': 'application/json'})
-        print r.text
         
         i = i + 1
         

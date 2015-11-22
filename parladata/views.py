@@ -333,23 +333,36 @@ def getVotesOfSession(request, id_se):
     return JsonResponse(data,safe = False)
 
 def getNumberOfPersonsSessions(request, person_id):
-    
+
     person = Person.objects.filter(id=person_id)
-    
+
     if len(person) < 1:
         return HttpResponse('wrong id')
-    
+
     else:
         person = person[0]
         sessions_with_vote = list(set([ballot.vote.session for ballot in person.ballot_set.all()]))
         sessions_with_speech = list(set([speech.session for speech in person.speech_set.all()]))
-        
+
         sessions = set(sessions_with_vote + sessions_with_speech)
-        
+
         result = {
             'sessions_with_vote': len(sessions_with_vote),
             'sessions_with_speech': len(sessions_with_speech),
             'all_sessions': len(sessions)
         }
-        
+
         return JsonResponse(result, safe=False)
+
+def getNumberOfFormalSpeeches(request, person_id):
+    url = 'http://isci.parlameter.si/filter/besedo%20dajem?people=' + person_id
+
+    person = Person.objects.get(id=int(person_id))
+
+    dz = Organization.objects.get(id=95)
+
+    if len(person.memberships.filter(organization=dz).filter(Q(label='podp') | Q(label='p'))) > 0:
+        r = requests.get(url).json()
+        return HttpResponse(int(r['response']['numFound']))
+    else:
+        return HttpResponse(0)
