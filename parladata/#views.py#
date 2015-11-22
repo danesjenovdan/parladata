@@ -3,12 +3,10 @@ from django.http import JsonResponse, HttpResponse
 from django.core import serializers
 from datetime import date,datetime
 from parladata.models import *
-from django.db.models import Q
 from django.forms.models import model_to_dict
 import json, simplejson
 from utils import *
 import requests
-from raven.contrib.django.raven_compat.models import client
 
 
 """return all ballots and speaches agregated by date
@@ -64,7 +62,7 @@ MP = Members of parlament
 '''
 def getMPs(request):
 	data = []
-	parliamentary_group = Organization.objects.filter(Q(classification="poslanska skupina") | Q(classification="nepovezani poslanec"))
+	parliamentary_group = Organization.objects.filter(classification="poslanska skupina")
 	for i in getMPObjects():
 		district = ''
 
@@ -89,17 +87,14 @@ def getMPStatic(request, person_id):
                 groups.append(group)
 
             print groups
+
+            birth_date = str(member.birth_date)
             #creates a list of all memberships of MP
 #            for i in parliamentary_group:
 #                groups.append(i.organization)
             #calcutaes age of MP
-            try:
-                birth_date = str(member.birth_date)
-                age = date.today() - date(int(birth_date[:4]),int(birth_date[5:7]),int(birth_date[8:10]))
-                age = age.days / 365
-            except:
-                client.captureException()
-                age = None
+            age = date.today() - date(int(birth_date[:4]),int(birth_date[5:7]),int(birth_date[8:10]))
+            age = age.days / 365
 
             twitter = member.link_set.filter(tags__name__in=['twitter'])
             facebook = member.link_set.filter(tags__name__in=['facebook'])
@@ -177,8 +172,8 @@ PG = Parlamentary group
 return list of member's id for each PG
 '''
 def getMembersOfPGs(request):
-	parliamentary_group = Organization.objects.filter(Q(classification="poslanska skupina") | Q(classification="nepovezani poslanec"))
-	members = Membership.objects.filter(Q(end_time=None) | Q(end_time__gt=datetime.now()), organization__in=parliamentary_group)
+	parliamentary_group = Organization.objects.filter(classification="poslanska skupina")
+	members = Membership.objects.filter(organization__in=parliamentary_group)
 	data = {pg.id:[member.person.id for member in members.filter(organization=pg)] for pg in parliamentary_group}
 	return JsonResponse(data)
 
@@ -300,13 +295,13 @@ def getAllBallots(requests):
 
     ballots = Ballot.objects.all()
     for ballot in ballots:
-        data.append(model_to_dict(ballot, fields=['id', 'vote', 'voter', 'option'], exclude=[]))
+        data.append(model_to_dict(ballot, fields=['id', 'vote', 'voter', 'option', 'vote_start_date'], exclude=[]))
 
     return JsonResponse(data, safe=False)
 
 
 def getAllPeople(requests):
-    parliamentary_group = Organization.objects.filter(Q(classification="poslanska skupina") | Q(classification="nepovezani poslanec"))
+    parliamentary_group = Organization.objects.filter(classification="poslanska skupina")
     data = []
     pg=''
     person = Person.objects.all()
@@ -317,52 +312,3 @@ def getAllPeople(requests):
         data.append({'id': i.id, 'name':i.name, 'membership':pg, 'classification':i.classification,'family_name':i.family_name,'given_name':i.given_name,'additional_name':i.additional_name,'honorific_prefix':i.honorific_prefix,'honorific_suffix':i.honorific_suffix,'patronymic_name':i.patronymic_name,'sort_name':i.sort_name,'email':i.email,'gender':i.gender,'birth_date':str(i.birth_date),'death_date':str(i.death_date),'summary':i.summary,'biography':i.biography,'image':i.image,'district':'','gov_id':i.gov_id,'gov_picture_url':i.gov_picture_url,'voters':i.voters,'active':i.active})
         pg=None
     return  JsonResponse(data, safe=False)
-
-def motionOfSession(request, id_se):
-    motion = Vote.objects.filter(motion__session__id = id_se)
-    data = {}
-    data = [{'id':mot.motion.id,'text':mot.motion.text,'result':mot.result} for mot in motion]
-    return JsonResponse(data, safe=False)
-
-def getVotesOfSession(request, id_se):
-    votes = Vote.objects.filter(motion__session__id = str(id_se))
-    data = []
-    tab = []
-    for bal in Ballot.objects.filter(vote__session__id = str(id_se)):
-            data.append({'mo_id':bal.vote.motion.id,"mp_id":bal.voter.id,"Acronym":bal.voterparty.acronym, "option":bal.option, "pg_id":bal.voterparty.id})
-    return JsonResponse(data,safe = False)
-
-def getNumberOfPersonsSessions(request, person_id):
-
-    person = Person.objects.filter(id=person_id)
-
-    if len(person) < 1:
-        return HttpResponse('wrong id')
-
-    else:
-        person = person[0]
-        sessions_with_vote = list(set([ballot.vote.session for ballot in person.ballot_set.all()]))
-        sessions_with_speech = list(set([speech.session for speech in person.speech_set.all()]))
-
-        sessions = set(sessions_with_vote + sessions_with_speech)
-
-        result = {
-            'sessions_with_vote': len(sessions_with_vote),
-            'sessions_with_speech': len(sessions_with_speech),
-            'all_sessions': len(sessions)
-        }
-
-        return JsonResponse(result, safe=False)
-
-def getNumberOfFormalSpeeches(request, person_id):
-    url = 'http://isci.parlameter.si/filter/besedo%20dajem?people=' + person_id
-
-    person = Person.objects.get(id=int(person_id))
-
-    dz = Organization.objects.get(id=95)
-
-    if len(person.memberships.filter(organization=dz).filter(Q(label='podp') | Q(label='p'))) > 0:
-        r = requests.get(url).json()
-        return HttpResponse(int(r['response']['numFound']))
-    else:
-        return HttpResponse(0)

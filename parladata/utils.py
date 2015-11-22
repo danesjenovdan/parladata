@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 from parladata.models import *
 import numpy
+from django.db.models import Q
+from datetime import datetime
 
 #returns average from list of integers
 def AverageList(list):
@@ -22,8 +24,9 @@ MP = Members of parlament
 '''
 # getMPObject return objects of all parlament members
 def getMPObjects():
-    parliamentary_group = Organization.objects.filter(classification="poslanska skupina")
+    parliamentary_group = Organization.objects.filter(Q(classification="poslanska skupina") | Q(classification="nepovezani poslanec"))
     members = Membership.objects.filter(organization__in=parliamentary_group)
+    members = members.filter(Q(end_time=None) | Q(end_time__gt=datetime.now()))
     return [i.person for i in members if i.person.active == True]
 
 def getCurrentMandate():
@@ -39,12 +42,12 @@ def getVotesDict():
 #				f.write(str(b.option) + ',' + str(b.vote.id) + ',' + str(b.id))
 #				f.write('\n')
 
-		ballots=list(Ballot.objects.filter(voter = m ).values_list('option', 'vote_id').order_by('-id'))
+		ballots = list(Ballot.objects.filter(voter=m).values_list('option', 'vote_id').order_by('-id'))
 		if ballots:
 			votes[m.id] = {ballot[1]: ballot[0] for ballot in ballots}
         #Work around if ther is no ballots for member
 		else:
-			votes[m.id] = ["ni",]
+			votes[m.id] = {}
 
 #	f.close()
 
@@ -90,6 +93,28 @@ def fillVoteResult():
 		else:
 			votes[i].result = "ne"
 		votes[i].save()
+
+def makeVoteResults():
+    votes = Vote.objects.all()
+    
+    for vote in votes:
+        za = vote.ballot_set.filter(option='za')
+        proti = vote.ballot_set.filter(option='proti')
+        kvorum = vote.ballot_set.filter(option='kvorum')
+        
+        print len(za), len(proti), len(kvorum), vote.result
+        
+        
+        if kvorum < 45:
+            vote.result = 'ni kvoruma'
+            vote.save()
+        else:
+            if len(za) > len(proti):
+                vote.result = 'yes'
+                vote.save()
+            else:
+                vote.result = 'no'
+                vote.save()
 
 def getPMMemberships():
 	f = open('memberships.tsv', 'w')
