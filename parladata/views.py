@@ -314,11 +314,21 @@ def getAllPeople(requests):
     return  JsonResponse(data, safe=False)
 
 def motionOfSession(request, id_se):
-    motion = Vote.objects.filter(motion__session__id = id_se)
     data = {}
-    data = [{'id':mot.motion.id,'text':mot.motion.text,'result':mot.result} for mot in motion]
-    return JsonResponse(data, safe=False)
-
+    tab = []
+    allIDs = Session.objects.values('id')
+    for i in allIDs:
+        tab.append(i['id'])
+    print tab
+    if int(id_se) in tab:
+        motion = Vote.objects.filter(motion__session__id = id_se) 
+        if motion:
+            data = [{'id':mot.motion.id,'text':mot.motion.text,'result':mot.result} for mot in motion]
+        else:
+            data = "This session has no motion."
+        return JsonResponse(data, safe=False)
+    else:
+        return JsonResponse("No session with this ID", safe=False)
 def getVotesOfSession(request, id_se):
     votes = Vote.objects.filter(motion__session__id = str(id_se))
     data = []
