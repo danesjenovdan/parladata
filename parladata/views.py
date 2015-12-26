@@ -1,14 +1,16 @@
 from django.shortcuts import render
 from django.http import JsonResponse, HttpResponse
 from django.core import serializers
-from datetime import date,datetime
+from datetime import date, datetime
 from parladata.models import *
 from django.db.models import Q
 from django.forms.models import model_to_dict
-import json, simplejson
+import json
+import simplejson
 from utils import *
 import requests
 from raven.contrib.django.raven_compat.models import client
+import collections.OrderedDict
 
 
 """return all ballots and speaches agregated by date
@@ -54,6 +56,7 @@ def getActivity(request, person_id):
             appendBallot(data, b)
         for s in speeches:
             appendSpeech(data, s)
+    data = collections.OrderedDict(sorted(data.items(), key=lambda t: t[0]))
 
     data_list = [data[x] for x in data]
     return JsonResponse(data_list, safe=False)
