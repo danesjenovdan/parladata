@@ -144,7 +144,7 @@ class PersonAdmin(admin.ModelAdmin):
         MilestonePersonInline,
     ]
     list_display = ('name', 'gov_image')
-    list_filter = ('name')
+    list_filter = ('name', 'name_parser')
 
 class OrganizationAdmin(admin.ModelAdmin):
     inlines = [
