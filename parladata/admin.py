@@ -133,7 +133,7 @@ class MotionSessionInline(admin.TabularInline):
     model = Motion
     fk_name = 'session'
     extra = 0
-    
+
 class PersonAdmin(admin.ModelAdmin):
     inlines = [
         OtherNamePersonInline,
@@ -144,7 +144,7 @@ class PersonAdmin(admin.ModelAdmin):
         MilestonePersonInline,
     ]
     list_display = ('name', 'gov_image')
-    list_filter = ('name', 'name_parser')
+    list_filter = ('name')
 
 class OrganizationAdmin(admin.ModelAdmin):
     inlines = [
@@ -180,7 +180,7 @@ class SpeechAdmin(admin.ModelAdmin):
     inlines = [
         MilestoneSpeechInline,
     ]
-    
+
 class MotionAdmin(admin.ModelAdmin):
     inlines = [
         LinkMotionInline,
