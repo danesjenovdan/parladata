@@ -10,7 +10,7 @@ import simplejson
 from utils import *
 import requests
 from raven.contrib.django.raven_compat.models import client
-import collections.OrderedDict
+from collections import OrderedDict
 
 
 """return all ballots and speaches agregated by date
@@ -144,7 +144,7 @@ def getMPStatic(request, person_id):
 #return all Sessions
 def getSessions(request):
     data = []
-    sessions = Session.objects.all()
+    sessions = Session.objects.all().order_by('-start_time')
     for i in sessions:
         data.append({'mandate': i.mandate,
                      'name': i.name,
@@ -158,8 +158,8 @@ def getSessions(request):
     return JsonResponse(data, safe=False)
 
 #return votes of MP
-def getVotes(request):
-	return JsonResponse(getVotesDict())
+def getVotes(request, date=None):
+	return JsonResponse(getVotesDict(date))
 
 #return speech by id
 def getSpeeches(request, person_id):
