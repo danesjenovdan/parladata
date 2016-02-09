@@ -32,7 +32,7 @@ def getMPObjects():
 def getCurrentMandate():
 	return Mandate.objects.all()[-1]
 
-def getVotesDict():
+def getVotesDict(date=None):
 	votes = dict()
 	#balotFromMandat = Ballot.objects.filter('vote__session__mandate' = getCurrentMandate())
 
@@ -41,8 +41,10 @@ def getVotesDict():
 #			for b in Ballot.objects.filter(voter=m):
 #				f.write(str(b.option) + ',' + str(b.vote.id) + ',' + str(b.id))
 #				f.write('\n')
-
-		ballots = list(Ballot.objects.filter(voter=m).values_list('option', 'vote_id').order_by('-id'))
+		if date:
+			ballots = list(Ballot.objects.filter(voter=m, vote__start_time__lte=datetime.strptime(date, '%d.%m.%Y')).values_list('option', 'vote_id').order_by('-id'))
+		else:
+			ballots = list(Ballot.objects.filter(voter=m).values_list('option', 'vote_id').order_by('-id'))
 		if ballots:
 			votes[m.id] = {ballot[1]: ballot[0] for ballot in ballots}
         #Work around if ther is no ballots for member
