@@ -322,10 +322,20 @@ def getAllPeople(requests):
     return  JsonResponse(data, safe=False)
 
 def motionOfSession(request, id_se):
-    motion = Vote.objects.filter(motion__session__id = id_se)
     data = {}
-    data = [{'id':mot.motion.id,'text':mot.motion.text,'result':mot.result} for mot in motion]
-    return JsonResponse(data, safe=False)
+    tab = []
+    allIDs = Session.objects.values('id')
+    for i in allIDs:
+        tab.append(i['id'])
+    if int(id_se) in tab:
+        motion = Vote.objects.filter(motion__session__id = id_se) 
+        if motion:
+            data = [{'id':mot.motion.id,'text':mot.motion.text,'result':mot.result} for mot in motion]
+        else:
+            data = "This session has no motion."
+        return JsonResponse(data, safe=False)
+    else:
+        return JsonResponse("No session with this ID", safe=False)
 
 def getVotesOfSession(request, id_se):
     votes = Vote.objects.filter(motion__session__id = str(id_se))
@@ -336,23 +346,36 @@ def getVotesOfSession(request, id_se):
     return JsonResponse(data,safe = False)
 
 def getNumberOfPersonsSessions(request, person_id):
-    
+
     person = Person.objects.filter(id=person_id)
-    
+
     if len(person) < 1:
         return HttpResponse('wrong id')
-    
+
     else:
         person = person[0]
         sessions_with_vote = list(set([ballot.vote.session for ballot in person.ballot_set.all()]))
         sessions_with_speech = list(set([speech.session for speech in person.speech_set.all()]))
-        
+
         sessions = set(sessions_with_vote + sessions_with_speech)
-        
+
         result = {
             'sessions_with_vote': len(sessions_with_vote),
             'sessions_with_speech': len(sessions_with_speech),
             'all_sessions': len(sessions)
         }
-        
+
         return JsonResponse(result, safe=False)
+
+def getNumberOfFormalSpeeches(request, person_id):
+    url = 'http://isci.parlameter.si/filter/besedo%20dajem?people=' + person_id
+
+    person = Person.objects.get(id=int(person_id))
+
+    dz = Organization.objects.get(id=95)
+
+    if len(person.memberships.filter(organization=dz).filter(Q(label='podp') | Q(label='p'))) > 0:
+        r = requests.get(url).json()
+        return HttpResponse(int(r['response']['numFound']))
+    else:
+        return HttpResponse(0)
