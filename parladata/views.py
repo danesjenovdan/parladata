@@ -189,8 +189,10 @@ def getMembersOfPGs(request):
 
 #get coalitions PGs
 def getCoalitionPGs(request):
-	coalition = Organization.objects.filter(classification="poslanska skupina", is_coalition="1").values_list("id", flat=True)
-	return JsonResponse({'coalition':list(coalition)})
+    coalition = Organization.objects.filter(classification="poslanska skupina", is_coalition="1").values_list("id", flat=True)
+    oppo = Organization.objects.filter(classification="poslanska skupina")
+    oppo = oppo.exclude(is_coalition="1").values_list("id", flat=True)
+    return JsonResponse({'coalition': list(coalition), 'opposition': list(oppo)})
 
 #return number of MP attended sessions
 def getNumberOfMPAttendedSessions(request, person_id):
