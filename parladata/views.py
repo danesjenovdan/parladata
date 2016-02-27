@@ -381,3 +381,11 @@ def getNumberOfFormalSpeeches(request, person_id):
         return HttpResponse(int(r['response']['numFound']))
     else:
         return HttpResponse(0)
+
+def getExtendedSpeechesOfMP(request, person_id):
+
+    speeches_queryset = Speech.objects.filter(speaker__id = person_id)
+
+    speeches = [{'content': speech.content, 'speech_id': speech.id, 'speaker':speech.speaker.id, 'session_name':speech.session.name, 'session_id':speech.session.id,} for speech in speeches_queryset]
+
+    return JsonResponse(speeches, safe=False)
