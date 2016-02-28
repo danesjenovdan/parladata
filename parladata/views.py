@@ -330,9 +330,9 @@ def motionOfSession(request, id_se):
     for i in allIDs:
         tab.append(i['id'])
     if int(id_se) in tab:
-        motion = Vote.objects.filter(motion__session__id = id_se) 
+        motion = Vote.objects.filter(motion__session__id = id_se)
         if motion:
-            data = [{'id':mot.motion.id,'text':mot.motion.text,'result':mot.result} for mot in motion]
+            data = [{'id':mot.motion.id, 'vote_id': mot.id, 'text':mot.motion.text,'result':mot.result} for mot in motion]
         else:
             data = "This session has no motion."
         return JsonResponse(data, safe=False)
