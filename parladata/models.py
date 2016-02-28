@@ -246,7 +246,7 @@ class Post(Timestampable, Taggable, models.Model):
                                      blank=True, null=True,
                                      related_name='posts',
                                      help_text=_('The organization in which the post is held'))
-    
+
     # start and end time of memberships
     start_time = PopoloDateTimeField(blank=True, null=True,
                                      help_text='Start time')
@@ -306,7 +306,7 @@ class Membership(Timestampable, models.Model):
                              blank=True, null=True,
                              related_name='memberships',
                              help_text=_('The post held by the person in the organization through this membership'))
-    
+
     # start and end time of memberships
     start_time = PopoloDateTimeField(blank=True, null=True,
                                      help_text='Start time')
@@ -580,6 +580,8 @@ class Session(Timestampable, Taggable, models.Model):
     classification = models.CharField(max_length=128,
                                       blank=True, null=True,
                                       help_text='Session classification')
+
+    in_review = models.BooleanField(default=False, help_text='Is session in review?')
 
 #    @property
 #    def slug_source(self):
