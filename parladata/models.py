@@ -667,7 +667,7 @@ class Motion(Timestampable, Taggable, models.Model):
 ## (it's way easier than dynamic field names)
 
 
-class Vote(Timestampable, models.Model):
+class Vote(Timestampable, Taggable, models.Model):
     name = models.CharField(blank=True, null=True,
                             max_length=1000,
                             help_text='Vote name/identifier')
