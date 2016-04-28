@@ -395,6 +395,21 @@ def getExtendedSpeechesOfMP(request, person_id):
 def getTaggedVotes(request, person_id):
 
     votes_queryset = Vote.objects.filter(tags__name__in=['Komisija za nadzor javnih financ', 'Kolegij predsednika Državnega zbora', 'Komisija za narodni skupnosti', 'Komisija za odnose s Slovenci v zamejstvu in po svetu', 'Komisija za poslovnik', 'Mandatno-volilna komisija', 'Odbor za delo, družino, socialne zadeve in invalide', 'Odbor za finance in monetarno politiko', 'Odbor za gospodarstvo', 'Odbor za infrastrukturo, okolje in prostor', 'Odbor za izobraževanje, znanost, šport in mladino', 'Odbor za kmetijstvo, gozdarstvo in prehrano', 'Odbor za kulturo', 'Odbor za notranje zadeve, javno upravo in lokalno samoupravo', 'Odbor za obrambo', 'Odbor za pravosodje', 'Odbor za zadeve Evropske unije', 'Odbor za zdravstvo', 'Odbor za zunanjo politiko', 'Preiskovalna komisija o ugotavljanju zlorab v slovenskem bančnem sistemu ter ugotavljanju vzrokov in', 'Preiskovalna komisija za ugotavljanje politične odgovornosti nosilcev javnih funkcij pri investiciji', 'Ustavna komisija', 'Proceduralna glasovanja', 'Zunanja imenovanja', 'Poslanska vprašanja', 'Komisija za nadzor obveščevalnih in varnostnih služb', 'Preiskovalne komisije'])
-    votes = [{'name': vote.name, 'motion_id': vote.motion.id, 'session_id': vote.session.id 'id': vote.id, 'result': vote.result, 'tags': vote.tags.all()} for vote in votes_queryset]
 
-    return JsonResponse(votes, safe=False)
+    person = Person.objects.filter(id=int(person_id))[0]
+    ballots = person.ballot_set.filter(vote__in=votes_queryset)
+
+    votes = [{'name': vote.name, 'motion_id': vote.motion.id, 'session_id': vote.session.id, 'id': vote.id, 'result': vote.result, 'tags': [tag.name for tag in vote.tags.all()]} for vote in votes_queryset]
+
+    ballots_out = [{
+        'option': ballot.option,
+        'vote': {
+            'name': ballot.vote.name,
+            'motion_id': ballot.vote.motion.id,
+            'session_id': ballot.vote.session.id,
+            'id': ballot.vote.id,
+            'result': ballot.vote.result,
+            'tags': [tag.name for tag in ballot.vote.tags.all()]
+        }} for ballot in ballots]
+
+    return JsonResponse(ballots_out, safe=False)
