@@ -409,6 +409,7 @@ def getTaggedVotes(request, person_id):
             'session_id': ballot.vote.session.id,
             'id': ballot.vote.id,
             'result': ballot.vote.result,
+            'date': ballot.vote.start_time,
             'tags': [tag.name for tag in ballot.vote.tags.all()]
         }} for ballot in ballots]
 
