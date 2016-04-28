@@ -389,3 +389,9 @@ def getExtendedSpeechesOfMP(request, person_id):
     speeches = [{'content': speech.content, 'speech_id': speech.id, 'speaker':speech.speaker.id, 'session_name':speech.session.name, 'session_id':speech.session.id,} for speech in speeches_queryset]
 
     return JsonResponse(speeches, safe=False)
+
+def getTaggedVotes(request, person_id):
+
+    votes = Vote.objects.filter(tags__name__in=['Komisija za nadzor javnih financ', 'Kolegij predsednika Državnega zbora', 'Komisija za narodni skupnosti', 'Komisija za odnose s Slovenci v zamejstvu in po svetu', 'Komisija za poslovnik', 'Mandatno-volilna komisija', 'Odbor za delo, družino, socialne zadeve in invalide', 'Odbor za finance in monetarno politiko', 'Odbor za gospodarstvo', 'Odbor za infrastrukturo, okolje in prostor', 'Odbor za izobraževanje, znanost, šport in mladino', 'Odbor za kmetijstvo, gozdarstvo in prehrano', 'Odbor za kulturo', 'Odbor za notranje zadeve, javno upravo in lokalno samoupravo', 'Odbor za obrambo', 'Odbor za pravosodje', 'Odbor za zadeve Evropske unije', 'Odbor za zdravstvo', 'Odbor za zunanjo politiko', 'Preiskovalna komisija o ugotavljanju zlorab v slovenskem bančnem sistemu ter ugotavljanju vzrokov in', 'Preiskovalna komisija za ugotavljanje politične odgovornosti nosilcev javnih funkcij pri investiciji', 'Ustavna komisija', 'Proceduralna glasovanja', 'Zunanja imenovanja', 'Poslanska vprašanja', 'Komisija za nadzor obveščevalnih in varnostnih služb', 'Preiskovalne komisije'])
+
+    return JsonResponse(votes, safe=False)
