@@ -138,7 +138,8 @@ def getMPStatic(request, person_id):
                 'age': age,
                 'groups': [{'name': group['name'], 'id': group['id']} for group in groups[1:]],
                 'name': member.name,
-                'social': social_output
+                'social': social_output,
+                'gov_id': member.gov_id
             }
 
     return JsonResponse(data)
