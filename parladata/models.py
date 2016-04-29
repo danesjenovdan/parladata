@@ -689,6 +689,8 @@ class Vote(Timestampable, Taggable, models.Model):
                               max_length=255,
                               help_text='The result of the vote')
 
+    epa = models.CharField(blank=True, null=True, max_length=255, help_text='EPA number')
+
 
 class Count(Timestampable, models.Model):
     option = models.CharField(max_length=128,
