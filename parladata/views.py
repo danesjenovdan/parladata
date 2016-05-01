@@ -277,6 +277,11 @@ def getAllPGs(request):
     data = {pg.id:pg.name for pg in parliamentary_group}
     return JsonResponse(data)
 
+def getAllPGsExt(request):
+    parliamentary_group = Organization.objects.filter(classification="poslanska skupina")
+    data = [{'id': pg.id, 'name': pg.name, 'acronym': pg.acronym}] for pg in parliamentary_group]
+    return JsonResponse(data)
+
 def getAllOrganizations(requests):
     org = Organization.objects.all()
     data = {pg.id:{'name':pg.name,'classification':pg.classification} for pg in org}
