@@ -86,10 +86,9 @@ def getMPStatic(request, person_id):
     for member in getMPObjects():
         if str(member.id) == str(person_id):
 
-            if len(member.memberships.all()) > 0:
-                groups = [{'name': membership.organization.name, 'id': membership.organization.id, 'acronym': membership.organization.acronym} for membership in member.memberships.all() if membership.organization.classification == u'poslanska skupina']
+            groups = [{'name': membership.organization.name, 'id': membership.organization.id, 'acronym': membership.organization.acronym} for membership in member.memberships.all() if membership.organization.classification == u'poslanska skupina']
 
-                non_party_groups = [{'name': membership.organization.name, 'id': membership.organization.id} for membership in member.memberships.all() if membership.organization.classification != u'poslanska skupina']
+            non_party_groups = [{'name': membership.organization.name, 'id': membership.organization.id} for membership in member.memberships.all() if membership.organization.classification != u'poslanska skupina']
 
             for group in non_party_groups:
                 groups.append(group)
