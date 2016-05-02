@@ -343,7 +343,8 @@ def motionOfSession(request, id_se):
         if motion:
             data = [{'id':mot.motion.id, 'vote_id': mot.id, 'text':mot.motion.text,'result':mot.result} for mot in motion]
         else:
-            data = "This session has no motion."
+            #data = "This session has no motion."
+            data = []
         return JsonResponse(data, safe=False)
     else:
         return JsonResponse("No session with this ID", safe=False)
@@ -355,6 +356,15 @@ def getVotesOfSession(request, id_se):
     for bal in Ballot.objects.filter(vote__session__id = str(id_se)):
             data.append({'mo_id':bal.vote.motion.id,"mp_id":bal.voter.id,"Acronym":bal.voterparty.acronym, "option":bal.option, "pg_id":bal.voterparty.id})
     return JsonResponse(data,safe = False)
+
+
+def getVotesOfMotion(request, motion_id):
+    data = []
+    for bal in Ballot.objects.filter(vote__id = str(motion_id)):
+        data.append({'mo_id':bal.vote.motion.id,"mp_id":bal.voter.id,"Acronym":bal.voterparty.acronym, "option":bal.option, "pg_id":bal.voterparty.id})
+    print len(data)
+    return JsonResponse(data,safe = False)
+
 
 def getNumberOfPersonsSessions(request, person_id):
 
