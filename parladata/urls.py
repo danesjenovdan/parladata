@@ -25,10 +25,12 @@ urlpatterns = patterns('',
     url(r'^getAllBallots/',getAllBallots),
     url(r'^getAllVotes/',getAllVotes),
     url(r'^motionOfSession/(?P<id_se>\d+)',motionOfSession),
+    url(r'^getVotesOfMotion/(?P<motion_id>\d+)',getVotesOfMotion),
     url(r'^getVotesOfSession/(?P<id_se>\d+)',getVotesOfSession),
     url(r'^getNumberOfPersonsSessions/(?P<person_id>\d+)', getNumberOfPersonsSessions),
     url(r'^getNumberOfFormalSpeeches/(?P<person_id>\d+)', getNumberOfFormalSpeeches),
     url(r'^getExtendedSpeechesOfMP/(?P<person_id>\d+)', getExtendedSpeechesOfMP),
 	url(r'^getTaggedVotes/(?P<person_id>\d+)', getTaggedVotes),
+
 
 )
