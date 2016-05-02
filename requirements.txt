@@ -1,12 +1,12 @@
 coop-geo==0.2.0
-Django==1.8.4
+Django==1.8.9
 django-autoslug==1.7.2
 django-bitfield==1.8.0
 django-extensions==1.5.7
 django-floppyforms==0.4.7
 django-geojson==2.6.0
 django-jsonfield==0.9.15
-django-leaflet==0.15.2
+django-leaflet==0.18.0
 django-model-utils==2.2
 django-mptt==0.7.4
 django-separatedvaluesfield==0.3.2
