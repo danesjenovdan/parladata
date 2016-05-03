@@ -2,7 +2,9 @@
 from parladata.models import *
 import numpy
 from django.db.models import Q
-from datetime import datetime
+from datetime import datetime, timedelta
+import requests
+from django.conf import settings
 
 #returns average from list of integers
 def AverageList(list):
@@ -138,3 +140,16 @@ def getPMMemberships():
                 f.write("NONE\t ")
 
             f.write("\n")
+
+
+def checkNumberOfMembers():
+    import csv
+    with open('members_on_day.csv', 'wb') as csvfile:
+        csvwriter = csv.writer(csvfile, delimiter=',',
+                                quotechar='|', quoting=csv.QUOTE_MINIMAL)
+        d = datetime(year=2014, day=1, month=8)
+        day = timedelta(days=1)
+        for i in range(700):
+            g = requests.get("https://data.parlameter.si/v1/getMembersOfPGsAtDate/"+d.strftime(settings.API_DATE_FORMAT)).json()
+            csvwriter.writerow([d.strftime(settings.API_DATE_FORMAT), str(sum([len(g[g_]) for g_ in g]))])
+            d=d+day
