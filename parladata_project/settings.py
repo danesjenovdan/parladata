@@ -119,3 +119,5 @@ RAVEN_CONFIG = {
     # release based on the git info.
 #    'release': raven.fetch_git_sha(os.path.dirname(__file__)),
 }
+
+API_DATE_FORMAT = '%d.%m.%Y'

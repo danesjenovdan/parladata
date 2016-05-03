@@ -13,6 +13,7 @@ from utils import *
 import requests
 from raven.contrib.django.raven_compat.models import client
 from collections import OrderedDict
+from django.conf import settings
 
 
 """return all ballots and speaches agregated by date
@@ -189,6 +190,18 @@ def getMembersOfPGs(request):
 	data = {pg.id:[member.person.id for member in members.filter(organization=pg)] for pg in parliamentary_group}
 	return JsonResponse(data)
 
+
+'''
+PG = Parlamentary group
+
+return list of member's id for each PG, on specific date
+'''
+def getMembersOfPGsAtDate(request, date):
+    fdate = datetime.strptime(date, settings.API_DATE_FORMAT)
+    parliamentary_group = Organization.objects.filter(Q(classification="poslanska skupina") | Q(classification="nepovezani poslanec"))
+    members = Membership.objects.filter(Q(end_time__gte=fdate) | Q(end_time=None), Q(start_time__lte=fdate)|Q(start_time=None), organization__in=parliamentary_group)
+    data = {pg.id:[member.person.id for member in members.filter(organization=pg)] for pg in parliamentary_group}
+    return JsonResponse(data)
 
 
 #get coalitions PGs
