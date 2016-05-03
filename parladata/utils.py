@@ -144,12 +144,12 @@ def getPMMemberships():
 
 def checkNumberOfMembers():
     import csv
-    with open('members_od_day.csv', 'wb') as csvfile:
+    with open('members_on_day.csv', 'wb') as csvfile:
         csvwriter = csv.writer(csvfile, delimiter=',',
                                 quotechar='|', quoting=csv.QUOTE_MINIMAL)
         d = datetime(year=2014, day=1, month=8)
         day = timedelta(days=1)
         for i in range(700):
-            g = requests.get("http://localhost:8000/v1/getMembersOfPGsAtDate/"+d.strftime(settings.API_DATE_FORMAT)).json()
+            g = requests.get("https://data.parlameter.si/v1/getMembersOfPGsAtDate/"+d.strftime(settings.API_DATE_FORMAT)).json()
             csvwriter.writerow([d.strftime(settings.API_DATE_FORMAT), str(sum([len(g[g_]) for g_ in g]))])
             d=d+day
