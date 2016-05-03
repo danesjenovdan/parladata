@@ -31,6 +31,7 @@ urlpatterns = patterns('',
     url(r'^getNumberOfFormalSpeeches/(?P<person_id>\d+)', getNumberOfFormalSpeeches),
     url(r'^getExtendedSpeechesOfMP/(?P<person_id>\d+)', getExtendedSpeechesOfMP),
 	url(r'^getTaggedVotes/(?P<person_id>\d+)', getTaggedVotes),
+    url(r'^getMembersOfPGsAtDate/(?P<date>[\w].+)',getMembersOfPGsAtDate)
 
 
 )
