@@ -121,3 +121,5 @@ RAVEN_CONFIG = {
 }
 
 API_DATE_FORMAT = '%d.%m.%Y'
+
+MANDATE_START_TIME = datetime(day=31, month=7, year=2014)
