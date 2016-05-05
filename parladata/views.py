@@ -13,6 +13,7 @@ from utils import *
 import requests
 from raven.contrib.django.raven_compat.models import client
 from collections import OrderedDict
+from django.conf import settings
 
 
 """return all ballots and speaches agregated by date
@@ -189,6 +190,18 @@ def getMembersOfPGs(request):
 	data = {pg.id:[member.person.id for member in members.filter(organization=pg)] for pg in parliamentary_group}
 	return JsonResponse(data)
 
+
+'''
+PG = Parlamentary group
+
+return list of member's id for each PG, on specific date
+'''
+def getMembersOfPGsOnDate(request, date):
+    fdate = datetime.strptime(date, settings.API_DATE_FORMAT)
+    parliamentary_group = Organization.objects.filter(Q(classification="poslanska skupina") | Q(classification="nepovezani poslanec"))
+    members = Membership.objects.filter(Q(end_time__gte=fdate) | Q(end_time=None), Q(start_time__lte=fdate)|Q(start_time=None), organization__in=parliamentary_group)
+    data = {pg.id:[member.person.id for member in members.filter(organization=pg)] for pg in parliamentary_group}
+    return JsonResponse(data)
 
 
 #get coalitions PGs
@@ -431,3 +444,45 @@ def getTaggedVotes(request, person_id):
         }} for ballot in ballots]
 
     return JsonResponse(ballots_out, safe=False)
+
+
+def getMembersOfPGsRanges(request, date):
+    fdate = datetime.strptime(date, settings.API_DATE_FORMAT)
+    tempDate=settings.MANDATE_START_TIME
+    parliamentary_group = Organization.objects.filter(Q(classification="poslanska skupina") | Q(classification="nepovezani poslanec"))
+    members = Membership.objects.filter(organization__in=parliamentary_group)
+    out = {(tempDate+timedelta(days=xday)): {grup: [] for grup in parliamentary_group.values_list("id", flat=True)} for xday in range((fdate-tempDate).days+1)}
+    for member in members:
+        if not member.start_time and not member.end_time:
+            start_time = tempDate
+            end_time = fdate
+        elif member.start_time and not member.end_time:
+            if member.start_time < tempDate:
+                start_time = tempDate
+            else:
+                start_time = member.start_time
+            end_time = fdate
+        else:
+            start_time = member.start_time
+            if fdate > member.end_time:
+                end_time = member.end_time
+            else:
+                end_time = fdate
+        for xday in range((end_time-start_time).days+1):
+            out[(start_time+timedelta(days=xday))][member.organization.id].append(member.person.id)
+
+    keys = out.keys()
+    keys.sort()
+    outList = [{"start_date":keys[0].strftime(settings.API_DATE_FORMAT),
+                "end_date":keys[0].strftime(settings.API_DATE_FORMAT),
+                "members":out[keys[0]]}]
+    for key in keys:
+        if out[key]==outList[-1]["members"]:
+            outList[-1]["end_date"]=key.strftime(settings.API_DATE_FORMAT)
+        else:
+            outList.append({"start_date":key.strftime(settings.API_DATE_FORMAT),
+                            "end_date":key.strftime(settings.API_DATE_FORMAT),
+                            "members":out[key]})
+
+
+    return JsonResponse(outList, safe=False)
