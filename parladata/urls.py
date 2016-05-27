@@ -33,6 +33,7 @@ urlpatterns = patterns('',
 	url(r'^getTaggedVotes/(?P<person_id>\d+)', getTaggedVotes),
     url(r'^getMembersOfPGsOnDate/(?P<date>[\w].+)',getMembersOfPGsOnDate),
     url(r'^getMembersOfPGsRanges/(?P<date>[\w].+)',getMembersOfPGsRanges),
+    url(r'^getMembershipsOfMember/(?P<person_id>\d+)/(?P<date>[\w].+|)',getMembershipsOfMember)
 
 
 )
