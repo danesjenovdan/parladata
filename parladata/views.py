@@ -486,3 +486,11 @@ def getMembersOfPGsRanges(request, date):
 
 
     return JsonResponse(outList, safe=False)
+
+
+def getMembershipsOfMember(request, person_id, date=None):
+    if date:
+        fdate = datetime.strptime(date, settings.API_DATE_FORMAT)
+    else:
+        fdate = datetime.now()
+    return JsonResponse([{"org_type": mem.organization.classification, "org_id": mem.organization.id, "name": mem.organization.name} for mem in Membership.objects.filter(Q(start_time__lte=fdate)|Q(start_time=None), Q(end_time__gte=fdate)|Q(end_time=None), person__id=person_id)], safe=False)
