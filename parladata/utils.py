@@ -25,10 +25,12 @@ MP = Members of parlament
 #Function: git config
 '''
 # getMPObject return objects of all parlament members
-def getMPObjects():
+def getMPObjects(date_=None):
+    if not date_:
+        date_ = datetime.now()
     parliamentary_group = Organization.objects.filter(Q(classification="poslanska skupina") | Q(classification="nepovezani poslanec"))
     members = Membership.objects.filter(organization__in=parliamentary_group)
-    members = members.filter(Q(end_time=None) | Q(end_time__gt=datetime.now()))
+    members = members.filter(Q(end_time=None) | Q(end_time__gt=date_))
     return [i.person for i in members if i.person.active == True]
 
 
@@ -37,27 +39,34 @@ def getCurrentMandate():
 
 
 def getVotesDict(date=None):
+    parliamentary_group = Organization.objects.filter(Q(classification="poslanska skupina") | Q(classification="nepovezani poslanec"))
+    members = Membership.objects.filter(organization__in=parliamentary_group)
     votes = dict()
     # balotFromMandat = Ballot.objects.filter('vote__session__mandate' = getCurrentMandate())
 
 #   with open('/Users/muki/Desktop/testis.csv', 'w') as f:
-    for m in getMPObjects():
+    for m in list(set(members.values_list("person", flat=True))):
+        print m
 #           for b in Ballot.objects.filter(voter=m):
 #               f.write(str(b.option) + ',' + str(b.vote.id) + ',' + str(b.id))
 #               f.write('\n')
 
         if date:
-            ballots = list(Ballot.objects.filter(voter=m, vote__start_time__lte=datetime.strptime(date, '%d.%m.%Y')).values_list('option', 'vote_id').order_by('-id'))
+            ballots = list(Ballot.objects.filter(voter__id=m, vote__start_time__lte=datetime.strptime(date, settings.API_DATE_FORMAT).date()).order_by('vote__start_time').values_list('option', 'vote_id'))
         else:
-            ballots = list(Ballot.objects.filter(voter=m).values_list('option', 'vote_id').order_by('-id'))
-
+            ballots = list(Ballot.objects.filter(voter__id=m).order_by('vote__start_time').values_list('option', 'vote_id'))
+    
         if ballots:
-            votes[m.id] = {ballot[1]: ballot[0] for ballot in ballots}
+            votes[str(m)] = {ballot[1]: ballot[0] for ballot in ballots}
         #Work around if ther is no ballots for member
         else:
-            votes[m.id] = {}
-#   f.close()
+            votes[str(m)] = {}
 
+        if m==6:
+            print votes[str(m)]
+        print votes.keys()
+#   f.close()
+    print votes.keys()
     return votes
 
 def voteToLogical(vote):
