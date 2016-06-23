@@ -6,6 +6,7 @@ urlpatterns = patterns('',
     url(r'^getMPs/(?P<date_>[\w].+)', getMPs),
     url(r'^getMPs', getMPs),
 
+    url(r'^getMPStatic/(?P<person_id>\d+)/(?P<date_>[\w].+)', getMPStatic),
     url(r'^getMPStatic/(?P<person_id>\d+)', getMPStatic),
     url(r'^getSessions/', getSessions),
     url(r'^getNumberOfMPAttendedSessions/(?P<person_id>\d+)', getNumberOfMPAttendedSessions),
