@@ -68,7 +68,7 @@ def getActivity(request, person_id):
 MP = Members of parlament
 #Function: git config
 '''
-def getMPs(request, date_):
+def getMPs(request, date_=None):
     if date_:
         fdate = datetime.strptime(date_, settings.API_DATE_FORMAT).date()
     else:
@@ -89,14 +89,18 @@ def getMPs(request, date_):
     return  JsonResponse(data, safe=False)
 
 #returns MP static data like PoliticalParty, age, ....
-def getMPStatic(request, person_id):
+def getMPStatic(request, person_id, date_=None):
+    if date_:
+        fdate = datetime.strptime(date_, settings.API_DATE_FORMAT).date()
+    else:
+        fdate=datetime.now().date()
     data = dict()
     for member in getMPObjects():
         if str(member.id) == str(person_id):
 
-            groups = [{'name': membership.organization.name, 'id': membership.organization.id, 'acronym': membership.organization.acronym} for membership in member.memberships.all() if membership.organization.classification == u'poslanska skupina']
+            groups = [{'name': membership.organization.name, 'id': membership.organization.id, 'acronym': membership.organization.acronym} for membership in member.memberships.filter(Q(start_time__lte=fdate)|Q(start_time=None), Q(end_time__gte=fdate)|Q(end_time=None)) if membership.organization.classification == u'poslanska skupina']
 
-            non_party_groups = [{'name': membership.organization.name, 'id': membership.organization.id} for membership in member.memberships.all() if membership.organization.classification != u'poslanska skupina']
+            non_party_groups = [{'name': membership.organization.name, 'id': membership.organization.id} for membership in member.memberships.filter(Q(start_time__lte=fdate)|Q(start_time=None), Q(end_time__gte=fdate)|Q(end_time=None)) if membership.organization.classification != u'poslanska skupina']
 
             for group in non_party_groups:
                 groups.append(group)
