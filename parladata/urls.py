@@ -10,8 +10,10 @@ urlpatterns = patterns('',
     url(r'^getNumberOfAllMPAttendedSessions', getNumberOfAllMPAttendedSessions),
 	url(r'^getSpeechesOfMP/(?P<person_id>\d+)', getSpeechesOfMP),
     url(r'^getAllSpeeches', getAllSpeeches),
-	url(r'^getVotes/(?P<date>[\w].+)', getVotes),
+
+	url(r'^getVotes/(?P<date_>[\w].+)', getVotes),
     url(r'^getVotes/', getVotes),
+
 	url(r'^getSpeeches/(?P<person_id>\d+)',getSpeeches),
 	url(r'^getMembersOfPGs/',getMembersOfPGs),
 	url(r'^getCoalitionPGs/',getCoalitionPGs),
@@ -23,7 +25,10 @@ urlpatterns = patterns('',
     url(r'^getAllOrganizations/',getAllOrganizations),
     url(r'^getAllPeople/',getAllPeople),
     url(r'^getAllBallots/',getAllBallots),
+
+    url(r'^getAllVotes/(?P<date_>[\w].+)',getAllVotes),
     url(r'^getAllVotes/',getAllVotes),
+
     url(r'^motionOfSession/(?P<id_se>\d+)',motionOfSession),
     url(r'^getVotesOfMotion/(?P<motion_id>\d+)',getVotesOfMotion),
     url(r'^getVotesOfSession/(?P<id_se>\d+)',getVotesOfSession),
