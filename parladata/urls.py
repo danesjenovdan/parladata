@@ -3,6 +3,7 @@ from parladata.views import *
 
 urlpatterns = patterns('',
     url(r'^getActivity/(?P<person_id>\d+)', getActivity),
+    url(r'^getMPs/(?P<date_>[\w].+)', getMPs),
     url(r'^getMPs', getMPs),
 
     url(r'^getMPStatic/(?P<person_id>\d+)', getMPStatic),
