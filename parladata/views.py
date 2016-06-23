@@ -163,8 +163,8 @@ def getSessions(request):
     return JsonResponse(data, safe=False)
 
 #return votes of MP
-def getVotes(request, date=None):
-	return JsonResponse(getVotesDict(date))
+def getVotes(request, date_=None):
+    return JsonResponse(getVotesDict(date_))
 
 #return speech by id
 def getSpeeches(request, person_id):
@@ -197,7 +197,7 @@ PG = Parlamentary group
 return list of member's id for each PG, on specific date
 '''
 def getMembersOfPGsOnDate(request, date):
-    fdate = datetime.strptime(date, settings.API_DATE_FORMAT)
+    fdate = datetime.strptime(date, settings.API_DATE_FORMAT).date()
     parliamentary_group = Organization.objects.filter(Q(classification="poslanska skupina") | Q(classification="nepovezani poslanec"))
     members = Membership.objects.filter(Q(end_time__gte=fdate) | Q(end_time=None), Q(start_time__lte=fdate)|Q(start_time=None), organization__in=parliamentary_group)
     data = {pg.id:[member.person.id for member in members.filter(organization=pg)] for pg in parliamentary_group}
@@ -312,12 +312,19 @@ def getAllSpeeches(requests):
     return JsonResponse(data, safe=False)
 
 
-def getAllVotes(requests):
+def getAllVotes(requests, date_):
+    fdate = datetime.strptime(date_, settings.API_DATE_FORMAT).date()
     data = []
 
-    votes=Vote.objects.all()
+    votes=Vote.objects.filter(start_time__lte=fdate).order_by("start_time")
     for vote in votes:
-        data.append({'id': vote.id, 'motion': vote.motion.text, 'party': vote.organization.id, 'session': vote.session.id, 'start_time': vote.start_time, 'end_time': vote.end_time, 'result': vote.result})
+        data.append({'id': vote.id, 
+                     'motion': vote.motion.text, 
+                     'party': vote.organization.id, 
+                     'session': vote.session.id, 
+                     'start_time': vote.start_time, 
+                     'end_time': vote.end_time, 
+                     'result': vote.result})
 
     return JsonResponse(data, safe=False)
 
@@ -490,7 +497,15 @@ def getMembersOfPGsRanges(request, date):
 
 def getMembershipsOfMember(request, person_id, date=None):
     if date:
-        fdate = datetime.strptime(date, settings.API_DATE_FORMAT)
+        fdate = datetime.strptime(date, settings.API_DATE_FORMAT).date()
     else:
-        fdate = datetime.now()
-    return JsonResponse([{"org_type": mem.organization.classification, "org_id": mem.organization.id, "name": mem.organization.name} for mem in Membership.objects.filter(Q(start_time__lte=fdate)|Q(start_time=None), Q(end_time__gte=fdate)|Q(end_time=None), person__id=person_id)], safe=False)
+        fdate = datetime.now().date()
+
+    memberships = Membership.objects.filter(Q(start_time__lte=fdate)|Q(start_time=None), Q(end_time__gte=fdate)|Q(end_time=None), person__id=person_id)
+
+    out_init_dict = {org_type: [] for org_type in set([member.organization.classification for member in memberships])}
+
+    for mem in memberships:
+        out_init_dict[mem.organization.classification].append({"org_type": mem.organization.classification, "org_id": mem.organization.id, "name": mem.organization.name})
+    return JsonResponse(out_init_dict)
+    #return JsonResponse({"org_type": mem.organization.classification, "org_id": mem.organization.id, "name": mem.organization.name} for mem in memberships], safe=False)
