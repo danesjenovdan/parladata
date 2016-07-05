@@ -30,8 +30,8 @@ def getMPObjects(date_=None):
         date_ = datetime.now()
     parliamentary_group = Organization.objects.filter(Q(classification="poslanska skupina") | Q(classification="nepovezani poslanec"))
     members = Membership.objects.filter(organization__in=parliamentary_group)
-    members = members.filter(Q(end_time=None) | Q(end_time__gt=date_))
-    return [i.person for i in members if i.person.active == True]
+    members = members.filter(Q(start_time__lte=date_)|Q(start_time=None), Q(end_time__gte=date_)|Q(end_time=None))
+    return [i.person for i in members]
 
 
 def getCurrentMandate():
