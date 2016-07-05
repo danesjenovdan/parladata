@@ -225,25 +225,33 @@ def getCoalitionPGs(request):
 
 #return number of MP attended sessions
 def getNumberOfMPAttendedSessions(request, person_id):
-	data = {}
-	allBallots = Ballot.objects.filter(option='za')
-	for i in getMPObjects():
-		data[i.id] = len(list(set(allBallots.filter(voter=i.id).values_list('vote__session', flat=True))))
-	return JsonResponse(data[int(person_id)], safe=False)
+    data = {}
+    allBallots = Ballot.objects.filter(option='za')
+    for i in getMPObjects():
+        data[i.id] = len(list(set(allBallots.filter(voter=i.id).values_list('vote__session', flat=True))))
+    return JsonResponse(data[int(person_id)], safe=False)
 
-def getNumberOfAllMPAttendedSessions(request):
-	data = {}
-	allBallots = Ballot.objects.filter(option='za')
-	for i in getMPObjects():
-		data[i.id] = len(list(set(allBallots.filter(voter=i.id).values_list('vote__session', flat=True))))
-	return JsonResponse(data)
+
+def getNumberOfAllMPAttendedSessions(request, date_):
+    fdate = datetime.strptime(date_, settings.API_DATE_FORMAT).date()
+    data = {"sessions":{},"votes":{}}
+    for member in getMPObjects(fdate):
+        allOfHimS = list(set(Ballot.objects.filter(voter__id=member.id, vote__start_time__lte=fdate).values_list("vote__session",flat=True)))
+        votesOnS = list(set(Ballot.objects.filter(Q(option="kvorum")|Q(option="proti")|Q(option="za"), voter__id=member.id, vote__start_time__lte=fdate).values_list("vote__session",flat=True)))
+        allOfHimV = list(set(Ballot.objects.filter(voter__id=member.id, vote__start_time__lte=fdate).values_list("vote",flat=True)))
+        votesOnV = list(set(Ballot.objects.filter(Q(option="kvorum")|Q(option="proti")|Q(option="za"), voter__id=member.id, vote__start_time__lte=fdate).values_list("vote",flat=True)))
+        data["sessions"][member.id] = float(len(votesOnS))/float(len(allOfHimS))*100
+        data["votes"][member.id] = float(len(votesOnV))/float(len(allOfHimV))*100
+    return JsonResponse(data)
+
+
 
 #return all speeches of all MP
 def getSpeechesOfMP(request, person_id):
-	content = {}
-	for i in getMPObjects():
-		content[i.id] = list(Speech.objects.filter(speaker__id = i.id).values_list('content', flat=True))
-	return JsonResponse(content[int(person_id)], safe=False)
+    content = {}
+    for i in getMPObjects():
+        content[i.id] = list(Speech.objects.filter(speaker__id = i.id).values_list('content', flat=True))
+    return JsonResponse(content[int(person_id)], safe=False)
 
 def getAllSpeeches(request):
 
