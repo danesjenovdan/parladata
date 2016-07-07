@@ -17,6 +17,7 @@ urlpatterns = patterns('',
     url(r'^getVotes/(?P<date_>[\w].+)', getVotes),
     url(r'^getVotes/', getVotes),
 
+    url(r'^getSpeeches/(?P<person_id>\d+)/(?P<date_>[\w].+)',getSpeeches),
     url(r'^getSpeeches/(?P<person_id>\d+)',getSpeeches),
     url(r'^getMembersOfPGs/',getMembersOfPGs),
     url(r'^getCoalitionPGs/',getCoalitionPGs),
@@ -41,7 +42,8 @@ urlpatterns = patterns('',
     url(r'^getTaggedVotes/(?P<person_id>\d+)', getTaggedVotes),
     url(r'^getMembersOfPGsOnDate/(?P<date>[\w].+)',getMembersOfPGsOnDate),
     url(r'^getMembersOfPGsRanges/(?P<date>[\w].+)',getMembersOfPGsRanges),
-    url(r'^getMembershipsOfMember/(?P<person_id>\d+)/(?P<date>[\w].+|)',getMembershipsOfMember)
+    url(r'^getMembershipsOfMember/(?P<person_id>\d+)/(?P<date>[\w].+|)',getMembershipsOfMember),
+    url(r'^getAllTimeMemberships',getAllTimeMemberships)
 
 
 )
