@@ -179,13 +179,16 @@ def getVotes(request, date_=None):
     return JsonResponse(getVotesDict(date_))
 
 #return speech by id
-def getSpeeches(request, person_id):
-
+def getSpeeches(request, person_id, date_):
+    if date_:
+        fdate = datetime.strptime(date_, settings.API_DATE_FORMAT).date()
+    else:
+        fdate=datetime.now().date()
     speaker_list = Person.objects.filter(id=person_id)
     if len(speaker_list) > 0:
         speaker = speaker_list[0]
 
-	speeches_queryset = Speech.objects.filter(speaker=speaker)
+    speeches_queryset = Speech.objects.filter(speaker=speaker, start_time__lte=fdate)
 
     speeches = [{'content': speech.content, 'speech_id': speech.id} for speech in speeches_queryset]
 
@@ -529,3 +532,11 @@ def getMembershipsOfMember(request, person_id, date=None):
         out_init_dict[mem.organization.classification].append({"org_type": mem.organization.classification, "org_id": mem.organization.id, "name": mem.organization.name})
     return JsonResponse(out_init_dict)
     #return JsonResponse({"org_type": mem.organization.classification, "org_id": mem.organization.id, "name": mem.organization.name} for mem in memberships], safe=False)
+
+
+def getAllTimeMemberships(request):
+    parliamentary_group = Organization.objects.filter(Q(classification="poslanska skupina") | Q(classification="nepovezani poslanec"))
+    members = Membership.objects.filter(organization__in=parliamentary_group)
+    return JsonResponse([{"start_time": member.start_time,
+                          "end_time": member.end_time,
+                          "id": member.person.id,} for member in members], safe=False)
