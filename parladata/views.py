@@ -3,7 +3,7 @@
 from django.shortcuts import render
 from django.http import JsonResponse, HttpResponse
 from django.core import serializers
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from parladata.models import *
 from django.db.models import Q
 from django.forms.models import model_to_dict
@@ -243,18 +243,36 @@ def getNumberOfAllMPAttendedSessions(request, date_):
         votesOnS = list(set(Ballot.objects.filter(Q(option="kvorum")|Q(option="proti")|Q(option="za"), voter__id=member.id, vote__start_time__lte=fdate).values_list("vote__session",flat=True)))
         allOfHimV = list(set(Ballot.objects.filter(voter__id=member.id, vote__start_time__lte=fdate).values_list("vote",flat=True)))
         votesOnV = list(set(Ballot.objects.filter(Q(option="kvorum")|Q(option="proti")|Q(option="za"), voter__id=member.id, vote__start_time__lte=fdate).values_list("vote",flat=True)))
-        data["sessions"][member.id] = float(len(votesOnS))/float(len(allOfHimS))*100
-        data["votes"][member.id] = float(len(votesOnV))/float(len(allOfHimV))*100
+        try:
+            data["sessions"][member.id] = float(len(votesOnS))/float(len(allOfHimS))*100
+            data["votes"][member.id] = float(len(votesOnV))/float(len(allOfHimV))*100
+        except:
+            print member.id, " has not votes in this day"
     return JsonResponse(data)
 
 
 
 #return all speeches of all MP
-def getSpeechesOfMP(request, person_id):
-    content = {}
-    for i in getMPObjects():
-        content[i.id] = list(Speech.objects.filter(speaker__id = i.id).values_list('content', flat=True))
-    return JsonResponse(content[int(person_id)], safe=False)
+def getSpeechesOfMP(request, person_id, date_=None):
+    if date_:
+        fdate = datetime.strptime(date_, settings.API_DATE_FORMAT).date()
+    else:
+        fdate = datetime.now().date()
+    content = list(Speech.objects.filter(speaker__id = person_id, start_time__lte=fdate).values_list('content', flat=True))
+    return JsonResponse(content, safe=False)
+
+
+#return all speeches of all MP
+def getSpeechesOfMPbyDate(request, person_id, date_=None):
+    if date_:
+        fdate = datetime.strptime(date_, settings.API_DATE_FORMAT).date()
+    else:
+        fdate = datetime.now().date()
+
+    dates=Speech.objects.filter(speaker__id = person_id, start_time__lte=fdate).order_by("start_time").dates("start_time", "day")
+    content = [{"date":date.strftime(settings.API_DATE_FORMAT), "speeches": [speech.content for speech in Speech.objects.filter(Q(start_time__gte=date)|Q(start_time__lte=date+timedelta(days=1)), speaker__id = person_id)]} for date in dates]
+    return JsonResponse(content, safe=False)
+
 
 def getAllSpeeches(request):
 
