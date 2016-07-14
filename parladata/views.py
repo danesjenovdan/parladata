@@ -339,7 +339,7 @@ def getAllPGsExt(request):
 
 def getAllOrganizations(requests):
     org = Organization.objects.all()
-    data = {pg.id:{'name':pg.name,'classification':pg.classification} for pg in org}
+    data = {pg.id:{'name':pg.name,'classification':pg.classification, 'acronym': pg.acronym} for pg in org}
     return JsonResponse(data)
 
 
