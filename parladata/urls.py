@@ -14,6 +14,7 @@ urlpatterns = patterns('',
     url(r'^getSpeechesOfMP/(?P<person_id>\d+)/(?P<date_>[\w].+)', getSpeechesOfMP),
     url(r'^getSpeechesOfMP/(?P<person_id>\d+)', getSpeechesOfMP),
     url(r'^getSpeechesOfMPbyDate/(?P<person_id>\d+)/(?P<date_>[\w].+)', getSpeechesOfMPbyDate),
+    url(r'^getAllSpeeches/(?P<date_>[\w].+)', getAllSpeeches),
     url(r'^getAllSpeeches', getAllSpeeches),
 
     url(r'^getVotes/(?P<date_>[\w].+)', getVotes),
@@ -38,7 +39,10 @@ urlpatterns = patterns('',
     url(r'^motionOfSession/(?P<id_se>\d+)',motionOfSession),
     url(r'^getVotesOfMotion/(?P<motion_id>\d+)',getVotesOfMotion),
     url(r'^getVotesOfSession/(?P<id_se>\d+)',getVotesOfSession),
+
+    url(r'^getNumberOfPersonsSessions/(?P<person_id>\d+)/(?P<date_>[\w].+)', getNumberOfPersonsSessions),
     url(r'^getNumberOfPersonsSessions/(?P<person_id>\d+)', getNumberOfPersonsSessions),
+    
     url(r'^getNumberOfFormalSpeeches/(?P<person_id>\d+)', getNumberOfFormalSpeeches),
     url(r'^getExtendedSpeechesOfMP/(?P<person_id>\d+)', getExtendedSpeechesOfMP),
     url(r'^getTaggedVotes/(?P<person_id>\d+)', getTaggedVotes),
