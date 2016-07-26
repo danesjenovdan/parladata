@@ -179,7 +179,7 @@ def getVotes(request, date_=None):
     return JsonResponse(getVotesDict(date_))
 
 #return speech by id
-def getSpeeches(request, person_id, date_):
+def getSpeeches(request, person_id, date_=None):
     if date_:
         fdate = datetime.strptime(date_, settings.API_DATE_FORMAT).date()
     else:
@@ -274,9 +274,13 @@ def getSpeechesOfMPbyDate(request, person_id, date_=None):
     return JsonResponse(content, safe=False)
 
 
-def getAllSpeeches(request):
+def getAllSpeeches(request, date_=None):
+    if date_:
+        fdate = datetime.strptime(date_, settings.API_DATE_FORMAT).date()
+    else:
+        fdate=datetime.now().date()
 
-    speeches_queryset = Speech.objects.all()
+    speeches_queryset = Speech.objects.filter(start_time__lte=fdate)
 
     speeches = [{'content': speech.content, 'speech_id': speech.id, 'speaker':speech.speaker.id, 'session_name':speech.session.name, 'session_id':speech.session.id,} for speech in speeches_queryset]
 
@@ -343,10 +347,14 @@ def getAllOrganizations(requests):
     return JsonResponse(data)
 
 
-def getAllSpeeches(requests):
+def getAllSpeeches(requests, date_=None):
+    if date_:
+        fdate = datetime.strptime(date_, settings.API_DATE_FORMAT).date()
+    else:
+        fdate=datetime.now().date()
     data = []
 
-    speeches=Speech.objects.all()
+    speeches=Speech.objects.filter(start_time__lte=fdate)
     for speech in speeches:
         data.append(model_to_dict(speech, fields=[field.name for field in speech._meta.fields], exclude=[]))
 
@@ -427,7 +435,11 @@ def getVotesOfMotion(request, motion_id):
     return JsonResponse(data,safe = False)
 
 
-def getNumberOfPersonsSessions(request, person_id):
+def getNumberOfPersonsSessions(request, person_id, date_=None):
+    if date_:
+        fdate = datetime.strptime(date_, settings.API_DATE_FORMAT).date()
+    else:
+        fdate = datetime.now().date()
 
     person = Person.objects.filter(id=person_id)
 
@@ -436,8 +448,8 @@ def getNumberOfPersonsSessions(request, person_id):
 
     else:
         person = person[0]
-        sessions_with_vote = list(set([ballot.vote.session for ballot in person.ballot_set.all()]))
-        sessions_with_speech = list(set([speech.session for speech in person.speech_set.all()]))
+        sessions_with_vote = list(set([ballot.vote.session for ballot in person.ballot_set.filter(vote__start_time__lte=fdate)]))
+        sessions_with_speech = list(set([speech.session for speech in person.speech_set.filter(start_time__lte=fdate)]))
 
         sessions = set(sessions_with_vote + sessions_with_speech)
 
