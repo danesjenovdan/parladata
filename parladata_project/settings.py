@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/1.8/ref/settings/
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 import os
 import raven
+from datetime import datetime
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -44,10 +45,12 @@ INSTALLED_APPS = (
     'parladata',
     'django_extensions',
     'raven.contrib.django.raven_compat',
+    'corsheaders',
 )
 
 MIDDLEWARE_CLASSES = (
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -104,7 +107,7 @@ USE_I18N = True
 
 USE_L10N = True
 
-USE_TZ = True
+USE_TZ = False
 
 
 # Static files (CSS, JavaScript, Images)
@@ -121,3 +124,8 @@ RAVEN_CONFIG = {
 }
 
 API_DATE_FORMAT = '%d.%m.%Y'
+
+MANDATE_START_TIME = datetime(day=31, month=7, year=2014)
+
+# CORS config
+CORS_ORIGIN_ALLOW_ALL = True
