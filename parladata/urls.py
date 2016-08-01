@@ -8,7 +8,10 @@ urlpatterns = patterns('',
 
     url(r'^getMPStatic/(?P<person_id>\d+)/(?P<date_>[\w].+)', getMPStatic),
     url(r'^getMPStatic/(?P<person_id>\d+)', getMPStatic),
+    url(r'^getSessions/(?P<date_>[\w].+)', getSessions),
     url(r'^getSessions/', getSessions),
+    url(r'^getSessionsOfOrg/(?P<org_id>\d+)/(?P<date_>[\w].+)', getSessionsOfOrg),
+    url(r'^getSessionsOfOrg/(?P<org_id>\d+)', getSessionsOfOrg),
     url(r'^getNumberOfMPAttendedSessions/(?P<person_id>\d+)', getNumberOfMPAttendedSessions),
     url(r'^getNumberOfAllMPAttendedSessions/(?P<date_>[\w].+)', getNumberOfAllMPAttendedSessions),
     url(r'^getSpeechesOfMP/(?P<person_id>\d+)/(?P<date_>[\w].+)', getSpeechesOfMP),
@@ -49,7 +52,12 @@ urlpatterns = patterns('',
     url(r'^getMembersOfPGsOnDate/(?P<date>[\w].+)',getMembersOfPGsOnDate),
     url(r'^getMembersOfPGsRanges/(?P<date>[\w].+)',getMembersOfPGsRanges),
     url(r'^getMembershipsOfMember/(?P<person_id>\d+)/(?P<date>[\w].+|)',getMembershipsOfMember),
-    url(r'^getAllTimeMemberships',getAllTimeMemberships)
+    url(r'^getAllTimeMemberships',getAllTimeMemberships),
+    url(r'^getAllTimeMPs/(?P<date_>[\w].+)',getAllTimeMPs),
+    url(r'^getAllTimeMPs',getAllTimeMPs),
+    url(r'^getOrganizatonByClassification',getOrganizatonByClassification),
+    url(r'^getOrganizationRolesAndMembers/(?P<org_id>\d+)/(?P<date_>[\w].+)',getOrganizationRolesAndMembers),
+    url(r'^getOrganizationRolesAndMembers/(?P<org_id>\d+)',getOrganizationRolesAndMembers),
 
 
 )
