@@ -14,6 +14,7 @@ import requests
 from raven.contrib.django.raven_compat.models import client
 from collections import OrderedDict
 from django.conf import settings
+from django.utils.encoding import smart_str
 
 
 """return all ballots and speaches agregated by date
@@ -95,7 +96,7 @@ def getMPStatic(request, person_id, date_=None):
     else:
         fdate=datetime.now().date()
     data = dict()
-    for member in getMPObjects():
+    for member in getMPObjects(fdate):
         if str(member.id) == str(person_id):
 
             groups = [{'name': membership.organization.name, 'id': membership.organization.id, 'acronym': membership.organization.acronym} for membership in member.memberships.filter(Q(start_time__lte=fdate)|Q(start_time=None), Q(end_time__gte=fdate)|Q(end_time=None)) if membership.organization.classification == u'poslanska skupina']
@@ -618,7 +619,6 @@ def getOrganizatonByClassification(request):
                          "parliamentary_groups": [{"id": pg.id, "name": pg.name} for pg in parliamentaryGroups],
                          "council": [{"id": c.id, "name": c.name} for c in council]})
 
-from django.utils.encoding import smart_str
 
 def getOrganizationRolesAndMembers(request, org_id, date_=None):
     if date_:

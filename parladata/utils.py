@@ -162,3 +162,41 @@ def checkNumberOfMembers():
             g = requests.get("https://data.parlameter.si/v1/getMembersOfPGsAtDate/"+d.strftime(settings.API_DATE_FORMAT)).json()
             csvwriter.writerow([d.strftime(settings.API_DATE_FORMAT), str(sum([len(g[g_]) for g_ in g]))])
             d=d+day
+
+
+def checkNumberOfMembers1():
+    import csv
+    with open('members_on_day.csv', 'wb') as csvfile:
+        csvwriter = csv.writer(csvfile, delimiter=',',
+                                quotechar='|', quoting=csv.QUOTE_MINIMAL)
+
+        r = requests.get("http://localhost:8000/v1/getMembersOfPGsRanges/05.05.2016").json()
+        for g in r:
+            csvwriter.writerow([g["start_date"], str(sum([len(g["members"][g_]) for g_ in g["members"]]))])
+
+
+#function for finding MPs membersihp date issues
+def getFails():
+    parliamentary_group = Organization.objects.filter(Q(classification="poslanska skupina") | Q(classification="nepovezani poslanec"))
+    members = Membership.objects.filter(organization__in=parliamentary_group)
+    members = members.filter()
+    start = Vote.objects.all().order_by("start_time")[0].start_time
+    out = {}
+    for member in members:
+        if member.start_time==None and member.end_time==None:
+            votes=Vote.objects.filter(Q(start_time__gte=start)|Q(end_time__lte=datetime.now()))
+        elif member.start_time==None and member.end_time!=None:
+            votes=Vote.objects.filter(Q(start_time__gte=start)|Q(end_time__lte=member.end_time))
+        elif member.start_time!=None and member.end_time!=None:
+            votes=Vote.objects.filter(Q(start_time__gte=member.start_time)|Q(end_time__lte=member.end_time))
+        elif member.start_time!=None and member.end_time==None:
+            votes=Vote.objects.filter(Q(start_time__gte=member.start_time)|Q(end_time__lte=datetime.now()))
+        for vote in votes:
+            if not Ballot.objects.filter(voter=member.person, vote=vote):
+                if member.person.id in out.keys():
+                    out[member.person.id].append(vote.start_time)
+                else:
+                    out[member.person.id]= [vote.start_time]
+    print out
+
+
