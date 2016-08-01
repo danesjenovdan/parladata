@@ -444,7 +444,7 @@ def motionOfSession(request, id_se):
             data = []
         return JsonResponse(data, safe=False)
     else:
-        return JsonResponse("No session with this ID", safe=False)
+        return JsonResponse([], safe=False)
 
 def getVotesOfSession(request, id_se):
     votes = Vote.objects.filter(motion__session__id = str(id_se))
