@@ -153,15 +153,20 @@ def getMPStatic(request, person_id, date_=None):
                 'groups': [{'name': group['name'], 'id': group['id']} for group in groups[1:]],
                 'name': member.name,
                 'social': social_output,
-                'gov_id': member.gov_id
+                'gov_id': member.gov_id,
+                'gender': "m" if member.gender == "male" else "f"
             }
 
     return JsonResponse(data)
 
 #return all Sessions
-def getSessions(request):
+def getSessions(request, date_=None):
+    if date_:
+        fdate = datetime.strptime(date_, settings.API_DATE_FORMAT).date()
+    else:
+        fdate=datetime.now().date()
     data = []
-    sessions = Session.objects.all().order_by('-start_time')
+    sessions = Session.objects.filter(start_time__lte=fdate).order_by('-start_time')
     for i in sessions:
         data.append({'mandate': i.mandate,
                      'name': i.name,
@@ -169,6 +174,28 @@ def getSessions(request):
                      'start_time': i.start_time,
                      'end_time': i.end_time,
                      'organization': i.organization.name,
+                     'organization_id': i.organization.id,
+                     'classification': i.classification,
+                     'id': i.id
+                    })
+    return JsonResponse(data, safe=False)
+
+
+def getSessionsOfOrg(request, org_id, date_=None):
+    if date_:
+        fdate = datetime.strptime(date_, settings.API_DATE_FORMAT).date()
+    else:
+        fdate=datetime.now().date()
+    data = []
+    sessions = Session.objects.filter(organization__id=org_id, start_time__lte=fdate).order_by('-start_time')
+    for i in sessions:
+        data.append({'mandate': i.mandate,
+                     'name': i.name,
+                     'gov_id': i.gov_id,
+                     'start_time': i.start_time,
+                     'end_time': i.end_time,
+                     'organization': i.organization.name,
+                     'organization_id': i.organization.id,
                      'classification': i.classification,
                      'id': i.id
                     })
@@ -570,3 +597,44 @@ def getAllTimeMemberships(request):
     return JsonResponse([{"start_time": member.start_time,
                           "end_time": member.end_time,
                           "id": member.person.id,} for member in members], safe=False)
+
+
+def getAllTimeMPs(request, date_=None):
+    if date_:
+        fdate = datetime.strptime(date_, settings.API_DATE_FORMAT).date()
+    else:
+        fdate=datetime.now().today()
+    parliamentary_group = Organization.objects.filter(Q(classification="poslanska skupina") | Q(classification="nepovezani poslanec"))
+    members = Membership.objects.filter(Q(start_time__lte=fdate)|Q(start_time=None), organization__in=parliamentary_group)
+    return JsonResponse([{'id': i.person.id, 'name':i.person.name,'membership':i.organization.name, 'acronym':i.organization.acronym,'classification':i.person.classification,'family_name':i.person.family_name,'given_name':i.person.given_name,'additional_name':i.additional_name,'honorific_prefix':i.honorific_prefix,'honorific_suffix':i.honorific_suffix,'patronymic_name':i.patronymic_name,'sort_name':i.sort_name,'email':i.email,'gender':i.gender,'birth_date':str(i.birth_date),'death_date':str(i.death_date),'summary':i.summary,'biography':i.biography,'image':i.image,'district':'','gov_url':i.gov_url.url,'gov_id':i.gov_id,'gov_picture_url':i.gov_picture_url,'voters':i.voters,'active':i.active,'party_id':i[0].organization.id} for i in members], safe=False)
+
+
+def getOrganizatonByClassification(request):
+    workingBodies = Organization.objects.filter(classification__in=["odbor", "komisija", "preiskovalna komisija"])
+    parliamentaryGroups = Organization.objects.filter(classification__in=["poslanska skupina", "nepovezani poslanec"])
+    council = Organization.objects.filter(classification="kolegij")
+
+    return JsonResponse({"working_bodies": [{"id": wb.id, "name": wb.name} for wb in workingBodies],
+                         "parliamentary_groups": [{"id": pg.id, "name": pg.name} for pg in parliamentaryGroups],
+                         "council": [{"id": c.id, "name": c.name} for c in council]})
+
+from django.utils.encoding import smart_str
+
+def getOrganizationRolesAndMembers(request, org_id, date_=None):
+    if date_:
+        fdate = datetime.strptime(date_, settings.API_DATE_FORMAT).date()
+    else:
+        fdate=datetime.now().today()
+    org = Organization.objects.filter(id=org_id)
+    out = {}
+    trans_map = {"predsednik": "president", "predsednica": "president", smart_str("član"): "members", smart_str("članica"): "members", "podpredsednica": "vice_president", "podpredsednik": "vice_president"}
+    if org:
+        out = {"members":[], "president":[], "vice_president":[]}
+        out["name"]=org[0].name
+        memberships = Membership.objects.filter(Q(start_time__lte=fdate)|Q(start_time=None), Q(end_time__gte=fdate)|Q(end_time=None), organization_id=org_id)
+        #out = {trans_map[mem_type.encode("utf-8")]: [] for mem_type in set(list(memberships.values_list("role", flat=True)))}
+        for member in memberships:
+
+            out[trans_map[smart_str(member.role)]].append(member.person.id)
+
+    return JsonResponse(out)
