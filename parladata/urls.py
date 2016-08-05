@@ -59,5 +59,7 @@ urlpatterns = patterns('',
     url(r'^getOrganizationRolesAndMembers/(?P<org_id>\d+)/(?P<date_>[\w].+)',getOrganizationRolesAndMembers),
     url(r'^getOrganizationRolesAndMembers/(?P<org_id>\d+)',getOrganizationRolesAndMembers),
 
+    url(r'^getTags',getTags),
+
 
 )

@@ -15,6 +15,7 @@ from raven.contrib.django.raven_compat.models import client
 from collections import OrderedDict
 from django.conf import settings
 from django.utils.encoding import smart_str
+from taggit.models import Tag
 
 
 """return all ballots and speaches agregated by date
@@ -438,7 +439,7 @@ def motionOfSession(request, id_se):
     if int(id_se) in tab:
         motion = Vote.objects.filter(motion__session__id = id_se)
         if motion:
-            data = [{'id':mot.motion.id, 'vote_id': mot.id, 'text':mot.motion.text,'result':mot.result} for mot in motion]
+            data = [{'id':mot.motion.id, 'vote_id': mot.id, 'text':mot.motion.text,'result':mot.result, 'tags': map(smart_str, mot.tags.names())} for mot in motion]
         else:
             #data = "This session has no motion."
             data = []
@@ -638,3 +639,8 @@ def getOrganizationRolesAndMembers(request, org_id, date_=None):
             out[trans_map[smart_str(member.role)]].append(member.person.id)
 
     return JsonResponse(out)
+
+
+def getTags(request):
+    out = [tag for tag in Tag.objects.all().exclude(id__in=[1,2,3,4,5,8,9]).values_list("name", flat=True)]
+    return JsonResponse(out, safe=False)
