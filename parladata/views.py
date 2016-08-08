@@ -240,8 +240,11 @@ PG = Parlamentary group
 
 return list of member's id for each PG, on specific date
 '''
-def getMembersOfPGsOnDate(request, date):
-    fdate = datetime.strptime(date, settings.API_DATE_FORMAT).date()
+def getMembersOfPGsOnDate(request, date_=None):
+    if date_:
+        fdate = datetime.strptime(date_, settings.API_DATE_FORMAT).date()
+    else:
+        fdate = datetime.now().date()
     parliamentary_group = Organization.objects.filter(Q(classification="poslanska skupina") | Q(classification="nepovezani poslanec"))
     members = Membership.objects.filter(Q(end_time__gte=fdate) | Q(end_time=None), Q(start_time__lte=fdate)|Q(start_time=None), organization__in=parliamentary_group)
     data = {pg.id:[member.person.id for member in members.filter(organization=pg)] for pg in parliamentary_group}
@@ -535,9 +538,12 @@ def getTaggedVotes(request, person_id):
     return JsonResponse(ballots_out, safe=False)
 
 
-def getMembersOfPGsRanges(request, date):
-    fdate = datetime.strptime(date, settings.API_DATE_FORMAT)
-    tempDate=settings.MANDATE_START_TIME
+def getMembersOfPGsRanges(request, date_=None):
+    if date_:
+        fdate = datetime.strptime(date_, settings.API_DATE_FORMAT).date()
+    else:
+        fdate = datetime.now().date()
+    tempDate=settings.MANDATE_START_TIME.date()
     parliamentary_group = Organization.objects.filter(Q(classification="poslanska skupina") | Q(classification="nepovezani poslanec"))
     members = Membership.objects.filter(organization__in=parliamentary_group)
     out = {(tempDate+timedelta(days=xday)): {grup: [] for grup in parliamentary_group.values_list("id", flat=True)} for xday in range((fdate-tempDate).days+1)}
@@ -546,15 +552,15 @@ def getMembersOfPGsRanges(request, date):
             start_time = tempDate
             end_time = fdate
         elif member.start_time and not member.end_time:
-            if member.start_time < tempDate:
+            if member.start_time.date() < tempDate:
                 start_time = tempDate
             else:
-                start_time = member.start_time
+                start_time = member.start_time.date()
             end_time = fdate
         else:
-            start_time = member.start_time
-            if fdate > member.end_time:
-                end_time = member.end_time
+            start_time = member.start_time.date()
+            if fdate > member.end_time.date():
+                end_time = member.end_time.date()
             else:
                 end_time = fdate
         for xday in range((end_time-start_time).days+1):
@@ -572,6 +578,50 @@ def getMembersOfPGsRanges(request, date):
             outList.append({"start_date":key.strftime(settings.API_DATE_FORMAT),
                             "end_date":key.strftime(settings.API_DATE_FORMAT),
                             "members":out[key]})
+
+
+    return JsonResponse(outList, safe=False)
+
+
+def getMembersOfPGRanges(request, org_id, date_=None):
+    if date_:
+        fdate = datetime.strptime(date_, settings.API_DATE_FORMAT).date()
+    else:
+        fdate = datetime.now().date()
+    tempDate=settings.MANDATE_START_TIME.date()
+    members = Membership.objects.filter(organization__id=org_id)
+    out = {(tempDate+timedelta(days=xday)): {int(org_id): []} for xday in range((fdate-tempDate).days+1)}
+    for member in members:
+        if not member.start_time and not member.end_time:
+            start_time = tempDate
+            end_time = fdate
+        elif member.start_time and not member.end_time:
+            if member.start_time.date() < tempDate:
+                start_time = tempDate
+            else:
+                start_time = member.start_time.date()
+            end_time = fdate
+        else:
+            start_time = member.start_time.date()
+            if fdate > member.end_time.date():
+                end_time = member.end_time.date()
+            else:
+                end_time = fdate
+        for xday in range((end_time-start_time).days+1):
+            out[(start_time+timedelta(days=xday))][member.organization.id].append(member.person.id)
+
+    keys = out.keys()
+    keys.sort()
+    outList = [{"start_date":keys[0].strftime(settings.API_DATE_FORMAT),
+                "end_date":keys[0].strftime(settings.API_DATE_FORMAT),
+                "members":out[keys[0]][int(org_id)]}]
+    for key in keys:
+        if out[key][int(org_id)]==outList[-1]["members"]:
+            outList[-1]["end_date"]=key.strftime(settings.API_DATE_FORMAT)
+        else:
+            outList.append({"start_date":key.strftime(settings.API_DATE_FORMAT),
+                            "end_date":key.strftime(settings.API_DATE_FORMAT),
+                            "members":out[key][int(org_id)]})
 
 
     return JsonResponse(outList, safe=False)
