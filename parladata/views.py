@@ -16,6 +16,7 @@ from collections import OrderedDict
 from django.conf import settings
 from django.utils.encoding import smart_str
 from taggit.models import Tag
+from django.shortcuts import get_object_or_404
 
 
 """return all ballots and speaches agregated by date
@@ -218,6 +219,21 @@ def getSpeeches(request, person_id, date_=None):
         speaker = speaker_list[0]
 
     speeches_queryset = Speech.objects.filter(speaker=speaker, start_time__lte=fdate)
+
+    speeches = [{'content': speech.content, 'speech_id': speech.id} for speech in speeches_queryset]
+
+    return JsonResponse(speeches, safe=False)
+
+
+#return speech by id
+def getSpeechesInRange(request, person_id, date_from, date_to):
+    
+    fdate = datetime.strptime(date_from, settings.API_DATE_FORMAT).date()
+    tdate = datetime.strptime(date_to, settings.API_DATE_FORMAT).date()
+
+    speaker = get_object_or_404(Person, id=person_id)
+
+    speeches_queryset = Speech.objects.filter(speaker=speaker, start_time__lte=tdate, start_time__gte=fdate)
 
     speeches = [{'content': speech.content, 'speech_id': speech.id} for speech in speeches_queryset]
 
