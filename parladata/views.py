@@ -362,31 +362,46 @@ def getBasicInfOfPG(request, pg_id, date_):
     data = dict()
     listOfVotes = []
     parliamentary_group = Organization.objects.filter(classification="poslanska skupina", id=int(pg_id), updated_at__lte=fdate)
-    members = Membership.objects.filter(organization__in=parliamentary_group, start_time__lte=fdate)
-    if Membership.objects.filter(role="vodja", organization__in=parliamentary_group, start_time__lte=fdate)[0]:
-        headOfPG = Membership.objects.filter(role="vodja", organization__in=parliamentary_group, start_time__lte=fdate)[0].person.id
+    members = Membership.objects.filter(organization__in=parliamentary_group, start_time__lte=fdate, end_time__gte=fdate)
+    if len(Membership.objects.filter(label="p", organization__in=parliamentary_group, start_time__lte=fdate, end_time__gte=fdate)) > 0:
+        headOfPG = Membership.objects.filter(label="p", organization__in=parliamentary_group, start_time__lte=fdate, end_time__gte=fdate)[0].person.id
     else:
         headOfPG = None
 
-    #if Membership.objects.filter(role="namestnik", organization__in=parliamentary_group, start_time__lte=fdate)[0]:
-    #    viceOfPG = Membership.objects.filter(role="namestnik", organization__in=parliamentary_group, start_time__lte=fdate)[0].person.id
-    #else:
-    viceOfPG = None
+    if len(Membership.objects.filter(label="podp", organization__in=parliamentary_group, start_time__lte=fdate, end_time__gte=fdate)) > 0:
+        viceOfPG = Membership.objects.filter(label="podp", organization__in=parliamentary_group, start_time__lte=fdate, end_time__gte=fdate)[0].person.id
+    else:
+        viceOfPG = None
+    
     numberOfSeats = len(members)
 
-    FB = Link.objects.filter(organization = parliamentary_group, note = 'facebook')
-    mail  = Link.objects.filter(organization = parliamentary_group, note = 'mail')
-    twitter = Link.objects.filter(organization = parliamentary_group, note = 'twitter')
-
+    for a in members:
+        if a.person.voters != None:
+            listOfVotes.append(a.person.voters)
+        else:
+            listOfVotes.append(0)
+    allVoters = sum(listOfVotes)
+    if len(Link.objects.filter(organization = parliamentary_group, note = 'facebook')) > 0:
+        FB = Link.objects.filter(organization = parliamentary_group, note = 'facebook')
+    else:
+        FB = None
+    if  len(Link.objects.filter(organization = parliamentary_group, note = 'mail')) > 0:
+        mail = Link.objects.filter(organization = parliamentary_group, note = 'facebook')
+    else:
+        mail = None
+    if len(Link.objects.filter(organization = parliamentary_group, note = 'twitter')) > 0:
+        twitter = Link.objects.filter(organization = parliamentary_group, note = 'twitter')
+    else:
+        twitter = None
     data = {
     "HeadOfPG":headOfPG,
     "ViceOfPG":viceOfPG,
     "NumberOfSeats":numberOfSeats,
+    "AllVoters":allVoters,
     "Mail":mail,
     "Facebook":FB,
     "Twitter":twitter
     }
-    
     return JsonResponse(data, safe=False)
 
 def getAllPGs(request):
