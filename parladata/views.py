@@ -426,13 +426,13 @@ def getAllVotes(requests, date_):
     return JsonResponse(data, safe=False)
 
 
-def getAllBallots(requests):
-    data = []
+def getAllBallots(requests, date_=None):
+    if date_:
+        fdate = datetime.strptime(date_, settings.API_DATE_FORMAT).date()
+    else:
+        fdate = datetime.now().date()
 
-    ballots = Ballot.objects.all()
-    for ballot in ballots:
-        data.append(model_to_dict(ballot, fields=['id', 'vote', 'voter', 'option'], exclude=[]))
-
+    data = [model_to_dict(ballot, fields=['id', 'vote', 'voter', 'option'], exclude=[]) for ballot in Ballot.objects.filter(vote__start_time__lte=fdate)]
     return JsonResponse(data, safe=False)
 
 
