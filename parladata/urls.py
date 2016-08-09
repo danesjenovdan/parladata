@@ -32,6 +32,8 @@ urlpatterns = patterns('',
     url(r'^getCoalitionPGs/',getCoalitionPGs),
     url(r'^getMPParty/(?P<person_id>\d+)', getMPParty),
     url(r'^getNumberOfSeatsOfPG/(?P<pg_id>\d+)',getNumberOfSeatsOfPG),
+    
+    url(r'^getBasicInfOfPG/(?P<pg_id>\d+)/(?P<date_>[\w].+)',getBasicInfOfPG),
     url(r'^getBasicInfOfPG/(?P<pg_id>\d+)',getBasicInfOfPG),
     url(r'^getAllPGs/',getAllPGs),
     url(r'^getAllPGsExt/',getAllPGsExt),

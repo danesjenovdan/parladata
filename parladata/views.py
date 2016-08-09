@@ -354,29 +354,39 @@ def getNumberOfSeatsOfPG(request, pg_id):
 
 
 #return basic info of parlament group
-def getBasicInfOfPG(request, pg_id):
+def getBasicInfOfPG(request, pg_id, date_):
+    if date_:
+        fdate = datetime.strptime(date_, settings.API_DATE_FORMAT).date()
+    else:
+        fdate=datetime.now().date()
     data = dict()
     listOfVotes = []
-    parliamentary_group = Organization.objects.filter(classification="poslanska skupina", id=int(pg_id))
-    members = Membership.objects.filter(organization__in=parliamentary_group)
-    headOfPG = Membership.objects.filter(role="vodja", organization__in=parliamentary_group)[0].person.id
-    #viceOfPG = Membership.objects.filter(role="namestnik", organization__in=parliamentary_group)[0].person.name
+    parliamentary_group = Organization.objects.filter(classification="poslanska skupina", id=int(pg_id), updated_at__lte=fdate)
+    members = Membership.objects.filter(organization__in=parliamentary_group, start_time__lte=fdate)
+    if Membership.objects.filter(role="vodja", organization__in=parliamentary_group, start_time__lte=fdate)[0]:
+        headOfPG = Membership.objects.filter(role="vodja", organization__in=parliamentary_group, start_time__lte=fdate)[0].person.id
+    else:
+        headOfPG = None
+
+    #if Membership.objects.filter(role="namestnik", organization__in=parliamentary_group, start_time__lte=fdate)[0]:
+    #    viceOfPG = Membership.objects.filter(role="namestnik", organization__in=parliamentary_group, start_time__lte=fdate)[0].person.id
+    #else:
+    viceOfPG = None
     numberOfSeats = len(members)
-    for a in members:
-        listOfVotes.append(a.person.voters)
-    #allVoters = sum(listOfVotes)
+
     FB = Link.objects.filter(organization = parliamentary_group, note = 'facebook')
     mail  = Link.objects.filter(organization = parliamentary_group, note = 'mail')
     twitter = Link.objects.filter(organization = parliamentary_group, note = 'twitter')
+
     data = {
     "HeadOfPG":headOfPG,
-    #"ViceOfPG":viceOfPG,
+    "ViceOfPG":viceOfPG,
     "NumberOfSeats":numberOfSeats,
-    #"AllVoters":allVoters,
-    #"Mail":mail,
-    #"Facebook":FB,
-    #"Twitter":twitter
+    "Mail":mail,
+    "Facebook":FB,
+    "Twitter":twitter
     }
+    
     return JsonResponse(data, safe=False)
 
 def getAllPGs(request):
