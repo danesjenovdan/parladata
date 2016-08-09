@@ -37,6 +37,8 @@ urlpatterns = patterns('',
     url(r'^getAllPGsExt/',getAllPGsExt),
     url(r'^getAllOrganizations/',getAllOrganizations),
     url(r'^getAllPeople/',getAllPeople),
+
+    url(r'^getAllBallots/(?P<date_>[\w].+)',getAllBallots),
     url(r'^getAllBallots/',getAllBallots),
 
     url(r'^getAllVotes/(?P<date_>[\w].+)',getAllVotes),
