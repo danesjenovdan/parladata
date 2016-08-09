@@ -340,17 +340,18 @@ def getBasicInfOfPG(request, pg_id, date_):
         fdate = datetime.strptime(date_, settings.API_DATE_FORMAT).date()
     else:
         fdate=datetime.now().date()
+
     data = dict()
     listOfVotes = []
-    parliamentary_group = Organization.objects.filter(classification="poslanska skupina", id=int(pg_id), updated_at__lte=fdate)
-    members = Membership.objects.filter(organization__in=parliamentary_group, start_time__lte=fdate, end_time__gte=fdate)
-    if len(Membership.objects.filter(label="p", organization__in=parliamentary_group, start_time__lte=fdate, end_time__gte=fdate)) > 0:
-        headOfPG = Membership.objects.filter(label="p", organization__in=parliamentary_group, start_time__lte=fdate, end_time__gte=fdate)[0].person.id
+    parliamentary_group = Organization.objects.filter(classification="poslanska skupina", id=pg_id, updated_at__lte=fdate)
+    members = Membership.objects.filter(Q(start_time__lte=fdate)|Q(start_time=None), Q(end_time__gte=fdate)|Q(end_time=None), organization__in=parliamentary_group)
+    if len(Membership.objects.filter(Q(start_time__lte=fdate)|Q(start_time=None), Q(end_time__gte=fdate)|Q(end_time=None), label="p", organization__in=parliamentary_group)) > 0:
+        headOfPG = Membership.objects.filter(Q(start_time__lte=fdate)|Q(start_time=None), Q(end_time__gte=fdate)|Q(end_time=None), label="p", organization__in=parliamentary_group)[0].person.id
     else:
         headOfPG = None
 
-    if len(Membership.objects.filter(label="podp", organization__in=parliamentary_group, start_time__lte=fdate, end_time__gte=fdate)) > 0:
-        viceOfPG = Membership.objects.filter(label="podp", organization__in=parliamentary_group, start_time__lte=fdate, end_time__gte=fdate)[0].person.id
+    if len(Membership.objects.filter(Q(start_time__lte=fdate)|Q(start_time=None), Q(end_time__gte=fdate)|Q(end_time=None), label="podp", organization__in=parliamentary_group)) > 0:
+        viceOfPG = Membership.objects.filter(Q(start_time__lte=fdate)|Q(start_time=None), Q(end_time__gte=fdate)|Q(end_time=None), label="podp", organization__in=parliamentary_group)[0].person.id
     else:
         viceOfPG = None
     
