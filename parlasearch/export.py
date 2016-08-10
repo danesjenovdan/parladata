@@ -15,7 +15,8 @@ def export():
             'session_i': speech.session.id,
             'org_i': speech.session.organization.id,
             'datetime_dt': speech.start_time.isoformat(),
-            'content_t': speech.content
+            'content_t': speech.content,
+            'tip_t': 'govor'
         }]
 
         if speech.party.classification == u'poslanska skupina':
