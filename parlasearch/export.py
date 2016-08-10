@@ -1,6 +1,6 @@
 import requests
 import json
-from parladata.models import Speech, Session
+from parladata.models import Person, Speech, Session
 
 def exportSpeeches():
 
@@ -57,7 +57,45 @@ def exportSessions():
             'org_i': session.organization.id,
             'datetime_dt': session.start_time.isoformat(),
             'content_t': getSessionContent(session),
+            'sklic_t': 'VII',
             'tip_t': 'seja'
+        }]
+
+        output = json.dumps(output)
+
+        if i%100 == 0:
+            r = requests.post('http://127.0.0.1:8983/solr/knedl/update?commit=true', data=output, headers={'Content-Type': 'application/json'})
+
+            print r.text
+
+        else:
+             r = requests.post('http://127.0.0.1:8983/solr/knedl/update', data=output, headers={'Content-Type': 'application/json'})
+
+        i = i + 1
+
+    return 1
+
+def getPersonContent(person):
+
+    megastring = u''
+
+    for speech in person.speech_set.all():
+        megastring = megastring + ' ' + speech.content
+
+    return megastring
+
+def exportPeopleSpeeches():
+
+    people = Person.objects.all()
+
+    i = 0
+
+    for person in people:
+        output = [{
+            'id': 'p' + str(person.id),
+            'content_t': getPersonContent(person),
+            'sklic_t': 'VII',
+            'tip_t': 'poslanec'
         }]
 
         output = json.dumps(output)
