@@ -32,7 +32,7 @@ urlpatterns = patterns('',
     url(r'^getCoalitionPGs/',getCoalitionPGs),
     url(r'^getMPParty/(?P<person_id>\d+)', getMPParty),
     url(r'^getNumberOfSeatsOfPG/(?P<pg_id>\d+)',getNumberOfSeatsOfPG),
-    
+
     url(r'^getBasicInfOfPG/(?P<pg_id>\d+)/(?P<date_>[\w].+)',getBasicInfOfPG),
     url(r'^getBasicInfOfPG/(?P<pg_id>\d+)',getBasicInfOfPG),
     url(r'^getAllPGs/',getAllPGs),
@@ -52,7 +52,7 @@ urlpatterns = patterns('',
 
     url(r'^getNumberOfPersonsSessions/(?P<person_id>\d+)/(?P<date_>[\w].+)', getNumberOfPersonsSessions),
     url(r'^getNumberOfPersonsSessions/(?P<person_id>\d+)', getNumberOfPersonsSessions),
-    
+
     url(r'^getNumberOfFormalSpeeches/(?P<person_id>\d+)', getNumberOfFormalSpeeches),
     url(r'^getExtendedSpeechesOfMP/(?P<person_id>\d+)', getExtendedSpeechesOfMP),
     url(r'^getTaggedVotes/(?P<person_id>\d+)', getTaggedVotes),
@@ -75,5 +75,5 @@ urlpatterns = patterns('',
 
     url(r'^getTags',getTags),
 
-
+    url(r'^getSpeechData/(?P<speech_id>\d+)',getSpeechData),
 )

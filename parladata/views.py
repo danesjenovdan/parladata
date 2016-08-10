@@ -227,7 +227,7 @@ def getSpeeches(request, person_id, date_=None):
 
 #return speech by id
 def getSpeechesInRange(request, person_id, date_from, date_to):
-    
+
     fdate = datetime.strptime(date_from, settings.API_DATE_FORMAT).date()
     tdate = datetime.strptime(date_to, settings.API_DATE_FORMAT).date()
 
@@ -373,7 +373,7 @@ def getBasicInfOfPG(request, pg_id, date_):
         viceOfPG = Membership.objects.filter(Q(start_time__lte=fdate)|Q(start_time=None), Q(end_time__gte=fdate)|Q(end_time=None), label="podp", organization__in=parliamentary_group)[0].person.id
     else:
         viceOfPG = None
-    
+
     numberOfSeats = len(members)
 
     for a in members:
@@ -441,12 +441,12 @@ def getAllVotes(requests, date_):
 
     votes=Vote.objects.filter(start_time__lte=fdate).order_by("start_time")
     for vote in votes:
-        data.append({'id': vote.id, 
-                     'motion': vote.motion.text, 
-                     'party': vote.organization.id, 
-                     'session': vote.session.id, 
-                     'start_time': vote.start_time, 
-                     'end_time': vote.end_time, 
+        data.append({'id': vote.id,
+                     'motion': vote.motion.text,
+                     'party': vote.organization.id,
+                     'session': vote.session.id,
+                     'start_time': vote.start_time,
+                     'end_time': vote.end_time,
                      'result': vote.result})
 
     return JsonResponse(data, safe=False)
@@ -736,3 +736,20 @@ def getOrganizationRolesAndMembers(request, org_id, date_=None):
 def getTags(request):
     out = [tag for tag in Tag.objects.all().exclude(id__in=[1,2,3,4,5,8,9]).values_list("name", flat=True)]
     return JsonResponse(out, safe=False)
+
+def getSpeechData(request, speech_id):
+    speech = Speech.objects.filter(pk=speech_id)
+
+    if len(speech) > 0:
+        speech = speech[0]
+
+        output = {
+            'id': int(speech_id),
+            'date': speech.session.start_time.date(),
+            'speaker_id': speech.speaker.id,
+            'session_id': speech.session.id
+        }
+
+        return JsonResponse(output, safe=False)
+
+    return HttpResponse(-1)
