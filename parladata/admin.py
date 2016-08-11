@@ -1,8 +1,10 @@
 from django.contrib import admin
 from leaflet.admin import LeafletGeoAdmin
+from dal import autocomplete
 
 # Register your models here.
 from .models import *
+from forms import MembershipForm
 
 class OtherNamePersonInline(admin.TabularInline):
     model = OtherName
@@ -162,6 +164,7 @@ class PostAdmin(admin.ModelAdmin):
     ]
 
 class MembershipAdmin(admin.ModelAdmin):
+    form = MembershipForm
     inlines = [
         SourceMembershipInline,
         LinkMembershipInline,
@@ -201,3 +204,16 @@ admin.site.register(Vote, VoteAdmin)
 admin.site.register(Area, LeafletGeoAdmin)
 admin.site.register(Link)
 admin.site.register(Ballot)
+
+class PersonAutocomplete(autocomplete.Select2QuerySetView):
+    def get_queryset(self):
+        # Don't forget to filter out results depending on the visitor !
+        if not self.request.user.is_authenticated():
+            return Person.objects.none()
+
+        qs = Person.objects.all()
+
+        if self.q:
+            qs = qs.filter(name__istartswith=self.q)
+
+        return qs
