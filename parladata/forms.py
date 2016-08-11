@@ -9,5 +9,6 @@ class MembershipForm(forms.ModelForm):
         model = Membership
         fields = ('__all__')
         widgets = {
-            'person': autocomplete.ModelSelect2(url='person-autocomplete')
+            'person': autocomplete.ModelSelect2(url='person-autocomplete'),
+            'post': autocomplete.ModelSelect2(url='post-autocomplete'),
         }

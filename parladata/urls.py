@@ -1,12 +1,13 @@
 from django.conf.urls import patterns, include, url
 from parladata.views import *
 
-from parladata.admin import PersonAutocomplete
+from parladata.admin import PersonAutocomplete, PostAutocomplete
 
 urlpatterns = patterns('',
 
     #autocomplete urls
     url(r'^person-autocomplete/$', PersonAutocomplete.as_view(), name='person-autocomplete'),
+    url(r'^post-autocomplete/$', PostAutocomplete.as_view(), name='post-autocomplete'),
 
     url(r'^getActivity/(?P<person_id>\d+)', getActivity),
     url(r'^getMPs/(?P<date_>[\w].+)', getMPs),
