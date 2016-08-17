@@ -40,6 +40,8 @@ urlpatterns = patterns('',
     url(r'^getCoalitionPGs/',getCoalitionPGs),
     url(r'^getMPParty/(?P<person_id>\d+)', getMPParty),
     url(r'^getNumberOfSeatsOfPG/(?P<pg_id>\d+)',getNumberOfSeatsOfPG),
+
+    url(r'^getBasicInfOfPG/(?P<pg_id>\d+)/(?P<date_>[\w].+)',getBasicInfOfPG),
     url(r'^getBasicInfOfPG/(?P<pg_id>\d+)',getBasicInfOfPG),
     url(r'^getAllPGs/',getAllPGs),
     url(r'^getAllPGsExt/',getAllPGsExt),
@@ -58,12 +60,12 @@ urlpatterns = patterns('',
 
     url(r'^getNumberOfPersonsSessions/(?P<person_id>\d+)/(?P<date_>[\w].+)', getNumberOfPersonsSessions),
     url(r'^getNumberOfPersonsSessions/(?P<person_id>\d+)', getNumberOfPersonsSessions),
-    
+
     url(r'^getNumberOfFormalSpeeches/(?P<person_id>\d+)', getNumberOfFormalSpeeches),
     url(r'^getExtendedSpeechesOfMP/(?P<person_id>\d+)', getExtendedSpeechesOfMP),
     url(r'^getTaggedVotes/(?P<person_id>\d+)', getTaggedVotes),
 
-    url(r'^getMembersOfPGsOnDate/(?P<date>[\w].+)',getMembersOfPGsOnDate),
+    url(r'^getMembersOfPGsOnDate/(?P<date_>[\w].+)',getMembersOfPGsOnDate),
     url(r'^getMembersOfPGsOnDate',getMembersOfPGsOnDate),
 
     url(r'^getMembersOfPGsRanges/(?P<date_>[\w].+)',getMembersOfPGsRanges),
@@ -81,9 +83,13 @@ urlpatterns = patterns('',
 
     url(r'^getTags',getTags),
 
+<<<<<<< HEAD
 
 
 
     url(r'^getMembershipDuplications', getMembershipDuplications),
 
+=======
+    url(r'^getSpeechData/(?P<speech_id>\d+)',getSpeechData),
+>>>>>>> upstream/master
 )

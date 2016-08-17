@@ -227,7 +227,7 @@ def getSpeeches(request, person_id, date_=None):
 
 #return speech by id
 def getSpeechesInRange(request, person_id, date_from, date_to):
-    
+
     fdate = datetime.strptime(date_from, settings.API_DATE_FORMAT).date()
     tdate = datetime.strptime(date_to, settings.API_DATE_FORMAT).date()
 
@@ -354,28 +354,54 @@ def getNumberOfSeatsOfPG(request, pg_id):
 
 
 #return basic info of parlament group
-def getBasicInfOfPG(request, pg_id):
+def getBasicInfOfPG(request, pg_id, date_):
+    if date_:
+        fdate = datetime.strptime(date_, settings.API_DATE_FORMAT).date()
+    else:
+        fdate=datetime.now().date()
+
     data = dict()
     listOfVotes = []
-    parliamentary_group = Organization.objects.filter(classification="poslanska skupina", id=int(pg_id))
-    members = Membership.objects.filter(organization__in=parliamentary_group)
-    headOfPG = Membership.objects.filter(role="vodja", organization__in=parliamentary_group)[0].person.id
-    #viceOfPG = Membership.objects.filter(role="namestnik", organization__in=parliamentary_group)[0].person.name
+    parliamentary_group = Organization.objects.filter(classification="poslanska skupina", id=pg_id, updated_at__lte=fdate)
+    members = Membership.objects.filter(Q(start_time__lte=fdate)|Q(start_time=None), Q(end_time__gte=fdate)|Q(end_time=None), organization__in=parliamentary_group)
+    if len(Membership.objects.filter(Q(start_time__lte=fdate)|Q(start_time=None), Q(end_time__gte=fdate)|Q(end_time=None), label="p", organization__in=parliamentary_group)) > 0:
+        headOfPG = Membership.objects.filter(Q(start_time__lte=fdate)|Q(start_time=None), Q(end_time__gte=fdate)|Q(end_time=None), label="p", organization__in=parliamentary_group)[0].person.id
+    else:
+        headOfPG = None
+
+    if len(Membership.objects.filter(Q(start_time__lte=fdate)|Q(start_time=None), Q(end_time__gte=fdate)|Q(end_time=None), label="podp", organization__in=parliamentary_group)) > 0:
+        viceOfPG = Membership.objects.filter(Q(start_time__lte=fdate)|Q(start_time=None), Q(end_time__gte=fdate)|Q(end_time=None), label="podp", organization__in=parliamentary_group)[0].person.id
+    else:
+        viceOfPG = None
+
     numberOfSeats = len(members)
+
     for a in members:
-        listOfVotes.append(a.person.voters)
-    #allVoters = sum(listOfVotes)
-    FB = Link.objects.filter(organization = parliamentary_group, note = 'facebook')
-    mail  = Link.objects.filter(organization = parliamentary_group, note = 'mail')
-    twitter = Link.objects.filter(organization = parliamentary_group, note = 'twitter')
+        if a.person.voters != None:
+            listOfVotes.append(a.person.voters)
+        else:
+            listOfVotes.append(0)
+    allVoters = sum(listOfVotes)
+    if len(Link.objects.filter(organization = parliamentary_group, note = 'facebook')) > 0:
+        FB = Link.objects.filter(organization = parliamentary_group, note = 'facebook')
+    else:
+        FB = None
+    if  len(Link.objects.filter(organization = parliamentary_group, note = 'mail')) > 0:
+        mail = Link.objects.filter(organization = parliamentary_group, note = 'facebook')
+    else:
+        mail = None
+    if len(Link.objects.filter(organization = parliamentary_group, note = 'twitter')) > 0:
+        twitter = Link.objects.filter(organization = parliamentary_group, note = 'twitter')
+    else:
+        twitter = None
     data = {
     "HeadOfPG":headOfPG,
-    #"ViceOfPG":viceOfPG,
+    "ViceOfPG":viceOfPG,
     "NumberOfSeats":numberOfSeats,
-    #"AllVoters":allVoters,
-    #"Mail":mail,
-    #"Facebook":FB,
-    #"Twitter":twitter
+    "AllVoters":allVoters,
+    "Mail":mail,
+    "Facebook":FB,
+    "Twitter":twitter
     }
     return JsonResponse(data, safe=False)
 
@@ -415,12 +441,12 @@ def getAllVotes(requests, date_):
 
     votes=Vote.objects.filter(start_time__lte=fdate).order_by("start_time")
     for vote in votes:
-        data.append({'id': vote.id, 
-                     'motion': vote.motion.text, 
-                     'party': vote.organization.id, 
-                     'session': vote.session.id, 
-                     'start_time': vote.start_time, 
-                     'end_time': vote.end_time, 
+        data.append({'id': vote.id,
+                     'motion': vote.motion.text,
+                     'party': vote.organization.id,
+                     'session': vote.session.id,
+                     'start_time': vote.start_time,
+                     'end_time': vote.end_time,
                      'result': vote.result})
 
     return JsonResponse(data, safe=False)
@@ -710,3 +736,21 @@ def getOrganizationRolesAndMembers(request, org_id, date_=None):
 def getTags(request):
     out = [tag for tag in Tag.objects.all().exclude(id__in=[1,2,3,4,5,8,9]).values_list("name", flat=True)]
     return JsonResponse(out, safe=False)
+
+def getSpeechData(request, speech_id):
+    speech = Speech.objects.filter(pk=speech_id)
+
+    if len(speech) > 0:
+        speech = speech[0]
+
+        output = {
+            'id': int(speech_id),
+            'date': speech.session.start_time.date(),
+            'speaker_id': speech.speaker.id,
+            'session_id': speech.session.id,
+            'session_name': speech.session.name
+        }
+
+        return JsonResponse(output, safe=False)
+
+    return HttpResponse(-1)
