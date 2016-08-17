@@ -14,6 +14,9 @@ https://docs.djangoproject.com/en/1.8/ref/settings/
 import os
 import raven
 from datetime import datetime
+import pytz
+
+utc=pytz.UTC
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -47,12 +50,10 @@ INSTALLED_APPS = (
     'parladata',
     'django_extensions',
     'raven.contrib.django.raven_compat',
-    'corsheaders',
 )
 
 MIDDLEWARE_CLASSES = (
     'django.contrib.sessions.middleware.SessionMiddleware',
-    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -90,7 +91,7 @@ WSGI_APPLICATION = 'parladata_project.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'HOST': '192.168.110.31',
+        'HOST': 'localhost',
         'NAME': 'parladata',
         'USER': 'parladaddy',
         'PASSWORD': 'razvrat',
@@ -119,7 +120,7 @@ STATIC_URL = '/static/'
 STATIC_ROOT = '/home/parladaddy/parladata/static/'
 
 RAVEN_CONFIG = {
-    'dsn': 'http://338491150ce2417fb770eb4afa77102f:b9b2bf8011b14643b4bd8eabd3e367f4@sentry.ilol.si/40',
+    #'dsn': 'http://338491150ce2417fb770eb4afa77102f:b9b2bf8011b14643b4bd8eabd3e367f4@sentry.ilol.si/40',
     # If you are using git, you can also automatically configure the
     # release based on the git info.
 #    'release': raven.fetch_git_sha(os.path.dirname(__file__)),
@@ -128,6 +129,3 @@ RAVEN_CONFIG = {
 API_DATE_FORMAT = '%d.%m.%Y'
 
 MANDATE_START_TIME = datetime(day=31, month=7, year=2014)
-
-# CORS config
-CORS_ORIGIN_ALLOW_ALL = True
