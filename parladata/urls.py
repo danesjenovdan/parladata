@@ -83,13 +83,10 @@ urlpatterns = patterns('',
 
     url(r'^getTags',getTags),
 
-<<<<<<< HEAD
+    url(r'^getSpeechData/(?P<speech_id>\d+)',getSpeechData),
 
 
-
+    #debug helpers
     url(r'^getMembershipDuplications', getMembershipDuplications),
 
-=======
-    url(r'^getSpeechData/(?P<speech_id>\d+)',getSpeechData),
->>>>>>> upstream/master
 )
