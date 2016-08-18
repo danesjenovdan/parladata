@@ -12,9 +12,11 @@
 				<th>#</th>
 				<th>Member</th>
 				<th>Membership 1</th>
-				<th>Start - End</th>
+				<th>Start</th>
+				<th> End</th>
 				<th>Membership 2</th>
-				<th>Start - End</th>
+				<th>Start</th>
+				<th> End</th>
 			</tr>
 		</thead>
 		<tbody>
@@ -22,10 +24,12 @@
 				<tr>
 					<th scope="row"></th>
 					<td>{{fail.member.id}} {{fail.member.name}}</td>
-					<td><a href="https://data.parlameter.si/admin/parladata/membership/{{fail.mem1.id}}/">Edit</a></td>
-					<td>{{fail.mem1.start_time}} {{fail.mem1.end_time}}</td>
-					<td><a href="https://data.parlameter.si/admin/parladata/membership/{{fail.mem2.id}}/">Edit</a></td>
-					<td>{{fail.mem2.start_time}} {{fail.mem2.end_time}}</td>
+					<td class="bg-info"><a href="https://data.parlameter.si/admin/parladata/membership/{{fail.mem1.id}}/">Edit</a></td>
+					<td class="bg-info">{{fail.mem1.start_time}}</td> 
+					<td class="bg-info">{{fail.mem1.end_time}}</td>
+					<td class="bg-success"><a href="https://data.parlameter.si/admin/parladata/membership/{{fail.mem2.id}}/">Edit</a></td>
+					<td class="bg-success">{{fail.mem2.start_time}}</td> 
+					<td class="bg-success">{{fail.mem2.end_time}}</td>
 				</tr>
 			{% endfor %}
 		</tbody>
