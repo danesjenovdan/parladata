@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title></title>
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.3/css/bootstrap.min.css" integrity="sha384-MIwDKRSSImVFAZCVLtU0LMDdON6KVCrZHyVQQj6e8wIEJkW4tvwqXrbMIya1vriY" crossorigin="anonymous">
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.3/js/bootstrap.min.js" integrity="sha384-ux8v3A6CPtOTqOzMKiuo3d/DomGaaClxFYdCu2HPMBEkf6x2xiDyJ7gkXU0MWwaD" crossorigin="anonymous"></script>
+</head>
+<body>
+	<table class="table">
+		<thead>
+			<tr>
+				<th>#</th>
+				<th>Member</th>
+				<th>Membership 1</th>
+				<th>Start</th>
+				<th> End</th>
+				<th>Membership 2</th>
+				<th>Start</th>
+				<th> End</th>
+			</tr>
+		</thead>
+		<tbody>
+			{% for fail in data %}
+				<tr>
+					<th scope="row"></th>
+					<td>{{fail.member.id}} {{fail.member.name}}</td>
+					<td class="bg-info"><a href="https://data.parlameter.si/admin/parladata/membership/{{fail.mem1.id}}/">Edit</a></td>
+					<td class="bg-info">{{fail.mem1.start_time}}</td> 
+					<td class="bg-info">{{fail.mem1.end_time}}</td>
+					<td class="bg-success"><a href="https://data.parlameter.si/admin/parladata/membership/{{fail.mem2.id}}/">Edit</a></td>
+					<td class="bg-success">{{fail.mem2.start_time}}</td> 
+					<td class="bg-success">{{fail.mem2.end_time}}</td>
+				</tr>
+			{% endfor %}
+		</tbody>
+	</table>
+
+</body>
+</html>
