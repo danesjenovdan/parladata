@@ -362,10 +362,15 @@ def getBasicInfOfPG(request, pg_id, date_):
 
     data = dict()
     listOfVotes = []
-    parliamentary_group = Organization.objects.filter(classification="poslanska skupina", id=pg_id, updated_at__lte=fdate)
-    members = Membership.objects.filter(Q(start_time__lte=fdate)|Q(start_time=None), Q(end_time__gte=fdate)|Q(end_time=None), organization__in=parliamentary_group)
+    parliamentary_group = Organization.objects.filter(classification="poslanska skupina", id=pg_id)
+    members = Membership.objects.filter(Q(start_time__lte=fdate)|Q(start_time=None), Q(end_time__gte=fdate)|Q(end_time=None), organization__id=parliamentary_group)
     if len(Membership.objects.filter(Q(start_time__lte=fdate)|Q(start_time=None), Q(end_time__gte=fdate)|Q(end_time=None), label="p", organization__in=parliamentary_group)) > 0:
         headOfPG = Membership.objects.filter(Q(start_time__lte=fdate)|Q(start_time=None), Q(end_time__gte=fdate)|Q(end_time=None), label="p", organization__in=parliamentary_group)[0].person.id
+    else:
+        headOfPG = None
+
+    if len(Membership.objects.filter(Q(start_time__lte=fdate)|Q(start_time=None), Q(end_time__gte=fdate)|Q(end_time=None), label="v", organization__in=parliamentary_group)) > 0:
+        headOfPG = Membership.objects.filter(Q(start_time__lte=fdate)|Q(start_time=None), Q(end_time__gte=fdate)|Q(end_time=None), label="v", organization__in=parliamentary_group)[0].person.id
     else:
         headOfPG = None
 
@@ -374,6 +379,14 @@ def getBasicInfOfPG(request, pg_id, date_):
     else:
         viceOfPG = None
 
+<<<<<<< HEAD
+    if len(Membership.objects.filter(Q(start_time__lte=fdate)|Q(start_time=None), Q(end_time__gte=fdate)|Q(end_time=None), label="namv", organization__in=parliamentary_group)) > 0:
+        viceOfPG = Membership.objects.filter(Q(start_time__lte=fdate)|Q(start_time=None), Q(end_time__gte=fdate)|Q(end_time=None), label="namv", organization__in=parliamentary_group)[0].person.id
+    else:
+        viceOfPG = None
+    
+=======
+>>>>>>> master
     numberOfSeats = len(members)
 
     for a in members:
@@ -382,16 +395,17 @@ def getBasicInfOfPG(request, pg_id, date_):
         else:
             listOfVotes.append(0)
     allVoters = sum(listOfVotes)
-    if len(Link.objects.filter(organization = parliamentary_group, note = 'facebook')) > 0:
-        FB = Link.objects.filter(organization = parliamentary_group, note = 'facebook')
+    if len(Link.objects.filter(organization = parliamentary_group, note = 'FB')) > 0:
+        FB = Link.objects.filter(organization = parliamentary_group, note = 'FB')[0].url
     else:
         FB = None
-    if  len(Link.objects.filter(organization = parliamentary_group, note = 'mail')) > 0:
-        mail = Link.objects.filter(organization = parliamentary_group, note = 'facebook')
+    if  len(ContactDetail.objects.filter(organization = parliamentary_group, label = 'Mail')) > 0:
+        mail = ContactDetail.objects.filter(organization = parliamentary_group, label = 'Mail')[0].value
     else:
         mail = None
-    if len(Link.objects.filter(organization = parliamentary_group, note = 'twitter')) > 0:
-        twitter = Link.objects.filter(organization = parliamentary_group, note = 'twitter')
+    if len(Link.objects.filter(organization = parliamentary_group, note = 'TW')) > 0:
+        twitter = Link.objects.filter(organization = parliamentary_group, note = 'TW')[0].url
+        
     else:
         twitter = None
     data = {
