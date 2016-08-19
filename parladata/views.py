@@ -379,14 +379,6 @@ def getBasicInfOfPG(request, pg_id, date_):
     else:
         viceOfPG = None
 
-<<<<<<< HEAD
-    if len(Membership.objects.filter(Q(start_time__lte=fdate)|Q(start_time=None), Q(end_time__gte=fdate)|Q(end_time=None), label="namv", organization__in=parliamentary_group)) > 0:
-        viceOfPG = Membership.objects.filter(Q(start_time__lte=fdate)|Q(start_time=None), Q(end_time__gte=fdate)|Q(end_time=None), label="namv", organization__in=parliamentary_group)[0].person.id
-    else:
-        viceOfPG = None
-    
-=======
->>>>>>> master
     numberOfSeats = len(members)
 
     for a in members:
@@ -405,7 +397,7 @@ def getBasicInfOfPG(request, pg_id, date_):
         mail = None
     if len(Link.objects.filter(organization = parliamentary_group, note = 'TW')) > 0:
         twitter = Link.objects.filter(organization = parliamentary_group, note = 'TW')[0].url
-        
+
     else:
         twitter = None
     data = {
