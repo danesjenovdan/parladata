@@ -16,6 +16,7 @@ from collections import OrderedDict
 from django.conf import settings
 from django.utils.encoding import smart_str
 from taggit.models import Tag
+from django.shortcuts import get_object_or_404
 
 
 """return all ballots and speaches agregated by date
@@ -223,6 +224,21 @@ def getSpeeches(request, person_id, date_=None):
 
     return JsonResponse(speeches, safe=False)
 
+
+#return speech by id
+def getSpeechesInRange(request, person_id, date_from, date_to):
+
+    fdate = datetime.strptime(date_from, settings.API_DATE_FORMAT).date()
+    tdate = datetime.strptime(date_to, settings.API_DATE_FORMAT).date()
+
+    speaker = get_object_or_404(Person, id=person_id)
+
+    speeches_queryset = Speech.objects.filter(speaker=speaker, start_time__lte=tdate, start_time__gte=fdate)
+
+    speeches = [{'content': speech.content, 'speech_id': speech.id} for speech in speeches_queryset]
+
+    return JsonResponse(speeches, safe=False)
+
 '''
 PG = Parlamentary group
 
@@ -240,8 +256,11 @@ PG = Parlamentary group
 
 return list of member's id for each PG, on specific date
 '''
-def getMembersOfPGsOnDate(request, date):
-    fdate = datetime.strptime(date, settings.API_DATE_FORMAT).date()
+def getMembersOfPGsOnDate(request, date_=None):
+    if date_:
+        fdate = datetime.strptime(date_, settings.API_DATE_FORMAT).date()
+    else:
+        fdate = datetime.now().date()
     parliamentary_group = Organization.objects.filter(Q(classification="poslanska skupina") | Q(classification="nepovezani poslanec"))
     members = Membership.objects.filter(Q(end_time__gte=fdate) | Q(end_time=None), Q(start_time__lte=fdate)|Q(start_time=None), organization__in=parliamentary_group)
     data = {pg.id:[member.person.id for member in members.filter(organization=pg)] for pg in parliamentary_group}
@@ -360,11 +379,14 @@ def getBasicInfOfPG(request, pg_id, date_):
     else:
         viceOfPG = None
 
+<<<<<<< HEAD
     if len(Membership.objects.filter(Q(start_time__lte=fdate)|Q(start_time=None), Q(end_time__gte=fdate)|Q(end_time=None), label="namv", organization__in=parliamentary_group)) > 0:
         viceOfPG = Membership.objects.filter(Q(start_time__lte=fdate)|Q(start_time=None), Q(end_time__gte=fdate)|Q(end_time=None), label="namv", organization__in=parliamentary_group)[0].person.id
     else:
         viceOfPG = None
     
+=======
+>>>>>>> master
     numberOfSeats = len(members)
 
     for a in members:
@@ -433,24 +455,24 @@ def getAllVotes(requests, date_):
 
     votes=Vote.objects.filter(start_time__lte=fdate).order_by("start_time")
     for vote in votes:
-        data.append({'id': vote.id, 
-                     'motion': vote.motion.text, 
-                     'party': vote.organization.id, 
-                     'session': vote.session.id, 
-                     'start_time': vote.start_time, 
-                     'end_time': vote.end_time, 
+        data.append({'id': vote.id,
+                     'motion': vote.motion.text,
+                     'party': vote.organization.id,
+                     'session': vote.session.id,
+                     'start_time': vote.start_time,
+                     'end_time': vote.end_time,
                      'result': vote.result})
 
     return JsonResponse(data, safe=False)
 
 
-def getAllBallots(requests):
-    data = []
+def getAllBallots(requests, date_=None):
+    if date_:
+        fdate = datetime.strptime(date_, settings.API_DATE_FORMAT).date()
+    else:
+        fdate = datetime.now().date()
 
-    ballots = Ballot.objects.all()
-    for ballot in ballots:
-        data.append(model_to_dict(ballot, fields=['id', 'vote', 'voter', 'option'], exclude=[]))
-
+    data = [model_to_dict(ballot, fields=['id', 'vote', 'voter', 'option'], exclude=[]) for ballot in Ballot.objects.filter(vote__start_time__lte=fdate)]
     return JsonResponse(data, safe=False)
 
 
@@ -572,9 +594,12 @@ def getTaggedVotes(request, person_id):
     return JsonResponse(ballots_out, safe=False)
 
 
-def getMembersOfPGsRanges(request, date):
-    fdate = datetime.strptime(date, settings.API_DATE_FORMAT)
-    tempDate=settings.MANDATE_START_TIME
+def getMembersOfPGsRanges(request, date_=None):
+    if date_:
+        fdate = datetime.strptime(date_, settings.API_DATE_FORMAT).date()
+    else:
+        fdate = datetime.now().date()
+    tempDate=settings.MANDATE_START_TIME.date()
     parliamentary_group = Organization.objects.filter(Q(classification="poslanska skupina") | Q(classification="nepovezani poslanec"))
     members = Membership.objects.filter(organization__in=parliamentary_group)
     out = {(tempDate+timedelta(days=xday)): {grup: [] for grup in parliamentary_group.values_list("id", flat=True)} for xday in range((fdate-tempDate).days+1)}
@@ -583,15 +608,15 @@ def getMembersOfPGsRanges(request, date):
             start_time = tempDate
             end_time = fdate
         elif member.start_time and not member.end_time:
-            if member.start_time < tempDate:
+            if member.start_time.date() < tempDate:
                 start_time = tempDate
             else:
-                start_time = member.start_time
+                start_time = member.start_time.date()
             end_time = fdate
         else:
-            start_time = member.start_time
-            if fdate > member.end_time:
-                end_time = member.end_time
+            start_time = member.start_time.date()
+            if fdate > member.end_time.date():
+                end_time = member.end_time.date()
             else:
                 end_time = fdate
         for xday in range((end_time-start_time).days+1):
@@ -609,6 +634,50 @@ def getMembersOfPGsRanges(request, date):
             outList.append({"start_date":key.strftime(settings.API_DATE_FORMAT),
                             "end_date":key.strftime(settings.API_DATE_FORMAT),
                             "members":out[key]})
+
+
+    return JsonResponse(outList, safe=False)
+
+
+def getMembersOfPGRanges(request, org_id, date_=None):
+    if date_:
+        fdate = datetime.strptime(date_, settings.API_DATE_FORMAT).date()
+    else:
+        fdate = datetime.now().date()
+    tempDate=settings.MANDATE_START_TIME.date()
+    members = Membership.objects.filter(organization__id=org_id)
+    out = {(tempDate+timedelta(days=xday)): {int(org_id): []} for xday in range((fdate-tempDate).days+1)}
+    for member in members:
+        if not member.start_time and not member.end_time:
+            start_time = tempDate
+            end_time = fdate
+        elif member.start_time and not member.end_time:
+            if member.start_time.date() < tempDate:
+                start_time = tempDate
+            else:
+                start_time = member.start_time.date()
+            end_time = fdate
+        else:
+            start_time = member.start_time.date()
+            if fdate > member.end_time.date():
+                end_time = member.end_time.date()
+            else:
+                end_time = fdate
+        for xday in range((end_time-start_time).days+1):
+            out[(start_time+timedelta(days=xday))][member.organization.id].append(member.person.id)
+
+    keys = out.keys()
+    keys.sort()
+    outList = [{"start_date":keys[0].strftime(settings.API_DATE_FORMAT),
+                "end_date":keys[0].strftime(settings.API_DATE_FORMAT),
+                "members":out[keys[0]][int(org_id)]}]
+    for key in keys:
+        if out[key][int(org_id)]==outList[-1]["members"]:
+            outList[-1]["end_date"]=key.strftime(settings.API_DATE_FORMAT)
+        else:
+            outList.append({"start_date":key.strftime(settings.API_DATE_FORMAT),
+                            "end_date":key.strftime(settings.API_DATE_FORMAT),
+                            "members":out[key][int(org_id)]})
 
 
     return JsonResponse(outList, safe=False)
@@ -681,3 +750,21 @@ def getOrganizationRolesAndMembers(request, org_id, date_=None):
 def getTags(request):
     out = [tag for tag in Tag.objects.all().exclude(id__in=[1,2,3,4,5,8,9]).values_list("name", flat=True)]
     return JsonResponse(out, safe=False)
+
+def getSpeechData(request, speech_id):
+    speech = Speech.objects.filter(pk=speech_id)
+
+    if len(speech) > 0:
+        speech = speech[0]
+
+        output = {
+            'id': int(speech_id),
+            'date': speech.session.start_time.date(),
+            'speaker_id': speech.speaker.id,
+            'session_id': speech.session.id,
+            'session_name': speech.session.name
+        }
+
+        return JsonResponse(output, safe=False)
+
+    return HttpResponse(-1)
