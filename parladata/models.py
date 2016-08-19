@@ -247,6 +247,12 @@ class Post(Timestampable, Taggable, models.Model):
                                      related_name='posts',
                                      help_text=_('The organization in which the post is held'))
 
+    # reference to "http://popoloproject.com/schemas/post.json#"
+    membership = models.ForeignKey('Membership',
+                                   blank=True, null=True,
+                                   related_name='memberships',
+                                   help_text=_('The post held by the person in the organization through this membership'))
+
     # start and end time of memberships
     start_time = PopoloDateTimeField(blank=True, null=True,
                                      help_text='Start time')

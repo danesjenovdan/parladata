@@ -1,5 +1,6 @@
 from django.conf.urls import patterns, include, url
 from parladata.views import *
+from .utils import getMembershipDuplications
 
 from parladata.admin import PersonAutocomplete, PostAutocomplete
 
@@ -83,4 +84,9 @@ urlpatterns = patterns('',
     url(r'^getTags',getTags),
 
     url(r'^getSpeechData/(?P<speech_id>\d+)',getSpeechData),
+
+
+    #debug helpers
+    url(r'^getMembershipDuplications', getMembershipDuplications),
+
 )
