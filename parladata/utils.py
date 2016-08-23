@@ -297,11 +297,14 @@ def getMembershipDuplications(requests):
     #check if one person have more then one membership per organization
     members_list = list(members.values_list("person", flat=True))
     org_per_person=[]
+    added_mems = []
     for member in members_list:
         temp = dict(Counter(list(members.filter(person__id=member).values_list("organization", flat=True))))
         print temp
         for key, val in temp.items():
-            if val>1:
+            if val>1 and not Membership.objects.filter(person__id=member, organization__id=key)[0].id in added_mems:
+                print val
+                added_mems.append(Membership.objects.filter(person__id=member, organization__id=key)[0].id)
                 org_per_person.append({"member": Person.objects.get(id=member), 
                                        "organization": Organization.objects.get(id=key), 
                                        "mem1": list(Membership.objects.filter(person__id=member, organization__id=key))[0],
