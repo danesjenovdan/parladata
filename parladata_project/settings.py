@@ -36,6 +36,8 @@ INSTALLED_APPS = (
     'taggit',
     'djgeojson',
     'leaflet',
+    'dal',
+    'dal_select2',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -65,7 +67,7 @@ ROOT_URLCONF = 'parladata_project.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR, "parladata/data")],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
