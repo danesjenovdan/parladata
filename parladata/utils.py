@@ -7,6 +7,7 @@ import requests
 from django.conf import settings
 from django.http import JsonResponse
 from django.shortcuts import render
+from collections import Counter
 
 #returns average from list of integers
 def AverageList(list):
@@ -292,4 +293,22 @@ def getMembershipDuplications(requests):
                 print "WTF enaka sta?"
 
     context["data"] = out
+
+    #check if one person have more then one membership per organization
+    members_list = list(members.values_list("person", flat=True))
+    org_per_person=[]
+    for member in members_list:
+        temp = dict(Counter(list(members.filter(person__id=member).values_list("organization", flat=True))))
+        print temp
+        for key, val in temp.items():
+            if val>1:
+                org_per_person.append({"member": Person.objects.get(id=member), 
+                                       "organization": Organization.objects.get(id=key), 
+                                       "mem1": list(Membership.objects.filter(person__id=member, organization__id=key))[0],
+                                       "mem2": list(Membership.objects.filter(person__id=member, organization__id=key))[1]})
+
+        context["orgs_per_person"] = org_per_person
+
+
+
     return render(requests, "debug_memberships.html", context)
