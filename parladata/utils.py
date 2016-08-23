@@ -2,9 +2,12 @@
 from parladata.models import *
 import numpy
 from django.db.models import Q
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 import requests
 from django.conf import settings
+from django.http import JsonResponse
+from django.shortcuts import render
+from collections import Counter
 
 #returns average from list of integers
 def AverageList(list):
@@ -200,3 +203,112 @@ def getFails():
     print out
 
 
+def getMembershipDuplications1(requests):
+    # prepare data
+    start_date = date(day=1, month=9, year=2014)
+    end_date = date.today()
+    parliamentary_groups = Organization.objects.filter(Q(classification="poslanska skupina") | Q(classification="nepovezani poslanec"))
+
+    data = []
+
+    #for i in range((end_date-start_date).days):
+    for i in range(10):
+        print i
+        date_ = start_date + timedelta(days=i)
+        print date_
+        members = Membership.objects.filter(organization__in=parliamentary_groups)
+
+        members = members.filter(Q(start_time__lte=date_)|Q(start_time=None), Q(end_time__gte=date_)|Q(end_time=None))
+
+        member_ids = members.values_list("person__id", flat=True)
+        conf_members = set([member for member in member_ids if list(member_ids).count(member)>1])
+        data.append({"persons":[{member: [{"membership_id": membership.id, "org_id": membership.organization.id} for membership in members.filter(person_id=member)] } for member in conf_members]})
+
+
+        #org_ids = members.values_list("organization__id", flat=True)
+        #data[date_.strftime(settings.API_DATE_FORMAT)].update({"groups": [{org:  list(members.filter(organization__id=org).values_list("role", flat=True)) } for org in org_ids]})
+
+    context = {}
+    out = []
+    first_date=start_date.strftime(settings.API_DATE_FORMAT)
+    last_day = None
+    for day in data:
+        if last_day and day["persons"]==last_day["persons"]:
+            continue
+        else:
+            if last_day:
+                for person in last_day["persons"]:
+                    out.append({"od": first_date, "do": last_day["date"], "person": person})
+                first_date= day["date"]
+            last_day = day
+
+    for person in last_day["persons"]:
+        out.append({"od": first_date, "do": last_day["date"], "person": person})
+            
+
+    context["data"] = out
+
+    print out
+
+    return render(requests, "debug_memberships.html", context)
+
+def getMembershipDuplications(requests):
+    # prepare data
+    context = {}
+    start_time = datetime(day=1, month=9, year=2014)
+    end_time = datetime.now()
+    parliamentary_groups = Organization.objects.filter(Q(classification="poslanska skupina") | Q(classification="nepovezani poslanec"))
+
+    data = []
+
+    members = Membership.objects.filter(organization__in=parliamentary_groups)
+    
+    #members = members.filter(Q(start_time__lte=date_)|Q(start_time=None), Q(end_time__gte=date_)|Q(end_time=None))
+    out = []
+    checked = []
+    for membership in members:
+
+        mem_start = membership.start_time if membership.start_time else start_time
+        mem_end = membership.end_time if membership.end_time else end_time
+        checked.append(membership.id)
+
+        for chk_mem in members.filter(person=membership.person).exclude(id__in=checked):
+
+            chk_start = chk_mem.start_time if chk_mem.start_time else start_time
+            chk_end = chk_mem.end_time if chk_mem.end_time else end_time
+
+            if chk_start < mem_start:
+                #preverji da je chk_mem pred membershipom
+                if chk_end > mem_start:
+                    #FAIL
+                    out.append({"member": membership.person, "mem1": membership, "mem2": chk_mem})
+
+            elif chk_start > mem_start:
+                #preverji da je chk_mem pred membershipom
+                if mem_end > chk_start:
+                    #FAIL
+                    out.append({"member": membership.person, "mem1": membership, "mem2": chk_mem})
+
+            else:
+                print "WTF enaka sta?"
+
+    context["data"] = out
+
+    #check if one person have more then one membership per organization
+    members_list = list(members.values_list("person", flat=True))
+    org_per_person=[]
+    for member in members_list:
+        temp = dict(Counter(list(members.filter(person__id=member).values_list("organization", flat=True))))
+        print temp
+        for key, val in temp.items():
+            if val>1:
+                org_per_person.append({"member": Person.objects.get(id=member), 
+                                       "organization": Organization.objects.get(id=key), 
+                                       "mem1": list(Membership.objects.filter(person__id=member, organization__id=key))[0],
+                                       "mem2": list(Membership.objects.filter(person__id=member, organization__id=key))[1]})
+
+        context["orgs_per_person"] = org_per_person
+
+
+
+    return render(requests, "debug_memberships.html", context)
