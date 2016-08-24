@@ -615,6 +615,13 @@ def getMembersOfPGsRanges(request, date_=None):
         for xday in range((end_time-start_time).days+1):
             out[(start_time+timedelta(days=xday))][member.organization.id].append(member.person.id)
 
+    for day in out.keys():
+        print day
+        for pg, mems in out[day].items():
+            print mems
+            if len(mems)<1:
+                del out[day][pg]
+
     keys = out.keys()
     keys.sort()
     outList = [{"start_date":keys[0].strftime(settings.API_DATE_FORMAT),
@@ -658,6 +665,13 @@ def getMembersOfPGRanges(request, org_id, date_=None):
                 end_time = fdate
         for xday in range((end_time-start_time).days+1):
             out[(start_time+timedelta(days=xday))][member.organization.id].append(member.person.id)
+
+    for day in out.keys():
+        print day
+        for pg, mems in out[day].items():
+            print mems
+            if len(mems)<1:
+                del out[day]
 
     keys = out.keys()
     keys.sort()
