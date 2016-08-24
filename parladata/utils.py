@@ -297,17 +297,44 @@ def getMembershipDuplications(requests):
     #check if one person have more then one membership per organization
     members_list = list(members.values_list("person", flat=True))
     org_per_person=[]
+    added_mems = []
     for member in members_list:
         temp = dict(Counter(list(members.filter(person__id=member).values_list("organization", flat=True))))
         print temp
         for key, val in temp.items():
-            if val>1:
+            if val>1 and not Membership.objects.filter(person__id=member, organization__id=key)[0].id in added_mems:
+                print val
+                added_mems.append(Membership.objects.filter(person__id=member, organization__id=key)[0].id)
                 org_per_person.append({"member": Person.objects.get(id=member), 
                                        "organization": Organization.objects.get(id=key), 
                                        "mem1": list(Membership.objects.filter(person__id=member, organization__id=key))[0],
                                        "mem2": list(Membership.objects.filter(person__id=member, organization__id=key))[1]})
 
-        context["orgs_per_person"] = org_per_person
+    context["orgs_per_person"] = org_per_person
+
+
+    
+    #membership duration vs. post duration
+    for membership in members:
+        posts = Post.objects.filter(membership=membership)
+        start_time = membership.start_time
+        end_time = membership.end_time
+        checked = []
+        print posts.count()
+        #    for post in posts:
+        #        if post.start_time == None:
+
+
+    context["roles"] = []
+    orgs = members.values_list("organization", flat=True)
+    orgs = list(set(list(members.values_list("organization", flat=True))))
+    for org in orgs:
+        org_ = Organization.objects.get(id=org)
+        posts = org_.posts.all()
+        roles = dict(Counter(list(posts.values_list("role", flat=True))))
+        context["roles"].append({"org": org_, "roles": [{"role": role, "count": count}for role, count in roles.items()]})
+
+
 
 
 
