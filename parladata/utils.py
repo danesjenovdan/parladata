@@ -310,7 +310,31 @@ def getMembershipDuplications(requests):
                                        "mem1": list(Membership.objects.filter(person__id=member, organization__id=key))[0],
                                        "mem2": list(Membership.objects.filter(person__id=member, organization__id=key))[1]})
 
-        context["orgs_per_person"] = org_per_person
+    context["orgs_per_person"] = org_per_person
+
+
+    
+    #membership duration vs. post duration
+    for membership in members:
+        posts = Post.objects.filter(membership=membership)
+        start_time = membership.start_time
+        end_time = membership.end_time
+        checked = []
+        print posts.count()
+        #    for post in posts:
+        #        if post.start_time == None:
+
+
+    context["roles"] = []
+    orgs = members.values_list("organization", flat=True)
+    orgs = list(set(list(members.values_list("organization", flat=True))))
+    for org in orgs:
+        org_ = Organization.objects.get(id=org)
+        posts = org_.posts.all()
+        roles = dict(Counter(list(posts.values_list("role", flat=True))))
+        context["roles"].append({"org": org_, "roles": [{"role": role, "count": count}for role, count in roles.items()]})
+
+
 
 
 
