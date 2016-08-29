@@ -312,8 +312,25 @@ def getMembershipDuplications(requests):
 
     context["orgs_per_person"] = org_per_person
 
+    context["roles"] = []
+    orgs = members.values_list("organization", flat=True)
+    orgs = list(set(list(members.values_list("organization", flat=True))))
+    for org in orgs:
+        org_ = Organization.objects.get(id=org)
+        posts = org_.posts.all()
+        roles = dict(Counter(list(posts.values_list("role", flat=True))))
+        context["roles"].append({"org": org_, "roles": [{"role": role, "count": count}for role, count in roles.items()]})
 
-    
+
+    context["count_of_persons"] = []
+    pgRanges = requests.get("https://data.parlameter.si/v1/getMembersOfPGsRanges/"+datetime.now().strftime("%d.%m.%Y")).json()
+    for pgRange in pgRanges:
+        count = len([member for pg in pgRange["members"].values() for member in pg])
+        if count != 90:
+            context["count_of_persons"].append({"count": count, "start_date": pgRange["start_date"], "end_date": pgRange["end_date"]})
+
+
+
     #membership duration vs. post duration
     for membership in members:
         posts = Post.objects.filter(membership=membership)
@@ -325,17 +342,4 @@ def getMembershipDuplications(requests):
         #        if post.start_time == None:
 
 
-    context["roles"] = []
-    orgs = members.values_list("organization", flat=True)
-    orgs = list(set(list(members.values_list("organization", flat=True))))
-    for org in orgs:
-        org_ = Organization.objects.get(id=org)
-        posts = org_.posts.all()
-        roles = dict(Counter(list(posts.values_list("role", flat=True))))
-        context["roles"].append({"org": org_, "roles": [{"role": role, "count": count}for role, count in roles.items()]})
-
-
-
-
-
-    return render(requests, "debug_memberships.html", context)
+    return render(request, "debug_memberships.html", context)
