@@ -104,5 +104,27 @@
 	</table>
 	<div class="end"></div>
 
+	<h2>Število poslancev v obdobju</h2>
+	<table class="table">
+		<thead>
+			<tr><th>#</th>
+				<th>start_time</th>
+				<th>end_time</th>
+				<th>Št. poslancev</th>
+			</tr>
+		</thead>
+		<tbody>
+			{% for fail in count_of_persons %}
+				<tr>
+					<th scope="row"></th>
+					<td>{{fail.start_date}}</td>
+					<td>{{fail.end_date}}</td>
+					<td>{{fail.count}}</td>
+				</tr>
+			{% endfor %}
+		</tbody>
+	</table>
+	<div class="end"></div>
+
 </body>
 </html>
