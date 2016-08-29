@@ -203,7 +203,7 @@ def getFails():
     print out
 
 
-def getMembershipDuplications1(requests):
+def getMembershipDuplications1(request):
     # prepare data
     start_date = date(day=1, month=9, year=2014)
     end_date = date.today()
@@ -250,9 +250,9 @@ def getMembershipDuplications1(requests):
 
     print out
 
-    return render(requests, "debug_memberships.html", context)
+    return render(request, "debug_memberships.html", context)
 
-def getMembershipDuplications(requests):
+def getMembershipDuplications(request):
     # prepare data
     context = {}
     start_time = datetime(day=1, month=9, year=2014)
