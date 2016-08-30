@@ -329,7 +329,7 @@ class Membership(Timestampable, models.Model):
     objects = PassThroughManager.for_queryset_class(MembershipQuerySet)()
 
     def __str__(self):
-        return u'Person: {0}, Org: {1}, StartTime: {2}'.format(self.person, self.organization, self.start_time.date())
+        return u'Person: {0}, Org: {1}, StartTime: {2}'.format(self.person, self.organization, self.start_time.date() if self.start_time else "")
 
 @python_2_unicode_compatible
 class ContactDetail(Timestampable, models.Model):
