@@ -255,7 +255,7 @@ def getMembershipDuplications1(request):
 def getMembershipDuplications(request):
     # prepare data
     context = {}
-    start_time = datetime(day=1, month=9, year=2014)
+    start_time = datetime(day=1, month=8, year=2014)
     end_time = datetime.now()
     parliamentary_groups = Organization.objects.filter(Q(classification="poslanska skupina") | Q(classification="nepovezani poslanec"))
 
@@ -326,8 +326,15 @@ def getMembershipDuplications(request):
     pgRanges = requests.get("https://data.parlameter.si/v1/getMembersOfPGsRanges/"+datetime.now().strftime("%d.%m.%Y")).json()
     for pgRange in pgRanges:
         count = len([member for pg in pgRange["members"].values() for member in pg])
+        members_ids = [member for pg in pgRange["members"].values() for member in pg]
         if count != 90:
-            context["count_of_persons"].append({"count": count, "start_date": pgRange["start_date"], "end_date": pgRange["end_date"]})
+            context["count_of_persons"].append({"count": {"count": count, "start_date": pgRange["start_date"], "end_date": pgRange["end_date"]}, "members": [member for pg in pgRange["members"].values() for member in pg]})
+            if len(context["count_of_persons"])>1:
+                context["count_of_persons"][-1]["added"] = [{"name": Person.objects.get(id=x).name, "person_id": x} for x in context["count_of_persons"][-1]["members"] if x not in context["count_of_persons"][-2]["members"]]
+                context["count_of_persons"][-1]["removed"] = [{"name": Person.objects.get(id=x).name, "person_id": Membership.objects.filter(person__id=x, start_time=datetime.strptime(context["count_of_persons"][-1]["count"]["start_date"], "%d.%m.%Y").strftime("%Y-%m-%d %H:%M"))} for x in context["count_of_persons"][-2]["members"] if x not in context["count_of_persons"][-1]["members"]]
+            else:
+                context["count_of_persons"][-1]["added"] = [{"name": Person.objects.get(id=x).name, "person_id": x} for x in context["count_of_persons"][-1]["members"]]
+
 
     context["voters_counts"] = []
     person_ids = set(list(members.values_list("person", flat=True)))
