@@ -126,5 +126,28 @@
 	</table>
 	<div class="end"></div>
 
+	<h2>Kdo nima vpisanih volilcev</h2>
+	<table class="table">
+		<thead>
+			<tr>
+				<th>#</th>
+				<th>Person</th>
+				<th>Voters</th>
+				<th>Edit</th>
+			</tr>
+		</thead>
+		<tbody>
+			{% for fail in voters_counts %}
+				<tr>
+					<th scope="row"></th>
+					<td>{{fail.id}} {{fail.name}}</td>
+					<td>{{fail.voters}}</td>
+					<td class="bg-success"><a href="https://data.parlameter.si/admin/parladata/person/{{fail.id}}/">Edit</a></td>
+				</tr>
+			{% endfor %}
+		</tbody>
+	</table>
+	<div class="end"></div>
+
 </body>
 </html>
