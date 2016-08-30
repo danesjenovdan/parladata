@@ -111,15 +111,27 @@
 				<th>start_time</th>
 				<th>end_time</th>
 				<th>Št. poslancev</th>
+				<th>Dodani</th>
+				<th>Zbrisani</th>
 			</tr>
 		</thead>
 		<tbody>
 			{% for fail in count_of_persons %}
 				<tr>
 					<th scope="row"></th>
-					<td>{{fail.start_date}}</td>
-					<td>{{fail.end_date}}</td>
-					<td>{{fail.count}}</td>
+					<td>{{fail.count.start_date}}</td>
+					<td>{{fail.count.end_date}}</td>
+					<td>{{fail.count.count}}</td>
+					<td class="bg-success" width="33%">
+						{% for person in fail.added %}
+							<a href="{{person.person_id}}" style="color: white;">{{ person.name }},</a>
+						{% endfor %}
+					</td>
+					<td class="bg-danger">
+						{% for person in fail.removed %}
+							<a href="{{person.person_id}}" style="color: white;">{{ person.name }},</a>
+						{% endfor %}
+					</td>
 				</tr>
 			{% endfor %}
 		</tbody>
