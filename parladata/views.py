@@ -359,7 +359,7 @@ def getBasicInfOfPG(request, pg_id, date_):
         fdate = datetime.strptime(date_, settings.API_DATE_FORMAT).date()
     else:
         fdate=datetime.now().date()
-
+    viceOfPG = []
     data = dict()
     listOfVotes = []
     parliamentary_group = Organization.objects.filter(classification="poslanska skupina", id=pg_id)
@@ -373,10 +373,12 @@ def getBasicInfOfPG(request, pg_id, date_):
         headOfPG = None
 
     if len(Membership.objects.filter(Q(start_time__lte=fdate)|Q(start_time=None), Q(end_time__gte=fdate)|Q(end_time=None), label="podp", organization__in=parliamentary_group)) > 0:
-        viceOfPG = Membership.objects.filter(Q(start_time__lte=fdate)|Q(start_time=None), Q(end_time__gte=fdate)|Q(end_time=None), label="podp", organization__in=parliamentary_group)[0].person.id
+        for membership in Membership.objects.filter(Q(start_time__lte=fdate)|Q(start_time=None), Q(end_time__gte=fdate)|Q(end_time=None), label="podp", organization__in=parliamentary_group):
+            viceOfPG.append(membership.person.id)
 
     elif len(Membership.objects.filter(Q(start_time__lte=fdate)|Q(start_time=None), Q(end_time__gte=fdate)|Q(end_time=None), label="namv", organization__in=parliamentary_group)) > 0:
-        viceOfPG = Membership.objects.filter(Q(start_time__lte=fdate)|Q(start_time=None), Q(end_time__gte=fdate)|Q(end_time=None), label="namv", organization__in=parliamentary_group)[0].person.id
+        for membership in Membership.objects.filter(Q(start_time__lte=fdate)|Q(start_time=None), Q(end_time__gte=fdate)|Q(end_time=None), label="namv", organization__in=parliamentary_group):
+            viceOfPG.append(membership.person.id)
     else:
         viceOfPG = None
     
@@ -500,11 +502,18 @@ def motionOfSession(request, id_se):
         return JsonResponse([], safe=False)
 
 def getVotesOfSession(request, id_se):
+
     votes = Vote.objects.filter(motion__session__id = str(id_se))
+    fdate = Session.objects.get(id=str(id_se)).start_time
+    
     data = []
     tab = []
     for bal in Ballot.objects.filter(vote__session__id = str(id_se)):
-            data.append({'mo_id':bal.vote.motion.id,"mp_id":bal.voter.id,"Acronym":bal.voterparty.acronym, "option":bal.option, "pg_id":bal.voterparty.id})
+            data.append({"mo_id":bal.vote.motion.id,
+                         "mp_id":bal.voter.id,
+                         "Acronym":Membership.objects.get(Q(end_time__gte=fdate) | Q(end_time=None), Q(start_time__lte=fdate)|Q(start_time=None), person=bal.voter, organization__classification="poslanska skupina").organization.acronym, 
+                         "option":bal.option, 
+                         "pg_id":Membership.objects.get(Q(end_time__gte=fdate) | Q(end_time=None), Q(start_time__lte=fdate)|Q(start_time=None), person=bal.voter, organization__classification="poslanska skupina").organization.id})
     return JsonResponse(data,safe = False)
 
 
