@@ -329,6 +329,14 @@ def getMembershipDuplications(request):
         if count != 90:
             context["count_of_persons"].append({"count": count, "start_date": pgRange["start_date"], "end_date": pgRange["end_date"]})
 
+    context["voters_counts"] = []
+    person_ids = set(list(members.values_list("person", flat=True)))
+    for person in person_ids:
+        prs = Person.objects.get(id=person)
+        if prs.voters == None or prs.voters == 0:
+            context["voters_counts"].append(prs)
+
+
 
 
     #membership duration vs. post duration
