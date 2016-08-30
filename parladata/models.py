@@ -8,6 +8,7 @@ from django.utils.encoding import python_2_unicode_compatible
 from django.utils.translation import ugettext_lazy as _
 from django.db.models.signals import pre_save
 from django.dispatch import receiver
+from datetime import datetime
 
 from .behaviors.models import Timestampable, Taggable
 from .querysets import PostQuerySet, OtherNameQuerySet, ContactDetailQuerySet, MembershipQuerySet, OrganizationQuerySet, PersonQuerySet
@@ -272,7 +273,7 @@ class Post(Timestampable, Taggable, models.Model):
         m.save()
 
     def __str__(self):
-        return u'Org: {0}, Role: {1}'.format(self.organization, self.role)
+        return u'Org: {0}, Role: {1}, Person: {2}'.format(self.organization, self.role, self.membership.person.name if self.membership else "None")
 
 @python_2_unicode_compatible
 class Membership(Timestampable, models.Model):
@@ -328,7 +329,7 @@ class Membership(Timestampable, models.Model):
     objects = PassThroughManager.for_queryset_class(MembershipQuerySet)()
 
     def __str__(self):
-        return u'Person: {0}, Org: {1}, Post: {2}'.format(self.person, self.organization, self.post)
+        return u'Person: {0}, Org: {1}, StartTime: {2}'.format(self.person, self.organization, self.start_time.date())
 
 @python_2_unicode_compatible
 class ContactDetail(Timestampable, models.Model):
