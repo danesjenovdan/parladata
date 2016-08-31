@@ -134,6 +134,16 @@
 					</td>
 				</tr>
 			{% endfor %}
+		
+				<tr>
+					Trenutni poslanci
+					<th scope="row"></th>
+					<td class="bg-warning" colspan="5">
+						{% for person in allMps %}
+							<a href="https://data.parlameter.si/admin/parladata/membership/{{person.membership.id}}" style="color: white;">{{ person.name }},</a>
+						{% endfor %}
+					</td>
+				</tr>
 		</tbody>
 	</table>
 	<div class="end"></div>
@@ -160,7 +170,7 @@
 		</tbody>
 	</table>
 	<div class="end"></div>
-	<h2 id="voters">Kdo nima vpisanih volilcev</h2>
+	<h2 id="votes">Kateri glasovi nimajo poslanca z membershipom</h2>
 	<table class="table">
 		<thead>
 			<tr>
