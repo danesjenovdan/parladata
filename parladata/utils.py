@@ -357,3 +357,25 @@ def getMembershipDuplications(request):
 
 
     return render(request, "debug_memberships.html", context)
+
+
+def getBlindVotes(request):
+    # prepare data
+    context = {}
+    start_time = datetime(day=1, month=8, year=2014)
+    end_time = datetime.now()
+    parliamentary_groups = Organization.objects.filter(Q(classification="poslanska skupina") | Q(classification="nepovezani poslanec"))
+
+    data = []
+
+    members = Membership.objects.filter(organization__in=parliamentary_groups)
+
+    context["vote_without_membership"] = []
+    #Pejd cez vse vote in preveri ce obstaja membership za to osebo na ta dan
+    for ballot in Ballot.objects.all():
+        member = ballot.voter.memberships.filter(Q(start_time__lte=ballot.vote.start_time)|Q(start_time=None), Q(end_time__gte=ballot.vote.start_time)|Q(end_time=None), organization__in=parliamentary_groups)
+        if not member:
+            context["vote_without_membership"].append({"date": ballot.vote.start_time, "person__id": ballot.voter.id, "person__name": ballot.voter.name})
+            print "added"
+
+    return render(request, "debug_memberships.html", context)
