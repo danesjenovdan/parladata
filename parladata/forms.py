@@ -24,7 +24,7 @@ class MembershipForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super(MembershipForm, self).__init__(*args, **kwargs)
         #add_related_field_wrapper(self, 'post')
-
+        self.fields["post"].required = False
 
 
     def save(self, *args, **kwargs):
@@ -40,11 +40,6 @@ def add_related_field_wrapper(form, col_name):
 
 
 class PostForm(forms.ModelForm):
-    
-    Membership = forms.ModelChoiceField(
-        queryset=Membership.objects.all(),
-        widget=autocomplete.ModelSelect2Multiple(url='membership-autocomplete')
-    )
 
     class Meta:
         model = Post
