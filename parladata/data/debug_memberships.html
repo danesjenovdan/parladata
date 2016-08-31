@@ -160,6 +160,27 @@
 		</tbody>
 	</table>
 	<div class="end"></div>
-
+	<h2 id="voters">Kdo nima vpisanih volilcev</h2>
+	<table class="table">
+		<thead>
+			<tr>
+				<th>#</th>
+				<th>Person</th>
+				<th>Voters</th>
+				<th>Edit</th>
+			</tr>
+		</thead>
+		<tbody>
+			{% for fail in vote_without_membership %}
+				<tr>
+					<th scope="row"></th>
+					<td>{{fail.date}}</td>
+					<td>{{fail.person__name}}</td>
+					<td>{{fail.person__id}}</td>
+				</tr>
+			{% endfor %}
+		</tbody>
+	</table>
+	<div class="end"></div>
 </body>
 </html>
