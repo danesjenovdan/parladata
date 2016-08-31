@@ -327,13 +327,12 @@ def getMembershipDuplications(request):
     for pgRange in pgRanges:
         count = len([member for pg in pgRange["members"].values() for member in pg])
         members_ids = [member for pg in pgRange["members"].values() for member in pg]
-        if count != 90:
-            context["count_of_persons"].append({"count": {"count": count, "start_date": pgRange["start_date"], "end_date": pgRange["end_date"]}, "members": [member for pg in pgRange["members"].values() for member in pg]})
-            if len(context["count_of_persons"])>1:
-                context["count_of_persons"][-1]["added"] = [{"name": Person.objects.get(id=x).name, "person_id": x} for x in context["count_of_persons"][-1]["members"] if x not in context["count_of_persons"][-2]["members"]]
-                context["count_of_persons"][-1]["removed"] = [{"name": Person.objects.get(id=x).name, "person_id": Membership.objects.filter(person__id=x, start_time=datetime.strptime(context["count_of_persons"][-1]["count"]["start_date"], "%d.%m.%Y").strftime("%Y-%m-%d %H:%M"))} for x in context["count_of_persons"][-2]["members"] if x not in context["count_of_persons"][-1]["members"]]
-            else:
-                context["count_of_persons"][-1]["added"] = [{"name": Person.objects.get(id=x).name, "person_id": x} for x in context["count_of_persons"][-1]["members"]]
+        context["count_of_persons"].append({"count": {"count": count, "start_date": pgRange["start_date"], "end_date": pgRange["end_date"]}, "members": [member for pg in pgRange["members"].values() for member in pg]})
+        if len(context["count_of_persons"])>1:
+            context["count_of_persons"][-1]["added"] = [{"name": Person.objects.get(id=x).name, "membership": Membership.objects.filter(organization__in=parliamentary_groups, person__id=x, start_time=(datetime.strptime(context["count_of_persons"][-1]["count"]["start_date"], "%d.%m.%Y")).strftime("%Y-%m-%d %H:%M"))[0]} for x in context["count_of_persons"][-1]["members"] if x not in context["count_of_persons"][-2]["members"]]
+            context["count_of_persons"][-1]["removed"] = [{"name": Person.objects.get(id=x).name, "membership": Membership.objects.filter(organization__in=parliamentary_groups, person__id=x, end_time=(datetime.strptime(context["count_of_persons"][-1]["count"]["start_date"], "%d.%m.%Y")-timedelta(days=1)).strftime("%Y-%m-%d %H:%M"))[0]} for x in context["count_of_persons"][-2]["members"] if x not in context["count_of_persons"][-1]["members"]]
+        else:
+            context["count_of_persons"][-1]["added"] = [{"name": Person.objects.get(id=x).name, "person_id": x} for x in context["count_of_persons"][-1]["members"]]
 
 
     context["voters_counts"] = []
