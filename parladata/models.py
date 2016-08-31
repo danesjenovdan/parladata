@@ -308,12 +308,6 @@ class Membership(Timestampable, models.Model):
                                      related_name='memberships_on_behalf_of',
                                      help_text=_('The organization on whose behalf the person is a party to the relationship'))
 
-    # reference to "http://popoloproject.com/schemas/post.json#"
-    post = models.ForeignKey('Post',
-                             blank=True, null=True,
-                             related_name='memberships',
-                             help_text=_('The post held by the person in the organization through this membership'))
-
     # start and end time of memberships
     start_time = PopoloDateTimeField(blank=True, null=True,
                                      help_text='Start time')
