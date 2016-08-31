@@ -378,5 +378,5 @@ def getBlindVotes():
         for ballot in Ballot.objects.all():
             member = ballot.voter.memberships.filter(Q(start_time__lte=ballot.vote.start_time)|Q(start_time=None), Q(end_time__gte=ballot.vote.start_time)|Q(end_time=None), organization__in=parliamentary_groups)
             if not member:
-                csvwriter.writerow([ballot.vote.start_time, ballot.voter.id, ballot.voter.name])
+                csvwriter.writerow([ballot.vote.start_time, ballot.voter.id, ballot.voter.name.encode("utf-8")])
                 
