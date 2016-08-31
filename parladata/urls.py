@@ -1,6 +1,6 @@
 from django.conf.urls import patterns, include, url
 from parladata.views import *
-from .utils import getMembershipDuplications
+from .utils import getMembershipDuplications, getBlindVotes
 
 from parladata.admin import PersonAutocomplete, PostAutocomplete, MembershipAutocomplete
 
@@ -89,5 +89,6 @@ urlpatterns = patterns('',
 
     #debug helpers
     url(r'^getMembershipDuplications', getMembershipDuplications),
+    url(r'^getZombieVotes', getBlindVotes),
 
 )
