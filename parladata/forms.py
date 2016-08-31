@@ -55,5 +55,5 @@ class PostForm(forms.ModelForm):
 
     def save(self, *args, **kwargs):
         instance = super(PostForm, self).save(commit=False)
-        self.fields['membership'].initial.update(post=None)
+        #self.fields['membership'].initial.update(post=None)
         return instance
