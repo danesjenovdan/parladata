@@ -380,4 +380,14 @@ def getBlindVotes():
             member = ballot.voter.memberships.filter(Q(start_time__lte=ballot.vote.start_time)|Q(start_time=None), Q(end_time__gte=ballot.vote.start_time)|Q(end_time=None), organization__in=parliamentary_groups)
             if not member:
                 csvwriter.writerow([ballot.vote.start_time, ballot.voter.id, ballot.voter.name])
-                
+
+
+def parserChecker(request):
+    context = {}
+    context["empty_session"] = []
+    sessions = Session.objects.all().order_by("start_time")
+    for session in sessions:
+        if not session.vote_set.all() and not session.speech_set.all():
+            context["empty_session"].append(session)
+
+    return render(request, "debug_parser.html", context)
