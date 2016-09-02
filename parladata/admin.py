@@ -163,7 +163,7 @@ class PostAdmin(admin.ModelAdmin):
     inlines = [
         SourcePostInline,
     ]
-    search_fields = ['person__name', 'organization__name']
+    search_fields = ['membership__person__name', 'organization__name']
 class MembershipAdmin(admin.ModelAdmin):
     form = MembershipForm
     inlines = [
@@ -179,7 +179,7 @@ class SessionAdmin(admin.ModelAdmin):
         SpeechSessionInline,
         MotionSessionInline,
     ]
-    search_fields = ['session__name']
+    search_fields = ['name']
 
 class SpeechAdmin(admin.ModelAdmin):
     inlines = [
