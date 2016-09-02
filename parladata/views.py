@@ -487,7 +487,7 @@ def getAllPeople(requests):
 def motionOfSession(request, id_se):
     data = {}
     tab = []
-    session = Session.objects.fitler(id=id_se)
+    session = Session.objects.filter(id=id_se)
     if session:
         motion = Vote.objects.filter(motion__session__id=id_se)
         if motion:
