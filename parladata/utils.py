@@ -384,9 +384,17 @@ def getBlindVotes():
 def parserChecker(request):
     context = {}
     context["empty_session"] = []
+    context["sessions_for_delete"] = []
     sessions = Session.objects.all().order_by("start_time")
     for session in sessions:
         if not session.vote_set.all() and not session.speech_set.all():
             context["empty_session"].append(session)
+    set_of_names = set([ses.name for ses in context["empty_session"]])
+
+    for name in set_of_names:
+        sess = Session.objects.filter(name=name)
+
+        context["sessions_for_delete"].append([{"session": ses, "org": ses.organization, "votes": len(ses.vote_set.all()), "speeches": len(ses.speech_set.all())} for ses in sess])
+
 
     return render(request, "debug_parser.html", context)
