@@ -487,11 +487,9 @@ def getAllPeople(requests):
 def motionOfSession(request, id_se):
     data = {}
     tab = []
-    allIDs = Session.objects.values('id')
-    for i in allIDs:
-        tab.append(i['id'])
-    if int(id_se) in tab:
-        motion = Vote.objects.filter(motion__session__id = id_se)
+    session = Session.objects.fitler(id=id_se)
+    if session:
+        motion = Vote.objects.filter(motion__session__id=id_se)
         if motion:
             data = [{'id':mot.motion.id, 'vote_id': mot.id, 'text':mot.motion.text,'result':mot.result, 'tags': map(smart_str, mot.tags.names())} for mot in motion]
         else:
