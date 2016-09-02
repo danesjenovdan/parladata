@@ -47,7 +47,9 @@
 				<th>Session</th>
 				<th>date</th>
 				<th>org</th>
+				<th>Motions</th>
 				<th>Votes</th>
+				<th>Ballots</th>
 				<th>Speeches</th>
 			</tr>
 		</thead>
@@ -59,7 +61,9 @@
 						<td>{{session.session.name}}</td>
 						<td>{{session.session.start_time}}</td>
 						<td>{{session.org}}</td>
+						<td>{{session.motions}}</td>
 						<td>{{session.votes}}</td>
+						<td>{{session.ballots}}</td>
 						<td>{{session.speeches}}</td>
 					</tr>
 				{% endfor %}
