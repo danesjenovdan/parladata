@@ -179,6 +179,7 @@ class SessionAdmin(admin.ModelAdmin):
         SpeechSessionInline,
         MotionSessionInline,
     ]
+    search_fields = ['session__name']
 
 class SpeechAdmin(admin.ModelAdmin):
     inlines = [
