@@ -394,7 +394,7 @@ def parserChecker(request):
     for name in set_of_names:
         sess = Session.objects.filter(name=name)
 
-        context["sessions_for_delete"].append([{"session": ses, "org": ses.organization, "votes": len(ses.vote_set.all()), "speeches": len(ses.speech_set.all())} for ses in sess])
+        context["sessions_for_delete"].append([{"session": ses, "org": ses.organization, "motions": len(ses.motion_set.all()), "votes": len(ses.vote_set.all()), "ballots": sum([len(vote.ballot_set.all()) for vote in ses.vote_set.all()]), "speeches": len(ses.speech_set.all())} for ses in sess])
 
 
     return render(request, "debug_parser.html", context)
