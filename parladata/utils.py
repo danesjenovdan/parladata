@@ -380,12 +380,12 @@ def getMembershipDuplications(request):
                     #preverji da je chk_mem pred membershipom
                     if post_end > chk_start:
                         #FAIL
-                        context["post_dupl"].append({"member": post.membership.person, "post1": membership, "post2": chk_post})
+                        context["post_dupl"].append({"member": post.membership.person, "post1": post, "post2": chk_post})
 
                 if chk_start == post_start:
-                    context["post_dupl"].append({"member": post.membership.person, "post1": membership, "post2": chk_post})
+                    context["post_dupl"].append({"member": post.membership.person, "post1": post, "post2": chk_post})
                 elif chk_end == post_end:
-                    context["post_dupl"].append({"member": post.membership.person, "post1": membership, "post2": chk_post})
+                    context["post_dupl"].append({"member": post.membership.person, "post1": post, "post2": chk_post})
 
     print context["post_dupl"]
 
