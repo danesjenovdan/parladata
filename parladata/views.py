@@ -748,16 +748,19 @@ def getOrganizationRolesAndMembers(request, org_id, date_=None):
         fdate=datetime.now().today()
     org = Organization.objects.filter(id=org_id)
     out = {}
-    trans_map = {"predsednik": "president", "predsednica": "president", smart_str("član"): "members", smart_str("članica"): "members", "podpredsednica": "vice_president", "podpredsednik": "vice_president"}
+    trans_map = {"debug": "debug","predsednik": "president", "predsednica": "president", smart_str("član"): "members", smart_str("članica"): "members", "podpredsednica": "vice_president", "podpredsednik": "vice_president"}
     if org:
-        out = {"members":[], "president":[], "vice_president":[]}
+        out = {"debug": [],"members":[], "president":[], "vice_president":[]}
         out["name"]=org[0].name
         memberships = Membership.objects.filter(Q(start_time__lte=fdate)|Q(start_time=None), Q(end_time__gte=fdate)|Q(end_time=None), organization_id=org_id)
         #out = {trans_map[mem_type.encode("utf-8")]: [] for mem_type in set(list(memberships.values_list("role", flat=True)))}
         for member in memberships:
-
-            out[trans_map[smart_str(member.role)]].append(member.person.id)
-
+            post = member.memberships.filter(Q(start_time__lte=fdate)|Q(start_time=None), Q(end_time__gte=fdate)|Q(end_time=None))
+            if post:
+                out[trans_map[smart_str(post[0].role)]].append(member.person.id)
+            else:
+                out[trans_map[smart_str("debug")]].append(member.person.id)
+        out["members"] += out["debug"]
     return JsonResponse(out)
 
 
