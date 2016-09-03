@@ -200,5 +200,37 @@
 		</tbody>
 	</table>
 	<div class="end"></div>
+
+	<h2 id="memberships">Isti čas več postov na osebo na org</h2>
+
+	<table class="table">
+		<thead>
+			<tr>
+				<th>#</th>
+				<th>Member</th>
+				<th>Post 1</th>
+				<th>Start</th>
+				<th> End</th>
+				<th>Post 2</th>
+				<th>Start</th>
+				<th> End</th>
+			</tr>
+		</thead>
+		<tbody>
+			{% for fail in post_dupl %}
+				<tr>
+					<th scope="row"></th>
+					<td>{{fail.member.id}} {{fail.member.name}}</td>
+					<td class="bg-info"><a href="https://data.parlameter.si/admin/parladata/post/{{fail.post1.id}}/">Edit</a></td>
+					<td class="bg-info">{{fail.post1.start_time}}</td>
+					<td class="bg-info">{{fail.post1.end_time}}</td>
+					<td class="bg-success"><a href="https://data.parlameter.si/admin/parladata/post/{{fail.post2.id}}/">Edit</a></td>
+					<td class="bg-success">{{fail.post2.start_time}}</td>
+					<td class="bg-success">{{fail.post2.end_time}}</td>
+				</tr>
+			{% endfor %}
+		</tbody>
+	</table>
+	<div class="end"></div>
 </body>
 </html>
