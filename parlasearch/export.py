@@ -111,3 +111,14 @@ def exportPeopleSpeeches():
         i = i + 1
 
     return 1
+
+def exportAll():
+
+    print 'exporting speeches'
+    exportSpeeches()
+    print 'exporting sessions'
+    exportSessions()
+    print 'exporting people_speeches'
+    exportPeopleSpeeches()
+
+    return 'all done'
