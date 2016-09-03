@@ -348,6 +348,7 @@ def getMembershipDuplications(request):
 
     #membership duration vs. post duration
     context["post_dupl"] = []
+    members = Membership.objects.all()
     for membership in members:
         posts = membership.memberships.all()
 
@@ -358,12 +359,14 @@ def getMembershipDuplications(request):
         end_time = datetime.now()
 
         checked = []
-        print posts.count()
+        print "count postov", posts.count()
         for post in posts:
             post_start = post.start_time if post.start_time else start_time
             post_end = post.end_time if post.end_time else end_time
             checked.append(post.id)
             for chk_post in posts.exclude(id__in=checked):
+                print post
+                print chk_post
                 chk_start = chk_post.start_time if chk_post.start_time else start_time
                 chk_end = chk_post.end_time if chk_post.end_time else end_time
                 #check here
@@ -379,6 +382,12 @@ def getMembershipDuplications(request):
                         #FAIL
                         context["post_dupl"].append({"member": post.membership.person, "post1": membership, "post2": chk_post})
 
+                if chk_start == post_start:
+                    context["post_dupl"].append({"member": post.membership.person, "post1": membership, "post2": chk_post})
+                elif chk_end == post_end:
+                    context["post_dupl"].append({"member": post.membership.person, "post1": membership, "post2": chk_post})
+
+    print context["post_dupl"]
 
     return render(request, "debug_memberships.html", context)
 
