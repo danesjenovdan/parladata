@@ -273,7 +273,7 @@ class Post(Timestampable, Taggable, models.Model):
         m.save()
 
     def __str__(self):
-        return u'Org: {0}, Role: {1}, Person: {2}'.format(self.membership.organization, self.role, self.membership.person.name if self.membership else "None")
+        return u'Org: {0}, Role: {1}, Person: {2}'.format(self.membership.organization if self.membership else self.organization, self.role, self.membership.person.name if self.membership else "None")
 
 @python_2_unicode_compatible
 class Membership(Timestampable, models.Model):
