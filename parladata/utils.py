@@ -329,7 +329,7 @@ def getMembershipDuplications(request):
         members_ids = [member for pg in pgRange["members"].values() for member in pg]
         context["count_of_persons"].append({"count": {"count": count, "start_date": pgRange["start_date"], "end_date": pgRange["end_date"]}, "members": [member for pg in pgRange["members"].values() for member in pg]})
         if len(context["count_of_persons"])>1:
-            context["count_of_persons"][-1]["added"] = [{"name": Person.objects.get(id=x).name, "membership": Membership.objects.filter(organization__in=parliamentary_groups, person__id=x, start_time=(datetime.strptime(context["count_of_persons"][-1]["count"]["start_date"], "%d.%m.%Y")).strftime("%Y-%m-%d %H:%M"))[0]} for x in context["count_of_persons"][-1]["members"] if x not in context["count_of_persons"][-2]["members"]]
+            context["count_of_persons"][-1]["added"] = [{"name": Person.objects.get(id=x).name, "membership": Membership.objects.filter(organization__in=parliamentary_groups, person__id=x, start_time=(datetime.strptime(context["count_of_persons"][-1]["count"]["start_date"], "%d.%m.%Y")).strftime("%Y-%m-%d %H:%M"))[0] if Membership.objects.filter(organization__in=parliamentary_groups, person__id=x, start_time=(datetime.strptime(context["count_of_persons"][-1]["count"]["start_date"], "%d.%m.%Y")).strftime("%Y-%m-%d %H:%M")) else ""} for x in context["count_of_persons"][-1]["members"] if x not in context["count_of_persons"][-2]["members"]]
             context["count_of_persons"][-1]["removed"] = [{"name": Person.objects.get(id=x).name, "membership": Membership.objects.filter(organization__in=parliamentary_groups, person__id=x, end_time=(datetime.strptime(context["count_of_persons"][-1]["count"]["start_date"], "%d.%m.%Y")-timedelta(days=1)).strftime("%Y-%m-%d %H:%M"))[0] if Membership.objects.filter(organization__in=parliamentary_groups, person__id=x, end_time=(datetime.strptime(context["count_of_persons"][-1]["count"]["start_date"], "%d.%m.%Y")-timedelta(days=1)).strftime("%Y-%m-%d %H:%M")) else None} for x in context["count_of_persons"][-2]["members"] if x not in context["count_of_persons"][-1]["members"]]
             context["allMps"] = [{"name": Person.objects.get(id=x).name, "membership": Membership.objects.filter(organization__in=parliamentary_groups, person__id=x, start_time=(datetime.strptime(context["count_of_persons"][-1]["count"]["start_date"], "%d.%m.%Y")).strftime("%Y-%m-%d %H:%M"))[0] if Membership.objects.filter(organization__in=parliamentary_groups, person__id=x, start_time=(datetime.strptime(context["count_of_persons"][-1]["count"]["start_date"], "%d.%m.%Y")).strftime("%Y-%m-%d %H:%M")) else x} for x in context["count_of_persons"][-1]["members"]]
         else:
@@ -347,14 +347,37 @@ def getMembershipDuplications(request):
 
 
     #membership duration vs. post duration
+    context["post_dupl"] = []
     for membership in members:
-        posts = Post.objects.filter(membership=membership)
-        start_time = membership.start_time
-        end_time = membership.end_time
+        posts = membership.memberships.all()
+
+        mem_start = membership.start_time
+        mem_end = membership.end_time
+
+        start_time = datetime(day=1, month=8, year=2014)
+        end_time = datetime.now()
+
         checked = []
         print posts.count()
-        #    for post in posts:
-        #        if post.start_time == None:
+        for post in posts:
+            post_start = post.start_time if post.start_time else start_time
+            post_end = post.end_time if post.end_time else end_time
+            checked.append(post.id)
+            for chk_post in posts.exclude(id__in=checked):
+                chk_start = chk_post.start_time if chk_post.start_time else start_time
+                chk_end = chk_post.end_time if chk_post.end_time else end_time
+                #check here
+                if chk_start < post_start:
+                    #preverji da je chk_mem pred membershipom
+                    if chk_end > post_start:
+                        #FAIL
+                        context["post_dupl"].append({"member": post.membership.person, "post1": post, "post2": chk_post})
+
+                elif chk_start > post_start:
+                    #preverji da je chk_mem pred membershipom
+                    if post_end > chk_start:
+                        #FAIL
+                        context["post_dupl"].append({"member": post.membership.person, "post1": membership, "post2": chk_post})
 
 
     return render(request, "debug_memberships.html", context)
