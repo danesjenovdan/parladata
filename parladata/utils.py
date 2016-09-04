@@ -317,8 +317,8 @@ def getMembershipDuplications(request):
     orgs = list(set(list(members.values_list("organization", flat=True))))
     for org in orgs:
         org_ = Organization.objects.get(id=org)
-        posts = org_.posts.all()
-        roles = dict(Counter(list(posts.values_list("role", flat=True))))
+        posts = [membership.memberships.all().values_list("role", flat=True) for membership in org_.memberships.all()]
+        roles = dict(Counter([role for post in posts for role in post]))
         context["roles"].append({"org": org_, "roles": [{"role": role, "count": count}for role, count in roles.items()]})
 
 
