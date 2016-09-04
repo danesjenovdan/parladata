@@ -364,21 +364,16 @@ def getBasicInfOfPG(request, pg_id, date_):
     listOfVotes = []
     parliamentary_group = Organization.objects.filter(classification="poslanska skupina", id=pg_id)
     members = Membership.objects.filter(Q(start_time__lte=fdate)|Q(start_time=None), Q(end_time__gte=fdate)|Q(end_time=None), organization__id=parliamentary_group)
-    
-    if len(Membership.objects.filter(Q(start_time__lte=fdate)|Q(start_time=None), Q(end_time__gte=fdate)|Q(end_time=None), label="p", organization__in=parliamentary_group)) > 0:
-        headOfPG = Membership.objects.filter(Q(start_time__lte=fdate)|Q(start_time=None), Q(end_time__gte=fdate)|Q(end_time=None), label="p", organization__in=parliamentary_group)[0].person.id
-    elif len(Membership.objects.filter(Q(start_time__lte=fdate)|Q(start_time=None), Q(end_time__gte=fdate)|Q(end_time=None), label="v", organization__in=parliamentary_group)) > 0:
-        headOfPG = Membership.objects.filter(Q(start_time__lte=fdate)|Q(start_time=None), Q(end_time__gte=fdate)|Q(end_time=None), label="v", organization__in=parliamentary_group)[0].person.id
+
+    if len(Post.objects.filter(Q(start_time__lte=fdate)|Q(start_time=None), Q(end_time__gte=fdate)|Q(end_time=None), organization=parliamentary_group, label="v")) == 1:
+        headOfPG = Post.objects.get(Q(start_time__lte=fdate)|Q(start_time=None), Q(end_time__gte=fdate)|Q(end_time=None), organization=parliamentary_group, label="v").membership.person.id
     else:
         headOfPG = None
 
-    if len(Membership.objects.filter(Q(start_time__lte=fdate)|Q(start_time=None), Q(end_time__gte=fdate)|Q(end_time=None), label="podp", organization__in=parliamentary_group)) > 0:
-        for membership in Membership.objects.filter(Q(start_time__lte=fdate)|Q(start_time=None), Q(end_time__gte=fdate)|Q(end_time=None), label="podp", organization__in=parliamentary_group):
-            viceOfPG.append(membership.person.id)
-
-    elif len(Membership.objects.filter(Q(start_time__lte=fdate)|Q(start_time=None), Q(end_time__gte=fdate)|Q(end_time=None), label="namv", organization__in=parliamentary_group)) > 0:
-        for membership in Membership.objects.filter(Q(start_time__lte=fdate)|Q(start_time=None), Q(end_time__gte=fdate)|Q(end_time=None), label="namv", organization__in=parliamentary_group):
-            viceOfPG.append(membership.person.id)
+    if len(Post.objects.filter(Q(start_time__lte=fdate)|Q(start_time=None), Q(end_time__gte=fdate)|Q(end_time=None), organization=parliamentary_group, label="namv")) > 0:
+        for post in Post.objects.filter(Q(start_time__lte=fdate)|Q(start_time=None), Q(end_time__gte=fdate)|Q(end_time=None), organization=parliamentary_group, label="namv"):
+            
+            viceOfPG.append(post.membership.person.id)
     else:
         viceOfPG = None
     
@@ -487,9 +482,11 @@ def getAllPeople(requests):
 def motionOfSession(request, id_se):
     data = {}
     tab = []
-    session = Session.objects.filter(id=id_se)
-    if session:
-        motion = Vote.objects.filter(motion__session__id=id_se)
+    allIDs = Session.objects.values('id')
+    for i in allIDs:
+        tab.append(i['id'])
+    if int(id_se) in tab:
+        motion = Vote.objects.filter(motion__session__id = id_se)
         if motion:
             data = [{'id':mot.motion.id, 'vote_id': mot.id, 'text':mot.motion.text,'result':mot.result, 'tags': map(smart_str, mot.tags.names())} for mot in motion]
         else:
@@ -622,13 +619,6 @@ def getMembersOfPGsRanges(request, date_=None):
         for xday in range((end_time-start_time).days+1):
             out[(start_time+timedelta(days=xday))][member.organization.id].append(member.person.id)
 
-    for day in out.keys():
-        print day
-        for pg, mems in out[day].items():
-            print mems
-            if len(mems)<1:
-                del out[day][pg]
-
     keys = out.keys()
     keys.sort()
     outList = [{"start_date":keys[0].strftime(settings.API_DATE_FORMAT),
@@ -672,13 +662,6 @@ def getMembersOfPGRanges(request, org_id, date_=None):
                 end_time = fdate
         for xday in range((end_time-start_time).days+1):
             out[(start_time+timedelta(days=xday))][member.organization.id].append(member.person.id)
-
-    for day in out.keys():
-        print day
-        for pg, mems in out[day].items():
-            print mems
-            if len(mems)<1:
-                del out[day]
 
     keys = out.keys()
     keys.sort()
