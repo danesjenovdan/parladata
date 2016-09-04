@@ -8,6 +8,7 @@ from django.conf import settings
 from django.http import JsonResponse
 from django.shortcuts import render
 from collections import Counter
+import csv
 
 #returns average from list of integers
 def AverageList(list):
@@ -155,7 +156,6 @@ def getPMMemberships():
 
 
 def checkNumberOfMembers():
-    import csv
     with open('members_on_day.csv', 'wb') as csvfile:
         csvwriter = csv.writer(csvfile, delimiter=',',
                                 quotechar='|', quoting=csv.QUOTE_MINIMAL)
@@ -203,7 +203,7 @@ def getFails():
     print out
 
 
-def getMembershipDuplications1(requests):
+def getMembershipDuplications1(request):
     # prepare data
     start_date = date(day=1, month=9, year=2014)
     end_date = date.today()
@@ -250,12 +250,12 @@ def getMembershipDuplications1(requests):
 
     print out
 
-    return render(requests, "debug_memberships.html", context)
+    return render(request, "debug_memberships.html", context)
 
-def getMembershipDuplications(requests):
+def getMembershipDuplications(request):
     # prepare data
     context = {}
-    start_time = datetime(day=1, month=9, year=2014)
+    start_time = datetime(day=1, month=8, year=2014)
     end_time = datetime.now()
     parliamentary_groups = Organization.objects.filter(Q(classification="poslanska skupina") | Q(classification="nepovezani poslanec"))
 
@@ -297,18 +297,104 @@ def getMembershipDuplications(requests):
     #check if one person have more then one membership per organization
     members_list = list(members.values_list("person", flat=True))
     org_per_person=[]
+    added_mems = []
     for member in members_list:
         temp = dict(Counter(list(members.filter(person__id=member).values_list("organization", flat=True))))
         print temp
         for key, val in temp.items():
-            if val>1:
+            if val>1 and not Membership.objects.filter(person__id=member, organization__id=key)[0].id in added_mems:
+                print val
+                added_mems.append(Membership.objects.filter(person__id=member, organization__id=key)[0].id)
                 org_per_person.append({"member": Person.objects.get(id=member), 
                                        "organization": Organization.objects.get(id=key), 
                                        "mem1": list(Membership.objects.filter(person__id=member, organization__id=key))[0],
                                        "mem2": list(Membership.objects.filter(person__id=member, organization__id=key))[1]})
 
-        context["orgs_per_person"] = org_per_person
+    context["orgs_per_person"] = org_per_person
+
+    context["roles"] = []
+    orgs = members.values_list("organization", flat=True)
+    orgs = list(set(list(members.values_list("organization", flat=True))))
+    for org in orgs:
+        org_ = Organization.objects.get(id=org)
+        posts = org_.posts.all()
+        roles = dict(Counter(list(posts.values_list("role", flat=True))))
+        context["roles"].append({"org": org_, "roles": [{"role": role, "count": count}for role, count in roles.items()]})
+
+
+    context["count_of_persons"] = []
+    pgRanges = requests.get("https://data.parlameter.si/v1/getMembersOfPGsRanges/"+datetime.now().strftime("%d.%m.%Y")).json()
+    for pgRange in pgRanges:
+        count = len([member for pg in pgRange["members"].values() for member in pg])
+        members_ids = [member for pg in pgRange["members"].values() for member in pg]
+        context["count_of_persons"].append({"count": {"count": count, "start_date": pgRange["start_date"], "end_date": pgRange["end_date"]}, "members": [member for pg in pgRange["members"].values() for member in pg]})
+        if len(context["count_of_persons"])>1:
+            context["count_of_persons"][-1]["added"] = [{"name": Person.objects.get(id=x).name, "membership": Membership.objects.filter(organization__in=parliamentary_groups, person__id=x, start_time=(datetime.strptime(context["count_of_persons"][-1]["count"]["start_date"], "%d.%m.%Y")).strftime("%Y-%m-%d %H:%M"))[0]} for x in context["count_of_persons"][-1]["members"] if x not in context["count_of_persons"][-2]["members"]]
+            context["count_of_persons"][-1]["removed"] = [{"name": Person.objects.get(id=x).name, "membership": Membership.objects.filter(organization__in=parliamentary_groups, person__id=x, end_time=(datetime.strptime(context["count_of_persons"][-1]["count"]["start_date"], "%d.%m.%Y")-timedelta(days=1)).strftime("%Y-%m-%d %H:%M"))[0] if Membership.objects.filter(organization__in=parliamentary_groups, person__id=x, end_time=(datetime.strptime(context["count_of_persons"][-1]["count"]["start_date"], "%d.%m.%Y")-timedelta(days=1)).strftime("%Y-%m-%d %H:%M")) else None} for x in context["count_of_persons"][-2]["members"] if x not in context["count_of_persons"][-1]["members"]]
+            context["allMps"] = [{"name": Person.objects.get(id=x).name, "membership": Membership.objects.filter(organization__in=parliamentary_groups, person__id=x, start_time=(datetime.strptime(context["count_of_persons"][-1]["count"]["start_date"], "%d.%m.%Y")).strftime("%Y-%m-%d %H:%M"))[0] if Membership.objects.filter(organization__in=parliamentary_groups, person__id=x, start_time=(datetime.strptime(context["count_of_persons"][-1]["count"]["start_date"], "%d.%m.%Y")).strftime("%Y-%m-%d %H:%M")) else x} for x in context["count_of_persons"][-1]["members"]]
+        else:
+            context["count_of_persons"][-1]["added"] = [{"name": Person.objects.get(id=x).name, "person_id": x} for x in context["count_of_persons"][-1]["members"]]
+
+
+    context["voters_counts"] = []
+    person_ids = set(list(members.values_list("person", flat=True)))
+    for person in person_ids:
+        prs = Person.objects.get(id=person)
+        if prs.voters == None or prs.voters == 0:
+            context["voters_counts"].append(prs)
 
 
 
-    return render(requests, "debug_memberships.html", context)
+
+    #membership duration vs. post duration
+    for membership in members:
+        posts = Post.objects.filter(membership=membership)
+        start_time = membership.start_time
+        end_time = membership.end_time
+        checked = []
+        print posts.count()
+        #    for post in posts:
+        #        if post.start_time == None:
+
+
+    return render(request, "debug_memberships.html", context)
+
+
+def getBlindVotes():
+    # prepare data
+    context = {}
+    start_time = datetime(day=1, month=8, year=2014)
+    end_time = datetime.now()
+    parliamentary_groups = Organization.objects.filter(Q(classification="poslanska skupina") | Q(classification="nepovezani poslanec"))
+
+    data = []
+
+    members = Membership.objects.filter(organization__in=parliamentary_groups)
+
+    context["vote_without_membership"] = []
+    #Pejd cez vse vote in preveri ce obstaja membership za to osebo na ta dan
+    with open('zombie_votes.csv', 'wb') as csvfile:
+        csvwriter = csv.writer(csvfile, delimiter=',',
+                                quotechar='|', quoting=csv.QUOTE_MINIMAL)
+        for ballot in Ballot.objects.all():
+            member = ballot.voter.memberships.filter(Q(start_time__lte=ballot.vote.start_time)|Q(start_time=None), Q(end_time__gte=ballot.vote.start_time)|Q(end_time=None), organization__in=parliamentary_groups)
+            if not member:
+                csvwriter.writerow([ballot.vote.start_time, ballot.voter.id, ballot.voter.name.encode("utf-8")])
+
+def parserChecker(request):
+    context = {}
+    context["empty_session"] = []
+    context["sessions_for_delete"] = []
+    sessions = Session.objects.all().order_by("start_time")
+    for session in sessions:
+        if not session.vote_set.all() and not session.speech_set.all():
+            context["empty_session"].append(session)
+    set_of_names = set([ses.name for ses in context["empty_session"]])
+
+    for name in set_of_names:
+        sess = Session.objects.filter(name=name)
+
+        context["sessions_for_delete"].append([{"session": ses, "org": ses.organization, "motions": len(ses.motion_set.all()), "votes": len(ses.vote_set.all()), "ballots": sum([len(vote.ballot_set.all()) for vote in ses.vote_set.all()]), "speeches": len(ses.speech_set.all())} for ses in sess])
+
+
+    return render(request, "debug_parser.html", context)

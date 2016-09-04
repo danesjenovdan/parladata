@@ -4,7 +4,7 @@ from dal import autocomplete
 
 # Register your models here.
 from .models import *
-from forms import MembershipForm
+from forms import MembershipForm, PostForm
 
 class OtherNamePersonInline(admin.TabularInline):
     model = OtherName
@@ -159,18 +159,19 @@ class OrganizationAdmin(admin.ModelAdmin):
     ]
 
 class PostAdmin(admin.ModelAdmin):
+    form = PostForm
     inlines = [
         SourcePostInline,
     ]
-
+    search_fields = ['membership__person__name', 'organization__name']
 class MembershipAdmin(admin.ModelAdmin):
     form = MembershipForm
     inlines = [
         SourceMembershipInline,
         LinkMembershipInline,
     ]
-    list_filter = ('post__role', 'organization')
-    search_fields = ['person__name', 'post__role', 'organization__name']
+    list_filter = ['organization']
+    search_fields = ['person__name', 'organization__name']
 
 class SessionAdmin(admin.ModelAdmin):
     inlines = [
@@ -178,6 +179,7 @@ class SessionAdmin(admin.ModelAdmin):
         SpeechSessionInline,
         MotionSessionInline,
     ]
+    search_fields = ['name']
 
 class SpeechAdmin(admin.ModelAdmin):
     inlines = [
@@ -229,5 +231,19 @@ class PostAutocomplete(autocomplete.Select2QuerySetView):
 
         if self.q:
             qs = qs.filter(organization__name__icontains=self.q)
+
+        return qs
+
+
+class MembershipAutocomplete(autocomplete.Select2QuerySetView):
+    def get_queryset(self):
+        # Don't forget to filter out results depending on the visitor !
+        if not self.request.user.is_authenticated():
+            return Membership.objects.none()
+
+        qs = Membership.objects.all()
+
+        if self.q:
+            qs = qs.filter(person__name__icontains=self.q)
 
         return qs
