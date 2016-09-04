@@ -2,12 +2,13 @@ from django.conf.urls import patterns, include, url
 from parladata.views import *
 from .utils import getMembershipDuplications
 
-from parladata.admin import PersonAutocomplete, PostAutocomplete
+from parladata.admin import PersonAutocomplete, PostAutocomplete, MembershipAutocomplete
 
 urlpatterns = patterns('',
 
     #autocomplete urls
     url(r'^person-autocomplete/$', PersonAutocomplete.as_view(), name='person-autocomplete'),
+    url(r'^membership-autocomplete/$', MembershipAutocomplete.as_view(), name='membership-autocomplete'),
     url(r'^post-autocomplete/$', PostAutocomplete.as_view(), name='post-autocomplete'),
 
     url(r'^getActivity/(?P<person_id>\d+)', getActivity),
@@ -88,5 +89,5 @@ urlpatterns = patterns('',
 
     #debug helpers
     url(r'^getMembershipDuplications', getMembershipDuplications),
-
+    url(r'^parserChecker', parserChecker), 
 )

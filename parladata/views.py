@@ -364,15 +364,16 @@ def getBasicInfOfPG(request, pg_id, date_):
     listOfVotes = []
     parliamentary_group = Organization.objects.filter(classification="poslanska skupina", id=pg_id)
     members = Membership.objects.filter(Q(start_time__lte=fdate)|Q(start_time=None), Q(end_time__gte=fdate)|Q(end_time=None), organization__id=parliamentary_group)
-    
-    if len(Post.objects.filter(Q(start_time__lte=fdate)|Q(start_time=None), Q(end_time__gte=fdate)|Q(end_time=None), label="v", organization__in=parliamentary_group)) > 0:
-        headOfPG = Post.objects.filter(Q(start_time__lte=fdate)|Q(start_time=None), Q(end_time__gte=fdate)|Q(end_time=None), label="v", organization__in=parliamentary_group)[0].person.id
+
+    if len(Post.objects.filter(Q(start_time__lte=fdate)|Q(start_time=None), Q(end_time__gte=fdate)|Q(end_time=None), organization=parliamentary_group, label="v")) == 1:
+        headOfPG = Post.objects.get(Q(start_time__lte=fdate)|Q(start_time=None), Q(end_time__gte=fdate)|Q(end_time=None), organization=parliamentary_group, label="v").membership.person.id
     else:
         headOfPG = None
 
-    if len(Post.objects.filter(Q(start_time__lte=fdate)|Q(start_time=None), Q(end_time__gte=fdate)|Q(end_time=None), label="namv", organization__in=parliamentary_group)) > 0:
-        for post in Post.objects.filter(Q(start_time__lte=fdate)|Q(start_time=None), Q(end_time__gte=fdate)|Q(end_time=None), label="namv", organization__in=parliamentary_group):
-            viceOfPG.append(post.person.id)
+    if len(Post.objects.filter(Q(start_time__lte=fdate)|Q(start_time=None), Q(end_time__gte=fdate)|Q(end_time=None), organization=parliamentary_group, label="namv")) > 0:
+        for post in Post.objects.filter(Q(start_time__lte=fdate)|Q(start_time=None), Q(end_time__gte=fdate)|Q(end_time=None), organization=parliamentary_group, label="namv"):
+            
+            viceOfPG.append(post.membership.person.id)
     else:
         viceOfPG = None
     
