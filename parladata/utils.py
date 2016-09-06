@@ -432,21 +432,24 @@ def parserChecker(request):
     return render(request, "debug_parser.html", context)
 
 
-def postMembersFixer():
+def postMembersFixer(request):
+    context = {}
+    context["posts"] = []
     for member in Membership.objects.all():
-        
         posts = member.memberships.all().order_by("start_time")
         start_time = member.start_time
         firstpost = member.memberships.filter(start_time=start_time)
+        line = {"member": member, "fails": []}
         if not posts:
-            Post(start_time=member.start_time, end_time=member.end_time, membership=member, role="član", label="cl", organization=member.organization).save()
+            #Post(start_time=member.start_time, end_time=member.end_time, membership=member, role="član", label="cl", organization=member.organization).save()
             print "Dodajanje novega psota", member
+            line["fails"].append({"type": "empty"})
         elif firstpost:
-	    posts = posts.exclude(start_time=None)
-	    if posts.count()==0:
-		if firstpost[0].end_time != member.end_time:
-		    print "sam post z None starttimem je in endtime se ne matcha z membershipom"
-		continue
+            posts = posts.exclude(start_time=None)
+            if posts.count()==0:
+                if firstpost[0].end_time != member.end_time:
+                    line["fails"].append({"type": "fail", "note": "sam post z None start_timeom je in endtime se ne matcha z membershipom", "posts": posts})
+                continue
             #There is a post which start on membership start time
             if posts[0] == firstpost:
                 temp_start = posts[0].start_time
@@ -454,9 +457,15 @@ def postMembersFixer():
                 for post in list(posts)[1:]:
                     if post.start_time > temp_end+timedelta(days=2):
                         print "Lukna"
-
+                        line["fails"].append({"type": "fail", "note": "Med posti je luknja", "posts": posts})
                 if list(posts)[-1].end_time != membership.end_time:
                     print "konc zadnega posta in membership_end nista ista"
+                    line["fails"].append({"type": "fail", "note": "endtime ni ok", "posts": posts})
         else:
+            line["fails"].append({"type": "fail", "note": "start_time je neki cudn", "posts": posts})
             print member.person.name, "start membership:", member.start_time, "start post_prvi:", posts[0].start_time, "start post_zadn:", list(posts)[-1].start_time
-            
+        context["posts"].append(line)
+
+    print context["posts"]
+
+    return render(request, "post.html", context)
