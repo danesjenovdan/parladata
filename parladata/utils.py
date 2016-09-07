@@ -413,6 +413,32 @@ def getBlindVotes():
             if not member:
                 csvwriter.writerow([ballot.vote.start_time, ballot.voter.id, ballot.voter.name.encode("utf-8")])
 
+
+def getPersonWithoutVotes():
+    # prepare data
+    context = {}
+    start_time = datetime(day=1, month=8, year=2014)
+    end_time = datetime.now()
+    parliamentary_groups = Organization.objects.filter(Q(classification="poslanska skupina") | Q(classification="nepovezani poslanec"))
+
+    data = []
+
+    members = Membership.objects.filter(organization__in=parliamentary_groups)
+
+    with open('poor_voters.csv', 'wb') as csvfile:
+        csvwriter = csv.writer(csvfile, delimiter=',',
+                                quotechar='|', quoting=csv.QUOTE_MINIMAL)
+        for vote in Vote.objects.all():
+            real_voters = vote.ballot_set.all().values_list("voter__id", flat=True)
+            fi_voters_memberships = members.filter(Q(start_time__lte=vote.start_time)|Q(start_time=None), Q(end_time__gte=vote.start_time)|Q(end_time=None))
+            fi_voters = fi_voters_memberships.values_list("person__id", flat=True)
+
+            personWithoutVotes = list(set(fi_voters)-set(real_voters))
+
+            mems = fi_voters_memberships.filter(person__id__in=personWithoutVotes)
+            for personMem in mems:
+                csvwriter.writerow([vote.start_time, personMem.id, personMem.person.id, personMem.person.name])
+
 def parserChecker(request):
     context = {}
     context["empty_session"] = []
