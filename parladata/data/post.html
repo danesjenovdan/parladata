@@ -40,15 +40,16 @@
 		</thead>
 		<tbody>
 			{% for fail in posts %}
+			{% if fail.fails %}
 			<tr class="bg-info">
 				<td></td>
 				<td>{{fail.member.person.name}}</td>
 				<td>{{fail.member.start_time}}</td>
 				<td>{{fail.member.end_time}}</td>
 				<td></td>
-				<td><a href="https://data.parlameter.si/admin/parladata/membership/{{fail.member.id}}/"></td>
+				<td><a href="https://data.parlameter.si/admin/parladata/membership/{{fail.member.id}}/">Edit</td>
 			</tr>
-				{% for goza in fail.fails %}
+				{% for groza in fail.fails %}
 					{% for post in groza.posts %}
 						<tr class="bg-warning">
 							<td></td>
@@ -56,7 +57,7 @@
 							<td>{{post.start_time}}</td>
 							<td>{{post.end_time}}</td>
 							<td>{{groza.note}}</td>
-							<td><a href="https://data.parlameter.si/admin/parladata/post/{{post.id}}/"></td>
+							<td><a href="https://data.parlameter.si/admin/parladata/post/{{post.id}}/">Edit</td>
 						</tr>
 					{% endfor %}
 					{% if not fail.fails %}
@@ -66,10 +67,11 @@
 							<td></td>
 							<td></td>
 							<td>{{groza.note}}</td>
-							<td><a href="https://data.parlameter.si/admin/parladata/post/{{post.id}}/"></td>
+							<td><a href="https://data.parlameter.si/admin/parladata/post/{{post.id}}/">Edit</td>
 						</tr>
 					{% endif %}
 				{% endfor %}
+			{%endif%}
 			{% endfor %}
 		</tbody>
 	</table>
