@@ -442,7 +442,7 @@ def postMembersFixer(request):
         line = {"member": member, "fails": []}
         if not posts:
             #Post(start_time=member.start_time, end_time=member.end_time, membership=member, role="član", label="cl", organization=member.organization).save()
-            print "Dodajanje novega psota", member
+            #print "Dodajanje novega psota", member
             line["fails"].append({"type": "empty"})
         elif firstpost:
             posts = posts.exclude(start_time=None)
@@ -456,14 +456,14 @@ def postMembersFixer(request):
                 temp_end = posts[0].end_time
                 for post in list(posts)[1:]:
                     if post.start_time > temp_end+timedelta(days=2):
-                        print "Lukna"
+                        #print "Lukna"
                         line["fails"].append({"type": "fail", "note": "Med posti je luknja", "posts": posts})
                 if list(posts)[-1].end_time != membership.end_time:
-                    print "konc zadnega posta in membership_end nista ista"
+                    #print "konc zadnega posta in membership_end nista ista"
                     line["fails"].append({"type": "fail", "note": "endtime ni ok", "posts": posts})
         else:
             line["fails"].append({"type": "fail", "note": "start_time je neki cudn", "posts": posts})
-            print member.person.name, "start membership:", member.start_time, "start post_prvi:", posts[0].start_time, "start post_zadn:", list(posts)[-1].start_time
+            #print member.person.name, "start membership:", member.start_time, "start post_prvi:", posts[0].start_time, "start post_zadn:", list(posts)[-1].start_time
         context["posts"].append(line)
 
     print context["posts"]

@@ -211,9 +211,11 @@
 				<th>Post 1</th>
 				<th>Start</th>
 				<th> End</th>
+				<th>created_at</th>
 				<th>Post 2</th>
 				<th>Start</th>
-				<th> End</th>
+				<th>End</th>
+				<th>created_at</th>
 			</tr>
 		</thead>
 		<tbody>
@@ -224,9 +226,11 @@
 					<td class="bg-info"><a href="https://data.parlameter.si/admin/parladata/post/{{fail.post1.id}}/">Edit</a></td>
 					<td class="bg-info">{{fail.post1.start_time}}</td>
 					<td class="bg-info">{{fail.post1.end_time}}</td>
+					<td class="bg-info">{{fail.post1.created_at}}</td>
 					<td class="bg-success"><a href="https://data.parlameter.si/admin/parladata/post/{{fail.post2.id}}/">Edit</a></td>
 					<td class="bg-success">{{fail.post2.start_time}}</td>
 					<td class="bg-success">{{fail.post2.end_time}}</td>
+					<td class="bg-success">{{fail.post2.created_at}}</td>
 				</tr>
 			{% endfor %}
 		</tbody>

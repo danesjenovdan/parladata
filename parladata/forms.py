@@ -29,7 +29,7 @@ class MembershipForm(forms.ModelForm):
 
     def save(self, *args, **kwargs):
         instance = super(MembershipForm, self).save(commit=False)
-        self.fields['post'].initial.update(post=None)
+        #self.fields['post'].initial.update(post=None)
         return instance
 
 

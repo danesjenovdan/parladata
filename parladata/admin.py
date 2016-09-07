@@ -163,7 +163,7 @@ class PostAdmin(admin.ModelAdmin):
     inlines = [
         SourcePostInline,
     ]
-    search_fields = ['membership__person__name', 'organization__name']
+    search_fields = ['membership__person__name', 'membership__organization__name']
 class MembershipAdmin(admin.ModelAdmin):
     form = MembershipForm
     inlines = [
