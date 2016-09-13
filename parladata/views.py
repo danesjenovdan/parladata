@@ -504,11 +504,12 @@ def getVotesOfSession(request, id_se):
     data = []
     tab = []
     for bal in Ballot.objects.filter(vote__session__id = str(id_se)):
-            data.append({"mo_id":bal.vote.motion.id,
-                         "mp_id":bal.voter.id,
-                         "Acronym":Membership.objects.get(Q(end_time__gte=fdate) | Q(end_time=None), Q(start_time__lte=fdate)|Q(start_time=None), person=bal.voter, organization__classification="poslanska skupina").organization.acronym, 
-                         "option":bal.option, 
-                         "pg_id":Membership.objects.get(Q(end_time__gte=fdate) | Q(end_time=None), Q(start_time__lte=fdate)|Q(start_time=None), person=bal.voter, organization__classification="poslanska skupina").organization.id})
+        voter_membership = Membership.objects.filter(Q(end_time__gte=fdate) | Q(end_time=None), Q(start_time__lte=fdate)|Q(start_time=None), person=bal.voter, organization__classification="poslanska skupina")[0]
+        data.append({"mo_id":bal.vote.motion.id,
+                     "mp_id":bal.voter.id,
+                     "Acronym":voter_membership.organization.acronym, 
+                     "option":bal.option, 
+                     "pg_id":voter_membership.organization.id})
     return JsonResponse(data,safe = False)
 
 
