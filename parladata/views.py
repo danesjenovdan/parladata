@@ -334,6 +334,23 @@ def getAllSpeeches(request, date_=None):
 
     return JsonResponse(speeches, safe=False)
 
+
+def getAllSpeechesOfMPs(request, date_=None):
+    if date_:
+        fdate = datetime.strptime(date_, settings.API_DATE_FORMAT).date()
+    else:
+        fdate=datetime.now().date()
+
+    parliamentary_group = Organization.objects.filter(classification="poslanska skupina",id = int(pg_id))
+    members = list(set(Membership.objects.filter(organization__in=parliamentary_group).values_list("person__id", flat=True)))
+
+    speeches_queryset = Speech.objects.filter(speaker__in=members, start_time__lte=fdate)
+
+    speeches = [{'content': speech.content, 'speech_id': speech.id, 'speaker':speech.speaker.id, 'session_name':speech.session.name, 'session_id':speech.session.id,} for speech in speeches_queryset]
+
+    return JsonResponse(speeches, safe=False)
+
+
 def getMPParty(request, person_id):
     person = Person.objects.get(id=person_id)
 
