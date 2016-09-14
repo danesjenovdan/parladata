@@ -28,6 +28,8 @@ urlpatterns = patterns('',
     url(r'^getSpeechesOfMPbyDate/(?P<person_id>\d+)/(?P<date_>[\w].+)', getSpeechesOfMPbyDate),
     url(r'^getAllSpeeches/(?P<date_>[\w].+)', getAllSpeeches),
     url(r'^getAllSpeeches', getAllSpeeches),
+    url(r'^getAllSpeechesOfMPs/(?P<date_>[\w].+)', getAllSpeechesOfMPs),
+    url(r'^getAllSpeechesOfMPs', getAllSpeechesOfMPs),
 
     url(r'^getVotes/(?P<date_>[\w].+)', getVotes),
     url(r'^getVotes/', getVotes),
