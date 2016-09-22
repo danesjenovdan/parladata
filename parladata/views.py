@@ -529,7 +529,7 @@ def getVotesOfSession(request, id_se):
                      "option":bal.option, 
                      "pg_id":voter_membership.organization.id})
         else:
-            print "nima membershipa: ", bal.voter.name   
+            print "nima membershipa: ", bal.voter.id   
     return JsonResponse(data,safe = False)
 
 
