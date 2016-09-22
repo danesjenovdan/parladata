@@ -521,7 +521,7 @@ def getVotesOfSession(request, id_se):
     data = []
     tab = []
     for bal in Ballot.objects.filter(vote__session__id = str(id_se)):
-        if len(Membership.objects.filter(Q(end_time__gte=fdate) | Q(end_time=None), Q(start_time__lte=fdate)|Q(start_time=None), person=bal.voter, organization__classification="poslanska skupina")) == 1:
+        if len(Membership.objects.filter(Q(end_time__gte=fdate) | Q(end_time=None), Q(start_time__lte=fdate)|Q(start_time=None), person=bal.voter, organization__classification="poslanska skupina")) >= 1:
             voter_membership = Membership.objects.filter(Q(end_time__gte=fdate) | Q(end_time=None), Q(start_time__lte=fdate)|Q(start_time=None), person=bal.voter, organization__classification="poslanska skupina")[0]
             data.append({"mo_id":bal.vote.motion.id,
                      "mp_id":bal.voter.id,
