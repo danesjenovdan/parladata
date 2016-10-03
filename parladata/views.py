@@ -772,6 +772,12 @@ def getTags(request):
     out = [tag for tag in Tag.objects.all().exclude(id__in=[1,2,3,4,5,8,9]).values_list("name", flat=True)]
     return JsonResponse(out, safe=False)
 
+
+def getDistricts(request):
+    out = list(Area.objects.all().values_list("name", flat=True))
+    return JsonResponse(out, safe=False)
+
+
 def getSpeechData(request, speech_id):
     speech = Speech.objects.filter(pk=speech_id)
 

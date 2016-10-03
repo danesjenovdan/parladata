@@ -84,7 +84,9 @@ urlpatterns = patterns('',
     url(r'^getOrganizationRolesAndMembers/(?P<org_id>\d+)/(?P<date_>[\w].+)',getOrganizationRolesAndMembers),
     url(r'^getOrganizationRolesAndMembers/(?P<org_id>\d+)',getOrganizationRolesAndMembers),
 
-    url(r'^getTags',getTags),
+    url(r'^getTags', getTags),
+
+    url(r'^getDistricts', getDistricts),
 
     url(r'^getSpeechData/(?P<speech_id>\d+)',getSpeechData),
 
