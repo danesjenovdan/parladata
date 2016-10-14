@@ -86,6 +86,8 @@ def getMPs(request, date_=None):
             districts = i.districts.all().values_list("name", flat=True)
             if not districts:
                 districts = None
+	    else:
+		districts = [smart_str(dist) for dist in districts]
         membership = Membership.objects.filter(Q(start_time__lte=fdate)|Q(start_time=None), Q(end_time__gte=fdate)|Q(end_time=None))
         #membership = Membership.objects.filter(person = i, organization=parliamentary_group)
 
@@ -146,7 +148,8 @@ def getMPStatic(request, person_id, date_=None):
             district = member.districts.all().values_list("name", flat=True)
             if not district:
                 district = None
-
+	    else:
+		district = [smart_str(dist) for dist in district]
             data = {
                 'previous_occupation': member.previous_occupation,
                 'education': member.education,
