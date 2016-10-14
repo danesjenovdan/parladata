@@ -168,6 +168,11 @@ class Person(Timestampable, models.Model): # poslanec, minister, predsednik dz e
                                  blank=True, null=True,
                                  help_text='District')
 
+    districts = models.ManyToManyField('Area',
+                                       blank=True, null=True,
+                                       help_text='District',
+                                       related_name="candidates")
+
     voters = models.IntegerField(blank=True, null=True, help_text='number of votes cast for this person in their district')
     active = models.BooleanField(default=True,
                                  help_text='a generic active or not toggle')
