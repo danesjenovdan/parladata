@@ -80,14 +80,16 @@ def getMPs(request, date_=None):
 
     parliamentary_group = Organization.objects.filter(Q(classification="poslanska skupina") | Q(classification="nepovezani poslanec"))
     for i in getMPObjects(fdate):
-        district = ''
+        districts = ''
 
-        if i.district != None:
-            district = i.district.name
+        if i.districts:
+            districts = i.districts.all().values_list("name", flat=True)
+            if not districts:
+                districts = None
         membership = Membership.objects.filter(Q(start_time__lte=fdate)|Q(start_time=None), Q(end_time__gte=fdate)|Q(end_time=None))
         #membership = Membership.objects.filter(person = i, organization=parliamentary_group)
 
-        data.append({'id': i.id, 'name':i.name,'membership':membership[0].organization.name, 'acronym':membership[0].organization.acronym,'classification':i.classification,'family_name':i.family_name,'given_name':i.given_name,'additional_name':i.additional_name,'honorific_prefix':i.honorific_prefix,'honorific_suffix':i.honorific_suffix,'patronymic_name':i.patronymic_name,'sort_name':i.sort_name,'email':i.email,'gender':i.gender,'birth_date':str(i.birth_date),'death_date':str(i.death_date),'summary':i.summary,'biography':i.biography,'image':i.image,'district':'','gov_url':i.gov_url.url,'gov_id':i.gov_id,'gov_picture_url':i.gov_picture_url,'voters':i.voters,'active':i.active,'party_id':membership[0].organization.id})
+        data.append({'id': i.id, 'name':i.name,'membership':membership[0].organization.name, 'acronym':membership[0].organization.acronym,'classification':i.classification,'family_name':i.family_name,'given_name':i.given_name,'additional_name':i.additional_name,'honorific_prefix':i.honorific_prefix,'honorific_suffix':i.honorific_suffix,'patronymic_name':i.patronymic_name,'sort_name':i.sort_name,'email':i.email,'gender':i.gender,'birth_date':str(i.birth_date),'death_date':str(i.death_date),'summary':i.summary,'biography':i.biography,'image':i.image,'district':districts,'gov_url':i.gov_url.url,'gov_id':i.gov_id,'gov_picture_url':i.gov_picture_url,'voters':i.voters,'active':i.active,'party_id':membership[0].organization.id})
     print len(data)
     return  JsonResponse(data, safe=False)
 
@@ -141,7 +143,9 @@ def getMPStatic(request, person_id, date_=None):
             else:
                 social_output['linkedin'] = False
 
-            district = member.district.name if member.district else None
+            district = member.districts.all().values_list("name", flat=True)
+            if not district:
+                district = None
 
             data = {
                 'previous_occupation': member.previous_occupation,
