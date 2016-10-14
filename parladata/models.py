@@ -164,9 +164,6 @@ class Person(Timestampable, models.Model): # poslanec, minister, predsednik dz e
                                       help_text=_('URL to gov website pic'))
 
 #    slug = models.CharField(max_length = 255, blank=True, null=True)
-    district = models.ForeignKey('Area',
-                                 blank=True, null=True,
-                                 help_text='District')
 
     districts = models.ManyToManyField('Area',
                                        blank=True, null=True,
