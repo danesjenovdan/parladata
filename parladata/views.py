@@ -148,8 +148,8 @@ def getMPStatic(request, person_id, date_=None):
             district = member.districts.all().values_list("name", flat=True)
             if not district:
                 district = None
-	    else:
-		district = [smart_str(dist) for dist in district]
+            else:
+                district = [smart_str(dist) for dist in district]
             data = {
                 'previous_occupation': member.previous_occupation,
                 'education': member.education,
