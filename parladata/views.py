@@ -127,8 +127,8 @@ def getMPStatic(request, person_id, date_=None):
                 client.captureException()
                 age = None
 
-            twitter = member.link_set.filter(tags__name__in=['twitter'])
-            facebook = member.link_set.filter(tags__name__in=['facebook'])
+            twitter = member.link_set.filter(tags__name__in=['tw'])
+            facebook = member.link_set.filter(tags__name__in=['fb'])
             linkedin = member.link_set.filter(tags__name__in=['linkedin'])
 
             social_output = {}
