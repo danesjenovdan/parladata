@@ -664,6 +664,55 @@ def getMembersOfPGsRanges(request, date_=None):
     return JsonResponse(outList, safe=False)
 
 
+def getMembersOfOrgsRanges(request, org_id, date_=None):
+    if date_:
+        fdate = datetime.strptime(date_, settings.API_DATE_FORMAT).date()
+    else:
+        fdate = datetime.now().date()
+    
+    organization = Organization.objects.filter(id=org_id)
+    members = Membership.objects.filter(organization__in=organization)
+    try:
+        tempDate=min([mem for mem in members.values_list("start_time", flat=True) if mem]).date()
+    except: # if in org isn't members
+        tempDate=settings.MANDATE_START_TIME.date()
+    out = {(tempDate+timedelta(days=xday)): {grup: [] for grup in organization.values_list("id", flat=True)} for xday in range((fdate-tempDate).days+1)}
+    for member in members:
+        if not member.start_time and not member.end_time:
+            start_time = tempDate
+            end_time = fdate
+        elif member.start_time and not member.end_time:
+            if member.start_time.date() < tempDate:
+                start_time = tempDate
+            else:
+                start_time = member.start_time.date()
+            end_time = fdate
+        else:
+            start_time = member.start_time.date()
+            if fdate > member.end_time.date():
+                end_time = member.end_time.date()
+            else:
+                end_time = fdate
+        for xday in range((end_time-start_time).days+1):
+            out[(start_time+timedelta(days=xday))][member.organization.id].append(member.person.id)
+
+    keys = out.keys()
+    keys.sort()
+    outList = [{"start_date":keys[0].strftime(settings.API_DATE_FORMAT),
+                "end_date":keys[0].strftime(settings.API_DATE_FORMAT),
+                "members":out[keys[0]]}]
+    for key in keys:
+        if out[key]==outList[-1]["members"]:
+            outList[-1]["end_date"]=key.strftime(settings.API_DATE_FORMAT)
+        else:
+            outList.append({"start_date":key.strftime(settings.API_DATE_FORMAT),
+                            "end_date":key.strftime(settings.API_DATE_FORMAT),
+                            "members":out[key]})
+
+
+    return JsonResponse(outList, safe=False)
+
+
 def getMembersOfPGRanges(request, org_id, date_=None):
     if date_:
         fdate = datetime.strptime(date_, settings.API_DATE_FORMAT).date()
