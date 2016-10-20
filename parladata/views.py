@@ -825,12 +825,12 @@ def getOrganizationRolesAndMembers(request, org_id, date_=None):
 
 
 def getTags(request):
-    out = [tag for tag in Tag.objects.all().exclude(id__in=[1,2,3,4,5,8,9]).values_list("name", flat=True)]
+    out = [{"name": tag.name, "id": tag.id} for tag in Tag.objects.all().exclude(id__in=[1,2,3,4,5,8,9])]
     return JsonResponse(out, safe=False)
 
 
 def getDistricts(request):
-    out = list(Area.objects.all().values_list("name", flat=True))
+    out = [{"id": area.id, "name": area.id} for area in Area.objects.all()]
     return JsonResponse(out, safe=False)
 
 
