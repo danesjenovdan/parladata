@@ -348,7 +348,7 @@ def getAllSpeechesOfMPs(request, date_=None):
     else:
         fdate=datetime.now().date()
 
-    parliamentary_group = Organization.objects.filter(classification="poslanska skupina",id = int(pg_id))
+    parliamentary_group = Organization.objects.filter(classification="poslanska skupina")
     members = list(set(Membership.objects.filter(organization__in=parliamentary_group).values_list("person__id", flat=True)))
 
     speeches_queryset = Speech.objects.filter(speaker__in=members, start_time__lte=fdate)
