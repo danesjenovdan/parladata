@@ -522,3 +522,19 @@ def membersFlowInOrg(request):
         except:
             context["orgs"].append({"name": "ID: "+str(org_id), "flow":flow})
     return render(request, "org_memberships.html", context)
+
+
+def getMPsOrganizationsByClassification():
+    classes = ["skupina prijateljstva", "delegacija", "komisija", "poslanska skupina", "odbor", "kolegij", "preiskovalna komisija", ""]
+    with open('members_orgs.csv', 'w') as csvfile:
+        csvwriter = csv.writer(csvfile, delimiter=';',
+                                quotechar='|', quoting=csv.QUOTE_MINIMAL)
+        csvwriter.writerow(["Person"]+[clas for clas in classes])
+        parliamentary_group = Organization.objects.filter(Q(classification="poslanska skupina") | Q(classification="nepovezani poslanec"))
+        pgs = Membership.objects.filter(organization__in=parliamentary_group)
+        for person_mps in pgs:
+            memberships = person_mps.person.memberships.all()
+            counter = {"skupina prijateljstva":[], "delegacija": [], "komisija" : [], "poslanska skupina": [], "odbor": [], "kolegij": [], "preiskovalna komisija": [], "": []}
+            for mem in memberships:
+                counter[mem.organization.classification].append(smart_str(mem.organization.name))
+            csvwriter.writerow([smart_str(person_mps.person.name)]+[",".join(counter[clas]) for clas in classes])
