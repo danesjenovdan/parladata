@@ -9,6 +9,7 @@ from django.http import JsonResponse
 from django.shortcuts import render
 from collections import Counter
 import csv
+from django.utils.encoding import smart_str
 
 #returns average from list of integers
 def AverageList(list):
@@ -525,7 +526,7 @@ def membersFlowInOrg(request):
 
 
 def getMPsOrganizationsByClassification():
-    classes = ["skupina prijateljstva", "delegacija", "komisija", "poslanska skupina", "odbor", "kolegij", "preiskovalna komisija", ""]
+    classes = ["skupina prijateljstva", "delegacija", "komisija", "poslanska skupina", "odbor", "kolegij", "preiskovalna komisija", "", "nepovezani poslanec"]
     with open('members_orgs.csv', 'w') as csvfile:
         csvwriter = csv.writer(csvfile, delimiter=';',
                                 quotechar='|', quoting=csv.QUOTE_MINIMAL)
@@ -534,7 +535,7 @@ def getMPsOrganizationsByClassification():
         pgs = Membership.objects.filter(organization__in=parliamentary_group)
         for person_mps in pgs:
             memberships = person_mps.person.memberships.all()
-            counter = {"skupina prijateljstva":[], "delegacija": [], "komisija" : [], "poslanska skupina": [], "odbor": [], "kolegij": [], "preiskovalna komisija": [], "": []}
+            counter = {"skupina prijateljstva":[], "delegacija": [], "komisija" : [], "poslanska skupina": [], "odbor": [], "kolegij": [], "preiskovalna komisija": [], "": [], "nepovezani poslanec":[]}
             for mem in memberships:
                 counter[mem.organization.classification].append(smart_str(mem.organization.name))
             csvwriter.writerow([smart_str(person_mps.person.name)]+[",".join(counter[clas]) for clas in classes])
