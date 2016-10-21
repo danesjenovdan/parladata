@@ -851,3 +851,14 @@ def getSpeechData(request, speech_id):
         return JsonResponse(output, safe=False)
 
     return HttpResponse(-1)
+
+
+def getPersonData(request, person_id):
+    person = Person.objects.filter(id=person_id)
+    if person:
+        obj = {'name': person[0].name,          
+               'gender':person[0].gender if person[0].gender else 'unknown',
+               }
+    else:
+        obj = {}
+    return JsonResponse(obj)
