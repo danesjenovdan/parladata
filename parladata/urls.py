@@ -93,6 +93,8 @@ urlpatterns = patterns('',
 
     url(r'^getSpeechData/(?P<speech_id>\d+)',getSpeechData),
 
+    url(r'^getPersonData/(?P<person_id>\d+)',getPersonData),
+
 
     #debug helpers
     url(r'^getMembershipDuplications', getMembershipDuplications),
