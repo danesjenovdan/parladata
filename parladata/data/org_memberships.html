@@ -59,7 +59,7 @@
 					<tr>
 						<th scope="row"></th>
 						<td class="bg-warning" colspan="5">
-							{% for person in allMps %}
+							{% for person in org.allMps %}
 								<a href="https://data.parlameter.si/admin/parladata/membership/{{person.membership.id}}" style="color: white;">{{ person.name }},</a>
 							{% endfor %}
 						</td>
