@@ -519,9 +519,9 @@ def membersFlowInOrg(request):
             else:
                 flow[-1]["added"] = [{"name": Person.objects.get(id=x).name, "person_id": x} for x in flow[-1]["members"]]
         try:
-            context["orgs"].append({"name":Organization.objects.get(id=org_id).name, "flow":flow})
+            context["orgs"].append({"name":Organization.objects.get(id=org_id).name, "flow":flow, "allMps": context["allMps"]})
         except:
-            context["orgs"].append({"name": "ID: "+str(org_id), "flow":flow,  "allMps": context["allMps"]})
+            context["orgs"].append({"name": "ID: "+str(org_id), "flow":flow,  "allMps": context["allMps"], "allMps": context["allMps"]})
     return render(request, "org_memberships.html", context)
 
 
@@ -548,7 +548,7 @@ def membersFlowInPGs(request):
         try:
             context["orgs"].append({"name":Organization.objects.get(id=org_id).name, "flow":flow, "allMps": context["allMps"]})
         except:
-            context["orgs"].append({"name": "ID: "+str(org_id), "flow":flow})
+            context["orgs"].append({"name": "ID: "+str(org_id), "flow":flow, "allMps": context["allMps"]})
     return render(request, "org_memberships.html", context)
 
 def membersFlowInDZ(request):
