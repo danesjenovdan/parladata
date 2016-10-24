@@ -353,8 +353,12 @@ def getAllSpeechesOfMPs(request, date_=None):
 
     speeches_queryset = Speech.objects.filter(speaker__in=members, start_time__lte=fdate)
 
-    speeches = [{'content': speech.content, 'speech_id': speech.id, 'speaker':speech.speaker.id, 'session_name':speech.session.name, 'session_id':speech.session.id,} for speech in speeches_queryset]
-
+    #speeches = [{'content': speech.content, 'speech_id': speech.id, 'speaker':speech.speaker.id, 'session_name':speech.session.name, 'session_id':speech.session.id,} for speech in speeches_queryset]
+    
+    #for speech in speeches:
+    #    data.append(model_to_dict(speech, fields=[field.name for field in speech._meta.fields], exclude=[]))
+    
+    speeches = [model_to_dict(speech, fields=[field.name for field in speech._meta.fields], exclude=[]) for speech in speeches]
     return JsonResponse(speeches, safe=False)
 
 
