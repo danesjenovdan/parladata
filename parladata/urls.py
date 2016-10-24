@@ -1,6 +1,6 @@
 from django.conf.urls import patterns, include, url
 from parladata.views import *
-from .utils import getMembershipDuplications, membersFlowInOrg, postMembersFixer
+from .utils import getMembershipDuplications, membersFlowInOrg, postMembersFixer, membersFlowInPGs, membersFlowInDZ
 
 from parladata.admin import PersonAutocomplete, PostAutocomplete, MembershipAutocomplete
 
@@ -101,4 +101,6 @@ urlpatterns = patterns('',
     url(r'^parserChecker', parserChecker), 
     url(r'^postMembersFixer', postMembersFixer),
     url(r'^membersFlowInOrg', membersFlowInOrg),
+    url(r'^membersFlowInPGs', membersFlowInPGs),
+    url(r'^membersFlowInDZ', membersFlowInDZ),
 )
