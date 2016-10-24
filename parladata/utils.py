@@ -521,7 +521,7 @@ def membersFlowInOrg(request):
         try:
             context["orgs"].append({"name":Organization.objects.get(id=org_id).name, "flow":flow})
         except:
-            context["orgs"].append({"name": "ID: "+str(org_id), "flow":flow})
+            context["orgs"].append({"name": "ID: "+str(org_id), "flow":flow,  "allMps": context["allMps"]})
     return render(request, "org_memberships.html", context)
 
 
@@ -546,7 +546,7 @@ def membersFlowInPGs(request):
             else:
                 flow[-1]["added"] = [{"name": Person.objects.get(id=x).name, "person_id": x} for x in flow[-1]["members"]]
         try:
-            context["orgs"].append({"name":Organization.objects.get(id=org_id).name, "flow":flow})
+            context["orgs"].append({"name":Organization.objects.get(id=org_id).name, "flow":flow, "allMps": context["allMps"]})
         except:
             context["orgs"].append({"name": "ID: "+str(org_id), "flow":flow})
     return render(request, "org_memberships.html", context)
@@ -568,7 +568,8 @@ def membersFlowInDZ(request):
             context["allMps"] = [{"name": Person.objects.get(id=x).name, "membership": Membership.objects.filter(organization__in=parliamentary_groups, person__id=x, start_time=(datetime.strptime(context["count_of_persons"][-1]["count"]["start_date"], "%d.%m.%Y")).strftime("%Y-%m-%d %H:%M"))[0] if Membership.objects.filter(organization__in=parliamentary_groups, person__id=x, start_time=(datetime.strptime(context["count_of_persons"][-1]["count"]["start_date"], "%d.%m.%Y")).strftime("%Y-%m-%d %H:%M")) else x} for x in context["count_of_persons"][-1]["members"]]
         else:
             context["count_of_persons"][-1]["added"] = [{"name": Person.objects.get(id=x).name, "person_id": x} for x in context["count_of_persons"][-1]["members"]]
-    context["orgs"].append({"name": "DZ:", "flow":context["count_of_persons"]})
+    context["orgs"].append({"name": "DZ:", "flow":context["count_of_persons"],  "allMps": context["allMps"]})
+    return render(request, "org_memberships.html", context)
 
 def getMPsOrganizationsByClassification():
     classes = ["skupina prijateljstva", "delegacija", "komisija", "poslanska skupina", "odbor", "kolegij", "preiskovalna komisija", "", "nepovezani poslanec"]
