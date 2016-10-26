@@ -278,15 +278,15 @@ def getMembershipDuplications(request):
             chk_start = chk_mem.start_time if chk_mem.start_time else start_time
             chk_end = chk_mem.end_time if chk_mem.end_time else end_time
 
-            if chk_start < mem_start:
+            if chk_start <= mem_start:
                 #preverji da je chk_mem pred membershipom
-                if chk_end > mem_start:
+                if chk_end >= mem_start:
                     #FAIL
                     out.append({"member": membership.person, "mem1": membership, "mem2": chk_mem})
 
-            elif chk_start > mem_start:
+            elif chk_start >= mem_start:
                 #preverji da je chk_mem pred membershipom
-                if mem_end > chk_start:
+                if mem_end >= chk_start:
                     #FAIL
                     out.append({"member": membership.person, "mem1": membership, "mem2": chk_mem})
 
