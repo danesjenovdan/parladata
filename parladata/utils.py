@@ -44,13 +44,14 @@ def getCurrentMandate():
 
 
 def getVotesDict(date=None):
-    parliamentary_group = Organization.objects.filter(Q(classification="poslanska skupina") | Q(classification="nepovezani poslanec"))
-    members = Membership.objects.filter(organization__in=parliamentary_group)
+    #parliamentary_group = Organization.objects.filter(Q(classification="poslanska skupina") | Q(classification="nepovezani poslanec"))
+    #members = Membership.objects.filter(organization__in=parliamentary_group)
+    members = getMPObjects(datetime.strptime(date, settings.API_DATE_FORMAT))
     votes = dict()
     # balotFromMandat = Ballot.objects.filter('vote__session__mandate' = getCurrentMandate())
 
 #   with open('/Users/muki/Desktop/testis.csv', 'w') as f:
-    for m in list(set(members.values_list("person", flat=True))):
+    for m in [person.id for person in members]:
         print m
 #           for b in Ballot.objects.filter(voter=m):
 #               f.write(str(b.option) + ',' + str(b.vote.id) + ',' + str(b.id))
