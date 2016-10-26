@@ -44,9 +44,8 @@ def getCurrentMandate():
 
 
 def getVotesDict(date=None):
-    #parliamentary_group = Organization.objects.filter(Q(classification="poslanska skupina") | Q(classification="nepovezani poslanec"))
-    #members = Membership.objects.filter(organization__in=parliamentary_group)
-    members = getMPObjects(datetime.strptime(date, settings.API_DATE_FORMAT))
+    parliamentary_group = Organization.objects.filter(Q(classification="poslanska skupina") | Q(classification="nepovezani poslanec"))
+    members = Membership.objects.filter(organization__in=parliamentary_group)
     votes = dict()
     # balotFromMandat = Ballot.objects.filter('vote__session__mandate' = getCurrentMandate())
 
