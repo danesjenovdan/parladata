@@ -73,9 +73,9 @@ def getVotesDict(date=None):
             print votes[str(m)]
         print votes.keys()
 #   f.close()
-    for key in votes.keys():
-        if not votes[key]:
-            votes.pop(key)
+    #for key in votes.keys():
+    #    if not votes[key]:
+    #        votes.pop(key)
     return votes
 
 def voteToLogical(vote):
