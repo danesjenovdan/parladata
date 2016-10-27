@@ -50,14 +50,16 @@ def getVotesDict(date=None):
     # balotFromMandat = Ballot.objects.filter('vote__session__mandate' = getCurrentMandate())
 
 #   with open('/Users/muki/Desktop/testis.csv', 'w') as f:
-    for m in [person.id for person in members]:
+    #for m in [person.id for person in members]:
+    for m in list(set(members.values_list("person", flat=True))):
         print m
 #           for b in Ballot.objects.filter(voter=m):
 #               f.write(str(b.option) + ',' + str(b.vote.id) + ',' + str(b.id))
 #               f.write('\n')
 
         if date:
-            ballots = list(Ballot.objects.filter(voter__id=m, vote__start_time__lte=datetime.strptime(date, settings.API_DATE_FORMAT).date()).order_by('vote__start_time').values_list('option', 'vote_id'))
+            date2 = datetime.strptime(date, settings.API_DATE_FORMAT) + timedelta(days=1) - timedelta(seconds=1)
+            ballots = list(Ballot.objects.filter(voter__id=m, vote__start_time__lte=date2).order_by('vote__start_time').values_list('option', 'vote_id'))
         else:
             ballots = list(Ballot.objects.filter(voter__id=m).order_by('vote__start_time').values_list('option', 'vote_id'))
     

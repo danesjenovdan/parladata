@@ -358,7 +358,7 @@ def getAllSpeechesOfMPs(request, date_=None):
     #for speech in speeches:
     #    data.append(model_to_dict(speech, fields=[field.name for field in speech._meta.fields], exclude=[]))
     
-    speeches = [model_to_dict(speech, fields=[field.name for field in speech._meta.fields], exclude=[]) for speech in speeches]
+    speeches = [model_to_dict(speech, fields=[field.name for field in speech._meta.fields], exclude=[]) for speech in speeches_queryset]
     return JsonResponse(speeches, safe=False)
 
 
