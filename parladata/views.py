@@ -291,7 +291,7 @@ def getNumberOfMPAttendedSessions(request, person_id):
 
 
 def getNumberOfAllMPAttendedSessions(request, date_):
-    fdate = datetime.strptime(date_, settings.API_DATE_FORMAT).date()
+    fdate = datetime.strptime(date_, settings.API_DATE_FORMAT).date() + timedelta(days=1) - timedelta(minutes=1)
     data = {"sessions":{},"votes":{}}
     for member in getMPObjects(fdate):
         allOfHimS = list(set(Ballot.objects.filter(voter__id=member.id, vote__start_time__lte=fdate).values_list("vote__session",flat=True)))
