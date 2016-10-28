@@ -225,7 +225,7 @@ class Organization(Timestampable, Taggable, models.Model):
     objects = PassThroughManager.for_queryset_class(OrganizationQuerySet)()
 
     def __str__(self):
-        return self.name
+        return self.name + " " + str(self.id)
 
 
 @python_2_unicode_compatible
