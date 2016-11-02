@@ -189,7 +189,7 @@ class SpeechAdmin(admin.ModelAdmin):
     ]
 
 class MotionAdmin(admin.ModelAdmin):
-    list_display = ('id', 'text', 'result', 'requirement', 'get_for', 'get_against', 'get_abstain', 'get_not', 'get_dict', 'link_to_vote')
+    list_display = ('id', 'text', 'result', 'requirement', 'get_for', 'get_against', 'get_abstain', 'get_not', 'link_to_vote')
     inlines = [
         LinkMotionInline,
     ]
@@ -208,9 +208,6 @@ class MotionAdmin(admin.ModelAdmin):
     def get_not(self, obj):
         results = dict(Counter(Ballot.objects.filter(vote__motion=obj).values_list("option", flat=True))).get("ni", 0)
         return results
-
-    def get_dict(self, obj):
-        return dict(Counter(Ballot.objects.filter(vote__motion=obj).values_list("option", flat=True)))
 
     def link_to_vote(self, obj):
         link = reverse("admin:parladata_vote_change", args=[Vote.objects.get(motion=obj).id])
