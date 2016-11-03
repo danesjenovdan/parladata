@@ -1,6 +1,6 @@
 from django.conf.urls import patterns, include, url
 from parladata.views import *
-from .utils import getMembershipDuplications
+from .utils import getMembershipDuplications, membersFlowInOrg, postMembersFixer, membersFlowInPGs, membersFlowInDZ
 
 from parladata.admin import PersonAutocomplete, PostAutocomplete, MembershipAutocomplete
 
@@ -28,8 +28,8 @@ urlpatterns = patterns('',
     url(r'^getSpeechesOfMPbyDate/(?P<person_id>\d+)/(?P<date_>[\w].+)', getSpeechesOfMPbyDate),
     url(r'^getAllSpeeches/(?P<date_>[\w].+)', getAllSpeeches),
     url(r'^getAllSpeeches', getAllSpeeches),
-    url(r'^getAllSpeechesOfMPs/(?P<date_>[\w].+)', getAllSpeechesOfMPs),
-    url(r'^getAllSpeechesOfMPs', getAllSpeechesOfMPs),
+    url(r'^getAllMPsSpeeches/(?P<date_>[\w].+)', getAllSpeechesOfMPs),
+    url(r'^getAllMPsSpeeches', getAllSpeechesOfMPs),
 
     url(r'^getVotes/(?P<date_>[\w].+)', getVotes),
     url(r'^getVotes/', getVotes),
@@ -76,6 +76,9 @@ urlpatterns = patterns('',
     url(r'^getMembersOfPGRanges/(?P<org_id>\d+)/(?P<date_>[\w].+)',getMembersOfPGRanges),
     url(r'^getMembersOfPGRanges/(?P<org_id>\d+)',getMembersOfPGRanges),
 
+    url(r'^getMembersOfOrgsRanges/(?P<org_id>\d+)/(?P<date_>[\w].+)',getMembersOfOrgsRanges),
+    url(r'^getMembersOfOrgsRanges/(?P<org_id>\d+)',getMembersOfOrgsRanges),
+
     url(r'^getMembershipsOfMember/(?P<person_id>\d+)/(?P<date>[\w].+|)',getMembershipsOfMember),
     url(r'^getAllTimeMemberships',getAllTimeMemberships),
     url(r'^getAllTimeMPs/(?P<date_>[\w].+)',getAllTimeMPs),
@@ -84,15 +87,25 @@ urlpatterns = patterns('',
     url(r'^getOrganizationRolesAndMembers/(?P<org_id>\d+)/(?P<date_>[\w].+)',getOrganizationRolesAndMembers),
     url(r'^getOrganizationRolesAndMembers/(?P<org_id>\d+)',getOrganizationRolesAndMembers),
 
-    url(r'^getTags',getTags),
+    url(r'^getTags', getTags),
+
+    url(r'^getDistricts', getDistricts),
 
     url(r'^getSpeechData/(?P<speech_id>\d+)',getSpeechData),
+
+    url(r'^getPersonData/(?P<person_id>\d+)',getPersonData),
+
+    url(r'^isSpeechOnDay/(?P<date_>[\w].+)', isSpeechOnDay),
+    url(r'^isSpeechOnDay/', isSpeechOnDay),
 
 
     #debug helpers
     url(r'^getMembershipDuplications', getMembershipDuplications),
     url(r'^parserChecker', parserChecker), 
     url(r'^postMembersFixer', postMembersFixer),
+    url(r'^membersFlowInOrg', membersFlowInOrg),
+    url(r'^membersFlowInPGs', membersFlowInPGs),
+    url(r'^membersFlowInDZ', membersFlowInDZ),
 
     url(r'^sejee/(?P<date_>[\w].+)',checkSessions),
 )
