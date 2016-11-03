@@ -866,3 +866,14 @@ def getPersonData(request, person_id):
     else:
         obj = {}
     return JsonResponse(obj)
+
+
+def isSpeechOnDay(request, date_=None):
+    if date_:
+        fdate = datetime.strptime(date_, settings.API_DATE_FORMAT)
+    else:
+        fdate=datetime.now()
+    print fdate
+    print fdate+timedelta(hours=23, minutes=59)
+    speech = Speech.objects.filter(start_time__gte=fdate, start_time__lte=(fdate+timedelta(hours=23, minutes=59)))
+    return JsonResponse({"isSpeech": True if speech else False})
