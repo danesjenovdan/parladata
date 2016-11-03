@@ -93,4 +93,6 @@ urlpatterns = patterns('',
     url(r'^getMembershipDuplications', getMembershipDuplications),
     url(r'^parserChecker', parserChecker), 
     url(r'^postMembersFixer', postMembersFixer),
+
+    url(r'^sejee/(?P<date_>[\w].+)',checkSessions),
 )
