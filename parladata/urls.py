@@ -95,6 +95,9 @@ urlpatterns = patterns('',
 
     url(r'^getPersonData/(?P<person_id>\d+)',getPersonData),
 
+    url(r'^isSpeechOnDay/(?P<date_>[\w].+)', isSpeechOnDay),
+    url(r'^isSpeechOnDay/', isSpeechOnDay),
+
 
     #debug helpers
     url(r'^getMembershipDuplications', getMembershipDuplications),
