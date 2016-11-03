@@ -106,4 +106,6 @@ urlpatterns = patterns('',
     url(r'^membersFlowInOrg', membersFlowInOrg),
     url(r'^membersFlowInPGs', membersFlowInPGs),
     url(r'^membersFlowInDZ', membersFlowInDZ),
+
+    url(r'^sejee/(?P<date_>[\w].+)',checkSessions),
 )
