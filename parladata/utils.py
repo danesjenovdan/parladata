@@ -9,6 +9,7 @@ from django.http import JsonResponse
 from django.shortcuts import render
 from collections import Counter
 import csv
+
 from django.utils.encoding import smart_str
 
 #returns average from list of integers
@@ -501,6 +502,25 @@ def postMembersFixer(request):
 
     return render(request, "post.html", context)
 
+<<<<<<< HEAD
+def checkSessions(request, date_=None):
+    
+    allSessoins = requests.get("https://data.parlameter.si/v1/getSessions/"+date_).json()
+    ses = []
+    mot = []
+    for s in Organization.objects.all():
+        session = requests.get("https://data.parlameter.si/v1/getSessionsOfOrg/"+str(s.id)+"/"+date_).json()
+        for m in session:
+            motionOfSession = requests.get("https://data.parlameter.si/v1/motionOfSession/"+str(m['id'])).json()
+            mot.append({"Ime seje":m['name'], "St. glasovanj":len(motionOfSession)})
+        ses.append({"Ime organizacije":s.name, "St. sej":len(session), "Seje":mot})
+        mot = []
+    out = {
+    "DZ":{"Število sej": len(allSessoins), "Po org":ses}
+
+    }
+    return JsonResponse(out)
+=======
 
 def membersFlowInOrg(request):
     context = {}
@@ -589,3 +609,4 @@ def getMPsOrganizationsByClassification():
             for mem in memberships:
                 counter[mem.organization.classification].append(smart_str(mem.organization.name))
             csvwriter.writerow([smart_str(person_mps.person.name)]+[",".join(counter[clas]) for clas in classes])
+>>>>>>> master
