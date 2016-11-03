@@ -9,6 +9,7 @@ from django.http import JsonResponse
 from django.shortcuts import render
 from collections import Counter
 import csv
+from parladata.views import *
 
 #returns average from list of integers
 def AverageList(list):
@@ -495,3 +496,21 @@ def postMembersFixer(request):
     print context["posts"]
 
     return render(request, "post.html", context)
+
+def checkSessions(request, date_=None):
+    
+    allSessoins = requests.get("https://data.parlameter.si/v1/getSessions/"+date_).json()
+    ses = []
+    mot = []
+    for s in Organization.objects.all():
+        session = requests.get("https://data.parlameter.si/v1/getSessionsOfOrg/"+str(s.id)+"/"+date_).json()
+        for m in session:
+            motionOfSession = requests.get("https://data.parlameter.si/v1/motionOfSession/"+str(m['id'])).json()
+            mot.append({"Ime seje":m['name'], "St. glasovanj":len(motionOfSession)})
+        ses.append({"Ime organizacije":s.name, "St. sej":len(session), "Seje":mot})
+        mot = []
+    out = {
+    "DZ":{"Število sej": len(allSessoins), "Po org":ses}
+
+    }
+    return JsonResponse(out)
