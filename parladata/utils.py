@@ -9,7 +9,8 @@ from django.http import JsonResponse
 from django.shortcuts import render
 from collections import Counter
 import csv
-from parladata.views import *
+
+from django.utils.encoding import smart_str
 
 #returns average from list of integers
 def AverageList(list):
@@ -50,6 +51,7 @@ def getVotesDict(date=None):
     # balotFromMandat = Ballot.objects.filter('vote__session__mandate' = getCurrentMandate())
 
 #   with open('/Users/muki/Desktop/testis.csv', 'w') as f:
+    #for m in [person.id for person in members]:
     for m in list(set(members.values_list("person", flat=True))):
         print m
 #           for b in Ballot.objects.filter(voter=m):
@@ -57,7 +59,8 @@ def getVotesDict(date=None):
 #               f.write('\n')
 
         if date:
-            ballots = list(Ballot.objects.filter(voter__id=m, vote__start_time__lte=datetime.strptime(date, settings.API_DATE_FORMAT).date()).order_by('vote__start_time').values_list('option', 'vote_id'))
+            date2 = datetime.strptime(date, settings.API_DATE_FORMAT) + timedelta(days=1) - timedelta(seconds=1)
+            ballots = list(Ballot.objects.filter(voter__id=m, vote__start_time__lte=date2).order_by('vote__start_time').values_list('option', 'vote_id'))
         else:
             ballots = list(Ballot.objects.filter(voter__id=m).order_by('vote__start_time').values_list('option', 'vote_id'))
     
@@ -71,7 +74,9 @@ def getVotesDict(date=None):
             print votes[str(m)]
         print votes.keys()
 #   f.close()
-    print votes.keys()
+    #for key in votes.keys():
+    #    if not votes[key]:
+    #        votes.pop(key)
     return votes
 
 def voteToLogical(vote):
@@ -278,15 +283,15 @@ def getMembershipDuplications(request):
             chk_start = chk_mem.start_time if chk_mem.start_time else start_time
             chk_end = chk_mem.end_time if chk_mem.end_time else end_time
 
-            if chk_start < mem_start:
+            if chk_start <= mem_start:
                 #preverji da je chk_mem pred membershipom
-                if chk_end > mem_start:
+                if chk_end >= mem_start:
                     #FAIL
                     out.append({"member": membership.person, "mem1": membership, "mem2": chk_mem})
 
-            elif chk_start > mem_start:
+            elif chk_start >= mem_start:
                 #preverji da je chk_mem pred membershipom
-                if mem_end > chk_start:
+                if mem_end >= chk_start:
                     #FAIL
                     out.append({"member": membership.person, "mem1": membership, "mem2": chk_mem})
 
@@ -497,6 +502,7 @@ def postMembersFixer(request):
 
     return render(request, "post.html", context)
 
+<<<<<<< HEAD
 def checkSessions(request, date_=None):
     
     allSessoins = requests.get("https://data.parlameter.si/v1/getSessions/"+date_).json()
@@ -514,3 +520,93 @@ def checkSessions(request, date_=None):
 
     }
     return JsonResponse(out)
+=======
+
+def membersFlowInOrg(request):
+    context = {}
+    context["orgs"]=[]
+    orgs_all = requests.get("https://data.parlameter.si/v1/getOrganizatonByClassification").json()
+    orgs = [ org["id"] for org in orgs_all["working_bodies"] + orgs_all["council"] ]
+    for org in orgs:
+        flow = []
+        org_id = org
+        print org
+        pgRanges = requests.get("https://data.parlameter.si/v1/getMembersOfOrgsRanges/"+str(org_id)+"/"+datetime.now().strftime("%d.%m.%Y")).json()
+        for pgRange in pgRanges:
+            count = len([member for pg in pgRange["members"].values() for member in pg])
+            members_ids = [member for pg in pgRange["members"].values() for member in pg]
+            flow.append({"count": {"count": count, "start_date": pgRange["start_date"], "end_date": pgRange["end_date"]}, "members": [member for pg in pgRange["members"].values() for member in pg]})
+            if len(flow)>1:
+                flow[-1]["added"] = [{"name": Person.objects.get(id=x).name, "membership": Membership.objects.filter(organization__id=org_id, person__id=x, start_time=(datetime.strptime(flow[-1]["count"]["start_date"], "%d.%m.%Y")).strftime("%Y-%m-%d %H:%M"))[0] if Membership.objects.filter(organization__id=org_id, person__id=x, start_time=(datetime.strptime(flow[-1]["count"]["start_date"], "%d.%m.%Y")).strftime("%Y-%m-%d %H:%M")) else ""} for x in flow[-1]["members"] if x not in flow[-2]["members"]]
+                flow[-1]["removed"] = [{"name": Person.objects.get(id=x).name, "membership": Membership.objects.filter(organization__id=org_id, person__id=x, end_time=(datetime.strptime(flow[-1]["count"]["start_date"], "%d.%m.%Y")-timedelta(days=1)).strftime("%Y-%m-%d %H:%M"))[0] if Membership.objects.filter(organization__id=org_id, person__id=x, end_time=(datetime.strptime(flow[-1]["count"]["start_date"], "%d.%m.%Y")-timedelta(days=1)).strftime("%Y-%m-%d %H:%M")) else None} for x in flow[-2]["members"] if x not in flow[-1]["members"]]
+                context["allMps"] = [{"name": Person.objects.get(id=x).name, "membership": Membership.objects.filter(organization__id=org_id, person__id=x, start_time=(datetime.strptime(flow[-1]["count"]["start_date"], "%d.%m.%Y")).strftime("%Y-%m-%d %H:%M"))[0] if Membership.objects.filter(organization__id=org_id, person__id=x, start_time=(datetime.strptime(flow[-1]["count"]["start_date"], "%d.%m.%Y")).strftime("%Y-%m-%d %H:%M")) else x} for x in flow[-1]["members"]]
+            else:
+                flow[-1]["added"] = [{"name": Person.objects.get(id=x).name, "person_id": x} for x in flow[-1]["members"]]
+        try:
+            context["orgs"].append({"name":Organization.objects.get(id=org_id).name, "flow":flow, "allMps": context["allMps"]})
+        except:
+            context["orgs"].append({"name": "ID: "+str(org_id), "flow":flow,  "allMps": context["allMps"], "allMps": context["allMps"]})
+    return render(request, "org_memberships.html", context)
+
+
+def membersFlowInPGs(request):
+    context = {}
+    context["orgs"]=[]
+    orgs_all = requests.get("https://data.parlameter.si/v1/getOrganizatonByClassification").json()
+    orgs = [ org["id"] for org in orgs_all["parliamentary_groups"]]
+    for org in orgs:
+        flow = []
+        org_id = org
+        print org
+        pgRanges = requests.get("https://data.parlameter.si/v1/getMembersOfOrgsRanges/"+str(org_id)+"/"+datetime.now().strftime("%d.%m.%Y")).json()
+        for pgRange in pgRanges:
+            count = len([member for pg in pgRange["members"].values() for member in pg])
+            members_ids = [member for pg in pgRange["members"].values() for member in pg]
+            flow.append({"count": {"count": count, "start_date": pgRange["start_date"], "end_date": pgRange["end_date"]}, "members": [member for pg in pgRange["members"].values() for member in pg]})
+            if len(flow)>1:
+                flow[-1]["added"] = [{"name": Person.objects.get(id=x).name, "membership": Membership.objects.filter(organization__id=org_id, person__id=x, start_time=(datetime.strptime(flow[-1]["count"]["start_date"], "%d.%m.%Y")).strftime("%Y-%m-%d %H:%M"))[0] if Membership.objects.filter(organization__id=org_id, person__id=x, start_time=(datetime.strptime(flow[-1]["count"]["start_date"], "%d.%m.%Y")).strftime("%Y-%m-%d %H:%M")) else ""} for x in flow[-1]["members"] if x not in flow[-2]["members"]]
+                flow[-1]["removed"] = [{"name": Person.objects.get(id=x).name, "membership": Membership.objects.filter(organization__id=org_id, person__id=x, end_time=(datetime.strptime(flow[-1]["count"]["start_date"], "%d.%m.%Y")-timedelta(days=1)).strftime("%Y-%m-%d %H:%M"))[0] if Membership.objects.filter(organization__id=org_id, person__id=x, end_time=(datetime.strptime(flow[-1]["count"]["start_date"], "%d.%m.%Y")-timedelta(days=1)).strftime("%Y-%m-%d %H:%M")) else None} for x in flow[-2]["members"] if x not in flow[-1]["members"]]
+                context["allMps"] = [{"name": Person.objects.get(id=x).name, "membership": Membership.objects.filter(organization__id=org_id, person__id=x, start_time=(datetime.strptime(flow[-1]["count"]["start_date"], "%d.%m.%Y")).strftime("%Y-%m-%d %H:%M"))[0] if Membership.objects.filter(organization__id=org_id, person__id=x, start_time=(datetime.strptime(flow[-1]["count"]["start_date"], "%d.%m.%Y")).strftime("%Y-%m-%d %H:%M")) else x} for x in flow[-1]["members"]]
+            else:
+                flow[-1]["added"] = [{"name": Person.objects.get(id=x).name, "person_id": x} for x in flow[-1]["members"]]
+        try:
+            context["orgs"].append({"name":Organization.objects.get(id=org_id).name, "flow":flow, "allMps": context["allMps"]})
+        except:
+            context["orgs"].append({"name": "ID: "+str(org_id), "flow":flow, "allMps": context["allMps"]})
+    return render(request, "org_memberships.html", context)
+
+def membersFlowInDZ(request):
+    parliamentary_groups = Organization.objects.filter(Q(classification="poslanska skupina") | Q(classification="nepovezani poslanec"))
+
+    context = {}
+    context["orgs"]=[]
+    context["count_of_persons"] = []
+    pgRanges = requests.get("https://data.parlameter.si/v1/getMembersOfPGsRanges/"+datetime.now().strftime("%d.%m.%Y")).json()
+    for pgRange in pgRanges:
+        count = len([member for pg in pgRange["members"].values() for member in pg])
+        members_ids = [member for pg in pgRange["members"].values() for member in pg]
+        context["count_of_persons"].append({"count": {"count": count, "start_date": pgRange["start_date"], "end_date": pgRange["end_date"]}, "members": [member for pg in pgRange["members"].values() for member in pg]})
+        if len(context["count_of_persons"])>1:
+            context["count_of_persons"][-1]["added"] = [{"name": Person.objects.get(id=x).name, "membership": Membership.objects.filter(organization__in=parliamentary_groups, person__id=x, start_time=(datetime.strptime(context["count_of_persons"][-1]["count"]["start_date"], "%d.%m.%Y")).strftime("%Y-%m-%d %H:%M"))[0] if Membership.objects.filter(organization__in=parliamentary_groups, person__id=x, start_time=(datetime.strptime(context["count_of_persons"][-1]["count"]["start_date"], "%d.%m.%Y")).strftime("%Y-%m-%d %H:%M")) else ""} for x in context["count_of_persons"][-1]["members"] if x not in context["count_of_persons"][-2]["members"]]
+            context["count_of_persons"][-1]["removed"] = [{"name": Person.objects.get(id=x).name, "membership": Membership.objects.filter(organization__in=parliamentary_groups, person__id=x, end_time=(datetime.strptime(context["count_of_persons"][-1]["count"]["start_date"], "%d.%m.%Y")-timedelta(days=1)).strftime("%Y-%m-%d %H:%M"))[0] if Membership.objects.filter(organization__in=parliamentary_groups, person__id=x, end_time=(datetime.strptime(context["count_of_persons"][-1]["count"]["start_date"], "%d.%m.%Y")-timedelta(days=1)).strftime("%Y-%m-%d %H:%M")) else None} for x in context["count_of_persons"][-2]["members"] if x not in context["count_of_persons"][-1]["members"]]
+            context["allMps"] = [{"name": Person.objects.get(id=x).name, "membership": Membership.objects.filter(organization__in=parliamentary_groups, person__id=x, start_time=(datetime.strptime(context["count_of_persons"][-1]["count"]["start_date"], "%d.%m.%Y")).strftime("%Y-%m-%d %H:%M"))[0] if Membership.objects.filter(organization__in=parliamentary_groups, person__id=x, start_time=(datetime.strptime(context["count_of_persons"][-1]["count"]["start_date"], "%d.%m.%Y")).strftime("%Y-%m-%d %H:%M")) else x} for x in context["count_of_persons"][-1]["members"]]
+        else:
+            context["count_of_persons"][-1]["added"] = [{"name": Person.objects.get(id=x).name, "person_id": x} for x in context["count_of_persons"][-1]["members"]]
+    context["orgs"].append({"name": "DZ:", "flow":context["count_of_persons"],  "allMps": context["allMps"]})
+    return render(request, "org_memberships.html", context)
+
+def getMPsOrganizationsByClassification():
+    classes = ["skupina prijateljstva", "delegacija", "komisija", "poslanska skupina", "odbor", "kolegij", "preiskovalna komisija", "", "nepovezani poslanec"]
+    with open('members_orgs.csv', 'w') as csvfile:
+        csvwriter = csv.writer(csvfile, delimiter=';',
+                                quotechar='|', quoting=csv.QUOTE_MINIMAL)
+        csvwriter.writerow(["Person"]+[clas for clas in classes])
+        parliamentary_group = Organization.objects.filter(Q(classification="poslanska skupina") | Q(classification="nepovezani poslanec"))
+        pgs = Membership.objects.filter(organization__in=parliamentary_group)
+        for person_mps in pgs:
+            memberships = person_mps.person.memberships.all()
+            counter = {"skupina prijateljstva":[], "delegacija": [], "komisija" : [], "poslanska skupina": [], "odbor": [], "kolegij": [], "preiskovalna komisija": [], "": [], "nepovezani poslanec":[]}
+            for mem in memberships:
+                counter[mem.organization.classification].append(smart_str(mem.organization.name))
+            csvwriter.writerow([smart_str(person_mps.person.name)]+[",".join(counter[clas]) for clas in classes])
+>>>>>>> master
