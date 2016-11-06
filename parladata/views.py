@@ -104,12 +104,12 @@ def getMPStatic(request, person_id, date_=None):
     data = dict()
     for member in getMPObjects(fdate):
         if str(member.id) == str(person_id):
-
-            groups = [{'name': membership.organization.name, 'id': membership.organization.id, 'acronym': membership.organization.acronym} for membership in member.memberships.filter(Q(start_time__lte=fdate)|Q(start_time=None), Q(end_time__gte=fdate)|Q(end_time=None)) if membership.organization.classification == u'poslanska skupina']
+            print "Nasu poslaca"
+            groups = [{'name': membership.organization.name, 'id': membership.organization.id, 'acronym': membership.organization.acronym} for membership in member.memberships.filter(Q(start_time__lte=fdate)|Q(start_time=None), Q(end_time__gte=fdate)|Q(end_time=None)) if membership.organization.classification  in [u'poslanska skupina', u'nepovezani poslanec']]
             if not groups:
                 return JsonResponse({})
 
-            non_party_groups = [{'name': membership.organization.name, 'id': membership.organization.id} for membership in member.memberships.filter(Q(start_time__lte=fdate)|Q(start_time=None), Q(end_time__gte=fdate)|Q(end_time=None)) if membership.organization.classification != u'poslanska skupina']
+            non_party_groups = [{'name': membership.organization.name, 'id': membership.organization.id} for membership in member.memberships.filter(Q(start_time__lte=fdate)|Q(start_time=None), Q(end_time__gte=fdate)|Q(end_time=None)) if membership.organization.classification not in [u'poslanska skupina', u'nepovezani poslanec']]
 
             for group in non_party_groups:
                 groups.append(group)
