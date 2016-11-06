@@ -502,7 +502,7 @@ def postMembersFixer(request):
 
     return render(request, "post.html", context)
 
-<<<<<<< HEAD
+
 def checkSessions(request, date_=None):
     
     allSessoins = requests.get("https://data.parlameter.si/v1/getSessions/"+date_).json()
@@ -520,7 +520,6 @@ def checkSessions(request, date_=None):
 
     }
     return JsonResponse(out)
-=======
 
 def membersFlowInOrg(request):
     context = {}
@@ -609,4 +608,3 @@ def getMPsOrganizationsByClassification():
             for mem in memberships:
                 counter[mem.organization.classification].append(smart_str(mem.organization.name))
             csvwriter.writerow([smart_str(person_mps.person.name)]+[",".join(counter[clas]) for clas in classes])
->>>>>>> master
