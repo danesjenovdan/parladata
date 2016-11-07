@@ -879,7 +879,7 @@ def isSpeechOnDay(request, date_=None):
     return JsonResponse({"isSpeech": True if speech else False})
 
 
-#return speech ids
+#return speech ids of MPs
 def getSpeechesIDs(request, person_id, date_=None):
     if date_:
         fdate = datetime.strptime(date_, settings.API_DATE_FORMAT)
@@ -888,5 +888,27 @@ def getSpeechesIDs(request, person_id, date_=None):
     fdate = fdate.replace(hour=23, minute=59)
     speaker = get_object_or_404(Person, id=person_id)
     speeches_ids = list(Speech.objects.filter(speaker=speaker, start_time__lte=fdate).values_list("id", flat=True))
+
+    return JsonResponse(speeches_ids, safe=False)
+
+#return speech ids
+def getPGsSpeechesIDs(request, org_id, date_=None):
+    if date_:
+        fdate = datetime.strptime(date_, settings.API_DATE_FORMAT)
+    else:
+        fdate=datetime.now()
+    fdate = fdate.replace(hour=23, minute=59)
+    org = get_object_or_404(Organization, id=org_id)
+    ranges = json.loads(getMembersOfPGRanges(request, org_id, date_).content)
+
+    speeches_ids = []
+
+    for ran in ranges:
+        start = datetime.strptime(ran["start_date"], settings.API_DATE_FORMAT)
+        start = start.replace(hour=23, minute=59)
+        end = datetime.strptime(ran["end_date"], settings.API_DATE_FORMAT)
+        end = end.replace(hour=23, minute=59)
+        for member in ran["members"]:
+            speeches_ids += list(Speech.objects.filter(speaker__id=member, start_time__lte=end, start_time__gte=start).values_list("id", flat=True))
 
     return JsonResponse(speeches_ids, safe=False)
