@@ -877,3 +877,16 @@ def isSpeechOnDay(request, date_=None):
     print fdate+timedelta(hours=23, minutes=59)
     speech = Speech.objects.filter(start_time__gte=fdate, start_time__lte=(fdate+timedelta(hours=23, minutes=59)))
     return JsonResponse({"isSpeech": True if speech else False})
+
+
+#return speech ids
+def getSpeechesIDs(request, person_id, date_=None):
+    if date_:
+        fdate = datetime.strptime(date_, settings.API_DATE_FORMAT)
+    else:
+        fdate=datetime.now()
+    fdate = fdate.replace(hour=23, minute=59)
+    speaker = get_object_or_404(Person, id=person_id)
+    speeches_ids = list(Speech.objects.filter(speaker=speaker, start_time__lte=fdate).values_list("id", flat=True))
+
+    return JsonResponse(speeches_ids, safe=False)
