@@ -37,6 +37,8 @@ urlpatterns = patterns('',
     url(r'^getSpeeches/(?P<person_id>\d+)/(?P<date_>[\w].+)',getSpeeches),
     url(r'^getSpeeches/(?P<person_id>\d+)',getSpeeches),
 
+    url(r'^getSpeechesIDs/(?P<person_id>\d+)/(?P<date_>[\w].+)',getSpeechesIDs),
+
     url(r'^getSpeechesInRange/(?P<person_id>\d+)/(?P<date_from>[\w].+)/(?P<date_to>[\w].+)', getSpeechesInRange),
 
     url(r'^getMembersOfPGs/',getMembersOfPGs),
