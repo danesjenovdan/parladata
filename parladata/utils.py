@@ -9,7 +9,6 @@ from django.http import JsonResponse
 from django.shortcuts import render
 from collections import Counter
 import csv
-from parladata.views import *
 
 #returns average from list of integers
 def AverageList(list):
@@ -507,7 +506,7 @@ def checkSessions(request, date_=None):
         for m in session:
             motionOfSession = requests.get("https://data.parlameter.si/v1/motionOfSession/"+str(m['id'])).json()
             mot.append({"Ime seje":m['name'], "St. glasovanj":len(motionOfSession)})
-        ses.append({"Ime organizacije":s.name, "St. sej":len(session), "Seje":mot})
+        ses.append({"Ime organizacije":s.name, "St. sej":len(session), "Sejex":mot})
         mot = []
     out = {
     "DZ":{"Število sej": len(allSessoins), "Po org":ses}
