@@ -436,9 +436,12 @@ def getBasicInfOfPG(request, pg_id, date_):
     }
     return JsonResponse(data, safe=False)
 
-def getAllPGs(request):
+def getAllPGs(request, date_=None):
     parliamentary_group = Organization.objects.filter(classification="poslanska skupina")
-    data = {pg.id:pg.name for pg in parliamentary_group}
+    if date_:
+        fdate = datetime.strptime(date_, settings.API_DATE_FORMAT)
+        parliamentary_group = parliamentary_group.filter(Q(founding_date__lte=fdate)|Q(founding_date=None), Q(dissolution_date__gte=fdate)|Q(dissolution_date=None))
+    data = {pg.id: {'name': pg.name, 'acronym': pg.acronym, 'id': pg.id, 'is_coalition': True if pg.is_coalition == 1 else False} for pg in parliamentary_group}
     return JsonResponse(data)
 
 def getAllPGsExt(request):

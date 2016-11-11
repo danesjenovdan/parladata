@@ -49,6 +49,7 @@ urlpatterns = patterns('',
 
     url(r'^getBasicInfOfPG/(?P<pg_id>\d+)/(?P<date_>[\w].+)',getBasicInfOfPG),
     url(r'^getBasicInfOfPG/(?P<pg_id>\d+)',getBasicInfOfPG),
+    url(r'^getAllPGs/(?P<date_>[\w].+)',getAllPGs),
     url(r'^getAllPGs/',getAllPGs),
     url(r'^getAllPGsExt/',getAllPGsExt),
     url(r'^getAllOrganizations/',getAllOrganizations),
