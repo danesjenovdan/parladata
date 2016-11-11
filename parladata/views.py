@@ -145,11 +145,10 @@ def getMPStatic(request, person_id, date_=None):
             else:
                 social_output['linkedin'] = False
 
-            district = member.districts.all().values_list("name", flat=True)
+            district = list(member.districts.all().values_list("id", flat=True))
             if not district:
                 district = None
-            else:
-                district = [smart_str(dist) for dist in district]
+
             data = {
                 'previous_occupation': member.previous_occupation,
                 'education': member.education,
@@ -834,7 +833,7 @@ def getTags(request):
 
 
 def getDistricts(request):
-    out = [{"id": area.id, "name": area.id} for area in Area.objects.all()]
+    out = [{"id": area.id, "name": area.name} for area in Area.objects.all()]
     return JsonResponse(out, safe=False)
 
 
