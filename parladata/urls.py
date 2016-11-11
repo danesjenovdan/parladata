@@ -87,7 +87,7 @@ urlpatterns = patterns('',
     url(r'^getTags',getTags),
 
     url(r'^getSpeechData/(?P<speech_id>\d+)',getSpeechData),
-    url(r'^getRequirementOfMotion/(?P<motion_id>\d+)',getRequirementOfMotion),
+    url(r'^getResultOfMotion/(?P<motion_id>\d+)',getResultOfMotion),
 
 
     #debug helpers

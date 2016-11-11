@@ -506,7 +506,7 @@ def checkSessions(request, date_=None):
         for m in session:
             motionOfSession = requests.get("https://data.parlameter.si/v1/motionOfSession/"+str(m['id'])).json()
             mot.append({"Ime seje":m['name'], "St. glasovanj":len(motionOfSession)})
-        ses.append({"Ime organizacije":s.name, "St. sej":len(session), "Sejex":mot})
+        ses.append({"Ime organizacije":s.name, "St. sej":len(session), "Seje":mot})
         mot = []
     out = {
     "DZ":{"Število sej": len(allSessoins), "Po org":ses}
