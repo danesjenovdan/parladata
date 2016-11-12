@@ -838,7 +838,7 @@ def getTags(request):
 
 
 def getDistricts(request):
-    out = [{"id": area.id, "name": area.name} for area in Area.objects.all()]
+    out = [{"id": area.id, "name": area.name} for area in Area.objects.filter(calssification="okraj")]
     return JsonResponse(out, safe=False)
 
 
