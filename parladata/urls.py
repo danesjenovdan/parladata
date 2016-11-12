@@ -103,6 +103,9 @@ urlpatterns = patterns('',
     url(r'^isSpeechOnDay/(?P<date_>[\w].+)', isSpeechOnDay),
     url(r'^isSpeechOnDay/', isSpeechOnDay),
 
+    url(r'^isVoteOnDay/(?P<date_>[\w].+)', isVoteOnDay),
+    url(r'^isVoteOnDay/', isVoteOnDay),
+
 
     #debug helpers
     url(r'^getMembershipDuplications', getMembershipDuplications),
