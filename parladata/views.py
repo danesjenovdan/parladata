@@ -860,6 +860,9 @@ def getSpeechData(request, speech_id):
 
     return HttpResponse(-1)
 
+def getResultOfMotion(request, motion_id):
+    output = {"result":Motion.objects.get(id=motion_id).result}
+    return JsonResponse(output, safe=False)
 
 def getPersonData(request, person_id):
     person = Person.objects.filter(id=person_id)
