@@ -883,6 +883,17 @@ def isSpeechOnDay(request, date_=None):
     return JsonResponse({"isSpeech": True if speech else False})
 
 
+def isVoteOnDay(request, date_=None):
+    if date_:
+        fdate = datetime.strptime(date_, settings.API_DATE_FORMAT)
+    else:
+        fdate=datetime.now()
+    print fdate
+    print fdate+timedelta(hours=23, minutes=59)
+    votes = Vote.objects.filter(start_time__gte=fdate, start_time__lte=(fdate+timedelta(hours=23, minutes=59)))
+    return JsonResponse({"isVote": True if votes else False})
+
+
 #return speech ids of MPs
 def getSpeechesIDs(request, person_id, date_=None):
     if date_:
