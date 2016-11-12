@@ -860,11 +860,9 @@ def getSpeechData(request, speech_id):
 
     return HttpResponse(-1)
 
-<<<<<<< HEAD
 def getResultOfMotion(request, motion_id):
     output = {"result":Motion.objects.get(id=motion_id).result}
     return JsonResponse(output, safe=False)
-=======
 
 def getPersonData(request, person_id):
     person = Person.objects.filter(id=person_id)
@@ -921,4 +919,3 @@ def getPGsSpeechesIDs(request, org_id, date_=None):
             speeches_ids += list(Speech.objects.filter(speaker__id=member, start_time__lte=end, start_time__gte=start).values_list("id", flat=True))
 
     return JsonResponse(speeches_ids, safe=False)
->>>>>>> master
