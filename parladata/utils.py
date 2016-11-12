@@ -9,11 +9,8 @@ from django.http import JsonResponse
 from django.shortcuts import render
 from collections import Counter
 import csv
-<<<<<<< HEAD
-=======
 
 from django.utils.encoding import smart_str
->>>>>>> master
 
 #returns average from list of integers
 def AverageList(list):
