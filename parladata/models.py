@@ -164,9 +164,11 @@ class Person(Timestampable, models.Model): # poslanec, minister, predsednik dz e
                                       help_text=_('URL to gov website pic'))
 
 #    slug = models.CharField(max_length = 255, blank=True, null=True)
-    district = models.ForeignKey('Area',
-                                 blank=True, null=True,
-                                 help_text='District')
+
+    districts = models.ManyToManyField('Area',
+                                       blank=True, null=True,
+                                       help_text='District',
+                                       related_name="candidates")
 
     voters = models.IntegerField(blank=True, null=True, help_text='number of votes cast for this person in their district')
     active = models.BooleanField(default=True,
@@ -223,7 +225,7 @@ class Organization(Timestampable, Taggable, models.Model):
     objects = PassThroughManager.for_queryset_class(OrganizationQuerySet)()
 
     def __str__(self):
-        return self.name
+        return self.name + " " + unicode(self.id)
 
 
 @python_2_unicode_compatible

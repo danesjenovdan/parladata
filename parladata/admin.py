@@ -1,6 +1,8 @@
 from django.contrib import admin
 from leaflet.admin import LeafletGeoAdmin
 from dal import autocomplete
+from collections import Counter
+from django.core.urlresolvers import reverse
 
 # Register your models here.
 from .models import *
@@ -187,9 +189,37 @@ class SpeechAdmin(admin.ModelAdmin):
     ]
 
 class MotionAdmin(admin.ModelAdmin):
+    list_display = ('id', 'text', 'result', 'requirement', 'get_for', 'get_against', 'get_abstain', 'get_not', 'link_to_vote')
     inlines = [
         LinkMotionInline,
     ]
+    def get_for(self, obj):
+        results = dict(Counter(Ballot.objects.filter(vote__motion=obj).values_list("option", flat=True))).get("za", 0)
+        return results
+
+    def get_against(self, obj):
+        results = dict(Counter(Ballot.objects.filter(vote__motion=obj).values_list("option", flat=True))).get("proti", 0)
+        return results
+
+    def get_abstain(self, obj):
+        results = dict(Counter(Ballot.objects.filter(vote__motion=obj).values_list("option", flat=True))).get("kvorum", 0)
+        return results
+
+    def get_not(self, obj):
+        results = dict(Counter(Ballot.objects.filter(vote__motion=obj).values_list("option", flat=True))).get("ni", 0)
+        return results
+
+    def link_to_vote(self, obj):
+        link = reverse("admin:parladata_vote_change", args=[Vote.objects.get(motion=obj).id])
+        return u'<a href="%s">Vote</a>' % (link)
+
+    link_to_vote.allow_tags=True
+
+    get_for.short_description = 'Za'
+    get_against.short_description = 'Proti'
+    get_abstain.short_description = 'Vzdrazan'
+    get_not.short_description = 'Ni'
+
 class VoteAdmin(admin.ModelAdmin):
     inlines = [
         CountVoteInline,
