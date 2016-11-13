@@ -816,9 +816,9 @@ def getOrganizationRolesAndMembers(request, org_id, date_=None):
         fdate=datetime.now().today()
     org = Organization.objects.filter(id=org_id)
     out = {}
-    trans_map = {"debug": "debug","predsednik": "president", "predsednica": "president", smart_str("član"): "members", smart_str("članica"): "members", "podpredsednica": "vice_president", "podpredsednik": "vice_president"}
+    trans_map = {"debug": "debug","predsednik": "president", "predsednica": "president", smart_str("član"): "members", smart_str("namestnica člana"): "viceMember", smart_str("namestnik člana"): "viceMember", smart_str("članica"): "members", "podpredsednica": "vice_president", "podpredsednik": "vice_president"}
     if org:
-        out = {"debug": [],"members":[], "president":[], "vice_president":[]}
+        out = {"debug": [],"members":[], "president":[], "vice_president":[], "viceMember":[]}
         out["name"]=org[0].name
         memberships = Membership.objects.filter(Q(start_time__lte=fdate)|Q(start_time=None), Q(end_time__gte=fdate)|Q(end_time=None), organization_id=org_id)
         #out = {trans_map[mem_type.encode("utf-8")]: [] for mem_type in set(list(memberships.values_list("role", flat=True)))}
