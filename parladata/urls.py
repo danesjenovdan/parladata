@@ -108,6 +108,8 @@ urlpatterns = patterns('',
 
     url(r'^getMembersWithFuction/', getMembersWithFuction),
 
+    url(r'^getDocumentOfMotion/(?P<motion_id>[\w].+)', getDocumentOfMotion),
+
 
     #debug helpers
     url(r'^getMembershipDuplications', getMembershipDuplications),
