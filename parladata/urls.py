@@ -105,6 +105,8 @@ urlpatterns = patterns('',
     url(r'^isVoteOnDay/(?P<date_>[\w].+)', isVoteOnDay),
     url(r'^isVoteOnDay/', isVoteOnDay),
 
+    url(r'^getMembersWithFuction/', getMembersWithFuction),
+
 
     #debug helpers
     url(r'^getMembershipDuplications', getMembershipDuplications),
