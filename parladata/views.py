@@ -947,7 +947,7 @@ def getMembersWithFuction(request):
 def getDocumentOfMotion(request, motion_id):
     if Link.objects.filter(motion=motion_id):
         link = str(Link.objects.filter(motion=motion_id)[0]).split('/')
-        return JsonResponse({"link":str('https://parlameter.si/cdn/'+link[4])}, safe=False)
+        return JsonResponse({"link":str('https://cdn.parlameter.si/v1/dokumenti/'+link[4])}, safe=False)
     else:
         return JsonResponse({"link":None}, safe=False)
     
