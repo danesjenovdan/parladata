@@ -149,7 +149,7 @@ class Person(Timestampable, models.Model): # poslanec, minister, predsednik dz e
         super(Person, self).save(*args, **kwargs)
 
     def __str__(self):
-        return self.name
+        return self.name + " " + unicode(self.id)
 
     # parlameter stuff
     gov_url = models.ForeignKey('Link',
