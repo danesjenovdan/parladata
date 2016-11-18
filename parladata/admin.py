@@ -6,7 +6,7 @@ from django.core.urlresolvers import reverse
 
 # Register your models here.
 from .models import *
-from forms import MembershipForm, PostForm
+from forms import MembershipForm, PostForm, SpeechForm
 
 class OtherNamePersonInline(admin.TabularInline):
     model = OtherName
@@ -184,6 +184,7 @@ class SessionAdmin(admin.ModelAdmin):
     search_fields = ['name']
 
 class SpeechAdmin(admin.ModelAdmin):
+    form = SpeechForm
     inlines = [
         MilestoneSpeechInline,
     ]
@@ -246,7 +247,7 @@ class PersonAutocomplete(autocomplete.Select2QuerySetView):
         qs = Person.objects.all()
 
         if self.q:
-            qs = qs.filter(name__istartswith=self.q)
+            qs = qs.filter(name__icontains=self.q)
 
         return qs
 
