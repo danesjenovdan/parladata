@@ -1,7 +1,7 @@
 from dal import autocomplete
 
 from django import forms
-from .models  import Membership, Post
+from .models  import Membership, Post, Speech
 
 from django.db.models.fields.related import ManyToOneRel
 from django.contrib.admin.widgets import RelatedFieldWidgetWrapper
@@ -55,5 +55,23 @@ class PostForm(forms.ModelForm):
 
     def save(self, *args, **kwargs):
         instance = super(PostForm, self).save(commit=False)
+        #self.fields['membership'].initial.update(post=None)
+        return instance
+
+class SpeechForm(forms.ModelForm):
+
+    class Meta:
+        model = Speech
+        fields = ('__all__')
+        widgets = {
+            'speaker': autocomplete.ModelSelect2(url='person-autocomplete'),
+        }
+    def __init__(self, *args, **kwargs):
+        super(SpeechForm, self).__init__(*args, **kwargs)
+
+
+
+    def save(self, *args, **kwargs):
+        instance = super(SpeechForm, self).save(commit=False)
         #self.fields['membership'].initial.update(post=None)
         return instance
