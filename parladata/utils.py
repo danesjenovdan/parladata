@@ -609,7 +609,6 @@ def getMPsOrganizationsByClassification():
                 counter[mem.organization.classification].append(smart_str(mem.organization.name))
             csvwriter.writerow([smart_str(person_mps.person.name)]+[",".join(counter[clas]) for clas in classes])
 
-
 def updateSpeechOrg():
     for speech in Speech.objects.all():
         members =  requests.get('https://data.parlameter.si/v1/getMembersOfPGsOnDate/'+speech.start_time.strftime('%d.%m.%Y')).json()
@@ -619,4 +618,17 @@ def updateSpeechOrg():
                 print speech.id
                 spee = Speech(speaker=Person.objects.get(id=speech.speaker.id),party=Organization.objects.get(id=int(ids)))
                 spee.save()
-                
+
+def getNonPGSpeekers():
+    parliamentary_group = Organization.objects.filter(Q(classification="poslanska skupina") | Q(classification="nepovezani poslanec"))
+    memberships = Membership.objects.filter(organization=parliamentary_group).values_list("person__id", flat=True)
+    ids=list(memberships)
+    Speech.objects.all().exclude(speaker__id__in=ids)
+    nonPgSpeakers = Speech.objects.all().exclude(speaker__id__in=ids).values_list("speaker__id", flat=True)
+    nonPGspeekers = {speaker : {"name": Person.objects.get(id=speaker).name, "id": Person.objects.get(id=speaker).id, "count": Speech.objects.filter(speaker__id=speaker).count()} for speaker in nonPgSpeakers}
+    data = sorted(nonPGspeekers.values(), key=lambda k,: k["count"], reverse=True)
+    with open('non_pg_speakers.csv', 'w') as csvfile:
+        svwriter = csv.writer(csvfile, delimiter=',',quotechar='|', quoting=csv.QUOTE_MINIMAL)
+        for person in data:
+            csvwriter.writerow([person["id"], smart_str(person["name"]), person["count"]])
+
