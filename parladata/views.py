@@ -934,11 +934,11 @@ def getPGsSpeechesIDs(request, org_id, date_=None):
 def getMembersWithFuction(request):
     fdate = datetime.today()
     data = []
-    parliamentary_group = Organization.objects.filter(classification="poslanska skupina")
-    members = Membership.objects.filter(Q(start_time__lte=fdate)|Q(start_time=None), Q(end_time__gte=fdate)|Q(end_time=None), organization__in=parliamentary_group)
+    dz = Organization.objects.filter(id=95)
+    members = Membership.objects.filter(Q(start_time__lte=fdate)|Q(start_time=None), Q(end_time__gte=fdate)|Q(end_time=None), organization__in=dz)
     for member in members:
         for post in member.memberships.all():
-            if post.role in ["vodja", "namestnik vodje", "namestnica vodje"]:
+            if post.role in ["predsednik", "podpredsednik"]:
                 data.append(member.person.id)
 
     return JsonResponse({"members_with_function": data}, safe=False)
