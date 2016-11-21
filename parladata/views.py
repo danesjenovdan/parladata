@@ -532,17 +532,19 @@ def getVotesOfSession(request, id_se):
 
     votes = Vote.objects.filter(motion__session__id = str(id_se))
     fdate = Session.objects.get(id=str(id_se)).start_time
-    
+
+    memberships = {mem.person.id: {"org_id": mem.organization.id, "org_acronym": mem.organization.acronym} for mem in Membership.objects.filter(Q(end_time__gte=fdate) | Q(end_time=None), Q(start_time__lte=fdate)|Q(start_time=None), organization__classification__in=["poslanska skupina", "nepovezani poslanec"])}
+    mems_ids = memberships.keys()
+    print memberships
     data = []
     tab = []
     for bal in Ballot.objects.filter(vote__session__id = str(id_se)):
-        if len(Membership.objects.filter(Q(end_time__gte=fdate) | Q(end_time=None), Q(start_time__lte=fdate)|Q(start_time=None), person=bal.voter, organization__classification="poslanska skupina")) >= 1:
-            voter_membership = Membership.objects.filter(Q(end_time__gte=fdate) | Q(end_time=None), Q(start_time__lte=fdate)|Q(start_time=None), person=bal.voter, organization__classification="poslanska skupina")[0]
+        if bal.voter.id in mems_ids:
             data.append({"mo_id":bal.vote.motion.id,
                      "mp_id":bal.voter.id,
-                     "Acronym":voter_membership.organization.acronym, 
+                     "Acronym":memberships[bal.voter.id]["org_acronym"], 
                      "option":bal.option, 
-                     "pg_id":voter_membership.organization.id})
+                     "pg_id":memberships[bal.voter.id]["org_id"]})
         else:
             print "nima membershipa: ", bal.voter.id   
     return JsonResponse(data,safe = False)
