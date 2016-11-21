@@ -818,9 +818,9 @@ def getOrganizationRolesAndMembers(request, org_id, date_=None):
         fdate=datetime.now().today()
     org = Organization.objects.filter(id=org_id)
     out = {}
-    trans_map = {"debug": "debug","predsednik": "president", "predsednica": "president", smart_str("član"): "members", smart_str("članica"): "members", "podpredsednica": "vice_president", "podpredsednik": "vice_president"}
+    trans_map = {"debug": "debug","predsednik": "president", "predsednica": "president", smart_str("član"): "members", smart_str("namestnica člana"): "viceMember", smart_str("namestnik člana"): "viceMember", smart_str("članica"): "members", "podpredsednica": "vice_president", "podpredsednik": "vice_president"}
     if org:
-        out = {"debug": [],"members":[], "president":[], "vice_president":[]}
+        out = {"debug": [],"members":[], "president":[], "vice_president":[], "viceMember":[]}
         out["name"]=org[0].name
         memberships = Membership.objects.filter(Q(start_time__lte=fdate)|Q(start_time=None), Q(end_time__gte=fdate)|Q(end_time=None), organization_id=org_id)
         #out = {trans_map[mem_type.encode("utf-8")]: [] for mem_type in set(list(memberships.values_list("role", flat=True)))}
@@ -862,6 +862,9 @@ def getSpeechData(request, speech_id):
 
     return HttpResponse(-1)
 
+def getResultOfMotion(request, motion_id):
+    output = {"result":Motion.objects.get(id=motion_id).result}
+    return JsonResponse(output, safe=False)
 
 def getPersonData(request, person_id):
     person = Person.objects.filter(id=person_id)
@@ -942,3 +945,11 @@ def getMembersWithFuction(request):
                 data.append(member.person.id)
 
     return JsonResponse({"members_with_function": data}, safe=False)
+
+def getDocumentOfMotion(request, motion_id):
+    if Link.objects.filter(motion=motion_id):
+        link = str(Link.objects.filter(motion=motion_id)[0]).split('/')
+        return JsonResponse({"link":str('https://cdn.parlameter.si/v1/dokumenti/'+link[4])}, safe=False)
+    else:
+        return JsonResponse({"link":None}, safe=False)
+    

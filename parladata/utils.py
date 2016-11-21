@@ -9,9 +9,9 @@ from django.http import JsonResponse
 from django.shortcuts import render
 from collections import Counter
 import csv
-
 from django.utils.encoding import smart_str
-
+import json
+import requests
 #returns average from list of integers
 def AverageList(list):
     return sum(list) / float(len(list))
@@ -609,6 +609,16 @@ def getMPsOrganizationsByClassification():
                 counter[mem.organization.classification].append(smart_str(mem.organization.name))
             csvwriter.writerow([smart_str(person_mps.person.name)]+[",".join(counter[clas]) for clas in classes])
 
+def updateSpeechOrg ():
+    for speech in Speech.objects.all():
+        members =  requests.get('https://data.parlameter.si/v1/getMembersOfPGsOnDate/'+speech.start_time.strftime('%d.%m.%Y')).json()
+        for ids, mem in members.items():
+            if speech.speaker.id in mem:
+                print Organization.objects.get(id=int(ids)).name
+                print speech.id
+                speech.party=Organization.objects.get(id=int(ids))
+                speech.save()
+                print "org: ",ids
 
 def getNonPGSpeekers():
     parliamentary_group = Organization.objects.filter(Q(classification="poslanska skupina") | Q(classification="nepovezani poslanec"))
