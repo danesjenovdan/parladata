@@ -645,3 +645,16 @@ def exportTagsOfVotes():
                 print vote.session.name, vote.motion.text, vote.tags.all().values_list("name", flat=True)
                 csvwriter.writerow([unicode(vote.session.name), unicode(vote.motion.text), unicode(";".join(vote.tags.all().values_list("name", flat=True)))])
     return 1
+
+
+def exportResultOfVotes():
+    with open('result_of_votes.csv', 'w') as csvfile:
+        csvwriter = csv.writer(csvfile, 
+                               delimiter=',',
+                               quotechar='|', 
+                               quoting=csv.QUOTE_MINIMAL)
+        votes = Vote.objects.all() 
+        for vote in votes:
+            if vote.tags.all():
+                csvwriter.writerow([unicode(vote.session.name), unicode(vote.motion.text), unicode(result)
+    return 1
