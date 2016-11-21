@@ -635,6 +635,10 @@ def getNonPGSpeekers():
 
 def exportTagsOfVotes():
     with open('tagged_votes.csv', 'w') as csvfile:
+        csvwriter = csv.writer(csvfile, 
+                               delimiter=',',
+                               quotechar='|', 
+                               quoting=csv.QUOTE_MINIMAL)
         votes = Vote.objects.all() 
         for vote in votes:
             if vote.tags.all():
