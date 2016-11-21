@@ -96,6 +96,7 @@ urlpatterns = patterns('',
     url(r'^getDistricts', getDistricts),
 
     url(r'^getSpeechData/(?P<speech_id>\d+)',getSpeechData),
+    url(r'^getResultOfMotion/(?P<motion_id>\d+)',getResultOfMotion),
 
     url(r'^getPersonData/(?P<person_id>\d+)',getPersonData),
 
@@ -106,6 +107,8 @@ urlpatterns = patterns('',
     url(r'^isVoteOnDay/', isVoteOnDay),
 
     url(r'^getMembersWithFuction/', getMembersWithFuction),
+
+    url(r'^getDocumentOfMotion/(?P<motion_id>[\w].+)', getDocumentOfMotion),
 
 
     #debug helpers
