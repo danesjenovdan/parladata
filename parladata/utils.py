@@ -653,8 +653,11 @@ def exportResultOfVotes():
                                delimiter=',',
                                quotechar='|', 
                                quoting=csv.QUOTE_MINIMAL)
-        votes = Vote.objects.all() 
+        votes = Motion.objects.all()
+        count = 0 
         for vote in votes:
-            if vote.tags.all():
-                csvwriter.writerow([unicode(vote.session.name), unicode(vote.motion.text), unicode(result)
+            csvwriter.writerow([unicode(vote.session.name), unicode(vote.text), unicode(vote.result)])
+            if vote.result:
+                count += 1
+        print count
     return 1
