@@ -622,3 +622,12 @@ def getNonPGSpeekers():
         svwriter = csv.writer(csvfile, delimiter=',',quotechar='|', quoting=csv.QUOTE_MINIMAL)
         for person in data:
             csvwriter.writerow([person["id"], smart_str(person["name"]), person["count"]])
+
+def exportTagsOfVotes():
+    with open('tagged_votes.csv', 'w') as csvfile:
+        votes = Vote.objects.all() 
+        for vote in votes:
+            if vote.tags.all():
+                print vote.session.name, vote.motion.text, vote.tags.all().values_list("name", flat=True)
+                csvwriter.writerow([unicode(vote.session.name), unicode(vote.motion.text), unicode(";".join(vote.tags.all().values_list("name", flat=True)))])
+    return 1
