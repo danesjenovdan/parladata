@@ -640,12 +640,12 @@ def updateMotins():
         against = dict(Counter(Ballot.objects.filter(vote__motion=motion).values_list("option", flat=True))).get("proti", 0)
         kvorum = dict(Counter(Ballot.objects.filter(vote__motion=motion).values_list("option", flat=True))).get("kvorum", 0)
         no = dict(Counter(Ballot.objects.filter(vote__motion=motion).values_list("option", flat=True))).get("ni", 0)
-        if motion.text == "Dnevni red v celoti":
+        if motion.text == "Dnevni red v celoti" or motion.text == "Širitev dnevnega reda".decode('utf8'):
             if yes > (yes + against + kvorum + no) / 2:
                 print 1
                 motion.result = 1
                 motion.save()
             else:
                 print 0
-                otion.result = 0
+                motion.result = 0
                 motion.save()
