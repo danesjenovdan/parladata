@@ -633,6 +633,22 @@ def getNonPGSpeekers():
         for person in data:
             csvwriter.writerow([person["id"], smart_str(person["name"]), person["count"]])
 
+def updateMotins():
+    for motion in Motion.objects.all():
+        yes = dict(Counter(Ballot.objects.filter(vote__motion=motion).values_list("option", flat=True))).get("za", 0)
+        against = dict(Counter(Ballot.objects.filter(vote__motion=motion).values_list("option", flat=True))).get("proti", 0)
+        kvorum = dict(Counter(Ballot.objects.filter(vote__motion=motion).values_list("option", flat=True))).get("kvorum", 0)
+        no = dict(Counter(Ballot.objects.filter(vote__motion=motion).values_list("option", flat=True))).get("ni", 0)
+        if motion.text == "Dnevni red v celoti" or motion.text == "Širitev dnevnega reda".decode('utf8'):
+            if yes > (yes + against + kvorum + no) / 2:
+                print 1
+                motion.result = 1
+                motion.save()
+            else:
+                print 0
+                motion.result = 0
+                motion.save()
+
 def exportTagsOfVotes():
     with open('tagged_votes.csv', 'w') as csvfile:
         csvwriter = csv.writer(csvfile, 
