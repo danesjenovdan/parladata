@@ -190,7 +190,10 @@ class SpeechAdmin(admin.ModelAdmin):
     ]
 
 class MotionAdmin(admin.ModelAdmin):
-    list_display = ('id', 'text', 'result', 'requirement', 'get_for', 'get_against', 'get_abstain', 'get_not', 'link_to_vote')
+    list_display = ('id', 'text', 'date', 'result', 'requirement', 'get_for', 'get_against', 'get_abstain', 'get_not', 'link_to_vote')
+    list_editable = ( 'result', )
+    list_filter = ('result', 'date')
+    search_fields = ['text']
     inlines = [
         LinkMotionInline,
     ]

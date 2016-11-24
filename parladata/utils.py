@@ -633,7 +633,6 @@ def getNonPGSpeekers():
         for person in data:
             csvwriter.writerow([person["id"], smart_str(person["name"]), person["count"]])
 
-
 def updateMotins():
     for motion in Motion.objects.all():
         yes = dict(Counter(Ballot.objects.filter(vote__motion=motion).values_list("option", flat=True))).get("za", 0)
@@ -649,3 +648,32 @@ def updateMotins():
                 print 0
                 motion.result = 0
                 motion.save()
+
+def exportTagsOfVotes():
+    with open('tagged_votes.csv', 'w') as csvfile:
+        csvwriter = csv.writer(csvfile, 
+                               delimiter=',',
+                               quotechar='|', 
+                               quoting=csv.QUOTE_MINIMAL)
+        votes = Vote.objects.all() 
+        for vote in votes:
+            if vote.tags.all():
+                print vote.session.name, vote.motion.text, vote.tags.all().values_list("name", flat=True)
+                csvwriter.writerow([unicode(vote.session.name), unicode(vote.motion.text), unicode(";".join(vote.tags.all().values_list("name", flat=True)))])
+    return 1
+
+
+def exportResultOfVotes():
+    with open('result_of_votes.csv', 'w') as csvfile:
+        csvwriter = csv.writer(csvfile, 
+                               delimiter=',',
+                               quotechar='|', 
+                               quoting=csv.QUOTE_MINIMAL)
+        votes = Motion.objects.all()
+        count = 0 
+        for vote in votes:
+            csvwriter.writerow([unicode(vote.session.name), unicode(vote.text), unicode(vote.result)])
+            if vote.result:
+                count += 1
+        print count
+    return 1
