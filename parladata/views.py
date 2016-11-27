@@ -871,6 +871,7 @@ def getPersonData(request, person_id):
     if person:
         obj = {'name': person[0].name,          
                'gender':person[0].gender if person[0].gender else 'unknown',
+               'gov_id':person[0].gov_id,
                }
     else:
         obj = {}
