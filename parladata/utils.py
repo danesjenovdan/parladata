@@ -610,7 +610,10 @@ def getMPsOrganizationsByClassification():
             csvwriter.writerow([smart_str(person_mps.person.name)]+[",".join(counter[clas]) for clas in classes])
 
 def updateSpeechOrg ():
-    for speech in Speech.objects.all():
+    tab = []
+    [tab.append(a.id) for a in Speech.objects.filter(updated_at__lte=datetime.strptime("24.11.2016", '%d.%m.%Y'))]
+        
+    for speech in tab:#Speech.objects.all():
         members =  requests.get('https://data.parlameter.si/v1/getMembersOfPGsOnDate/'+speech.start_time.strftime('%d.%m.%Y')).json()
         for ids, mem in members.items():
             if speech.speaker.id in mem:
@@ -677,3 +680,14 @@ def exportResultOfVotes():
                 count += 1
         print count
     return 1
+
+def updateBallotOrg():    
+    for ballot in Ballot.objects.all():
+        members =  requests.get('https://data.parlameter.si/v1/getMembersOfPGsOnDate/'+ballot.vote.session.start_time.strftime('%d.%m.%Y')).json()
+        for ids, mem in members.items():
+            if ballot.voter.id in mem:
+                print Organization.objects.get(id=int(ids)).name
+                print ballot.id
+                ballot.voterparty=Organization.objects.get(id=int(ids))
+                ballot.save()
+                print "org: ",ids
