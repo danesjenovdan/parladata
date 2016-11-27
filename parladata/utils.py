@@ -611,7 +611,7 @@ def getMPsOrganizationsByClassification():
 
 def updateSpeechOrg ():
     tab = []
-    [tab.append(a.id) for a in Speech.objects.filter(updated_at__lte=datetime.strptime("24.11.2016", '%d.%m.%Y'))]
+    tab = Speech.objects.filter(updated_at__lte=datetime.strptime("24.11.2016", '%d.%m.%Y'))
         
     for speech in tab:#Speech.objects.all():
         members =  requests.get('https://data.parlameter.si/v1/getMembersOfPGsOnDate/'+speech.start_time.strftime('%d.%m.%Y')).json()
