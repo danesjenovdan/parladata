@@ -609,19 +609,19 @@ def getMPsOrganizationsByClassification():
                 counter[mem.organization.classification].append(smart_str(mem.organization.name))
             csvwriter.writerow([smart_str(person_mps.person.name)]+[",".join(counter[clas]) for clas in classes])
 
-def updateSpeechOrg ():
-    tab = []
-    tab = Speech.objects.filter(updated_at__lte=datetime.strptime("24.11.2016", '%d.%m.%Y'))
-        
-    for speech in tab:#Speech.objects.all():
-        members =  requests.get('https://data.parlameter.si/v1/getMembersOfPGsOnDate/'+speech.start_time.strftime('%d.%m.%Y')).json()
-        for ids, mem in members.items():
-            if speech.speaker.id in mem:
-                print Organization.objects.get(id=int(ids)).name
-                print speech.id
-                speech.party=Organization.objects.get(id=int(ids))
-                speech.save()
-                print "org: ",ids
+def updateSpeechOrg():
+    members =  requests.get('https://data.parlameter.si/v1/getMembersOfPGsRanges').json()
+    for mem in members:
+        edate = datetime.strptime(mem['end_date'], settings.API_DATE_FORMAT)
+        sdate = datetime.strptime(mem['start_date'], settings.API_DATE_FORMAT)
+        speeches = Speech.objects.filter(start_time__range=[sdate, edate+timedelta(hours=23, minutes=59)])
+        for spee in speeches:
+            for m,ids in mem['members'].items():
+                if spee.speaker.id in ids:
+                    print spee.id
+                    spee.party=Organization.objects.get(id=int(m))
+                    spee.save()
+                    print "org: ",m
 
 def getNonPGSpeekers():
     parliamentary_group = Organization.objects.filter(Q(classification="poslanska skupina") | Q(classification="nepovezani poslanec"))
