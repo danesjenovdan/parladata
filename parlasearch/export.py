@@ -1,6 +1,6 @@
 import requests
 import json
-from parladata.models import Person, Speech, Session
+from parladata.models import Person, Speech, Session, Organization
 
 def exportSpeeches():
 
