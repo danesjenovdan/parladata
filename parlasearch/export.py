@@ -149,15 +149,48 @@ def exportPartySpeeches():
 
     return 1
 
+def exportVotes():
+
+    votes = Vote.objects.all()
+
+    i = 0
+
+    for vote in votes:
+        output = [{
+            'id': 'v' + str(vote.id),
+            'motionid_i': str(vote.motion.id),
+            'voteid_i': str(vote.id),
+            'content_t': vote.motion.text,
+            'sklic_t': 'VII',
+            'tip_t': 'v'
+        }]
+
+        output = json.dumps(output)
+
+        if i%100 == 0:
+            r = requests.post('http://127.0.0.1:8983/solr/knedl/update?commit=true', data=output, headers={'Content-Type': 'application/json'})
+
+            print r.text
+
+        else:
+             r = requests.post('http://127.0.0.1:8983/solr/knedl/update', data=output, headers={'Content-Type': 'application/json'})
+
+        i = i + 1
+
+    return 1
+
 def exportAll():
 
     print 'exporting speeches'
     exportSpeeches()
     print 'exporting sessions'
     exportSessions()
-    print 'exporting people_speeches'
-    exportPeopleSpeeches()
-    print 'exporting party speeches'
-    exportPartySpeeches()
+    # print 'exporting people_speeches'
+    # exportPeopleSpeeches()
+    # print 'exporting party speeches'
+    # exportPartySpeeches()
+    print 'exporting votes'
+    exportVotes()
+
 
     return 'all done'
