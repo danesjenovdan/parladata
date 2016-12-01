@@ -185,7 +185,8 @@ def getSessions(request, date_=None):
                      'organization': i.organization.name,
                      'organization_id': i.organization.id,
                      'classification': i.classification,
-                     'id': i.id
+                     'id': i.id,
+                     'is_in_review': i.in_review,
                     })
     return JsonResponse(data, safe=False)
 
