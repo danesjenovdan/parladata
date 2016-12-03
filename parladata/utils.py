@@ -615,13 +615,12 @@ def updateSpeechOrg():
         edate = datetime.strptime(mem['end_date'], settings.API_DATE_FORMAT)
         sdate = datetime.strptime(mem['start_date'], settings.API_DATE_FORMAT)
         speeches = Speech.objects.filter(start_time__range=[sdate, edate+timedelta(hours=23, minutes=59)])
+        print "count range speeches", speeches.count()
         for spee in speeches:
             for m,ids in mem['members'].items():
                 if spee.speaker.id in ids:
-                    print spee.id
                     spee.party=Organization.objects.get(id=int(m))
                     spee.save()
-                    print "org: ",m
 
 def getNonPGSpeekers():
     parliamentary_group = Organization.objects.filter(Q(classification="poslanska skupina") | Q(classification="nepovezani poslanec"))
