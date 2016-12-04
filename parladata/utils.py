@@ -742,8 +742,12 @@ def updateSessionInReviewStatus(filename):
         spamreader = csv.reader(csvfile, delimiter=',', quotechar='"')
         for row in spamreader:
             for candidate in row:
+                id_session = None
                 try:
                     id_session = int(candidate)
+                except:
+                    print "ni id :)", candidate
+                if id_session:
                     session = Session.objects.filter(id=id_session)
                     if session.count() == 1:
                         #Do update
@@ -752,5 +756,4 @@ def updateSessionInReviewStatus(filename):
                         session[0].save()
                     else:
                         print "Neki ni ql s sejo count je : ", session.count()
-                except:
-                    print "ni id :)", candidate
+                
