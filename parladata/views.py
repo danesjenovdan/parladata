@@ -554,7 +554,8 @@ def getVotesOfSession(request, id_se):
 def getVotesOfMotion(request, motion_id):
     data = []
     for bal in Ballot.objects.filter(vote__id = str(motion_id)):
-        data.append({'mo_id':bal.vote.motion.id,"mp_id":bal.voter.id,"Acronym":bal.voterparty.acronym, "option":bal.option, "pg_id":bal.voterparty.id})
+        mem = Membership.objects.get(Q(end_time__gte=bal.vote.start_time) | Q(end_time=None),Q(start_time__lte=bal.vote.start_time)|Q(start_time=None), person__id=bal.voter.id, organization__classification__in=["poslanska skupina", "nepovezani poslanec"])
+        data.append({'mo_id':bal.vote.motion.id,"mp_id":bal.voter.id,"Acronym":mem.organization.acronym, "option":bal.option, "pg_id":mem.organization.id})
     print len(data)
     return JsonResponse(data,safe = False)
 
@@ -872,6 +873,7 @@ def getPersonData(request, person_id):
     if person:
         obj = {'name': person[0].name,          
                'gender':person[0].gender if person[0].gender else 'unknown',
+               'gov_id':person[0].gov_id,
                }
     else:
         obj = {}
