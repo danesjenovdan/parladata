@@ -12,6 +12,9 @@ import csv
 from django.utils.encoding import smart_str
 import json
 import requests
+from parladata.models import *
+from django.db.models import Count
+
 #returns average from list of integers
 def AverageList(list):
     return sum(list) / float(len(list))
@@ -690,3 +693,64 @@ def updateBallotOrg():
                 ballot.voterparty=Organization.objects.get(id=int(ids))
                 ballot.save()
                 print "org: ",ids
+
+
+
+def migrateVotesInMotions():
+    for vote in Motion.objects.filter(created_at__gte=datetime.now()-timedelta(minutes=60)):
+        org = vote.session.organization
+        session_name = vote.session.name
+        ses = Session.objects.filter(name=session_name, created_at__lte=datetime.now()-timedelta(minutes=60), organization=org)
+        #vote.session = ses[0]
+        #vote.save()
+        print ses[0].name, ses[0].created_at, vote.created_at
+
+        
+def showSpeechesDuplicate():
+    def showData(qverySet, f):
+        #if len(list(set(list(qverySet.values_list("start_time", flat=True))))) < 2:
+        if len(list(set(list(qverySet.values_list("session_id", flat=True))))) > 1:
+            f.write(qverySet[0].content)
+            f.write(qverySet[0].speaker.name)
+            f.write(qverySet[0].session.organization.name)
+
+            f.write("imajo isti cas" if len(list(set(list(qverySet.values_list("start_time", flat=True))))) < 2 else "razlicen cas")
+            f.write(str(len(list(set(list(qverySet.values_list("start_time", flat=True)))))) + " " + str(len(qverySet.values_list("start_time", flat=True))))
+            f.write(str(list(qverySet.values_list("session_id"))))
+            f.write(str(list(qverySet.values_list("session__name"))))
+            f.write(str(list(qverySet.values_list("session__organization__name"))))
+            f.write("")
+
+    ds = Speech.objects.values('content').annotate(Count('id')).order_by().filter(id__count__gt=1)
+    cl = [d["content"] for d in ds]
+    f = open('duplicates.txt', 'w')
+
+    for content in cl:
+        speeches = Speech.objects.filter(content=content)
+        speakers = speeches.values("speaker_id").annotate(Count('id')).order_by().filter(id__count__gt=1)
+        for speaker in speakers:
+            showData(speeches.filter(speaker_id=speaker["speaker_id"]), f)
+            """sessions = speeches.filter(speaker_id=speaker["speaker_id"]).values("session_id").annotate(Count('id')).order_by().filter(id__count__gt=1)
+        for session in sessions:
+                showData(speeches.filter(speaker_id=speaker["speaker_id"], session_id=session["session_id"]))"""
+
+    c.close()   
+
+
+def updateSessionInReviewStatus(filename):
+    with open(filename, 'rb') as csvfile:
+        spamreader = csv.reader(csvfile, delimiter=',', quotechar='"')
+        for row in spamreader:
+            for candidate in row:
+                try:
+                    id_session = int(candidate)
+                    session = Session.objects.filter(id=id_session)
+                    if session.count() == 1:
+                        #Do update
+                        print "updejtam", session[0].name, "ivan"
+                        session[0].in_review = True
+                        session[0].save()
+                    else:
+                        print "Neki ni ql s sejo count je : ", session.count()
+                except:
+                    print "ni id :)", candidate
