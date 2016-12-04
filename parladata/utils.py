@@ -612,16 +612,18 @@ def getMPsOrganizationsByClassification():
                 counter[mem.organization.classification].append(smart_str(mem.organization.name))
             csvwriter.writerow([smart_str(person_mps.person.name)]+[",".join(counter[clas]) for clas in classes])
 
-def updateSpeechOrg ():
-    for speech in Speech.objects.all():
-        members =  requests.get('https://data.parlameter.si/v1/getMembersOfPGsOnDate/'+speech.start_time.strftime('%d.%m.%Y')).json()
-        for ids, mem in members.items():
-            if speech.speaker.id in mem:
-                print Organization.objects.get(id=int(ids)).name
-                print speech.id
-                speech.party=Organization.objects.get(id=int(ids))
-                speech.save()
-                print "org: ",ids
+def updateSpeechOrg():
+    members =  requests.get('https://data.parlameter.si/v1/getMembersOfPGsRanges').json()
+    for mem in members:
+        edate = datetime.strptime(mem['end_date'], settings.API_DATE_FORMAT)
+        sdate = datetime.strptime(mem['start_date'], settings.API_DATE_FORMAT)
+        speeches = Speech.objects.filter(start_time__range=[sdate, edate+timedelta(hours=23, minutes=59)])
+        print "count range speeches", speeches.count()
+        for spee in speeches:
+            for m,ids in mem['members'].items():
+                if spee.speaker.id in ids:
+                    spee.party=Organization.objects.get(id=int(m))
+                    spee.save()
 
 def getNonPGSpeekers():
     parliamentary_group = Organization.objects.filter(Q(classification="poslanska skupina") | Q(classification="nepovezani poslanec"))
@@ -636,6 +638,21 @@ def getNonPGSpeekers():
         for person in data:
             csvwriter.writerow([person["id"], smart_str(person["name"]), person["count"]])
 
+def updateMotins():
+    for motion in Motion.objects.all():
+        yes = dict(Counter(Ballot.objects.filter(vote__motion=motion).values_list("option", flat=True))).get("za", 0)
+        against = dict(Counter(Ballot.objects.filter(vote__motion=motion).values_list("option", flat=True))).get("proti", 0)
+        kvorum = dict(Counter(Ballot.objects.filter(vote__motion=motion).values_list("option", flat=True))).get("kvorum", 0)
+        no = dict(Counter(Ballot.objects.filter(vote__motion=motion).values_list("option", flat=True))).get("ni", 0)
+        if motion.text == "Dnevni red v celoti" or motion.text == "Širitev dnevnega reda".decode('utf8'):
+            if yes > (yes + against + kvorum + no) / 2:
+                print 1
+                motion.result = 1
+                motion.save()
+            else:
+                print 0
+                motion.result = 0
+                motion.save()
 
 def exportTagsOfVotes():
     with open('tagged_votes.csv', 'w') as csvfile:
@@ -657,11 +674,26 @@ def exportResultOfVotes():
                                delimiter=',',
                                quotechar='|', 
                                quoting=csv.QUOTE_MINIMAL)
-        votes = Vote.objects.all() 
+        votes = Motion.objects.all()
+        count = 0 
         for vote in votes:
-            if vote.tags.all():
-                csvwriter.writerow([unicode(vote.session.name), unicode(vote.motion.text), unicode(result)])
+            csvwriter.writerow([unicode(vote.session.name), unicode(vote.text), unicode(vote.result)])
+            if vote.result:
+                count += 1
+        print count
     return 1
+
+def updateBallotOrg():    
+    for ballot in Ballot.objects.all():
+        members =  requests.get('https://data.parlameter.si/v1/getMembersOfPGsOnDate/'+ballot.vote.session.start_time.strftime('%d.%m.%Y')).json()
+        for ids, mem in members.items():
+            if ballot.voter.id in mem:
+                print Organization.objects.get(id=int(ids)).name
+                print ballot.id
+                ballot.voterparty=Organization.objects.get(id=int(ids))
+                ballot.save()
+                print "org: ",ids
+
 
 
 def migrateVotesInMotions():

@@ -591,7 +591,7 @@ class Session(Timestampable, Taggable, models.Model):
 #        return self.name
 
     def __str__(self):
-        return self.name
+        return unicode(self.name) + ",  " + unicode(self.organization.name)
 
 @python_2_unicode_compatible
 class Speech(Timestampable, Taggable, models.Model): #todo

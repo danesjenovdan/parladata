@@ -225,9 +225,17 @@ class MotionAdmin(admin.ModelAdmin):
     get_not.short_description = 'Ni'
 
 class VoteAdmin(admin.ModelAdmin):
+    list_display = ('id', 'name', 'the_tags', )
+    
+    list_filter = ('tags',)
     inlines = [
         CountVoteInline,
     ]
+    search_fields = ['name']
+
+    def the_tags(self, obj):
+        return "%s" % (obj.tags.all(), )
+    the_tags.short_description = 'tags'
 
 admin.site.register(Person, PersonAdmin)
 admin.site.register(Organization, OrganizationAdmin)
