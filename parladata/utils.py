@@ -735,3 +735,22 @@ def showSpeechesDuplicate():
                 showData(speeches.filter(speaker_id=speaker["speaker_id"], session_id=session["session_id"]))"""
 
     c.close()   
+
+
+def updateSessionInReviewStatus(filename):
+    with open(filename, 'rb') as csvfile:
+        spamreader = csv.reader(csvfile, delimiter=',', quotechar='"')
+        for row in spamreader:
+            for candidate in row:
+                try:
+                    id_session = int(candidate)
+                    session = Session.objects.filter(id=id_session)
+                    if session.count() == 1:
+                        #Do update
+                        print "updejtam", session[0].name, "ivan"
+                        session[0].in_review = True
+                        session[0].save()
+                    else:
+                        print "Neki ni ql s sejo count je : ", session.count()
+                except:
+                    print "ni id :)", candidate
