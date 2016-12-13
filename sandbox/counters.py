@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from parladata.models import Organization, Speech, Membership
 from django.db.models import Q
 import lemmagen.lemmatizer
@@ -6,6 +7,10 @@ from nltk.tokenize import word_tokenize
 from string import punctuation
 from collections import Counter
 from datetime import datetime
+from slugify import slugify
+import requests
+
+from sandbox.export import listToCSV
 
 
 def getSpeechesOfPGs(from_year, is_coalition=None):
@@ -97,5 +102,27 @@ def getMembers():
 def getSurenames():
     mems = getMembers()
     surenames = mems.values_list("person__family_name", flat=True)
-    out = lemmatizeTokens([surename.split(" ")[0].lower() for surename in surenames])
+    lowerNames = [surename.split(" ")[0].lower() for surename in surenames]
+    out = lemmatizeTokens(lowerNames)
     return out
+
+
+def getTopWordsOf(typeOf='pg', nWords=1000, from_year=2016):
+    all_keys = {}
+    if typeOf == 'pg':
+        gS = getSpeechesOfPGs(from_year)
+        p_data = requests.get('https://data.parlameter.si/v1/getAllPGs').json()
+        all_keys = {str(obj['id']): obj['acronym'] for obj in p_data.values()}
+    else:
+        gS = getSpeechesOfMembers(from_year)
+        p_data = requests.get('https://data.parlameter.si/v1/getMPs').json()
+        all_keys = {str(obj['id']): obj['name'] for obj in p_data}
+
+    print all_keys
+    cP = counterOfUniqueWords(gS)
+    for key in cP.keys():
+        if str(key) in all_keys.keys():
+            file_name = all_keys[str(key)] + '_top' + str(nWords) + '.csv'
+        else:
+            file_name = str(key) + '_top' + str(nWords) + '.csv'
+        listToCSV(cP[key].most_common(nWords), file_name)
