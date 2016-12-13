@@ -43,9 +43,9 @@ def getSpeechesOfMembers(from_year):
                           month=1,
                           year=from_year)
     for member in mems:
-        speeches = Speech.objects.filter(speaker__id=member.id,
+        speeches = Speech.objects.filter(speaker__id=member.person.id,
                                          start_time__lte=start_time)
-        speechesByMember[member.id] = speeches
+        speechesByMember[member.person.id] = speeches
     return speechesByMember
 
 
@@ -104,7 +104,7 @@ def getSurenames():
     surenames = mems.values_list("person__family_name", flat=True)
     lowerNames = [surename.split(" ")[0].lower() for surename in surenames]
     out = lemmatizeTokens(lowerNames)
-    return out
+    return out, {lem: org for lem, org in zip(out, lowerNames)}
 
 
 def getTopWordsOf(typeOf='pg', nWords=1000, from_year=2016):
@@ -122,7 +122,30 @@ def getTopWordsOf(typeOf='pg', nWords=1000, from_year=2016):
     cP = counterOfUniqueWords(gS)
     for key in cP.keys():
         if str(key) in all_keys.keys():
-            file_name = all_keys[str(key)] + '_top' + str(nWords) + '.csv'
+            file_name = slugify(all_keys[str(key)]) + '_top' + str(nWords) + '.csv'
         else:
             file_name = str(key) + '_top' + str(nWords) + '.csv'
-        listToCSV(cP[key].most_common(nWords), file_name)
+        listToCSV([("Beseda", "Števec")]+cP[key].most_common(nWords), file_name)
+
+
+def getCountOfMentionedOthers(typeOf='pg', from_year=2016):
+    lemNames, pairs = getSurenames()
+    all_keys = {}
+    if typeOf == 'pg':
+        gS = getSpeechesOfPGs(from_year)
+        p_data = requests.get('https://data.parlameter.si/v1/getAllPGs').json()
+        all_keys = {str(obj['id']): obj['acronym'] for obj in p_data.values()}
+    else:
+        gS = getSpeechesOfMembers(from_year)
+        p_data = requests.get('https://data.parlameter.si/v1/getMPs').json()
+        all_keys = {str(obj['id']): obj['name'] for obj in p_data}
+
+    print all_keys
+    cP = counterOfUniqueWords(gS)
+    for key in cP.keys():
+        if str(key) in all_keys.keys():
+            file_name = slugify(all_keys[str(key)]) + '_mentioned' + '.csv'
+        else:
+            file_name = str(key) + '_mentioned' + '.csv'
+        data = [["Priimek", "Števec"]]+[[pairs[lem], cP[key][lem]] for lem in lemNames]
+        listToCSV(data, file_name)
