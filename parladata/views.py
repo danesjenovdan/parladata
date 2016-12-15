@@ -95,17 +95,19 @@ def getMPs(request, date_=None):
     print len(data)
     return  JsonResponse(data, safe=False)
 
-#returns MP static data like PoliticalParty, age, ....
+
+# returns MP static data like PoliticalParty, age, ....
 def getMPStatic(request, person_id, date_=None):
     if date_:
         fdate = datetime.strptime(date_, settings.API_DATE_FORMAT).date()
     else:
-        fdate=datetime.now().date()
+        fdate = datetime.now().date()
     data = dict()
     for member in getMPObjects(fdate):
         if str(member.id) == str(person_id):
-            print "Nasu poslaca"
-            groups = [{'name': membership.organization.name, 'id': membership.organization.id, 'acronym': membership.organization.acronym} for membership in member.memberships.filter(Q(start_time__lte=fdate)|Q(start_time=None), Q(end_time__gte=fdate)|Q(end_time=None)) if membership.organization.classification  in [u'poslanska skupina', u'nepovezani poslanec']]
+            groups = [{'name': membership.organization.name,
+                       'id': membership.organization.id,
+                       'acronym': membership.organization.acronym} for membership in member.memberships.filter(Q(start_time__lte=fdate)|Q(start_time=None), Q(end_time__gte=fdate)|Q(end_time=None)) if membership.organization.classification  in [u'poslanska skupina', u'nepovezani poslanec']]
             if not groups:
                 return JsonResponse({})
 
@@ -115,13 +117,15 @@ def getMPStatic(request, person_id, date_=None):
                 groups.append(group)
 
             print groups
-            #creates a list of all memberships of MP
+            # creates a list of all memberships of MP
 #            for i in parliamentary_group:
 #                groups.append(i.organization)
-            #calcutaes age of MP
+            # calcutaes age of MP
             try:
                 birth_date = str(member.birth_date)
-                age = date.today() - date(int(birth_date[:4]),int(birth_date[5:7]),int(birth_date[8:10]))
+                age = date.today() - date(int(birth_date[:4]),
+                                          int(birth_date[5:7]),
+                                          int(birth_date[8:10]))
                 age = age.days / 365
             except:
                 client.captureException()
@@ -145,9 +149,34 @@ def getMPStatic(request, person_id, date_=None):
             else:
                 social_output['linkedin'] = False
 
-            district = list(member.districts.all().values_list("id", flat=True))
+            district = list(member.districts.all().values_list('id',
+                                                               flat=True))
             if not district:
                 district = None
+
+            # get functions in working bodies
+            wbs = ['odbor',
+                   'komisija',
+                   'preiskovalna komisija']
+
+            roles = ['predsednik',
+                     'predsednica',
+                     'podpredsednica',
+                     'podpredsednik']
+
+            trans_map = {'predsednik': 'president',
+                         'predsednica': 'president',
+                         'podpredsednica': 'vice_president',
+                         'podpredsednik': 'vice_president'}
+
+            workingBodies = Organization.objects.filter(classification__in=wbs)
+            posts = Post.objects.filter(membership__person__id=person_id)
+            mp = posts.filter(organization__in=workingBodies, role__in=roles)
+            person_functions = [{'org_id': role.organization.id,
+                                 'role': trans_map[role.role]} for role in mp]
+
+            groupz = [{'name': group['name'],
+                       'id': group['id']} for group in groups[1:]]
 
             data = {
                 'previous_occupation': member.previous_occupation,
@@ -159,11 +188,12 @@ def getMPStatic(request, person_id, date_=None):
                 'district': district,
                 'voters': member.voters,
                 'age': age,
-                'groups': [{'name': group['name'], 'id': group['id']} for group in groups[1:]],
+                'groups': groupz,
                 'name': member.name,
                 'social': social_output,
                 'gov_id': member.gov_id,
-                'gender': "m" if member.gender == "male" else "f"
+                'gender': 'm' if member.gender == 'male' else 'f',
+                'working_bodies_functions': person_functions,
             }
 
     return JsonResponse(data)
