@@ -573,11 +573,11 @@ def getVotesOfSession(request, id_se):
         if bal.voter.id in mems_ids:
             data.append({"mo_id":bal.vote.motion.id,
                      "mp_id":bal.voter.id,
-                     "Acronym":memberships[bal.voter.id]["org_acronym"], 
-                     "option":bal.option, 
+                     "Acronym":memberships[bal.voter.id]["org_acronym"],
+                     "option":bal.option,
                      "pg_id":memberships[bal.voter.id]["org_id"]})
         else:
-            print "nima membershipa: ", bal.voter.id   
+            print "nima membershipa: ", bal.voter.id
     return JsonResponse(data,safe = False)
 
 
