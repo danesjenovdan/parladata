@@ -619,7 +619,7 @@ class Speech(Timestampable, Taggable, models.Model): #todo
         return self.speaker.name
 
 
-"""@python_2_unicode_compatible
+@python_2_unicode_compatible
 class SpeechInReview(Timestampable, Taggable, models.Model): # todo
     speaker = models.ForeignKey('Person',
                                 help_text='Person making the speech')
@@ -642,7 +642,7 @@ class SpeechInReview(Timestampable, Taggable, models.Model): # todo
 #        return self.name
 
     def __str__(self):
-        return self.speaker.name"""
+        return self.speaker.name
 
 
 class Motion(Timestampable, Taggable, models.Model):
