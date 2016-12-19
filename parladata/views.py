@@ -169,9 +169,10 @@ def getMPStatic(request, person_id, date_=None):
                          'podpredsednica': 'vice_president',
                          'podpredsednik': 'vice_president'}
 
-            workingBodies = Organization.objects.filter(classification__in=wbs)
+            wb = Organization.objects.filter(Q(classification__in=wbs) |
+                                             Q(id=95))
             posts = Post.objects.filter(membership__person__id=person_id)
-            mp = posts.filter(organization__in=workingBodies, role__in=roles)
+            mp = posts.filter(organization__in=wb, role__in=roles)
             person_functions = [{'org_id': role.organization.id,
                                  'role': trans_map[role.role]} for role in mp]
 
