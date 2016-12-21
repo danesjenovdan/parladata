@@ -593,7 +593,6 @@ class Session(Timestampable, Taggable, models.Model):
     def __str__(self):
         return unicode(self.name) + ",  " + unicode(self.organization.name)
 
-
 @python_2_unicode_compatible
 class Speech(Timestampable, Taggable, models.Model): #todo
     speaker = models.ForeignKey('Person',
@@ -611,9 +610,6 @@ class Speech(Timestampable, Taggable, models.Model): #todo
                                      help_text='Start time')
     end_time = PopoloDateTimeField(blank=True, null=True,
                                    help_text='End time')
-    in_review_rel = models.ForeignKey('SpeechInReview',
-                                      blank=True,
-                                      null=True,)
 
 #    @property
 #    def slug_source(self):
