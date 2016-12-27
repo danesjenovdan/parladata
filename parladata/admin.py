@@ -189,6 +189,7 @@ class SpeechAdmin(admin.ModelAdmin):
         MilestoneSpeechInline,
     ]
 
+
 class MotionAdmin(admin.ModelAdmin):
     list_display = ('id', 'text', 'date', 'result', 'requirement', 'get_for', 'get_against', 'get_abstain', 'get_not', 'link_to_vote')
     list_editable = ( 'result', )
@@ -243,6 +244,7 @@ admin.site.register(Post, PostAdmin)
 admin.site.register(Membership, MembershipAdmin)
 admin.site.register(Session, SessionAdmin)
 admin.site.register(Speech, SpeechAdmin)
+admin.site.register(SpeechInReview)
 admin.site.register(Motion, MotionAdmin)
 admin.site.register(Vote, VoteAdmin)
 admin.site.register(Area, LeafletGeoAdmin)
