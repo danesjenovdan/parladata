@@ -40,9 +40,9 @@ def getActivity(request, person_id):
         else:
             data[tempBallot['date']] = [tempBallot]
 
-    def appendSpeech(data, s, in_review):
+    def appendSpeech(data, s):
         tempSpeech = dict()
-        tempSpeech['type'] = "speech_in_review" if in_review else "speech"
+        tempSpeech['type'] = "speech"
         tempSpeech['date'] = str(s.start_time.date())
         tempSpeech['session_name'] = s.session.name
         tempSpeech['session_id'] = s.session.id
@@ -55,25 +55,14 @@ def getActivity(request, person_id):
     data = dict()
     person = Person.objects.filter(id=person_id)
     if person:
-        ballots = Ballot.objects.filter(voter=person)
-        ballots = ballots.order_by('vote__start_time')
-        speeches = Speech.objects.filter(speaker=person,
-                                         session__in_review=False)
-        speeches = speeches.order_by('start_time')
-
-        # get speeches of sessions in review
-        finalSessions = list(set(list(speeches.values_list("session__id",
-                                                           flat=True))))
-        sir = SpeechInReview.objects.filter(speaker=person)
-        sir = sir.exclude(session__id__in=finalSessions).order_by('start_time')
+        ballots = Ballot.objects.filter(voter=person).order_by('vote__start_time');
+        speeches = Speech.objects.filter(speaker=person).order_by('start_time');
 
         for b in ballots:
             appendBallot(data, b)
         for s in speeches:
-            appendSpeech(data, s, False)
-        for s in sir:
-            appendSpeech(data, s, True)
-    data = OrderedDict(sorted(data.items(), key=lambda t: t[0]))
+            appendSpeech(data, s)
+    data = collections.OrderedDict(sorted(data.items(), key=lambda t: t[0]))
 
     data_list = [data[x] for x in data]
     return JsonResponse(data_list, safe=False)
@@ -297,19 +286,9 @@ def getSpeeches(request, person_id, date_=None):
     if len(speaker_list) > 0:
         speaker = speaker_list[0]
 
-    speeches_queryset = Speech.objects.filter(speaker=speaker,
-                                              start_time__lte=fdate)
+    speeches_queryset = Speech.objects.filter(speaker=speaker, start_time__lte=fdate)
 
-    finalSessions = list(set(list(speeches_queryset.values_list("session__id",
-                                                                flat=True))))
-
-    sir_queryset = SpeechInReview.objects.filter(speaker=speaker,
-                                                 start_time__lte=fdate)
-
-    sir_queryset = sir_queryset.exclude(session__id__in=finalSessions)
-
-    speeches = [{'content': speech.content,
-                 'speech_id': speech.id} for speech in speeches_queryset]
+    speeches = [{'content': speech.content, 'speech_id': speech.id} for speech in speeches_queryset]
 
     return JsonResponse(speeches, safe=False)
 
@@ -322,25 +301,9 @@ def getSpeechesInRange(request, person_id, date_from, date_to):
 
     speaker = get_object_or_404(Person, id=person_id)
 
-    speeches_queryset = Speech.objects.filter(speaker=speaker,
-                                              start_time__lte=tdate,
-                                              start_time__gte=fdate)
+    speeches_queryset = Speech.objects.filter(speaker=speaker, start_time__lte=tdate, start_time__gte=fdate)
 
-    finalSessions = list(set(list(speeches_queryset.values_list("session__id",
-                                                                flat=True))))
-
-    sir_queryset = SpeechInReview.objects.filter(speaker=speaker,
-                                                 start_time__lte=tdate,
-                                                 start_time__gte=fdate)
-    sir_queryset = sir_queryset.exclude(session__id__in=finalSessions)
-
-    speeches = [{'content': speech.content,
-                 'status': 'final',
-                 'speech_id': speech.id} for speech in speeches_queryset]
-
-    speeches += [{'content': speech.content,
-                  'status': 'in_review',
-                  'speech_id': speech.id} for speech in sir_queryset]
+    speeches = [{'content': speech.content, 'speech_id': speech.id} for speech in speeches_queryset]
 
     return JsonResponse(speeches, safe=False)
 
@@ -406,15 +369,7 @@ def getSpeechesOfMP(request, person_id, date_=None):
         fdate = datetime.strptime(date_, settings.API_DATE_FORMAT).date()
     else:
         fdate = datetime.now().date()
-    speeches = Speech.objects.filter(speaker__id=person_id,
-                                     start_time__lte=fdate)
-    finalSessions = list(set(list(speeches.values_list("session__id",
-                                                       flat=True))))
-    sir = SpeechInReview.objects.filter(speaker__id=person_id,
-                                        start_time__lte=fdate)
-    sir = sir.exclude(session__id__in=finalSessions)
-    content = list(speeches.values_list('content', flat=True))
-    content += list(sir.values_list('content', flat=True))
+    content = list(Speech.objects.filter(speaker__id = person_id, start_time__lte=fdate).values_list('content', flat=True))
     return JsonResponse(content, safe=False)
 
 
@@ -442,25 +397,14 @@ def getAllSpeechesOfMPs(request, date_=None):
     parliamentary_group = Organization.objects.filter(classification="poslanska skupina")
     members = list(set(Membership.objects.filter(organization__in=parliamentary_group).values_list("person__id", flat=True)))
 
-    speeches_queryset = Speech.objects.filter(speaker__in=members,
-                                              start_time__lte=fdate)
-    finalSessions = list(set(list(speeches_queryset.values_list("session__id",
-                                                                flat=True))))
+    speeches_queryset = Speech.objects.filter(speaker__in=members, start_time__lte=fdate)
 
-    sir_queryset = SpeechInReview.objects.filter(speaker__in=members,
-                                                 start_time__lte=fdate)
-    sir_queryset = sir_queryset.exclude(session__id__in=finalSessions)
     #speeches = [{'content': speech.content, 'speech_id': speech.id, 'speaker':speech.speaker.id, 'session_name':speech.session.name, 'session_id':speech.session.id,} for speech in speeches_queryset]
-
+    
     #for speech in speeches:
     #    data.append(model_to_dict(speech, fields=[field.name for field in speech._meta.fields], exclude=[]))
-
-    speeches = [model_to_dict(speech,
-                              fields=[field.name for field in speech._meta.fields],
-                              exclude=[]) for speech in speeches_queryset]
-    speeches += [model_to_dict(speech,
-                               fields=[field.name for field in speech._meta.fields],
-                               exclude=[]) for speech in sir_queryset]
+    
+    speeches = [model_to_dict(speech, fields=[field.name for field in speech._meta.fields], exclude=[]) for speech in speeches_queryset]
     return JsonResponse(speeches, safe=False)
 
 
@@ -560,7 +504,6 @@ def getAllOrganizations(requests):
     return JsonResponse(data)
 
 
-# used for update parlalize (without speeches in review)
 def getAllSpeeches(requests, date_=None):
     if date_:
         fdate = datetime.strptime(date_, settings.API_DATE_FORMAT).date()
@@ -571,21 +514,6 @@ def getAllSpeeches(requests, date_=None):
     speeches = Speech.objects.filter(start_time__lte=fdate)
     for speech in speeches:
         data.append(model_to_dict(speech, fields=[field.name for field in speech._meta.fields], exclude=[]))
-
-    return JsonResponse(data, safe=False)
-
-
-# used for update parlalize (without speeches in review)
-def getAllSpeechesIR(requests, date_=None):
-    if date_:
-        fdate = datetime.strptime(date_, settings.API_DATE_FORMAT).date()
-    else:
-        fdate=datetime.now().date()
-    data = []
-
-    speeches = SpeechInReview.objects.filter(start_time__lte=fdate)
-    for speech in speeches:
-        data.append(model_to_dict(speech, fields=[field.name for field in speech._meta.fields]+['in_review_rel_id'], exclude=[]))
 
     return JsonResponse(data, safe=False)
 
@@ -743,23 +671,9 @@ def getNumberOfFormalSpeeches(request, person_id):
 
 def getExtendedSpeechesOfMP(request, person_id):
 
-    speeches_queryset = Speech.objects.filter(speaker__id=person_id)
-    finalSessions = list(set(list(speeches_queryset.values_list("session__id",
-                                                                flat=True))))
-    sir_queryset = SpeechInReview.objects.filter(speaker__id=person_id)
-    sir_queryset = sir_queryset.exclude(session__id__in=finalSessions)
+    speeches_queryset = Speech.objects.filter(speaker__id = person_id)
 
-    speeches = [{'content': speech.content,
-                 'speech_id': speech.id,
-                 'speaker': speech.speaker.id,
-                 'session_name': speech.session.name,
-                 'session_id': speech.session.id} for speech in speeches_queryset]
-
-    speeches += [{'content': speech.content,
-                  'speech_id': speech.id,
-                  'speaker': speech.speaker.id,
-                  'session_name': speech.session.name,
-                  'session_id': speech.session.id} for speech in sir_queryset]
+    speeches = [{'content': speech.content, 'speech_id': speech.id, 'speaker':speech.speaker.id, 'session_name':speech.session.name, 'session_id':speech.session.id,} for speech in speeches_queryset]
 
     return JsonResponse(speeches, safe=False)
 
@@ -1044,12 +958,9 @@ def isSpeechOnDay(request, date_=None):
     else:
         fdate = datetime.now()
     print fdate
-    end_day = fdate+timedelta(hours=23, minutes=59)
-    speech = Speech.objects.filter(start_time__gte=fdate,
-                                   start_time__lte=end_day)
-    sir = SpeechInReview.objects.filter(start_time__gte=fdate,
-                                        start_time__lte=end_day)
-    return JsonResponse({"isSpeech": True if (speech or sir) else False})
+    print fdate+timedelta(hours=23, minutes=59)
+    speech = Speech.objects.filter(start_time__gte=fdate, start_time__lte=(fdate+timedelta(hours=23, minutes=59)))
+    return JsonResponse({"isSpeech": True if speech else False})
 
 
 def isVoteOnDay(request, date_=None):
