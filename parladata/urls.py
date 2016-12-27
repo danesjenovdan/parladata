@@ -112,6 +112,8 @@ urlpatterns = patterns('',
 
     url(r'^getDocumentOfMotion/(?P<motion_id>[\w].+)', getDocumentOfMotion),
 
+    url(r'^getAllChangesAfter/(?P<datetime_>[\w].+)', getAllChangesAfter),
+
 
     #debug helpers
     url(r'^getMembershipDuplications', getMembershipDuplications),
