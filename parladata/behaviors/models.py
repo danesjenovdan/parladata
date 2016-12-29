@@ -37,6 +37,27 @@ class Timestampable(models.Model):
     class Meta:
         abstract = True
 
+class Versionable(models.Model):
+    """
+    An abstract base class model that provides versioning fields
+    ``valid_from`` and ``valid_to``
+    """
+
+    valid_from = models.DateTimeField(
+        help_text=_('row valid from'),
+        blank=True,
+        null=True,
+        default=None
+    )
+    valid_to = models.DateTimeField(
+        help_text=_('row valid to'),
+        blank=True,
+        null=True,
+        default=None
+    )
+
+    class Meta:
+        abstract = True
 
 class Permalinkable(models.Model):
     """
