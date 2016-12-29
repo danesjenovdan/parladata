@@ -10,7 +10,7 @@ from django.db.models.signals import pre_save
 from django.dispatch import receiver
 from datetime import datetime
 
-from .behaviors.models import Timestampable, Taggable
+from .behaviors.models import Timestampable, Taggable, Versionable
 from .querysets import PostQuerySet, OtherNameQuerySet, ContactDetailQuerySet, MembershipQuerySet, OrganizationQuerySet, PersonQuerySet
 
 from djgeojson.fields import PolygonField
@@ -594,7 +594,7 @@ class Session(Timestampable, Taggable, models.Model):
         return unicode(self.name) + ",  " + unicode(self.organization.name)
 
 @python_2_unicode_compatible
-class Speech(Timestampable, Taggable, models.Model): #todo
+class Speech(Versionable, Timestampable, Taggable, models.Model): #todo
     speaker = models.ForeignKey('Person',
                                 help_text='Person making the speech')
     party = models.ForeignKey('Organization',
