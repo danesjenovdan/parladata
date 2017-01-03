@@ -986,4 +986,55 @@ def getDocumentOfMotion(request, motion_id):
         return JsonResponse({"link":str('https://cdn.parlameter.si/v1/dokumenti/'+link[4])}, safe=False)
     else:
         return JsonResponse({"link":None}, safe=False)
-    
+
+def addQuestion(request):
+    """
+    {
+        "ps": "Poslanska skupina Slovenske demokratske stranke",
+        "links": [{
+            "date": "30.12.2016",
+            "url": "http://www.dz-rs.si/wps/portal/Home/ODrzavnemZboru/KdoJeKdo/PoslankeInPoslanci/poslanec?idOseba=P268",
+            "name": "Dopis za posredovanje pisnega vpra\u0161anja - PPDZ"
+        }, {
+            "date": "29.12.2016",
+            "url": "http://www.dz-rs.si/wps/portal/Home/ODrzavnemZboru/KdoJeKdo/PoslankeInPoslanci/poslanec?idOseba=P268",
+            "name": "Besedilo"
+        }],
+        "datum": "29.12.2016",
+        "naslovljenec": "minister za infrastrukturo",
+        "naslov": "v zvezi z nepravilnostmi pri pomo\u010di na slovenskih cestah",
+        "vlagatelj": "Lep \u0160imenko\u00a0Suzana"
+    }
+
+    TODO:
+    - determineSession() should be a utils function, that determines the current
+      session based on date input and the assumption, that it is a "Redna seja"
+    - determinePerson() should be a utils function, that returns a person object
+      based on the name of the person. It should fail gracefully, and should probably
+      check all the possibilities in name_parser.
+    - determinePerson2() is a non-MVP function that determines the person based on
+      their post at the ministry. Requires extra data to be entered manually.
+    - determineOrganization() is a non-MVP function that determines the Organization
+      the question was directed to. Requires extra data to be entered manually.
+    """
+
+    data = json.loads(request.body)
+
+    question = Question(session=determineSession(), # TODO use data['datum']
+                              date=strptime(data['datum'], '%d.%m.%Y'),
+                              title=data['naslov'],
+                              author=determinePerson(), # TODO use data['vlagatelj']
+                              # recipient_person=determinePerson2(), # TODO use data['naslovljenec'], not MVP
+                              # recipient_organization=determineOrganization(), # TODO use data['naslovljenec'], not MVP
+                              recipient_text=data['naslovljenec']
+                              )
+
+    for link in data['links']:
+        link = Link(url=link['url'],
+                    note=link['name'],
+                    date=strptime(link['date'], '%d.%m.%Y'),
+                    session=determineSession(), # TODO use data['datum']
+                    organization=Organization.objects.get(id=95),
+                    question=question)
+
+    return HttpResponse(json.dumps(data)) # TODO some nice success or error message
