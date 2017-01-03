@@ -465,6 +465,10 @@ class Link(Timestampable, Taggable, models.Model):
     motion = models.ForeignKey('Motion',
                                 blank=True, null=True,
                                 help_text='The motion of this link.')
+    question = models.ForeignKey('Question',
+                                 blank=True,
+                                 null=True,
+                                 help_text='The question this link belongs to.')
 
     def __str__(self):
         return self.url
@@ -755,6 +759,38 @@ class Ballot(Timestampable, models.Model):
                               help_text='Yes, no, abstain')
     def __str__(self):
         return self.voter.name
+
+class Question(Timestampable, models.Model):
+    session = models.ForeignKey('Session',
+                                blank=True,
+                                null=True,
+                                help_text='The session this question belongs to.')
+
+    date = models.PopoloDateTimeField(blank=True,
+                                      null=True,
+                                      help_text='Date of the question.')
+    
+    title = models.CharField(blank=True,
+                             null=True,
+                             help_text='Title  name as written on dz-rs.si')
+    
+    author = models.ForeignKey('Person',
+                               blank=True,
+                               null=True,
+                               help_text='The person (MP) who asked the question.')
+
+    recipient_person = models.ForeignKey('Person',
+                                         blank=True,
+                                         null=True,
+                                         help_text='Recipient person (if it\'s a person).')
+    recipient_organization = models.ForeignKey('Organization',
+                                         blank=True,
+                                         null=True,
+                                         help_text='Recipient organization (if it\'s an organization).')
+    
+    recipient_text = models.CharField(blank=True,
+                                      null=True,
+                                      help_text='Recipient name as written on dz-rs.si')
 
 @receiver(pre_save, sender=Organization)
 def copy_date_fields(sender, **kwargs):
