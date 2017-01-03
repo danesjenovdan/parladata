@@ -614,6 +614,9 @@ class Speech(Versionable, Timestampable, Taggable, models.Model): #todo
 #    @property
 #    def slug_source(self):
 #        return self.name
+    @staticmethod
+    def getValidSpeeches(date_):
+        return Speech.objects.filter(valid_from__lt=date_, valid_to__gt=date_)
 
     def __str__(self):
         return self.speaker.name
