@@ -1024,13 +1024,13 @@ def addQuestion(request):
     data = json.loads(request.body)
 
     question = Question(session=determineSession(), # TODO use data['datum']
-                              date=strptime(data['datum'], '%d.%m.%Y'),
-                              title=data['naslov'],
-                              author=determinePerson(), # TODO use data['vlagatelj']
-                              # recipient_person=determinePerson2(), # TODO use data['naslovljenec'], not MVP
-                              # recipient_organization=determineOrganization(), # TODO use data['naslovljenec'], not MVP
-                              recipient_text=data['naslovljenec']
-                              )
+                        date=strptime(data['datum'], '%d.%m.%Y'),
+                        title=data['naslov'],
+                        author=determinePerson(), # TODO use data['vlagatelj']
+                        # recipient_person=determinePerson2(), # TODO use data['naslovljenec'], not MVP
+                        # recipient_organization=determineOrganization(), # TODO use data['naslovljenec'], not MVP
+                        recipient_text=data['naslovljenec']
+                        )
 
     for link in data['links']:
         link = Link(url=link['url'],
@@ -1039,5 +1039,6 @@ def addQuestion(request):
                     session=determineSession(), # TODO use data['datum']
                     organization=Organization.objects.get(id=95),
                     question=question)
+        # TODO: link needs tags, but tags need to be determined first
 
     return HttpResponse(json.dumps(data)) # TODO some nice success or error message
