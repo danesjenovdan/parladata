@@ -989,12 +989,15 @@ def getDocumentOfMotion(request, motion_id):
 
 def addQuestion(request):
     """
+    This is an api endpoint function that saves a new question when prompted with a POST request.
+
+    JSON data model:
     {
         "ps": "Poslanska skupina Slovenske demokratske stranke",
         "links": [{
             "date": "30.12.2016",
             "url": "http://www.dz-rs.si/wps/portal/Home/ODrzavnemZboru/KdoJeKdo/PoslankeInPoslanci/poslanec?idOseba=P268",
-            "name": "Dopis za posredovanje pisnega vpra\u0161anja - PPDZ"
+            "name": "Dopis za posredovanje pisnega vprašanja - PPDZ"
         }, {
             "date": "29.12.2016",
             "url": "http://www.dz-rs.si/wps/portal/Home/ODrzavnemZboru/KdoJeKdo/PoslankeInPoslanci/poslanec?idOseba=P268",
@@ -1002,8 +1005,8 @@ def addQuestion(request):
         }],
         "datum": "29.12.2016",
         "naslovljenec": "minister za infrastrukturo",
-        "naslov": "v zvezi z nepravilnostmi pri pomo\u010di na slovenskih cestah",
-        "vlagatelj": "Lep \u0160imenko\u00a0Suzana"
+        "naslov": "v zvezi z nepravilnostmi pri pomoči na slovenskih cestah",
+        "vlagatelj": "Lep Šimenko Suzana"
     }
 
     TODO:
