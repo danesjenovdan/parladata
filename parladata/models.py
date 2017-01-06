@@ -627,32 +627,6 @@ class Speech(Versionable, Timestampable, Taggable, models.Model): #todo
         return self.speaker.name
 
 
-@python_2_unicode_compatible
-class SpeechInReview(Timestampable, Taggable, models.Model): # todo
-    speaker = models.ForeignKey('Person',
-                                help_text='Person making the speech')
-    party = models.ForeignKey('Organization',
-                              help_text='The party of the person making the speech',
-                              default=2)
-    content = models.TextField(help_text='Words spoken')
-    order = models.IntegerField(blank=True, null=True,
-                                help_text='Order of speech')
-    session = models.ForeignKey('Session',
-                                blank=True, null=True,
-                                help_text='Speech session')
-    start_time = PopoloDateTimeField(blank=True, null=True,
-                                     help_text='Start time')
-    end_time = PopoloDateTimeField(blank=True, null=True,
-                                   help_text='End time')
-
-#    @property
-#    def slug_source(self):
-#        return self.name
-
-    def __str__(self):
-        return self.speaker.name
-
-
 class Motion(Timestampable, Taggable, models.Model):
     organization = models.ForeignKey('Organization',
                                      blank=True, null=True,
