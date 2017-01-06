@@ -756,4 +756,38 @@ def updateSessionInReviewStatus(filename):
                         session[0].save()
                     else:
                         print "Neki ni ql s sejo count je : ", session.count()
-                
+
+
+"""
+determineSession get session of DZ (redna seja) on given date
+"""
+def determineSession(date_):
+    fdate = datetime.strptime(date_, '%d.%m.%Y')
+    toDate = fdate + timedelta(hours=23, minutes=59)
+    session = Session.objects.filter(start_time__gte=fdate,
+                                     start_time__lte=toDate,
+                                     organization__id=95,
+                                     name__icontains="redna"
+                                     )
+    if session:
+        return session[0]
+    else:
+        return None
+
+
+"""
+determinePerson get person
+"""
+def determinePerson(full_name):
+    person = Person.objects.filter(name_parser__icontains=full_name)
+    if person:
+        return person[0]
+    else:
+        return None
+
+
+def getIdSafe(obj):
+    if obj:
+        return obj.id
+    else:
+        None

@@ -110,12 +110,19 @@ urlpatterns = patterns('',
 
     url(r'^getDocumentOfMotion/(?P<motion_id>[\w].+)', getDocumentOfMotion),
 
+    url(r'^getAllQuestions/(?P<date_>[\w].+)', getAllQuestions),
+    url(r'^getAllQuestions/', getAllQuestions),
     url(r'^getAllChangesAfter/(?P<datetime_>[\w].+)', getAllChangesAfter),
+
+
+    # POST save url's for parser
+    url(r'^addQuestion/', addQuestion),
+
 
 
     #debug helpers
     url(r'^getMembershipDuplications', getMembershipDuplications),
-    url(r'^parserChecker', parserChecker), 
+    url(r'^parserChecker', parserChecker),
     url(r'^postMembersFixer', postMembersFixer),
     url(r'^membersFlowInOrg', membersFlowInOrg),
     url(r'^membersFlowInPGs', membersFlowInPGs),
