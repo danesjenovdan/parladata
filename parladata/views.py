@@ -22,12 +22,9 @@ from django.views.decorators.csrf import csrf_exempt
 DZ_ID = 95
 PS_NP = ['poslanska skupina', 'nepovezani poslanec']
 
-"""return all ballots and speaches agregated by date
 
 # return all ballots and speaches agregated by date
-
 # id: id of person
-
 def getActivity(request, person_id):
 
     def appendBallot(data, b):
@@ -233,12 +230,13 @@ def getMPStatic(request, person_id, date_=None):
 
     return JsonResponse(data)
 
-#return all Sessions
+
+# return all Sessions
 def getSessions(request, date_=None):
     if date_:
         fdate = datetime.strptime(date_, settings.API_DATE_FORMAT).date()
     else:
-        fdate=datetime.now().date()
+        fdate = datetime.now().date()
     data = []
     sessions = Session.objects.filter(start_time__lte=fdate).order_by('-start_time')
     for i in sessions:
@@ -252,7 +250,8 @@ def getSessions(request, date_=None):
                      'classification': i.classification,
                      'id': i.id,
                      'is_in_review': i.in_review,
-                    })
+                     }
+                    )
     return JsonResponse(data, safe=False)
 
 
@@ -260,7 +259,7 @@ def getSessionsOfOrg(request, org_id, date_=None):
     if date_:
         fdate = datetime.strptime(date_, settings.API_DATE_FORMAT).date()
     else:
-        fdate=datetime.now().date()
+        fdate = datetime.now().date()
     data = []
     sessions = Session.objects.filter(organization__id=org_id,
                                       start_time__lte=fdate)
@@ -327,7 +326,10 @@ def getMembersOfPGs(request):
     members = Membership.objects.filter(Q(end_time=None) |
                                         Q(end_time__gt=datetime.now()),
                                         organization__in=parliamentary_group)
-    data = {pg.id:[member.person.id for member in members.filter(organization=pg)] for pg in parliamentary_group}
+    data = {pg.id: [member.person.id
+                    for member
+                    in members.filter(organization=pg)
+                    ] for pg in parliamentary_group}
     return JsonResponse(data)
 
 
@@ -1164,6 +1166,7 @@ def getAllQuestions(request, date_=None):
         data.append(q_obj)
 
     return JsonResponse(data, safe=False)
+
 
 @csrf_exempt
 def addQuestion(request):
