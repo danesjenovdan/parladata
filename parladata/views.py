@@ -1307,11 +1307,6 @@ def getAllChangesAfter(request, datetime_):
     print speeches.count()
     data['speeches'] = [model_to_dict(speech, fields=[field.name for field in speech._meta.fields]) for speech in speeches]
 
-    print "speeches_in_review"
-    speeches = SpeechInReview.objects.filter(updated_at__gte=time_of)
-    print speeches.count()
-    data['speeches_in_review'] = [model_to_dict(speech, fields=[field.name for field in speech._meta.fields]) for speech in speeches]
-
     print "ballots"
     ballots = Ballot.objects.filter(updated_at__gte=time_of)
     print ballots.count()
