@@ -1321,4 +1321,27 @@ def getAllChangesAfter(request, datetime_):
                                              'voter',
                                              'option']) for ballot in ballots]
 
+    print "questions"
+    data['questions'] = []
+
+    question_queryset = Question.objects.filter(updated_at__gte=time_of)
+
+    for question in question_queryset:
+        link = question.links.filter(note="Besedilo")
+        if link:
+            link = link[0].url
+        else:
+            link = None
+        q_obj = {'date': question.date,
+                 'id': question.id,
+                 'title': question.title,
+                 'session_id': getIdSafe(question.session),
+                 'author_id': getIdSafe(question.author),
+                 'recipient_id': getIdSafe(question.recipient_person),
+                 'recipient_org_id': getIdSafe(question.recipient_organization),
+                 'recipient_text': question.recipient_text,
+                 'link': link,
+                 }
+        data['questions'].append(q_obj)
+
     return JsonResponse(data)
