@@ -468,7 +468,8 @@ class Link(Timestampable, Taggable, models.Model):
     question = models.ForeignKey('Question',
                                  blank=True,
                                  null=True,
-                                 help_text='The question this link belongs to.')
+                                 help_text='The question this link belongs to.',
+                                 related_name='links')
 
     def __str__(self):
         return self.url
@@ -736,8 +737,10 @@ class Count(Timestampable, models.Model):
                               help_text='Yes, no, abstain')
     count = models.IntegerField(help_text='Number of votes')
     vote = models.ForeignKey('Vote',
-                                blank=True, null=True,
-                                help_text='The vote of this count.')
+                             blank=True, null=True,
+                             help_text='The vote of this count.')
+
+
 
 @python_2_unicode_compatible
 class Ballot(Timestampable, models.Model):
@@ -747,9 +750,9 @@ class Ballot(Timestampable, models.Model):
                               blank=True, null=True,
                               help_text='The voter')
     voterparty = models.ForeignKey('Organization',
-                              help_text='The party of the voter.',
-                              related_name='party',
-                              default=2)
+                                   help_text='The party of the voter.',
+                                   related_name='party',
+                                   default=2)
     orgvoter = models.ForeignKey('Organization',
                                  blank=True,
                                  null=True,
@@ -757,8 +760,10 @@ class Ballot(Timestampable, models.Model):
     option = models.CharField(max_length=128,
                               blank=True, null=True,
                               help_text='Yes, no, abstain')
+
     def __str__(self):
         return self.voter.name
+
 
 class Question(Timestampable, models.Model):
     session = models.ForeignKey('Session',
@@ -766,29 +771,31 @@ class Question(Timestampable, models.Model):
                                 null=True,
                                 help_text='The session this question belongs to.')
 
-    date = models.PopoloDateTimeField(blank=True,
-                                      null=True,
-                                      help_text='Date of the question.')
-    
-    title = models.CharField(blank=True,
+    date = PopoloDateTimeField(blank=True,
+                               null=True,
+                               help_text='Date of the question.')
+
+    title = models.TextField(blank=True,
                              null=True,
                              help_text='Title  name as written on dz-rs.si')
-    
+
     author = models.ForeignKey('Person',
                                blank=True,
                                null=True,
-                               help_text='The person (MP) who asked the question.')
-
+                               help_text='The person (MP) who asked the question.',
+                               related_name='asked')
     recipient_person = models.ForeignKey('Person',
                                          blank=True,
                                          null=True,
-                                         help_text='Recipient person (if it\'s a person).')
+                                         help_text='Recipient person (if it\'s a person).',
+                                         related_name='questions')
     recipient_organization = models.ForeignKey('Organization',
-                                         blank=True,
-                                         null=True,
-                                         help_text='Recipient organization (if it\'s an organization).')
+                                               blank=True,
+                                               null=True,
+                                               help_text='Recipient organization (if it\'s an organization).',
+                                               related_name='questions_org')
     
-    recipient_text = models.CharField(blank=True,
+    recipient_text = models.TextField(blank=True,
                                       null=True,
                                       help_text='Recipient name as written on dz-rs.si')
 

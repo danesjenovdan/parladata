@@ -39,6 +39,11 @@ class LinkMotionInline(admin.TabularInline):
     fk_name = 'motion'
     exclude = ['person', 'membership', 'organization']
     extra = 0
+class LinkQuestionInline(admin.TabularInline):
+    model = Link
+    fk_name = 'question'
+    exclude = []
+    extra = 0
 
 class IdentifierPersonInline(admin.TabularInline):
     model = Identifier
@@ -189,6 +194,11 @@ class SpeechAdmin(admin.ModelAdmin):
         MilestoneSpeechInline,
     ]
 
+class QuestionAdmin(admin.ModelAdmin):
+    inlines = [
+        LinkQuestionInline
+    ]
+
 class MotionAdmin(admin.ModelAdmin):
     list_display = ('id', 'text', 'date', 'result', 'requirement', 'get_for', 'get_against', 'get_abstain', 'get_not', 'link_to_vote')
     list_editable = ( 'result', )
@@ -248,6 +258,7 @@ admin.site.register(Vote, VoteAdmin)
 admin.site.register(Area, LeafletGeoAdmin)
 admin.site.register(Link)
 admin.site.register(Ballot)
+admin.site.register(Question, QuestionAdmin)
 
 class PersonAutocomplete(autocomplete.Select2QuerySetView):
     def get_queryset(self):

@@ -17,6 +17,9 @@ from django.conf import settings
 from django.utils.encoding import smart_str
 from taggit.models import Tag
 from django.shortcuts import get_object_or_404
+from django.views.decorators.csrf import csrf_exempt
+
+DZ_ID = 95
 
 
 """return all ballots and speaches agregated by date
@@ -980,13 +983,46 @@ def getMembersWithFuction(request):
 
     return JsonResponse({"members_with_function": data}, safe=False)
 
+
 def getDocumentOfMotion(request, motion_id):
     if Link.objects.filter(motion=motion_id):
         link = str(Link.objects.filter(motion=motion_id)[0]).split('/')
-        return JsonResponse({"link":str('https://cdn.parlameter.si/v1/dokumenti/'+link[4])}, safe=False)
+        return JsonResponse({"link": str('https://cdn.parlameter.si/v1/dokumenti/'+link[4])}, safe=False)
     else:
-        return JsonResponse({"link":None}, safe=False)
+        return JsonResponse({"link": None}, safe=False)
 
+
+def getAllQuestions(request, date_=None):
+    if date_:
+        fdate = datetime.strptime(date_, settings.API_DATE_FORMAT).date()
+    else:
+        fdate = datetime.now().date()
+
+    question_queryset = Question.objects.filter(date__lte=fdate)
+
+    data = []
+
+    for question in question_queryset:
+        link = question.links.filter(note="Besedilo")
+        if link:
+            link = link[0].url
+        else:
+            link = None
+        q_obj = {'date': question.date,
+                 'id': question.id,
+                 'title': question.title,
+                 'session_id': getIdSafe(question.session),
+                 'author_id': getIdSafe(question.author),
+                 'recipient_id': getIdSafe(question.recipient_person),
+                 'recipient_org_id': getIdSafe(question.recipient_organization),
+                 'recipient_text': question.recipient_text,
+                 'link': link,
+                 }
+        data.append(q_obj)
+
+    return JsonResponse(data, safe=False)
+
+@csrf_exempt
 def addQuestion(request):
     """
     This is an api endpoint function that saves a new question when prompted with a POST request.
@@ -1010,35 +1046,53 @@ def addQuestion(request):
     }
 
     TODO:
-    - determineSession() should be a utils function, that determines the current
-      session based on date input and the assumption, that it is a "Redna seja"
-    - determinePerson() should be a utils function, that returns a person object
-      based on the name of the person. It should fail gracefully, and should probably
-      check all the possibilities in name_parser.
     - determinePerson2() is a non-MVP function that determines the person based on
       their post at the ministry. Requires extra data to be entered manually.
     - determineOrganization() is a non-MVP function that determines the Organization
       the question was directed to. Requires extra data to be entered manually.
     """
+    print request.method
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        session = determineSession(data['datum'])
+        person = determinePerson(data['vlagatelj'])
+        dz = Organization.objects.get(id=DZ_ID)
 
-    data = json.loads(request.body)
+        if Question.objects.filter(session=session,# TODO use data['datum']
+                                   title=data['naslov'],
+                                   author=person, # TODO use data['vlagatelj']
+                                   # recipient_person=determinePerson2(), # TODO use data['naslovljenec'], not MVP
+                                   # recipient_organization=determineOrganization(), # TODO use data['naslovljenec'], not MVP
+                                   recipient_text=data['naslovljenec']
+                                   ):
+            return JsonResponse({'status': 'This question is allready saved'})
 
-    question = Question(session=determineSession(), # TODO use data['datum']
-                        date=strptime(data['datum'], '%d.%m.%Y'),
-                        title=data['naslov'],
-                        author=determinePerson(), # TODO use data['vlagatelj']
-                        # recipient_person=determinePerson2(), # TODO use data['naslovljenec'], not MVP
-                        # recipient_organization=determineOrganization(), # TODO use data['naslovljenec'], not MVP
-                        recipient_text=data['naslovljenec']
-                        )
+        question = Question(session=session,# TODO use data['datum']
+                            date=datetime.strptime(data['datum'], '%d.%m.%Y'),
+                            title=data['naslov'],
+                            author=person, # TODO use data['vlagatelj']
+                            # recipient_person=determinePerson2(), # TODO use data['naslovljenec'], not MVP
+                            # recipient_organization=determineOrganization(), # TODO use data['naslovljenec'], not MVP
+                            recipient_text=data['naslovljenec']
+                            )
+        question.save()
 
-    for link in data['links']:
-        link = Link(url=link['url'],
-                    note=link['name'],
-                    date=strptime(link['date'], '%d.%m.%Y'),
-                    session=determineSession(), # TODO use data['datum']
-                    organization=Organization.objects.get(id=95),
-                    question=question)
-        # TODO: link needs tags, but tags need to be determined first
+        print 'save question'
 
-    return HttpResponse(json.dumps(data)) # TODO some nice success or error message
+        for link in data['links']:
+            link = Link(url=link['url'],
+                        note=link['name'],
+                        date=datetime.strptime(link['date'], '%d.%m.%Y'),
+                        session=session, # TODO use data['datum']
+                        organization=dz,
+                        question=question).save()
+            print 'save link'
+            # TODO: link needs tags, but tags need to be determined first
+
+        return JsonResponse({'saved': True,
+                             'status': 'AllIsWell',
+                             'found_session': True if session else False,
+                             'found_person': True if person else False,
+                             })
+    else:
+        return JsonResponse({'status': 'request must be post'})
