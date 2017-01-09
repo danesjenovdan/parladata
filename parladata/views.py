@@ -1199,7 +1199,7 @@ def addQuestion(request):
     """
     print request.method
     if request.method == 'POST':
-        data = json.loads(request.body)
+        data = json.loads(unicode(request.body))
         session = determineSession(data['datum'])
         person = determinePerson(data['vlagatelj'])
         dz = Organization.objects.get(id=DZ_ID)
