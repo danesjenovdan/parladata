@@ -1219,7 +1219,8 @@ def addQuestion(request):
                             author=person, # TODO use data['vlagatelj']
                             # recipient_person=determinePerson2(), # TODO use data['naslovljenec'], not MVP
                             # recipient_organization=determineOrganization(), # TODO use data['naslovljenec'], not MVP
-                            recipient_text=data['naslovljenec']
+                            recipient_text=data['naslovljenec'],
+                            json_data=request.body
                             )
         question.save()
 
