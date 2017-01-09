@@ -1316,6 +1316,8 @@ def getAllChangesAfter(request, datetime_):
                                              'vote',
                                              'voter',
                                              'option']) for ballot in ballots]
+    newVotes = list(set(list(ballots.values_list("vote__session__id", flat=True))))
+    data['sessions_of_updated_votes'] = newVotes
 
     print "questions"
     data['questions'] = []
