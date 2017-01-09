@@ -767,10 +767,14 @@ class Question(Timestampable, models.Model):
                                                null=True,
                                                help_text='Recipient organization (if it\'s an organization).',
                                                related_name='questions_org')
-    
+
     recipient_text = models.TextField(blank=True,
                                       null=True,
                                       help_text='Recipient name as written on dz-rs.si')
+
+    json_data = models.TextField(_('json'),
+                                 blank=True, null=True,
+                                 help_text=_('debug data'))
 
 @receiver(pre_save, sender=Organization)
 def copy_date_fields(sender, **kwargs):
