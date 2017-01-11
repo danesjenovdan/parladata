@@ -114,6 +114,8 @@ urlpatterns = patterns('',
     url(r'^getAllQuestions/', getAllQuestions),
     url(r'^getAllChangesAfter/(?P<datetime_>[\w].+)', getAllChangesAfter),
 
+    url(r'^getDataOfAllSpeeches/', getDataOfAllSpeeches),
+
 
     # POST save url's for parser
     url(r'^addQuestion/', addQuestion),
