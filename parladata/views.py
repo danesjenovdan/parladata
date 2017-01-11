@@ -1199,9 +1199,11 @@ def addQuestion(request):
     """
     print request.method
     if request.method == 'POST':
+        rep = {" mag. ": " ", " mag ": " ", " dr. ": " ", " dr ": " "}
         data = json.loads(request.body)
         session = determineSession(data['datum'])
-        person = determinePerson(data['vlagatelj'])
+        name = replace_all(data['vlagatelj'], rep)
+        person = determinePerson(name)
         dz = Organization.objects.get(id=DZ_ID)
 
         if Question.objects.filter(session=session,# TODO use data['datum']
