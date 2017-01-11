@@ -1206,6 +1206,7 @@ def addQuestion(request):
 
         if Question.objects.filter(session=session,# TODO use data['datum']
                                    title=data['naslov'],
+                                   date=datetime.strptime(data['datum'], '%d.%m.%Y'),
                                    author=person, # TODO use data['vlagatelj']
                                    # recipient_person=determinePerson2(), # TODO use data['naslovljenec'], not MVP
                                    # recipient_organization=determineOrganization(), # TODO use data['naslovljenec'], not MVP
