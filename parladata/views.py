@@ -1034,19 +1034,6 @@ def getSpeechData(request, speech_id):
     return HttpResponse(-1)
 
 
-def getDataOfAllSpeeches(request):
-    speeches = Speech.getValidSpeeches(datetime.now())
-    data = {}
-    for speech in speeches:
-        data[speech.id] = {'id': int(speech.id),
-                           'date': speech.session.start_time.date(),
-                           'speaker_id': speech.speaker.id,
-                           'session_id': speech.session.id,
-                           'session_name': speech.session.name
-                           }
-    return JsonResponse(data)
-
-
 def getResultOfMotion(request, motion_id):
     output = {"result": Motion.objects.get(id=motion_id).result}
     return JsonResponse(output, safe=False)
