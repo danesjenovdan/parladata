@@ -14,6 +14,7 @@ import json
 import requests
 from parladata.models import *
 from django.db.models import Count
+import re
 
 #returns average from list of integers
 def AverageList(list):
@@ -795,5 +796,6 @@ def getIdSafe(obj):
 
 def replace_all(text, dic):
     for i, j in dic.iteritems():
-        text = text.replace(i, j)
+        pattern = re.compile(i, re.IGNORECASE)
+        text = pattern.sub(j, text)
     return text
