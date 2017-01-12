@@ -1328,7 +1328,7 @@ def getAllChangesAfter(request, datetime_):
     question_queryset = Question.objects.filter(updated_at__gte=time_of)
 
     for question in question_queryset:
-        link = question.links.filter(note="Besedilo")
+        link = question.links.filter(note__icontains="Besedilo")
         if link:
             link = link[0].url
         else:
