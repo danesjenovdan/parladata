@@ -455,7 +455,8 @@ class Link(Timestampable, Taggable, models.Model):
 
     organization = models.ForeignKey('Organization',
                                 blank=True, null=True,
-                                help_text='The organization of this link.')
+                                help_text='The organization of this link.',
+                                related_name='links')
     person = models.ForeignKey('Person',
                                 blank=True, null=True,
                                 help_text='The person of this link.')
