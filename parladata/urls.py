@@ -133,5 +133,5 @@ urlpatterns = patterns('',
 
 
     # MONITORING
-    url(r'^monitoring', monitorMe);
+    url(r'^monitoring', monitorMe),
 )
