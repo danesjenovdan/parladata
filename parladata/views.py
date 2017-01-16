@@ -5,7 +5,7 @@ from django.http import JsonResponse, HttpResponse
 from django.core import serializers
 from datetime import date, datetime, timedelta
 from parladata.models import *
-from django.db.models import Q
+from django.db.models import Q, Count
 from django.forms.models import model_to_dict
 import json
 import simplejson
@@ -18,6 +18,7 @@ from django.utils.encoding import smart_str
 from taggit.models import Tag
 from django.shortcuts import get_object_or_404
 from django.views.decorators.csrf import csrf_exempt
+from django.db.models.expressions import DateTime
 
 DZ_ID = 95
 PS_NP = ['poslanska skupina', 'nepovezani poslanec']
@@ -1165,6 +1166,69 @@ def getAllQuestions(request, date_=None):
                  }
         data.append(q_obj)
 
+    return JsonResponse(data, safe=False)
+
+
+def getBallotsCounter(voter_obj, date_=None):
+    if date_:
+        fdate = datetime.strptime(date_, settings.API_DATE_FORMAT).date()
+    else:
+        fdate = datetime.now().date()
+
+    fdate = fdate + timedelta(days=1)
+
+    data = []
+
+    if type(voter_obj) == Person:
+        ballots = Ballot.objects.filter(voter=voter_obj,
+                                        vote__start_time__lt=fdate)
+    elif type(voter_obj) == Organization:
+        ballots = Ballot.objects.filter(voterparty=voter_obj,
+                                        vote__start_time__lt=fdate)
+
+    ballots = ballots.annotate(month=DateTime("vote__start_time",
+                                              "month",
+                               tzinfo=None)).values("month").values('option',
+                                                                    'month')
+    ballots = ballots.annotate(ballot_count=Count('option')).order_by('month')
+
+    votes = Vote.objects.filter(start_time__lt=fdate)
+    votes = votes.annotate(month=DateTime("start_time",
+                                          "month",
+                           tzinfo=None)).values("month")
+    votes = votes.annotate(total_votes=Count('id')).order_by("month")
+
+    for month in votes:
+        date_ = month['month']
+        total = month['total_votes']
+
+        temp_data = {'date': date_.strftime(settings.API_DATE_FORMAT),
+                     'date_ts': date_,
+                     'ni': 0,
+                     'kvorum': 0,
+                     'za': 0,
+                     'proti': 0,
+                     'total': total
+                     }
+
+        sums_of_month = ballots.filter(month=date_)
+        for sums in sums_of_month:
+            temp_data[sums['option']] = sums['ballot_count']
+
+        data.append(temp_data)
+
+    return data
+
+
+def getBallotsCounterOfPerson(request, person_id, date_=None):
+    person = Person.objects.get(id=person_id)
+    data = getBallotsCounter(person, date_=None)
+    return JsonResponse(data, safe=False)
+
+
+def getBallotsCounterOfParty(request, party_id, date_=None):
+    party = Organization.objects.get(id=party_id)
+    data = getBallotsCounter(party, date_=None)
     return JsonResponse(data, safe=False)
 
 
