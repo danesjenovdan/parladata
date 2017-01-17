@@ -584,7 +584,11 @@ class Session(Timestampable, Taggable, models.Model):
 
     organization = models.ForeignKey('Organization',
                                      blank=True, null=True,
+                                     related_name='session',
                                      help_text='The organization in session')
+    organizations = models.ManyToManyField('Organization',
+                                           related_name='sessions',
+                                           help_text='The organization in session')
     classification = models.CharField(max_length=128,
                                       blank=True, null=True,
                                       help_text='Session classification')
