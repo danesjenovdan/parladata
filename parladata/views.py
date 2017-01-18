@@ -123,7 +123,6 @@ def getMPs(request, date_=None):
                      'voters': i.voters,
                      'active': i.active,
                      'party_id': membership[0].organization.id})
-    print data
     return JsonResponse(data, safe=False)
 
 
@@ -624,16 +623,25 @@ def getAllPeople(requests):
         pg = None
     return JsonResponse(data, safe=False)
 
+
 def motionOfSession(request, id_se):
     data = {}
     tab = []
+    data = []
     allIDs = Session.objects.values('id')
     for i in allIDs:
         tab.append(i['id'])
     if int(id_se) in tab:
-        motion = Vote.objects.filter(motion__session__id = id_se)
-        if motion:
-            data = [{'id':mot.motion.id, 'vote_id': mot.id, 'text':mot.motion.text,'result':mot.result, 'tags': map(smart_str, mot.tags.names())} for mot in motion]
+        votes = Vote.objects.filter(session__id=id_se)
+        if votes:
+            for vote in votes:
+                motion = vote.motion
+                data.append({'id': motion.id,
+                             'vote_id': vote.id,
+                             'text': motion.text,
+                             'result': motion.result,
+                             'tags': map(smart_str, vote.tags.names()),
+                             'doc_url': vote.document_url})
         else:
             #data = "This session has no motion."
             data = []
@@ -672,15 +680,17 @@ def getVotesOfSession(request, id_se):
 
 def getVotesOfMotion(request, motion_id):
     data = []
-    for bal in Ballot.objects.filter(vote__id=str(motion_id)):
-        mem = Membership.objects.get(Q(end_time__gte=bal.vote.start_time) |
+    vote = Vote.objects.get(id=motion_id)
+    motion = vote.motion
+    for bal in Ballot.objects.filter(vote=vote):
+        mem = Membership.objects.get(Q(end_time__gte=vote.start_time) |
                                      Q(end_time=None),
-                                     Q(start_time__lte=bal.vote.start_time) |
+                                     Q(start_time__lte=vote.start_time) |
                                      Q(start_time=None),
-                                     person__id=bal.voter.id,
+                                     person__id=bal.voter_id,
                                      organization__classification__in=PS_NP)
-        data.append({'mo_id': bal.vote.motion.id,
-                     "mp_id": bal.voter.id,
+        data.append({'mo_id': motion.id,
+                     "mp_id": bal.voter_id,
                      "Acronym": mem.organization.acronym,
                      "option": bal.option,
                      "pg_id": mem.organization.id})
