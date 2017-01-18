@@ -467,6 +467,11 @@ class Link(Timestampable, Taggable, models.Model):
     motion = models.ForeignKey('Motion',
                                 blank=True, null=True,
                                 help_text='The motion of this link.')
+    question = models.ForeignKey('Question',
+                                 blank=True,
+                                 null=True,
+                                 help_text='The question this link belongs to.',
+                                 related_name='links')
 
     def __str__(self):
         return self.url
@@ -595,7 +600,6 @@ class Session(Timestampable, Taggable, models.Model):
     def __str__(self):
         return unicode(self.name) + ",  " + unicode(self.organization.name)
 
-
 @python_2_unicode_compatible
 class Speech(Versionable, Timestampable, Taggable, models.Model): #todo
     speaker = models.ForeignKey('Person',
@@ -613,39 +617,13 @@ class Speech(Versionable, Timestampable, Taggable, models.Model): #todo
                                      help_text='Start time')
     end_time = PopoloDateTimeField(blank=True, null=True,
                                    help_text='End time')
-    in_review_rel = models.ForeignKey('SpeechInReview',
-                                      blank=True,
-                                      null=True,)
 
 #    @property
 #    def slug_source(self):
 #        return self.name
-
-    def __str__(self):
-        return self.speaker.name
-
-
-@python_2_unicode_compatible
-class SpeechInReview(Timestampable, Taggable, models.Model): # todo
-    speaker = models.ForeignKey('Person',
-                                help_text='Person making the speech')
-    party = models.ForeignKey('Organization',
-                              help_text='The party of the person making the speech',
-                              default=2)
-    content = models.TextField(help_text='Words spoken')
-    order = models.IntegerField(blank=True, null=True,
-                                help_text='Order of speech')
-    session = models.ForeignKey('Session',
-                                blank=True, null=True,
-                                help_text='Speech session')
-    start_time = PopoloDateTimeField(blank=True, null=True,
-                                     help_text='Start time')
-    end_time = PopoloDateTimeField(blank=True, null=True,
-                                   help_text='End time')
-
-#    @property
-#    def slug_source(self):
-#        return self.name
+    @staticmethod
+    def getValidSpeeches(date_):
+        return Speech.objects.filter(valid_from__lt=date_, valid_to__gt=date_)
 
     def __str__(self):
         return self.speaker.name
@@ -734,8 +712,10 @@ class Count(Timestampable, models.Model):
                               help_text='Yes, no, abstain')
     count = models.IntegerField(help_text='Number of votes')
     vote = models.ForeignKey('Vote',
-                                blank=True, null=True,
-                                help_text='The vote of this count.')
+                             blank=True, null=True,
+                             help_text='The vote of this count.')
+
+
 
 @python_2_unicode_compatible
 class Ballot(Timestampable, models.Model):
@@ -745,9 +725,9 @@ class Ballot(Timestampable, models.Model):
                               blank=True, null=True,
                               help_text='The voter')
     voterparty = models.ForeignKey('Organization',
-                              help_text='The party of the voter.',
-                              related_name='party',
-                              default=2)
+                                   help_text='The party of the voter.',
+                                   related_name='party',
+                                   default=2)
     orgvoter = models.ForeignKey('Organization',
                                  blank=True,
                                  null=True,
@@ -755,8 +735,48 @@ class Ballot(Timestampable, models.Model):
     option = models.CharField(max_length=128,
                               blank=True, null=True,
                               help_text='Yes, no, abstain')
+
     def __str__(self):
         return self.voter.name
+
+
+class Question(Timestampable, models.Model):
+    session = models.ForeignKey('Session',
+                                blank=True,
+                                null=True,
+                                help_text='The session this question belongs to.')
+
+    date = PopoloDateTimeField(blank=True,
+                               null=True,
+                               help_text='Date of the question.')
+
+    title = models.TextField(blank=True,
+                             null=True,
+                             help_text='Title  name as written on dz-rs.si')
+
+    author = models.ForeignKey('Person',
+                               blank=True,
+                               null=True,
+                               help_text='The person (MP) who asked the question.',
+                               related_name='asked')
+    recipient_person = models.ForeignKey('Person',
+                                         blank=True,
+                                         null=True,
+                                         help_text='Recipient person (if it\'s a person).',
+                                         related_name='questions')
+    recipient_organization = models.ForeignKey('Organization',
+                                               blank=True,
+                                               null=True,
+                                               help_text='Recipient organization (if it\'s an organization).',
+                                               related_name='questions_org')
+
+    recipient_text = models.TextField(blank=True,
+                                      null=True,
+                                      help_text='Recipient name as written on dz-rs.si')
+
+    json_data = models.TextField(_('json'),
+                                 blank=True, null=True,
+                                 help_text=_('debug data'))
 
 @receiver(pre_save, sender=Organization)
 def copy_date_fields(sender, **kwargs):
