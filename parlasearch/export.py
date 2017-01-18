@@ -1,10 +1,12 @@
 import requests
 import json
 from parladata.models import Person, Speech, Session, Organization, Vote
+from datetime import datetime
+
 
 def exportSpeeches():
 
-    speeches = Speech.objects.all()
+    speeches = Speech.getValidSpeeches(datetime.now())
 
     i = 0
 
@@ -24,17 +26,23 @@ def exportSpeeches():
 
         output = json.dumps(output)
 
-        if i%100 == 0:
-            r = requests.post('http://127.0.0.1:8983/solr/knedl/update?commit=true', data=output, headers={'Content-Type': 'application/json'})
+        if i % 100 == 0:
+            url = 'http://127.0.0.1:8983/solr/knedl/update?commit=true'
+            r = requests.post(url,
+                              data=output,
+                              headers={'Content-Type': 'application/json'})
 
             print r.text
 
         else:
-             r = requests.post('http://127.0.0.1:8983/solr/knedl/update', data=output, headers={'Content-Type': 'application/json'})
+            r = requests.post('http://127.0.0.1:8983/solr/knedl/update',
+                              data=output,
+                              headers={'Content-Type': 'application/json'})
 
         i = i + 1
 
     return 1
+
 
 def getSessionContent(session):
 
@@ -44,6 +52,7 @@ def getSessionContent(session):
         megastring = megastring + ' ' + speech.content
 
     return megastring
+
 
 def exportSessions():
 
@@ -63,17 +72,23 @@ def exportSessions():
 
         output = json.dumps(output)
 
-        if i%100 == 0:
-            r = requests.post('http://127.0.0.1:8983/solr/knedl/update?commit=true', data=output, headers={'Content-Type': 'application/json'})
+        if i % 100 == 0:
+            url = 'http://127.0.0.1:8983/solr/knedl/update?commit=true'
+            r = requests.post(url,
+                              data=output,
+                              headers={'Content-Type': 'application/json'})
 
             print r.text
 
         else:
-             r = requests.post('http://127.0.0.1:8983/solr/knedl/update', data=output, headers={'Content-Type': 'application/json'})
+            r = requests.post('http://127.0.0.1:8983/solr/knedl/update',
+                              data=output,
+                              headers={'Content-Type': 'application/json'})
 
         i = i + 1
 
     return 1
+
 
 def getPersonContent(person):
 
@@ -83,6 +98,7 @@ def getPersonContent(person):
         megastring = megastring + ' ' + speech.content
 
     return megastring
+
 
 def exportPeopleSpeeches():
 
@@ -100,17 +116,22 @@ def exportPeopleSpeeches():
 
         output = json.dumps(output)
 
-        if i%100 == 0:
-            r = requests.post('http://127.0.0.1:8983/solr/knedl/update?commit=true', data=output, headers={'Content-Type': 'application/json'})
+        if i % 100 == 0:
+            r = requests.post('http://127.0.0.1:8983/solr/knedl/update?commit=true',
+                              data=output,
+                              headers={'Content-Type': 'application/json'})
 
             print r.text
 
         else:
-             r = requests.post('http://127.0.0.1:8983/solr/knedl/update', data=output, headers={'Content-Type': 'application/json'})
+            r = requests.post('http://127.0.0.1:8983/solr/knedl/update',
+                              data=output,
+                              headers={'Content-Type': 'application/json'})
 
         i = i + 1
 
     return 1
+
 
 def getOrganizationContent(organization):
 
@@ -120,6 +141,7 @@ def getOrganizationContent(organization):
         megastring = megastring + ' ' + speech.content
 
     return megastring
+
 
 def exportPartySpeeches():
 
@@ -137,17 +159,22 @@ def exportPartySpeeches():
 
         output = json.dumps(output)
 
-        if i%100 == 0:
-            r = requests.post('http://127.0.0.1:8983/solr/knedl/update?commit=true', data=output, headers={'Content-Type': 'application/json'})
+        if i % 100 == 0:
+            r = requests.post('http://127.0.0.1:8983/solr/knedl/update?commit=true',
+                              data=output,
+                              headers={'Content-Type': 'application/json'})
 
             print r.text
 
         else:
-             r = requests.post('http://127.0.0.1:8983/solr/knedl/update', data=output, headers={'Content-Type': 'application/json'})
+            r = requests.post('http://127.0.0.1:8983/solr/knedl/update',
+                              data=output,
+                              headers={'Content-Type': 'application/json'})
 
         i = i + 1
 
     return 1
+
 
 def exportVotes():
 
@@ -167,17 +194,20 @@ def exportVotes():
 
         output = json.dumps(output)
 
-        if i%100 == 0:
+        if i % 100 == 0:
             r = requests.post('http://127.0.0.1:8983/solr/knedl/update?commit=true', data=output, headers={'Content-Type': 'application/json'})
 
             print r.text
 
         else:
-             r = requests.post('http://127.0.0.1:8983/solr/knedl/update', data=output, headers={'Content-Type': 'application/json'})
+            r = requests.post('http://127.0.0.1:8983/solr/knedl/update',
+                              data=output,
+                              headers={'Content-Type': 'application/json'})
 
         i = i + 1
 
     return 1
+
 
 def exportAll():
 
@@ -191,6 +221,5 @@ def exportAll():
     # exportPartySpeeches()
     print 'exporting votes'
     exportVotes()
-
 
     return 'all done'
