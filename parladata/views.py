@@ -240,13 +240,13 @@ def getSessions(request, date_=None):
     data = []
     sessions = Session.objects.filter(start_time__lte=fdate).order_by('-start_time')
     for i in sessions:
-        i.organizations.all().values_list('id', flat=True)
+        organizations = i.organizations.all().values_list('id', flat=True)
         data.append({'mandate': i.mandate,
                      'name': i.name,
                      'gov_id': i.gov_id,
                      'start_time': i.start_time,
                      'end_time': i.end_time,
-                     'organizations_id': organizations
+                     'organizations_id': map(str, organizations),
                      'classification': i.classification,
                      'id': i.id,
                      'is_in_review': i.in_review,
@@ -1269,7 +1269,7 @@ def getAllChangesAfter(request, datetime_):
                                  'gov_id': i.gov_id,
                                  'start_time': i.start_time,
                                  'end_time': i.end_time,
-                                 'organizations_id': organizations,
+                                 'organizations_id': map(str, organizations),
                                  'classification': i.classification,
                                  'id': i.id,
                                  'is_in_review': i.in_review})
