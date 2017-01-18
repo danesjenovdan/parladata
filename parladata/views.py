@@ -1346,3 +1346,11 @@ def getAllChangesAfter(request, datetime_):
         data['questions'].append(q_obj)
 
     return JsonResponse(data)
+
+def monitorMe(request):
+
+    r = requests.get('https://data.parlameter.si/v1/getMPs')
+    if r.status_code == 200:
+        return HttpResponse('All iz well.')
+    else:
+        return HttpResponse('PANIC!')
