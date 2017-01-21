@@ -631,7 +631,6 @@ class Session(Timestampable, Taggable, models.Model):
     def __str__(self):
         return unicode(self.name) + ",  " + unicode(self.organization.name)
 
-
 @python_2_unicode_compatible
 class Speech(Versionable, Timestampable, Taggable, models.Model):
     """Speeches that happened in parlament."""
@@ -841,7 +840,6 @@ class Question(Timestampable, models.Model):
 
     def __str__(self):
         return self.author.nameauthor
-
 
 @receiver(pre_save, sender=Organization)
 def copy_date_fields(sender, **kwargs):
