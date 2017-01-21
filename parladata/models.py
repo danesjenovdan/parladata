@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from model_utils import Choices
 from model_utils.managers import PassThroughManager
@@ -9,30 +8,33 @@ from django.utils.translation import ugettext_lazy as _
 from django.db.models.signals import pre_save
 from django.dispatch import receiver
 from datetime import datetime
-
 from .behaviors.models import Timestampable, Taggable, Versionable
 from .querysets import PostQuerySet, OtherNameQuerySet, ContactDetailQuerySet, MembershipQuerySet, OrganizationQuerySet, PersonQuerySet
-
 from djgeojson.fields import PolygonField
 
-# Create your models here.
 
-# converting datetime to popolo
 class PopoloDateTimeField(models.DateTimeField):
-
+    """Converting datetime to popolo."""
     def get_popolo_value(self, value):
         return str(datetime.strftime(value, '%Y-%m-%d'))
 
-@python_2_unicode_compatible
-class Person(Timestampable, models.Model): # poslanec, minister, predsednik dz etc.
 
+@python_2_unicode_compatible
+class Person(Timestampable, models.Model):
+    """Model for all people that are somehow connected to the parlament."""
     name = models.CharField(_('name'),
                             max_length=128,
                             help_text=_('A person\'s preferred full name'))
 
-    name_parser = models.CharField(max_length=500, help_text='Name for parser.', blank=True, null=True)
+    name_parser = models.CharField(max_length=500,
+                                   help_text='Name for parser.',
+                                   blank=True, null=True)
 
-    classification = models.CharField(max_length=128, help_text='Classification for sorting purposes.', blank=True, null=True)
+    classification = models.CharField(_('classification'),
+                                      max_length=128,
+                                      help_text='Classification for sorting purposes.',
+                                      blank=True,
+                                      null=True)
 
     family_name = models.CharField(_('family name'),
                                    max_length=128,
@@ -113,18 +115,14 @@ class Person(Timestampable, models.Model): # poslanec, minister, predsednik dz e
                             blank=True, null=True,
                             help_text=_('A URL of a head shot'))
 
-     # array of items referencing "http://popoloproject.com/schemas/contact_detail.json#"
-
-
+    # array of items referencing "http://popoloproject.com/schemas/contact_detail.json#"
     def gov_image(self):
         return '<img src="%s" style="width:150px; height: auto;"/>' % self.image
+
     gov_image.allow_tags = True
 
-#    @property
-#    def slug_source(self):
-#        return self.name
-
     url_name = 'person-detail'
+
     objects = PassThroughManager.for_queryset_class(PersonQuerySet)()
 
     # also handles party and work group memberships
@@ -133,13 +131,12 @@ class Person(Timestampable, models.Model): # poslanec, minister, predsednik dz e
         m.save()
 
     def add_memberships(self, organizations):
-       for o in organizations:
-           self.add_membership(o)
+        for o in organizations:
+            self.add_membership(o)
 
     def add_role(self, post):
         m = Membership(person=self, post=post, organization=post.organization)
         m.save()
-
 
     def save(self, *args, **kwargs):
         if self.birth_date:
@@ -151,34 +148,39 @@ class Person(Timestampable, models.Model): # poslanec, minister, predsednik dz e
     def __str__(self):
         return self.name + " " + unicode(self.id)
 
-    # parlameter stuff
     gov_url = models.ForeignKey('Link',
                                 blank=True, null=True,
                                 help_text='URL to gov website profile',
                                 related_name='gov_link')
-    gov_id = models.CharField(max_length = 255,
+
+    gov_id = models.CharField(_('gov_id'),
+                              max_length=255,
                               blank=True, null=True,
                               help_text='gov website id for the scraper')
+
     gov_picture_url = models.URLField(_('gov image url'),
                                       blank=True, null=True,
                                       help_text=_('URL to gov website pic'))
 
-#    slug = models.CharField(max_length = 255, blank=True, null=True)
-
     districts = models.ManyToManyField('Area',
                                        blank=True, null=True,
-                                       help_text='District',
+                                       help_text='District of person',
                                        related_name="candidates")
 
-    voters = models.IntegerField(blank=True, null=True, help_text='number of votes cast for this person in their district')
-    active = models.BooleanField(default=True,
+    voters = models.IntegerField(_('voters'),
+                                 blank=True,
+                                 null=True,
+                                 help_text='number of votes cast for this person in their district')
+
+    active = models.BooleanField(_('active'),
+                                 default=True,
                                  help_text='a generic active or not toggle')
 
 
 @python_2_unicode_compatible
 class Organization(Timestampable, Taggable, models.Model):
-    """
-    A group with a common purpose or reason for existence that goes beyond the set of people belonging to it
+    """A group with a common purpose or reason
+    for existence that goes beyond the set of people belonging to it
     """
 
     name = models.TextField(_('name'),
