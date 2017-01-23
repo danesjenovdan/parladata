@@ -1,14 +1,11 @@
 # -*- coding: utf-8 -*-
 
-from django.shortcuts import render
 from django.http import JsonResponse, HttpResponse
-from django.core import serializers
 from datetime import date, datetime, timedelta
 from parladata.models import *
 from django.db.models import Q
 from django.forms.models import model_to_dict
 import json
-import simplejson
 from utils import *
 import requests
 from raven.contrib.django.raven_compat.models import client
@@ -23,9 +20,10 @@ DZ_ID = 95
 PS_NP = ['poslanska skupina', 'nepovezani poslanec']
 
 
-# return all ballots and speaches agregated by date
-# id: id of person
 def getActivity(request, person_id):
+    """Return all ballots and speaches agregated by date
+       id: id of person
+    """
 
     def appendBallot(data, b):
         tempBallot = dict()
@@ -35,8 +33,6 @@ def getActivity(request, person_id):
         tempBallot['result'] = b.vote.result
         tempBallot['vote_id'] = b.vote.id
         tempBallot['vote_name'] = b.vote.name
-        # motion is currently empty
-        # tempBallot.text = b.vote.motion.recap
         if tempBallot['date'] in data:
             data[tempBallot['date']].append(tempBallot)
         else:
@@ -71,16 +67,18 @@ def getActivity(request, person_id):
     return JsonResponse(data_list, safe=False)
 
 
-# MP = Members of parlament
-# Function: git config
 def getMPs(request, date_=None):
+    """
+    Returns all MPs.
+    MP = Members of parlament
+    """
+
     if date_:
         fdate = datetime.strptime(date_, settings.API_DATE_FORMAT).date()
     else:
         fdate = datetime.now().today()
     data = []
 
-    parliamentary_group = Organization.objects.filter(classification__in=PS_NP)
     for i in getMPObjects(fdate):
         districts = ''
 
@@ -95,7 +93,6 @@ def getMPs(request, date_=None):
                                                Q(start_time=None),
                                                Q(end_time__gte=fdate) |
                                                Q(end_time=None))
-        # membership = Membership.objects.filter(person = i, organization=parliamentary_group)
 
         data.append({'id': i.id,
                      'name': i.name,
@@ -123,11 +120,10 @@ def getMPs(request, date_=None):
                      'voters': i.voters,
                      'active': i.active,
                      'party_id': membership[0].organization.id})
-    print data
+
     return JsonResponse(data, safe=False)
 
 
-# returns MP static data like PoliticalParty, age, ....
 def getMPStatic(request, person_id, date_=None):
     if date_:
         fdate = datetime.strptime(date_, settings.API_DATE_FORMAT).date()
@@ -138,19 +134,24 @@ def getMPStatic(request, person_id, date_=None):
         if str(member.id) == str(person_id):
             groups = [{'name': membership.organization.name,
                        'id': membership.organization.id,
-                       'acronym': membership.organization.acronym} for membership in member.memberships.filter(Q(start_time__lte=fdate)|Q(start_time=None), Q(end_time__gte=fdate)|Q(end_time=None)) if membership.organization.classification  in [u'poslanska skupina', u'nepovezani poslanec']]
+                       'acronym': membership.organization.acronym}
+                       for membership in member.memberships.filter(
+                                                            Q(start_time__lte=fdate) | Q(start_time=None), Q(end_time__gte=fdate) | Q(end_time=None))
+                                                            if membership.organization.classification in [u'poslanska skupina', u'nepovezani poslanec']]
             if not groups:
                 return JsonResponse({})
 
-            non_party_groups = [{'name': membership.organization.name, 'id': membership.organization.id} for membership in member.memberships.filter(Q(start_time__lte=fdate)|Q(start_time=None), Q(end_time__gte=fdate)|Q(end_time=None)) if membership.organization.classification not in [u'poslanska skupina', u'nepovezani poslanec']]
+            non_party_groups = [{'name': membership.organization.name,
+                                 'id': membership.organization.id} 
+                                 for membership in member.memberships.filter(
+                                                                      Q(start_time__lte=fdate) |
+                                                                      Q(start_time=None), Q(end_time__gte=fdate) |
+                                                                      Q(end_time=None))
+                                                                      if membership.organization.classification not in [u'poslanska skupina', u'nepovezani poslanec']]
 
             for group in non_party_groups:
                 groups.append(group)
 
-            print groups
-            # creates a list of all memberships of MP
-#            for i in parliamentary_group:
-#                groups.append(i.organization)
             # calcutaes age of MP
             try:
                 birth_date = str(member.birth_date)
@@ -231,14 +232,16 @@ def getMPStatic(request, person_id, date_=None):
     return JsonResponse(data)
 
 
-# return all Sessions
 def getSessions(request, date_=None):
+    """Returns all Sessions from beginning of mandate."""
+
     if date_:
         fdate = datetime.strptime(date_, settings.API_DATE_FORMAT).date()
     else:
         fdate = datetime.now().date()
     data = []
     sessions = Session.objects.filter(start_time__lte=fdate).order_by('-start_time')
+
     for i in sessions:
         data.append({'mandate': i.mandate,
                      'name': i.name,
@@ -252,10 +255,13 @@ def getSessions(request, date_=None):
                      'is_in_review': i.in_review,
                      }
                     )
+
     return JsonResponse(data, safe=False)
 
 
 def getSessionsOfOrg(request, org_id, date_=None):
+    """Returns all Sesisons of specific organization."""
+
     if date_:
         fdate = datetime.strptime(date_, settings.API_DATE_FORMAT).date()
     else:
@@ -272,17 +278,22 @@ def getSessionsOfOrg(request, org_id, date_=None):
                      'organization': i.organization.name,
                      'organization_id': i.organization.id,
                      'classification': i.classification,
-                     'id': i.id})
+                     'id': i.id
+                     }
+                    )
+
     return JsonResponse(data, safe=False)
 
 
-# return votes of MP
 def getVotes(request, date_=None):
+    """Returns votes of MPs."""
+
     return JsonResponse(getVotesDict(date_))
 
 
-# return speech by id
 def getSpeeches(request, person_id, date_=None):
+    """Returns speechs of MP."""
+
     if date_:
         fdate = datetime.strptime(date_, settings.API_DATE_FORMAT).date()
     else:
@@ -301,8 +312,8 @@ def getSpeeches(request, person_id, date_=None):
     return JsonResponse(speeches, safe=False)
 
 
-# return speech by id
 def getSpeechesInRange(request, person_id, date_from, date_to):
+    """Returns speechs of MP in range."""
 
     fdate = datetime.strptime(date_from, settings.API_DATE_FORMAT).date()
     tdate = datetime.strptime(date_to, settings.API_DATE_FORMAT).date()
@@ -319,51 +330,68 @@ def getSpeechesInRange(request, person_id, date_from, date_to):
     return JsonResponse(speeches, safe=False)
 
 
-# PG = Parlamentary group
-# return list of member's id for each PG
 def getMembersOfPGs(request):
+    """
+    Returns list of member's id for each PG.
+    PG = Parlamentary group
+    """
     parliamentary_group = Organization.objects.filter(classification__in=PS_NP)
     members = Membership.objects.filter(Q(end_time=None) |
                                         Q(end_time__gt=datetime.now()),
-                                        organization__in=parliamentary_group)
+                                        organization__in=parliamentary_group
+                                        )
     data = {pg.id: [member.person.id
                     for member
                     in members.filter(organization=pg)
                     ] for pg in parliamentary_group}
+
     return JsonResponse(data)
 
 
-# PG = Parlamentary group
-# return list of member's id for each PG, on specific date
 def getMembersOfPGsOnDate(request, date_=None):
+    """Returns list of member's id for each PG, on specific date."""
+
     if date_:
         fdate = datetime.strptime(date_, settings.API_DATE_FORMAT).date()
     else:
         fdate = datetime.now().date()
     parliamentary_group = Organization.objects.filter(classification__in=PS_NP)
-    members = Membership.objects.filter(Q(end_time__gte=fdate) | Q(end_time=None), Q(start_time__lte=fdate)|Q(start_time=None), organization__in=parliamentary_group)
-    data = {pg.id:[member.person.id for member in members.filter(organization=pg)] for pg in parliamentary_group}
+    members = Membership.objects.filter(Q(end_time__gte=fdate) |
+                                        Q(end_time=None),
+                                        Q(start_time__lte=fdate) |
+                                        Q(start_time=None),
+                                        organization__in=parliamentary_group
+                                        )
+    data = {pg.id: [member.person.id for member in members.filter(organization=pg)] for pg in parliamentary_group}
+
     return JsonResponse(data)
 
 
-# get coalitions PGs
 def getCoalitionPGs(request):
-    coalition = Organization.objects.filter(classification="poslanska skupina", is_coalition="1").values_list("id", flat=True)
+    """Returns coalitions PGs."""
+
+    coalition = Organization.objects.filter(classification="poslanska skupina",
+                                            is_coalition="1").values_list("id", flat=True)
     oppo = Organization.objects.filter(classification="poslanska skupina")
     oppo = oppo.exclude(is_coalition="1").values_list("id", flat=True)
+
     return JsonResponse({'coalition': list(coalition), 'opposition': list(oppo)})
 
 
-# return number of MP attended sessions
 def getNumberOfMPAttendedSessions(request, person_id):
+    """Returns number of MP attended sessions."""
+
     data = {}
     allBallots = Ballot.objects.filter(option='za')
     for i in getMPObjects():
         data[i.id] = len(list(set(allBallots.filter(voter=i.id).values_list('vote__session', flat=True))))
+
     return JsonResponse(data[int(person_id)], safe=False)
 
 
 def getNumberOfAllMPAttendedSessions(request, date_):
+    """Return number of attended Sessions for all MPs."""
+
     fdate = datetime.strptime(date_, settings.API_DATE_FORMAT).date() + timedelta(days=1) - timedelta(minutes=1)
     data = {"sessions": {}, "votes": {}}
     for member in getMPObjects(fdate):
@@ -382,15 +410,17 @@ def getNumberOfAllMPAttendedSessions(request, date_):
                                                   voter__id=member.id,
                                                   vote__start_time__lte=fdate).values_list("vote", flat=True)))
         try:
-            data["sessions"][member.id] = float(len(votesOnS))/float(len(allOfHimS))*100
-            data["votes"][member.id] = float(len(votesOnV))/float(len(allOfHimV))*100
+            data["sessions"][member.id] = float(len(votesOnS)) / float(len(allOfHimS)) * 100
+            data["votes"][member.id] = float(len(votesOnV)) / float(len(allOfHimV)) * 100
         except:
-            print member.id, " has not votes in this day"
+            print member.id, " has no votes in this day"
+
     return JsonResponse(data)
 
-
-# return all speeches of all MP
+# podvojen
 def getSpeechesOfMP(request, person_id, date_=None):
+    """Returns all speeches of MPs¸"""
+
     if date_:
         fdate = datetime.strptime(date_, settings.API_DATE_FORMAT).date()
     else:
@@ -402,8 +432,9 @@ def getSpeechesOfMP(request, person_id, date_=None):
     return JsonResponse(content, safe=False)
 
 
-# return all speeches of all MP
 def getSpeechesOfMPbyDate(request, person_id, date_=None):
+    """Returns all speeches of all MP to specific date."""
+
     if date_:
         fdate = datetime.strptime(date_, settings.API_DATE_FORMAT).date()
     else:
@@ -416,14 +447,17 @@ def getSpeechesOfMPbyDate(request, person_id, date_=None):
     content = [{"date": date.strftime(settings.API_DATE_FORMAT),
                 "speeches": [speech.content
                              for speech in speeches_queryset.filter(Q(start_time__gte=date) |
-                                                                    Q(start_time__lte=date+timedelta(days=1)),
+                                                                    Q(start_time__lte=date + timedelta(days=1)),
                                                                     speaker__id=person_id)]}
                for date in dates]
+
     return JsonResponse(content, safe=False)
 
 
-# using for vocabulary size
+
 def getAllSpeechesOfMPs(request, date_=None):
+    """Returns all speecehs of all MPs."""
+
     if date_:
         fdate = datetime.strptime(date_, settings.API_DATE_FORMAT).date()
     else:
@@ -435,44 +469,45 @@ def getAllSpeechesOfMPs(request, date_=None):
     speeches_queryset = Speech.getValidSpeeches(fdate)
     speeches_queryset = speeches_queryset.filter(speaker__in=members,
                                                  start_time__lte=fdate)
-
-    # speeches = [{'content': speech.content, 'speech_id': speech.id, 'speaker':speech.speaker.id, 'session_name':speech.session.name, 'session_id':speech.session.id,} for speech in speeches_queryset]
-
-    # for speech in speeches:
-    #    data.append(model_to_dict(speech, fields=[field.name for field in speech._meta.fields], exclude=[]))
-
     speeches = [model_to_dict(speech, fields=[field.name for field in speech._meta.fields], exclude=[]) for speech in speeches_queryset]
+
     return JsonResponse(speeches, safe=False)
 
 
 def getMPParty(request, person_id):
+    """Returns party of specific MP."""
+
     person = Person.objects.get(id=person_id)
+    party = [{'name': membership.organization.name,
+              'id': membership.organization.id,
+              'acronym': membership.organization.acronym}
+              for membership
+              in person.memberships.all()
+              if membership.organization.classification == u'poslanska skupina']
 
-    parties = [{'name': membership.organization.name,
-                'id': membership.organization.id,
-                'acronym': membership.organization.acronym}
-               for membership
-               in person.memberships.all()
-               if membership.organization.classification == u'poslanska skupina'
-               ]
-
-    out = {'name': parties[0]['name'], 'id': parties[0]['id'], 'acronym': parties[0]['acronym']}
+    out = {'name': party[0]['name'],
+           'id': party[0]['id'],
+           'acronym': party[0]['acronym']}
 
     return JsonResponse(out)
 
 
-# returns number of seats in each parliamentary group
+
 def getNumberOfSeatsOfPG(request, pg_id):
+    """Returns number of seats in each PG."""
+
     value = dict()
     parliamentary_group = Organization.objects.filter(classification="poslanska skupina", id=int(pg_id))
     members = Membership.objects.filter(organization__in=parliamentary_group)
     data = {pg.id: len([member.person.id for member in members.filter(organization=pg)]) for pg in parliamentary_group}
     value = {int(pg_id): data[int(pg_id)]}
+
     return JsonResponse(value, safe=False)
 
 
-# return basic info of parlament group
 def getBasicInfOfPG(request, pg_id, date_):
+    """Returns basic info of PG."""
+
     if date_:
         fdate = datetime.strptime(date_, settings.API_DATE_FORMAT).date()
     else:
@@ -480,75 +515,134 @@ def getBasicInfOfPG(request, pg_id, date_):
     viceOfPG = []
     data = dict()
     listOfVotes = []
-    parliamentary_group = Organization.objects.filter(classification="poslanska skupina", id=pg_id)
-    members = Membership.objects.filter(Q(start_time__lte=fdate)|Q(start_time=None), Q(end_time__gte=fdate)|Q(end_time=None), organization__id=parliamentary_group)
+    parliamentary_group = Organization.objects.filter(classification="poslanska skupina",
+                                                      id=pg_id)
 
-    if len(Post.objects.filter(Q(start_time__lte=fdate)|Q(start_time=None), Q(end_time__gte=fdate)|Q(end_time=None), membership__organization=parliamentary_group, label="v")) == 1:
-        headOfPG = Post.objects.get(Q(start_time__lte=fdate)|Q(start_time=None), Q(end_time__gte=fdate)|Q(end_time=None), membership__organization=parliamentary_group, label="v").membership.person.id
+    members = Membership.objects.filter(Q(start_time__lte=fdate) |
+                                        Q(start_time=None),
+                                        Q(end_time__gte=fdate) |
+                                        Q(end_time=None),
+                                        organization__id=parliamentary_group)
+
+    if len(Post.objects.filter(Q(start_time__lte=fdate) |
+                               Q(start_time=None),
+                               Q(end_time__gte=fdate) |
+                               Q(end_time=None),
+                                 membership__organization=parliamentary_group,
+                                 label="v")) == 1:
+        headOfPG = Post.objects.get(Q(start_time__lte=fdate) |
+                                    Q(start_time=None),
+                                    Q(end_time__gte=fdate) |
+                                    Q(end_time=None),
+                                      membership__organization=parliamentary_group,
+                                      label="v").membership.person.id
     else:
         headOfPG = None
 
-    if len(Post.objects.filter(Q(start_time__lte=fdate)|Q(start_time=None), Q(end_time__gte=fdate)|Q(end_time=None), membership__organization=parliamentary_group, label="namv")) > 0:
-        for post in Post.objects.filter(Q(start_time__lte=fdate)|Q(start_time=None), Q(end_time__gte=fdate)|Q(end_time=None), membership__organization=parliamentary_group, label="namv"):
-            
+    if len(Post.objects.filter(Q(start_time__lte=fdate) |
+                               Q(start_time=None),
+                               Q(end_time__gte=fdate) |
+                               Q(end_time=None),
+                                 membership__organization=parliamentary_group,
+                                 label="namv")) > 0:
+
+        for post in Post.objects.filter(Q(start_time__lte=fdate) |
+                                        Q(start_time=None),
+                                        Q(end_time__gte=fdate) |
+                                        Q(end_time=None),
+                                          membership__organization=parliamentary_group,
+                                          label="namv"):
+
             viceOfPG.append(post.membership.person.id)
     else:
         viceOfPG = None
-    
+
     numberOfSeats = len(members)
 
     for a in members:
-        if a.person.voters != None:
+        if a.person.voters is not None:
             listOfVotes.append(a.person.voters)
         else:
             listOfVotes.append(0)
+
     allVoters = sum(listOfVotes)
-    if len(Link.objects.filter(organization = parliamentary_group, note = 'FB')) > 0:
-        FB = Link.objects.filter(organization = parliamentary_group, note = 'FB')[0].url
+    if len(Link.objects.filter(organization=parliamentary_group,
+                               note='FB')) > 0:
+        FB = Link.objects.filter(organization=parliamentary_group,
+                                 note='FB')[0].url
     else:
         FB = None
-    if  len(ContactDetail.objects.filter(organization = parliamentary_group, label = 'Mail')) > 0:
-        mail = ContactDetail.objects.filter(organization = parliamentary_group, label = 'Mail')[0].value
+    if len(ContactDetail.objects.filter(organization=parliamentary_group,
+                                        label='Mail')) > 0:
+        mail = ContactDetail.objects.filter(organization=parliamentary_group,
+                                            label='Mail')[0].value
     else:
         mail = None
-    if len(Link.objects.filter(organization = parliamentary_group, note = 'TW')) > 0:
-        twitter = Link.objects.filter(organization = parliamentary_group, note = 'TW')[0].url
+    if len(Link.objects.filter(organization=parliamentary_group,
+                               note='TW')) > 0:
+        twitter = Link.objects.filter(organization=parliamentary_group,
+                                      note='TW')[0].url
 
     else:
         twitter = None
-    data = {
-    "HeadOfPG":headOfPG,
-    "ViceOfPG":viceOfPG,
-    "NumberOfSeats":numberOfSeats,
-    "AllVoters":allVoters,
-    "Mail":mail,
-    "Facebook":FB,
-    "Twitter":twitter
-    }
+    data = {"HeadOfPG": headOfPG,
+            "ViceOfPG": viceOfPG,
+            "NumberOfSeats": numberOfSeats,
+            "AllVoters": allVoters,
+            "Mail": mail,
+            "Facebook": FB,
+            "Twitter": twitter
+            }
+
     return JsonResponse(data, safe=False)
 
+
 def getAllPGs(request, date_=None):
-    parliamentary_group = Organization.objects.filter(classification="poslanska skupina")
+    """Returns all PGs."""
+
     if date_:
         fdate = datetime.strptime(date_, settings.API_DATE_FORMAT)
     else:
         fdate = datetime.now()
-    parliamentary_group = parliamentary_group.filter(Q(founding_date__lte=fdate)|Q(founding_date=None), Q(dissolution_date__gte=fdate)|Q(dissolution_date=None))
-    data = {pg.id: {'name': pg.name, 'acronym': pg.acronym, 'id': pg.id, 'is_coalition': True if pg.is_coalition == 1 else False} for pg in parliamentary_group}
+    parliamentary_group = Organization.objects.filter(classification="poslanska skupina")
+    parliamentary_group = parliamentary_group.filter(Q(founding_date__lte=fdate) |
+                                                     Q(founding_date=None),
+                                                     Q(dissolution_date__gte=fdate) |
+                                                     Q(dissolution_date=None))
+    data = {pg.id: {'name': pg.name,
+                    'acronym': pg.acronym,
+                    'id': pg.id,
+                    'is_coalition': True if pg.is_coalition == 1 else False} for pg in parliamentary_group}
+
     return JsonResponse(data)
 
+
 def getAllPGsExt(request):
+    """Reutrns all PGs with founded and disbanded dates."""
+
     parliamentary_group = Organization.objects.filter(classification="poslanska skupina")
-    data = {pg.id: {'name': pg.name, 'acronym': pg.acronym, 'founded': pg.founding_date, 'disbanded': pg.dissolution_date} for pg in parliamentary_group}
+    data = {pg.id: {'name': pg.name,
+                    'acronym': pg.acronym,
+                    'founded': pg.founding_date,
+                    'disbanded': pg.dissolution_date} for pg in parliamentary_group}
+
     return JsonResponse(data, safe=False)
 
 def getAllOrganizations(requests):
+    """Returns all organizations."""
+
     org = Organization.objects.all()
-    data = {pg.id:{'name':pg.name,'classification':pg.classification, 'acronym': pg.acronym, 'is_coalition': True if pg.is_coalition == 1 else False} for pg in org}
+    data = {pg.id: {'name': pg.name,
+                    'classification': pg.classification,
+                    'acronym': pg.acronym,
+                    'is_coalition': True if pg.is_coalition == 1 else False} for pg in org}
+
     return JsonResponse(data)
 
 
 def getAllSpeeches(requests, date_=None):
+    """Returns all speeches."""
+
     if date_:
         fdate = datetime.strptime(date_, settings.API_DATE_FORMAT).date()
     else:
@@ -557,16 +651,20 @@ def getAllSpeeches(requests, date_=None):
     speeches_queryset = Speech.getValidSpeeches(fdate)
     speeches = speeches_queryset.filter(start_time__lte=fdate)
     for speech in speeches:
-        data.append(model_to_dict(speech, fields=[field.name for field in speech._meta.fields], exclude=[]))
+        data.append(model_to_dict(speech,
+                                  fields=[field.name for field in speech._meta.fields],
+                                  exclude=[]))
 
     return JsonResponse(data, safe=False)
 
 
 def getAllVotes(requests, date_):
-    fdate = datetime.strptime(date_, settings.API_DATE_FORMAT).date()+timedelta(days=1)-timedelta(minutes=1)
+    """Returns all votes."""
+
+    fdate = datetime.strptime(date_, settings.API_DATE_FORMAT).date() + timedelta(days=1) - timedelta(minutes=1)
     data = []
 
-    votes=Vote.objects.filter(start_time__lte=fdate).order_by("start_time")
+    votes = Vote.objects.filter(start_time__lte=fdate).order_by("start_time")
     for vote in votes:
         data.append({'id': vote.id,
                      'motion': vote.motion.text,
@@ -580,22 +678,30 @@ def getAllVotes(requests, date_):
 
 
 def getAllBallots(requests, date_=None):
+    """Returns all ballots."""
+
     if date_:
         fdate = datetime.strptime(date_, settings.API_DATE_FORMAT).date()
     else:
         fdate = datetime.now().date()
 
-    data = [model_to_dict(ballot, fields=['id', 'vote', 'voter', 'option'], exclude=[]) for ballot in Ballot.objects.filter(vote__start_time__lte=fdate)]
+    data = [model_to_dict(ballot,
+                          fields=['id', 'vote', 'voter', 'option'], exclude=[]) 
+                          for ballot in Ballot.objects.filter(vote__start_time__lte=fdate)]
+
     return JsonResponse(data, safe=False)
 
 
 def getAllPeople(requests):
-    parliamentary_group = Organization.objects.filter(Q(classification="poslanska skupina") | Q(classification="nepovezani poslanec"))
+    """Returns all people."""
+    parliamentary_group = Organization.objects.filter(Q(classification="poslanska skupina") |
+                                                      Q(classification="nepovezani poslanec"))
     data = []
     pg = ''
     person = Person.objects.all()
     for i in person:
-        membership = Membership.objects.filter(person=i.id, organization=parliamentary_group)
+        membership = Membership.objects.filter(person=i.id,
+                                               organization=parliamentary_group)
         for me in membership:
             pg = me.organization.name
         data.append({'id': i.id,
@@ -622,20 +728,27 @@ def getAllPeople(requests):
                      'voters': i.voters,
                      'active': i.active})
         pg = None
+
     return JsonResponse(data, safe=False)
 
+
 def motionOfSession(request, id_se):
+    """Returns all votes of specific Session."""
+
     data = {}
     tab = []
     allIDs = Session.objects.values('id')
     for i in allIDs:
         tab.append(i['id'])
     if int(id_se) in tab:
-        motion = Vote.objects.filter(motion__session__id = id_se)
+        motion = Vote.objects.filter(motion__session__id=id_se)
         if motion:
-            data = [{'id':mot.motion.id, 'vote_id': mot.id, 'text':mot.motion.text,'result':mot.result, 'tags': map(smart_str, mot.tags.names())} for mot in motion]
+            data = [{'id': mot.motion.id,
+                     'vote_id': mot.id,
+                     'text': mot.motion.text,
+                     'result': mot.result,
+                     'tags': map(smart_str, mot.tags.names())} for mot in motion]
         else:
-            #data = "This session has no motion."
             data = []
         return JsonResponse(data, safe=False)
     else:
@@ -643,8 +756,8 @@ def motionOfSession(request, id_se):
 
 
 def getVotesOfSession(request, id_se):
+    """Returns all votes of specific Session."""
 
-    votes = Vote.objects.filter(motion__session__id=str(id_se))
     fdate = Session.objects.get(id=str(id_se)).start_time
     mems_qs = Membership.objects.filter(Q(end_time__gte=fdate) |
                                         Q(end_time=None),
@@ -655,9 +768,7 @@ def getVotesOfSession(request, id_se):
                                    'org_acronym': mem.organization.acronym}
                    for mem in mems_qs}
     mems_ids = memberships.keys()
-    print memberships
     data = []
-    tab = []
     for bal in Ballot.objects.filter(vote__session__id=str(id_se)):
         if bal.voter.id in mems_ids:
             data.append({'mo_id': bal.vote.motion.id,
@@ -666,11 +777,13 @@ def getVotesOfSession(request, id_se):
                          'option': bal.option,
                          'pg_id': memberships[bal.voter.id]['org_id']})
         else:
-            print 'nima membershipa: ', bal.voter.id
+            print 'No memberships: ', bal.voter.id
     return JsonResponse(data, safe=False)
 
 
 def getVotesOfMotion(request, motion_id):
+    """Returns all ballots of specific motion."""
+
     data = []
     for bal in Ballot.objects.filter(vote__id=str(motion_id)):
         mem = Membership.objects.get(Q(end_time__gte=bal.vote.start_time) |
@@ -679,16 +792,19 @@ def getVotesOfMotion(request, motion_id):
                                      Q(start_time=None),
                                      person__id=bal.voter.id,
                                      organization__classification__in=PS_NP)
+
         data.append({'mo_id': bal.vote.motion.id,
                      "mp_id": bal.voter.id,
                      "Acronym": mem.organization.acronym,
                      "option": bal.option,
                      "pg_id": mem.organization.id})
-    print len(data)
+
     return JsonResponse(data, safe=False)
 
 
 def getNumberOfPersonsSessions(request, person_id, date_=None):
+    """Returns number of MPs attended Sessions."""
+
     if date_:
         fdate = datetime.strptime(date_, settings.API_DATE_FORMAT).date()
     else:
@@ -716,13 +832,16 @@ def getNumberOfPersonsSessions(request, person_id, date_=None):
 
 
 def getNumberOfFormalSpeeches(request, person_id):
+    """Returns number of formal speeches of specific MP."""
+
     url = 'http://isci.parlameter.si/filter/besedo%20dajem?people=' + person_id
 
     person = Person.objects.get(id=int(person_id))
 
     dz = Organization.objects.get(id=95)
 
-    if len(person.memberships.filter(organization=dz).filter(Q(label='podp') | Q(label='p'))) > 0:
+    if len(person.memberships.filter(organization=dz).filter(Q(label='podp') |
+                                                             Q(label='p'))) > 0:
         r = requests.get(url).json()
         return HttpResponse(int(r['response']['numFound']))
     else:
@@ -730,6 +849,8 @@ def getNumberOfFormalSpeeches(request, person_id):
 
 
 def getExtendedSpeechesOfMP(request, person_id):
+    """Returns speeches of specific MP."""
+
     speeches_queryset = Speech.getValidSpeeches(fdate)
     speeches_queryset = speeches_queryset.filter(speaker__id=person_id)
 
@@ -744,6 +865,8 @@ def getExtendedSpeechesOfMP(request, person_id):
 
 
 def getTaggedVotes(request, person_id):
+    """Returns ballots for specific MP from working bodies."""
+
     tags = ['Komisija za nadzor javnih financ',
             'Kolegij predsednika Državnega zbora',
             'Komisija za narodni skupnosti',
@@ -777,15 +900,6 @@ def getTaggedVotes(request, person_id):
     person = Person.objects.filter(id=int(person_id))[0]
     ballots = person.ballot_set.filter(vote__in=votes_queryset)
 
-    votes = [{'name': vote.name,
-              'motion_id': vote.motion.id,
-              'session_id': vote.session.id,
-              'id': vote.id,
-              'result': vote.result,
-              'tags': [tag.name
-                       for tag in vote.tags.all()]}
-             for vote in votes_queryset]
-
     ballots_out = [{'option': ballot.option,
                     'vote': {'name': ballot.vote.name,
                              'motion_id': ballot.vote.motion.id,
@@ -801,14 +915,16 @@ def getTaggedVotes(request, person_id):
 
 
 def getMembersOfPGsRanges(request, date_=None):
+    """Returns all memberships of all MPs from start to end date."""
+
     if date_:
         fdate = datetime.strptime(date_, settings.API_DATE_FORMAT).date()
     else:
         fdate = datetime.now().date()
-    tempDate=settings.MANDATE_START_TIME.date()
+    tempDate = settings.MANDATE_START_TIME.date()
     parliamentary_group = Organization.objects.filter(classification__in=PS_NP)
     members = Membership.objects.filter(organization__in=parliamentary_group)
-    out = {(tempDate+timedelta(days=xday)): {grup: [] for grup in parliamentary_group.values_list("id", flat=True)} for xday in range((fdate-tempDate).days+1)}
+    out = {(tempDate + timedelta(days=xday)): {grup: [] for grup in parliamentary_group.values_list("id", flat=True)} for xday in range((fdate - tempDate).days + 1)}
     for member in members:
         if not member.start_time and not member.end_time:
             start_time = tempDate
@@ -825,8 +941,8 @@ def getMembersOfPGsRanges(request, date_=None):
                 end_time = member.end_time.date()
             else:
                 end_time = fdate
-        for xday in range((end_time-start_time).days+1):
-            out[(start_time+timedelta(days=xday))][member.organization.id].append(member.person.id)
+        for xday in range((end_time - start_time).days + 1):
+            out[(start_time + timedelta(days=xday))][member.organization.id].append(member.person.id)
 
     keys = out.keys()
     keys.sort()
@@ -934,52 +1050,99 @@ def getMembersOfPGRanges(request, org_id, date_=None):
                             "end_date":key.strftime(settings.API_DATE_FORMAT),
                             "members":out[key][int(org_id)]})
 
-
     return JsonResponse(outList, safe=False)
 
 
 def getMembershipsOfMember(request, person_id, date=None):
+    """Returns all memberships of specific MP."""
+
     if date:
         fdate = datetime.strptime(date, settings.API_DATE_FORMAT).date()
     else:
         fdate = datetime.now().date()
 
-    memberships = Membership.objects.filter(Q(start_time__lte=fdate)|Q(start_time=None), Q(end_time__gte=fdate)|Q(end_time=None), person__id=person_id)
+    memberships = Membership.objects.filter(Q(start_time__lte=fdate) |
+                                            Q(start_time=None),
+                                            Q(end_time__gte=fdate) |
+                                            Q(end_time=None),
+                                              person__id=person_id)
 
     out_init_dict = {org_type: [] for org_type in set([member.organization.classification for member in memberships])}
 
     for mem in memberships:
-        out_init_dict[mem.organization.classification].append({"org_type": mem.organization.classification, "org_id": mem.organization.id, "name": mem.organization.name})
+        out_init_dict[mem.organization.classification].append({"org_type": mem.organization.classification,
+                                                               "org_id": mem.organization.id,
+                                                               "name": mem.organization.name})
+
     return JsonResponse(out_init_dict)
-    #return JsonResponse({"org_type": mem.organization.classification, "org_id": mem.organization.id, "name": mem.organization.name} for mem in memberships], safe=False)
 
 
 def getAllTimeMemberships(request):
-    parliamentary_group = Organization.objects.filter(Q(classification="poslanska skupina") | Q(classification="nepovezani poslanec"))
+    """Returns all memberships of all MPs."""
+
+    parliamentary_group = Organization.objects.filter(Q(classification="poslanska skupina") |
+                                                      Q(classification="nepovezani poslanec"))
     members = Membership.objects.filter(organization__in=parliamentary_group)
     return JsonResponse([{"start_time": member.start_time,
                           "end_time": member.end_time,
-                          "id": member.person.id,} for member in members], safe=False)
+                          "id": member.person.id} for member in members], safe=False)
 
 
 def getAllTimeMPs(request, date_=None):
+    """Returns all memberhips for all MPs."""
+
     if date_:
         fdate = datetime.strptime(date_, settings.API_DATE_FORMAT).date()
     else:
-        fdate=datetime.now().today()
-    parliamentary_group = Organization.objects.filter(Q(classification="poslanska skupina") | Q(classification="nepovezani poslanec"))
-    members = Membership.objects.filter(Q(start_time__lte=fdate)|Q(start_time=None), organization__in=parliamentary_group)
-    return JsonResponse([{'id': i.person.id, 'name':i.person.name,'membership':i.organization.name, 'acronym':i.organization.acronym,'classification':i.person.classification,'family_name':i.person.family_name,'given_name':i.person.given_name,'additional_name':i.additional_name,'honorific_prefix':i.honorific_prefix,'honorific_suffix':i.honorific_suffix,'patronymic_name':i.patronymic_name,'sort_name':i.sort_name,'email':i.email,'gender':i.gender,'birth_date':str(i.birth_date),'death_date':str(i.death_date),'summary':i.summary,'biography':i.biography,'image':i.image,'district':'','gov_url':i.gov_url.url,'gov_id':i.gov_id,'gov_picture_url':i.gov_picture_url,'voters':i.voters,'active':i.active,'party_id':i[0].organization.id} for i in members], safe=False)
+        fdate = datetime.now().today()
+
+    parliamentary_group = Organization.objects.filter(Q(classification="poslanska skupina") |
+                                                      Q(classification="nepovezani poslanec"))
+    members = Membership.objects.filter(Q(start_time__lte=fdate) |
+                                        Q(start_time=None),
+                                          organization__in=parliamentary_group)
+
+    return JsonResponse([{'id': i.person.id,
+                          'name': i.person.name,
+                          'membership': i.organization.name,
+                          'acronym': i.organization.acronym,
+                          'classification': i.person.classification,
+                          'family_name': i.person.family_name,
+                          'given_name': i.person.given_name,
+                          'additional_name': i.additional_name,
+                          'honorific_prefix': i.honorific_prefix,
+                          'honorific_suffix': i.honorific_suffix,
+                          'patronymic_name': i.patronymic_name,
+                          'sort_name': i.sort_name,
+                          'email': i.email,
+                          'gender': i.gender,
+                          'birth_date': str(i.birth_date),
+                          'death_date': str(i.death_date),
+                          'summary': i.summary,
+                          'biography': i.biography,
+                          'image': i.image,
+                          'district': '',
+                          'gov_url': i.gov_url.url,
+                          'gov_id': i.gov_id,
+                          'gov_picture_url': i.gov_picture_url,
+                          'voters': i.voters,
+                          'active': i.active,
+                          'party_id': i[0].organization.id} for i in members], safe=False)
 
 
 def getOrganizatonByClassification(request):
+    """Returns organizations by classification(working bodies, PG, council)."""
+
     workingBodies = Organization.objects.filter(classification__in=["odbor", "komisija", "preiskovalna komisija"])
     parliamentaryGroups = Organization.objects.filter(classification__in=PS_NP)
     council = Organization.objects.filter(classification="kolegij")
 
-    return JsonResponse({"working_bodies": [{"id": wb.id, "name": wb.name} for wb in workingBodies],
-                         "parliamentary_groups": [{"id": pg.id, "name": pg.name} for pg in parliamentaryGroups],
-                         "council": [{"id": c.id, "name": c.name} for c in council]})
+    return JsonResponse({"working_bodies": [{"id": wb.id,
+                                             "name": wb.name} for wb in workingBodies],
+                         "parliamentary_groups": [{"id": pg.id,
+                                                   "name": pg.name} for pg in parliamentaryGroups],
+                         "council": [{"id": c.id,
+                                      "name": c.name} for c in council]})
 
 
 def getOrganizationRolesAndMembers(request, org_id, date_=None):
@@ -1006,16 +1169,26 @@ def getOrganizationRolesAndMembers(request, org_id, date_=None):
 
 
 def getTags(request):
-    out = [{"name": tag.name, "id": tag.id} for tag in Tag.objects.all().exclude(id__in=[1,2,3,4,5,8,9])]
+    """Returns all tags."""
+
+    out = [{"name": tag.name,
+            "id": tag.id} for tag in Tag.objects.all().exclude(id__in=[1, 2, 3, 4, 5, 8, 9])]
+
     return JsonResponse(out, safe=False)
 
 
 def getDistricts(request):
-    out = [{"id": area.id, "name": area.name} for area in Area.objects.filter(calssification="okraj")]
+    """Returns all districts."""
+
+    out = [{"id": area.id,
+            "name": area.name} for area in Area.objects.filter(calssification="okraj")]
+
     return JsonResponse(out, safe=False)
 
 
 def getSpeechData(request, speech_id):
+    """Returns data of specific speech."""
+
     speech = Speech.objects.filter(pk=speech_id)
 
     if len(speech) > 0:
@@ -1035,11 +1208,16 @@ def getSpeechData(request, speech_id):
 
 
 def getResultOfMotion(request, motion_id):
+    """Returns result of motion/vote."""
+
     output = {"result": Motion.objects.get(id=motion_id).result}
+
     return JsonResponse(output, safe=False)
 
 
 def getPersonData(request, person_id):
+    """Returns data of specific person."""
+
     person = Person.objects.filter(id=person_id)
     if person:
         obj = {'name': person[0].name,
@@ -1052,30 +1230,36 @@ def getPersonData(request, person_id):
 
 
 def isSpeechOnDay(request, date_=None):
+    """Returns True if speech happend on a specific day."""
+
     if date_:
         fdate = datetime.strptime(date_, settings.API_DATE_FORMAT)
     else:
         fdate = datetime.now()
-    edate = fdate+timedelta(hours=23, minutes=59)
+    edate = fdate + timedelta(hours=23, minutes=59)
     speech = Speech.objects.filter(start_time__gte=fdate,
                                    start_time__lte=(edate))
     return JsonResponse({"isSpeech": True if speech else False})
 
 
 def isVoteOnDay(request, date_=None):
+    """Returns True if vote happend on a specific day."""
+
     if date_:
         fdate = datetime.strptime(date_, settings.API_DATE_FORMAT)
     else:
         fdate = datetime.now()
     print fdate
-    edate = fdate+timedelta(hours=23, minutes=59)
+    edate = fdate + timedelta(hours=23, minutes=59)
     votes = Vote.objects.filter(start_time__gte=fdate,
                                 start_time__lte=(edate))
+
     return JsonResponse({"isVote": True if votes else False})
 
 
-# return speech ids of MPs
 def getSpeechesIDs(request, person_id, date_=None):
+    """Returns all speech ids of MP.of"""
+
     if date_:
         fdate = datetime.strptime(date_, settings.API_DATE_FORMAT)
     else:
@@ -1089,14 +1273,14 @@ def getSpeechesIDs(request, person_id, date_=None):
     return JsonResponse(speeches_ids, safe=False)
 
 
-# return speech ids
 def getPGsSpeechesIDs(request, org_id, date_=None):
+    """Returns speechs ids of specifig PG."""
+
     if date_:
         fdate = datetime.strptime(date_, settings.API_DATE_FORMAT)
     else:
         fdate = datetime.now()
     fdate = fdate.replace(hour=23, minute=59)
-    org = get_object_or_404(Organization, id=org_id)
     ranges = json.loads(getMembersOfPGRanges(request, org_id, date_).content)
 
     speeches_ids = []
@@ -1129,9 +1313,11 @@ def getMembersWithFuction(request):
 
 
 def getDocumentOfMotion(request, motion_id):
+    """Returns all documents of specific motion/vote."""
+
     if Link.objects.filter(motion=motion_id):
         link = str(Link.objects.filter(motion=motion_id)[0]).split('/')
-        true_link = str('https://cdn.parlameter.si/v1/dokumenti/'+link[4])
+        true_link = str('https://cdn.parlameter.si/v1/dokumenti/' + link[4])
         return JsonResponse({"link": true_link}, safe=False)
     else:
         return JsonResponse({"link": None}, safe=False)
@@ -1347,7 +1533,9 @@ def getAllChangesAfter(request, datetime_):
 
     return JsonResponse(data)
 
+
 def monitorMe(request):
+    """Checks if API is working."""
 
     r = requests.get('https://data.parlameter.si/v1/getMPs')
     if r.status_code == 200:
