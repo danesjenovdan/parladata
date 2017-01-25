@@ -135,19 +135,20 @@ def getMPStatic(request, person_id, date_=None):
             groups = [{'name': membership.organization.name,
                        'id': membership.organization.id,
                        'acronym': membership.organization.acronym}
-                       for membership in member.memberships.filter(
-                                                            Q(start_time__lte=fdate) | Q(start_time=None), Q(end_time__gte=fdate) | Q(end_time=None))
-                                                            if membership.organization.classification in [u'poslanska skupina', u'nepovezani poslanec']]
+                       for membership in member.memberships.filter(Q(start_time__lte=fdate) |
+                                                                   Q(start_time=None),
+                                                                   Q(end_time__gte=fdate) |
+                                                                   Q(end_time=None))
+                                                                   if membership.organization.classification in [u'poslanska skupina', u'nepovezani poslanec']]
             if not groups:
                 return JsonResponse({})
 
             non_party_groups = [{'name': membership.organization.name,
                                  'id': membership.organization.id} 
-                                 for membership in member.memberships.filter(
-                                                                      Q(start_time__lte=fdate) |
-                                                                      Q(start_time=None), Q(end_time__gte=fdate) |
-                                                                      Q(end_time=None))
-                                                                      if membership.organization.classification not in [u'poslanska skupina', u'nepovezani poslanec']]
+                                 for membership in member.memberships.filter(Q(start_time__lte=fdate) |
+                                                                             Q(start_time=None), Q(end_time__gte=fdate) |
+                                                                             Q(end_time=None))
+                                                                             if membership.organization.classification not in [u'poslanska skupina', u'nepovezani poslanec']]
 
             for group in non_party_groups:
                 groups.append(group)
@@ -313,7 +314,7 @@ def getSpeeches(request, person_id, date_=None):
 
 
 def getSpeechesInRange(request, person_id, date_from, date_to):
-    """Returns speechs of MP in range."""
+    """Returns speechs of MP in range(from specific date to specific date)."""
 
     fdate = datetime.strptime(date_from, settings.API_DATE_FORMAT).date()
     tdate = datetime.strptime(date_to, settings.API_DATE_FORMAT).date()
@@ -331,10 +332,10 @@ def getSpeechesInRange(request, person_id, date_from, date_to):
 
 
 def getMembersOfPGs(request):
-    """
-    Returns list of member's id for each PG.
+    """Returns list of member's id for each PG.
     PG = Parlamentary group
     """
+
     parliamentary_group = Organization.objects.filter(classification__in=PS_NP)
     members = Membership.objects.filter(Q(end_time=None) |
                                         Q(end_time__gt=datetime.now()),
@@ -395,15 +396,19 @@ def getNumberOfAllMPAttendedSessions(request, date_):
     fdate = datetime.strptime(date_, settings.API_DATE_FORMAT).date() + timedelta(days=1) - timedelta(minutes=1)
     data = {"sessions": {}, "votes": {}}
     for member in getMPObjects(fdate):
+        # list of all sessions of MP
         allOfHimS = list(set(Ballot.objects.filter(voter__id=member.id,
                                                    vote__start_time__lte=fdate).values_list("vote__session", flat=True)))
+        # list of all session that the opiton of ballto was: kvorum, proti, za
         votesOnS = list(set(Ballot.objects.filter(Q(option="kvorum") |
                                                   Q(option="proti") |
                                                   Q(option="za"),
                                                   voter__id=member.id,
                                                   vote__start_time__lte=fdate).values_list("vote__session", flat=True)))
+        # list of all votes of MP
         allOfHimV = list(set(Ballot.objects.filter(voter__id=member.id,
                                                    vote__start_time__lte=fdate).values_list("vote", flat=True)))
+        # list of all votes that the opiton of ballto was: kvorum, proti, za
         votesOnV = list(set(Ballot.objects.filter(Q(option="kvorum") |
                                                   Q(option="proti") |
                                                   Q(option="za"),
@@ -417,7 +422,7 @@ def getNumberOfAllMPAttendedSessions(request, date_):
 
     return JsonResponse(data)
 
-# podvojen
+
 def getSpeechesOfMP(request, person_id, date_=None):
     """Returns all speeches of MPs¸"""
 
@@ -915,7 +920,10 @@ def getTaggedVotes(request, person_id):
 
 
 def getMembersOfPGsRanges(request, date_=None):
-    """Returns all memberships of all MPs from start to end date."""
+    """Returns all memberships(start date, end date and members
+       in this dates) of all PGs from start of mandate to end date
+       which is an argument of method.
+    """
 
     if date_:
         fdate = datetime.strptime(date_, settings.API_DATE_FORMAT).date()
@@ -924,7 +932,7 @@ def getMembersOfPGsRanges(request, date_=None):
     tempDate = settings.MANDATE_START_TIME.date()
     parliamentary_group = Organization.objects.filter(classification__in=PS_NP)
     members = Membership.objects.filter(organization__in=parliamentary_group)
-    out = {(tempDate + timedelta(days=xday)): {grup: [] for grup in parliamentary_group.values_list("id", flat=True)} for xday in range((fdate - tempDate).days + 1)}
+    out = {(tempDate + timedelta(days=days)): {grup: [] for grup in parliamentary_group.values_list("id", flat=True)} for days in range((fdate - tempDate).days + 1)}
     for member in members:
         if not member.start_time and not member.end_time:
             start_time = tempDate
@@ -941,8 +949,8 @@ def getMembersOfPGsRanges(request, date_=None):
                 end_time = member.end_time.date()
             else:
                 end_time = fdate
-        for xday in range((end_time - start_time).days + 1):
-            out[(start_time + timedelta(days=xday))][member.organization.id].append(member.person.id)
+        for days in range((end_time - start_time).days + 1):
+            out[(start_time + timedelta(days=days))][member.organization.id].append(member.person.id)
 
     keys = out.keys()
     keys.sort()
@@ -974,7 +982,7 @@ def getMembersOfOrgsRanges(request, org_id, date_=None):
     # if in org isn't members
     except:
         tempDate=settings.MANDATE_START_TIME.date()
-    out = {(tempDate+timedelta(days=xday)): {grup: [] for grup in organization.values_list("id", flat=True)} for xday in range((fdate-tempDate).days+1)}
+    out = {(tempDate+timedelta(days=days)): {grup: [] for grup in organization.values_list("id", flat=True)} for days in range((fdate-tempDate).days+1)}
     for member in members:
         if not member.start_time and not member.end_time:
             start_time = tempDate
@@ -991,8 +999,8 @@ def getMembersOfOrgsRanges(request, org_id, date_=None):
                 end_time = member.end_time.date()
             else:
                 end_time = fdate
-        for xday in range((end_time-start_time).days+1):
-            out[(start_time+timedelta(days=xday))][member.organization.id].append(member.person.id)
+        for days in range((end_time-start_time).days+1):
+            out[(start_time+timedelta(days=days))][member.organization.id].append(member.person.id)
 
     keys = out.keys()
     keys.sort()
@@ -1017,7 +1025,7 @@ def getMembersOfPGRanges(request, org_id, date_=None):
         fdate = datetime.now().date()
     tempDate=settings.MANDATE_START_TIME.date()
     members = Membership.objects.filter(organization__id=org_id)
-    out = {(tempDate+timedelta(days=xday)): {int(org_id): []} for xday in range((fdate-tempDate).days+1)}
+    out = {(tempDate+timedelta(days=days)): {int(org_id): []} for days in range((fdate-tempDate).days+1)}
     for member in members:
         if not member.start_time and not member.end_time:
             start_time = tempDate
@@ -1034,8 +1042,8 @@ def getMembersOfPGRanges(request, org_id, date_=None):
                 end_time = member.end_time.date()
             else:
                 end_time = fdate
-        for xday in range((end_time-start_time).days+1):
-            out[(start_time+timedelta(days=xday))][member.organization.id].append(member.person.id)
+        for days in range((end_time-start_time).days + 1):
+            out[(start_time+timedelta(days=days))][member.organization.id].append(member.person.id)
 
     keys = out.keys()
     keys.sort()
@@ -1216,7 +1224,9 @@ def getResultOfMotion(request, motion_id):
 
 
 def getPersonData(request, person_id):
-    """Returns data of specific person."""
+    """Returns data of specific person.
+       Method is used for data enrichment in parlalize.
+    """
 
     person = Person.objects.filter(id=person_id)
     if person:
@@ -1230,7 +1240,7 @@ def getPersonData(request, person_id):
 
 
 def isSpeechOnDay(request, date_=None):
-    """Returns True if speech happend on a specific day."""
+    """Returns True if at least one speech happened on a specific day."""
 
     if date_:
         fdate = datetime.strptime(date_, settings.API_DATE_FORMAT)
@@ -1258,7 +1268,7 @@ def isVoteOnDay(request, date_=None):
 
 
 def getSpeechesIDs(request, person_id, date_=None):
-    """Returns all speech ids of MP.of"""
+    """Returns all speech ids of MP."""
 
     if date_:
         fdate = datetime.strptime(date_, settings.API_DATE_FORMAT)
