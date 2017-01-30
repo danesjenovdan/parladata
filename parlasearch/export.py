@@ -210,7 +210,8 @@ def exportVotes():
 
 
 def exportAll():
-
+    print "deleteing non valid speeches"
+    deleteNonValidSpeeches()
     print 'exporting speeches'
     exportSpeeches()
     print 'exporting sessions'
@@ -223,3 +224,35 @@ def exportAll():
     exportVotes()
 
     return 'all done'
+
+
+def deleteNonValidSpeeches():
+    # get all ids from solr
+    a = requests.get("http://127.0.0.1:8983/solr/knedl/select?wt=json&q=id:*&fl=id&rows=100000000")
+    indexes = a.json()["response"]["docs"]
+
+    # find ids of speeches and remove g from begining of id string
+    idsInSolr = [int(line["id"].replace('g', ''))
+                 for line
+                 in indexes if "g" in line["id"]]
+
+    # get all valid speeches
+    validSpeeches = Speech.getValidSpeeches(datetime.now())
+    idsInData = validSpeeches.values_list("id", flat=True)
+
+    # find ids of speeches in solr for delete
+    idsForDelete = list(set(idsInSolr) - set(idsInData))
+    idsForDelete = ['g'+str(gid) for gid in idsForDelete]
+
+    # prepare query data
+    data = {'delete': idsForDelete
+            }
+    print data
+    return
+    r = requests.post('http://127.0.0.1:8983/solr/knedl/update?commit=true',
+                      data=data,
+                      headers={'Content-Type': 'application/json'})
+
+    print r.text
+
+    return
