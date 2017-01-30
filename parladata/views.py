@@ -69,10 +69,17 @@ def getActivity(request, person_id):
 
 def getMPs(request, date_=None):
     """
-    Returns all MPs.
-    MP = Members of parlament
+    * @api {get} /getMPs/:date Request information of all members
+    * @apiName GetMembers
+    * @apiGroup Members
+    *
+    * @apiParam {date} date is optional parameter and
+    *return members on this day.
+    *
+    * @apiSuccess {Json} return arrayo f all members. Each elemnt is object of
+    * member data.
+    * @apiSuccess {String} lastname  Lastname of the User.
     """
-
     if date_:
         fdate = datetime.strptime(date_, settings.API_DATE_FORMAT).date()
     else:
@@ -93,11 +100,13 @@ def getMPs(request, date_=None):
                                                Q(start_time=None),
                                                Q(end_time__gte=fdate) |
                                                Q(end_time=None))
+        membership = membership.filter(organization__classification__in=PS_NP)
+        ps = membership[0] if membership else None
 
         data.append({'id': i.id,
                      'name': i.name,
-                     'membership': membership[0].organization.name,
-                     'acronym': membership[0].organization.acronym,
+                     'membership': ps.organization.name if ps else None,
+                     'acronym': ps.organization.acronym if ps else None,
                      'classification': i.classification,
                      'family_name': i.family_name,
                      'given_name': i.given_name,
@@ -119,7 +128,7 @@ def getMPs(request, date_=None):
                      'gov_picture_url': i.gov_picture_url,
                      'voters': i.voters,
                      'active': i.active,
-                     'party_id': membership[0].organization.id})
+                     'party_id': ps.organization.id if ps else None})
 
     return JsonResponse(data, safe=False)
 
