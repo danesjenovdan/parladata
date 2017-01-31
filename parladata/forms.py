@@ -1,15 +1,13 @@
 from dal import autocomplete
-
 from django import forms
-from .models  import Membership, Post, Speech
-
-from django.db.models.fields.related import ManyToOneRel
+from .models import Membership, Post, Speech
 from django.contrib.admin.widgets import RelatedFieldWidgetWrapper
 import admin
 
 
 class MembershipForm(forms.ModelForm):
-    
+    """Form for debuging memberships."""
+
     post = forms.ModelChoiceField(
         queryset=Post.objects.all(),
         widget=autocomplete.ModelSelect2Multiple(url='post-autocomplete')
@@ -21,15 +19,14 @@ class MembershipForm(forms.ModelForm):
         widgets = {
             'person': autocomplete.ModelSelect2(url='person-autocomplete'),
         }
+
     def __init__(self, *args, **kwargs):
         super(MembershipForm, self).__init__(*args, **kwargs)
-        #add_related_field_wrapper(self, 'post')
+        # add_related_field_wrapper(self, 'post')
         self.fields["post"].required = False
-
 
     def save(self, *args, **kwargs):
         instance = super(MembershipForm, self).save(commit=False)
-        #self.fields['post'].initial.update(post=None)
         return instance
 
 
@@ -40,6 +37,7 @@ def add_related_field_wrapper(form, col_name):
 
 
 class PostForm(forms.ModelForm):
+    """Form for posts."""
 
     class Meta:
         model = Post
@@ -47,18 +45,18 @@ class PostForm(forms.ModelForm):
         widgets = {
             'membership': autocomplete.ModelSelect2(url='membership-autocomplete'),
         }
+
     def __init__(self, *args, **kwargs):
         super(PostForm, self).__init__(*args, **kwargs)
-        #add_related_field_wrapper(self, 'post')
-
-
+        # add_related_field_wrapper(self, 'post')
 
     def save(self, *args, **kwargs):
         instance = super(PostForm, self).save(commit=False)
-        #self.fields['membership'].initial.update(post=None)
         return instance
 
+
 class SpeechForm(forms.ModelForm):
+    """Form for speechs."""
 
     class Meta:
         model = Speech
@@ -66,12 +64,10 @@ class SpeechForm(forms.ModelForm):
         widgets = {
             'speaker': autocomplete.ModelSelect2(url='person-autocomplete'),
         }
+
     def __init__(self, *args, **kwargs):
         super(SpeechForm, self).__init__(*args, **kwargs)
 
-
-
     def save(self, *args, **kwargs):
         instance = super(SpeechForm, self).save(commit=False)
-        #self.fields['membership'].initial.update(post=None)
         return instance

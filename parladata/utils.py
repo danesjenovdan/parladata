@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
 from parladata.models import *
-import numpy
 from django.db.models import Q
-from datetime import datetime, timedelta, date
+from datetime import datetime, timedelta
 import requests
 from django.conf import settings
 from django.http import JsonResponse
@@ -10,269 +9,129 @@ from django.shortcuts import render
 from collections import Counter
 import csv
 from django.utils.encoding import smart_str
-import json
-import requests
-from parladata.models import *
 from django.db.models import Count
 import re
 
-#returns average from list of integers
+
 def AverageList(list):
+    """Returns average from list of integers."""
+
     return sum(list) / float(len(list))
 
-#returns average from dictionary of integers
+
 def AverageListOfDic(list, key):
+    """Returns average from dictionary of integers."""
+
     data = [i[key] for i in list]
     return sum(data) / float(len(list))
 
-#returns maximum of list of dictionaries
+
 def MaxListOfDic(list, key):
+    """Returns maximum of list of dictionaries."""
+
     data = [i[key] for i in list]
     return max(data)
 
-'''
-MP = Members of parlament
-#Function: git config
-'''
-# getMPObject return objects of all parlament members
+
 def getMPObjects(date_=None):
+    """Return objects of all parlament members.
+       MP = Members of parlament
+       Function: git config
+    """
+
     if not date_:
         date_ = datetime.now()
-    parliamentary_group = Organization.objects.filter(Q(classification="poslanska skupina") | Q(classification="nepovezani poslanec"))
+    parliamentary_group = Organization.objects.filter(Q(classification="poslanska skupina") |
+                                                      Q(classification="nepovezani poslanec"))
     members = Membership.objects.filter(organization__in=parliamentary_group)
-    members = members.filter(Q(start_time__lte=date_)|Q(start_time=None), Q(end_time__gte=date_)|Q(end_time=None))
+    members = members.filter(Q(start_time__lte=date_) |
+                             Q(start_time=None),
+                             Q(end_time__gte=date_) |
+                             Q(end_time=None))
     return [i.person for i in members]
 
 
 def getCurrentMandate():
+    """Returns current mandate."""
+
     return Mandate.objects.all()[-1]
 
 
 def getVotesDict(date=None):
-    parliamentary_group = Organization.objects.filter(Q(classification="poslanska skupina") | Q(classification="nepovezani poslanec"))
+    """Returns all voters in a dictionary."""
+
+    parliamentary_group = Organization.objects.filter(Q(classification="poslanska skupina") |
+                                                      Q(classification="nepovezani poslanec"))
     members = Membership.objects.filter(organization__in=parliamentary_group)
     votes = dict()
-    # balotFromMandat = Ballot.objects.filter('vote__session__mandate' = getCurrentMandate())
-
-#   with open('/Users/muki/Desktop/testis.csv', 'w') as f:
-    #for m in [person.id for person in members]:
     for m in list(set(members.values_list("person", flat=True))):
-        print m
-#           for b in Ballot.objects.filter(voter=m):
-#               f.write(str(b.option) + ',' + str(b.vote.id) + ',' + str(b.id))
-#               f.write('\n')
-
         if date:
             date2 = datetime.strptime(date, settings.API_DATE_FORMAT) + timedelta(days=1) - timedelta(seconds=1)
-            ballots = list(Ballot.objects.filter(voter__id=m, vote__start_time__lte=date2).order_by('vote__start_time').values_list('option', 'vote_id'))
+            ballots = list(Ballot.objects.filter(voter__id=m,
+                                                 vote__start_time__lte=date2).order_by('vote__start_time').values_list('option', 'vote_id'))
         else:
             ballots = list(Ballot.objects.filter(voter__id=m).order_by('vote__start_time').values_list('option', 'vote_id'))
-    
+
         if ballots:
             votes[str(m)] = {ballot[1]: ballot[0] for ballot in ballots}
-        #Work around if ther is no ballots for member
+        # Work around if ther is no ballots for member
         else:
             votes[str(m)] = {}
-
-        if m==6:
-            print votes[str(m)]
-        print votes.keys()
-#   f.close()
-    #for key in votes.keys():
-    #    if not votes[key]:
-    #        votes.pop(key)
     return votes
 
+
 def voteToLogical(vote):
-    if vote=="za":
+    """Returns 1 instead of 'za' and 0 of 'proti'."""
+
+    if vote == "za":
         return 1
-    elif vote=="proti":
+    elif vote == "proti":
         return 0
-    else :
+    else:
         return -1
 
-def votesToLogical(votes, length):
-    maxVotes = length
-    for key in votes.keys():
-        votes[key] = map(voteToLogical, votes[key])
 
-        #remove this when numbers of ballots are equals for each member
-        if (len(votes[key]) < length):
-            votes[key].extend(numpy.zeros(maxVotes-int(len(votes[key]))))
-        else:
-            votes[key] = [votes[key][i] for i in range(length)]
-
-#doesn't save
-#TODO use the right majority for the votes
-def fillVoteResult():
-    ballots = getVotesDict()
-    votesToLogical(ballots, len(Vote.objects.all()))
-    votes = Vote.objects.all().order_by('id')
-
-    for i in Vote.objects.all().values_list('id', flat=True):
-        suma = 0
-        for p in ballots.items():
-            try:
-                suma = suma + p[1][i]
-            except:
-                print "ni enako :D"
-        print type(votes[i].result)
-        if suma > len(ballots.keys())/2:
-
-            votes[i].result = "da"
-        else:
-            votes[i].result = "ne"
-        votes[i].save()
-
-
-def makeVoteResults():
-    votes = Vote.objects.all()
-
-    for vote in votes:
-        za = vote.ballot_set.filter(option='za')
-        proti = vote.ballot_set.filter(option='proti')
-        kvorum = vote.ballot_set.filter(option='kvorum')
-
-        print len(za), len(proti), len(kvorum), vote.result
-
-        if kvorum < 45:
-            vote.result = 'ni kvoruma'
-            vote.save()
-        else:
-            if len(za) > len(proti):
-                vote.result = 'yes'
-                vote.save()
-            else:
-                vote.result = 'no'
-                vote.save()
-
-
-def getPMMemberships():
-    f = open('memberships.tsv', 'w')
-    f.write("person\tmember of\trole\n")
-    for p in Person.objects.all():
-        for m in Membership.objects.filter(person=p):
-            f.write(p.name.encode("utf-8")+"\t ")
-            f.write(m.organization.name.encode("utf-8")+"\t ")
-            try:
-                if m.role == "":
-                    f.write("NONE\t")
-                else:
-                    f.write(m.role+"\t ")
-            except:
-                f.write("NONE\t ")
-
-            f.write("\n")
-
-
-def checkNumberOfMembers():
-    with open('members_on_day.csv', 'wb') as csvfile:
-        csvwriter = csv.writer(csvfile, delimiter=',',
-                                quotechar='|', quoting=csv.QUOTE_MINIMAL)
-        d = datetime(year=2014, day=1, month=8)
-        day = timedelta(days=1)
-        for i in range(700):
-            g = requests.get("https://data.parlameter.si/v1/getMembersOfPGsAtDate/"+d.strftime(settings.API_DATE_FORMAT)).json()
-            csvwriter.writerow([d.strftime(settings.API_DATE_FORMAT), str(sum([len(g[g_]) for g_ in g]))])
-            d=d+day
-
-
-def checkNumberOfMembers1():
-    import csv
-    with open('members_on_day.csv', 'wb') as csvfile:
-        csvwriter = csv.writer(csvfile, delimiter=',',
-                                quotechar='|', quoting=csv.QUOTE_MINIMAL)
-
-        r = requests.get("http://localhost:8000/v1/getMembersOfPGsRanges/05.05.2016").json()
-        for g in r:
-            csvwriter.writerow([g["start_date"], str(sum([len(g["members"][g_]) for g_ in g["members"]]))])
-
-
-#function for finding MPs membersihp date issues
 def getFails():
-    parliamentary_group = Organization.objects.filter(Q(classification="poslanska skupina") | Q(classification="nepovezani poslanec"))
+    """Function for finding MPs membersihp date issues."""
+
+    parliamentary_group = Organization.objects.filter(Q(classification="poslanska skupina") |
+                                                      Q(classification="nepovezani poslanec"))
     members = Membership.objects.filter(organization__in=parliamentary_group)
     members = members.filter()
     start = Vote.objects.all().order_by("start_time")[0].start_time
     out = {}
     for member in members:
-        if member.start_time==None and member.end_time==None:
-            votes=Vote.objects.filter(Q(start_time__gte=start)|Q(end_time__lte=datetime.now()))
-        elif member.start_time==None and member.end_time!=None:
-            votes=Vote.objects.filter(Q(start_time__gte=start)|Q(end_time__lte=member.end_time))
-        elif member.start_time!=None and member.end_time!=None:
-            votes=Vote.objects.filter(Q(start_time__gte=member.start_time)|Q(end_time__lte=member.end_time))
-        elif member.start_time!=None and member.end_time==None:
-            votes=Vote.objects.filter(Q(start_time__gte=member.start_time)|Q(end_time__lte=datetime.now()))
+        if member.start_time is None and member.end_time is None:
+            votes = Vote.objects.filter(Q(start_time__gte=start) |
+                                        Q(end_time__lte=datetime.now()))
+        elif member.start_time is None and member.end_time is not None:
+            votes = Vote.objects.filter(Q(start_time__gte=start) |
+                                        Q(end_time__lte=member.end_time))
+        elif member.start_time is not None and member.end_time is not None:
+            votes = Vote.objects.filter(Q(start_time__gte=member.start_time) |
+                                        Q(end_time__lte=member.end_time))
+        elif member.start_time is not None and member.end_time is None:
+            votes = Vote.objects.filter(Q(start_time__gte=member.start_time) |
+                                        Q(end_time__lte=datetime.now()))
         for vote in votes:
             if not Ballot.objects.filter(voter=member.person, vote=vote):
                 if member.person.id in out.keys():
                     out[member.person.id].append(vote.start_time)
                 else:
-                    out[member.person.id]= [vote.start_time]
+                    out[member.person.id] = [vote.start_time]
     print out
 
-
-def getMembershipDuplications1(request):
-    # prepare data
-    start_date = date(day=1, month=9, year=2014)
-    end_date = date.today()
-    parliamentary_groups = Organization.objects.filter(Q(classification="poslanska skupina") | Q(classification="nepovezani poslanec"))
-
-    data = []
-
-    #for i in range((end_date-start_date).days):
-    for i in range(10):
-        print i
-        date_ = start_date + timedelta(days=i)
-        print date_
-        members = Membership.objects.filter(organization__in=parliamentary_groups)
-
-        members = members.filter(Q(start_time__lte=date_)|Q(start_time=None), Q(end_time__gte=date_)|Q(end_time=None))
-
-        member_ids = members.values_list("person__id", flat=True)
-        conf_members = set([member for member in member_ids if list(member_ids).count(member)>1])
-        data.append({"persons":[{member: [{"membership_id": membership.id, "org_id": membership.organization.id} for membership in members.filter(person_id=member)] } for member in conf_members]})
-
-
-        #org_ids = members.values_list("organization__id", flat=True)
-        #data[date_.strftime(settings.API_DATE_FORMAT)].update({"groups": [{org:  list(members.filter(organization__id=org).values_list("role", flat=True)) } for org in org_ids]})
-
-    context = {}
-    out = []
-    first_date=start_date.strftime(settings.API_DATE_FORMAT)
-    last_day = None
-    for day in data:
-        if last_day and day["persons"]==last_day["persons"]:
-            continue
-        else:
-            if last_day:
-                for person in last_day["persons"]:
-                    out.append({"od": first_date, "do": last_day["date"], "person": person})
-                first_date= day["date"]
-            last_day = day
-
-    for person in last_day["persons"]:
-        out.append({"od": first_date, "do": last_day["date"], "person": person})
-            
-
-    context["data"] = out
-
-    print out
-
-    return render(request, "debug_memberships.html", context)
 
 def getMembershipDuplications(request):
-    # prepare data
+    """Returns duplicate memberships."""
+
     context = {}
     start_time = datetime(day=1, month=8, year=2014)
     end_time = datetime.now()
     parliamentary_groups = Organization.objects.filter(Q(classification="poslanska skupina") | Q(classification="nepovezani poslanec"))
 
-    data = []
-
     members = Membership.objects.filter(organization__in=parliamentary_groups)
-    
+
     #members = members.filter(Q(start_time__lte=date_)|Q(start_time=None), Q(end_time__gte=date_)|Q(end_time=None))
     out = []
     checked = []
@@ -353,9 +212,6 @@ def getMembershipDuplications(request):
         if prs.voters == None or prs.voters == 0:
             context["voters_counts"].append(prs)
 
-
-
-
     #membership duration vs. post duration
     context["post_dupl"] = []
     members = Membership.objects.all()
@@ -403,72 +259,59 @@ def getMembershipDuplications(request):
 
 
 def getBlindVotes():
-    # prepare data
+    """Checks if memberships of PGs are ok."""
+
     context = {}
-    start_time = datetime(day=1, month=8, year=2014)
-    end_time = datetime.now()
-    parliamentary_groups = Organization.objects.filter(Q(classification="poslanska skupina") | Q(classification="nepovezani poslanec"))
-
-    data = []
-
-    members = Membership.objects.filter(organization__in=parliamentary_groups)
-
+    parliamentary_groups = Organization.objects.filter(Q(classification="poslanska skupina") |
+                                                       Q(classification="nepovezani poslanec"))
     context["vote_without_membership"] = []
-    #Pejd cez vse vote in preveri ce obstaja membership za to osebo na ta dan
     with open('zombie_votes.csv', 'wb') as csvfile:
         csvwriter = csv.writer(csvfile, delimiter=',',
-                                quotechar='|', quoting=csv.QUOTE_MINIMAL)
+                                        quotechar='|', quoting=csv.QUOTE_MINIMAL)
         for ballot in Ballot.objects.all():
-            member = ballot.voter.memberships.filter(Q(start_time__lte=ballot.vote.start_time)|Q(start_time=None), Q(end_time__gte=ballot.vote.start_time)|Q(end_time=None), organization__in=parliamentary_groups)
+            member = ballot.voter.memberships.filter(Q(start_time__lte=ballot.vote.start_time) |
+                                                     Q(start_time=None),
+                                                     Q(end_time__gte=ballot.vote.start_time) |
+                                                     Q(end_time=None), organization__in=parliamentary_groups)
             if not member:
-                csvwriter.writerow([ballot.vote.start_time, ballot.voter.id, ballot.voter.name.encode("utf-8")])
+                csvwriter.writerow([ballot.vote.start_time,
+                                    ballot.voter.id,
+                                    ballot.voter.name.encode("utf-8")])
 
 
 def getPersonWithoutVotes():
-    # prepare data
-    context = {}
-    start_time = datetime(day=1, month=8, year=2014)
-    end_time = datetime.now()
-    parliamentary_groups = Organization.objects.filter(Q(classification="poslanska skupina") | Q(classification="nepovezani poslanec"))
+    """Returns all MPs without votes."""
 
-    data = []
+    parliamentary_groups = Organization.objects.filter(Q(classification="poslanska skupina") |
+                                                       Q(classification="nepovezani poslanec"))
 
     members = Membership.objects.filter(organization__in=parliamentary_groups)
 
     with open('poor_voters.csv', 'wb') as csvfile:
         csvwriter = csv.writer(csvfile, delimiter=',',
-                                quotechar='|', quoting=csv.QUOTE_MINIMAL)
+                                        quotechar='|',
+                                        quoting=csv.QUOTE_MINIMAL)
         for vote in Vote.objects.all():
             real_voters = vote.ballot_set.all().values_list("voter__id", flat=True)
-            fi_voters_memberships = members.filter(Q(start_time__lte=vote.start_time)|Q(start_time=None), Q(end_time__gte=vote.start_time)|Q(end_time=None))
+            fi_voters_memberships = members.filter(Q(start_time__lte=vote.start_time) |
+                                                   Q(start_time=None),
+                                                   Q(end_time__gte=vote.start_time) |
+                                                   Q(end_time=None))
             fi_voters = fi_voters_memberships.values_list("person__id", flat=True)
 
-            personWithoutVotes = list(set(fi_voters)-set(real_voters))
+            personWithoutVotes = list(set(fi_voters) - set(real_voters))
 
             mems = fi_voters_memberships.filter(person__id__in=personWithoutVotes)
             for personMem in mems:
-                csvwriter.writerow([vote.start_time, personMem.id, personMem.person.id, personMem.person.name])
-
-def parserChecker(request):
-    context = {}
-    context["empty_session"] = []
-    context["sessions_for_delete"] = []
-    sessions = Session.objects.all().order_by("start_time")
-    for session in sessions:
-        if not session.vote_set.all() and not session.speech_set.all():
-            context["empty_session"].append(session)
-    set_of_names = set([ses.name for ses in context["empty_session"]])
-
-    for name in set_of_names:
-        sess = Session.objects.filter(name=name)
-
-        context["sessions_for_delete"].append([{"session": ses, "org": ses.organization, "motions": len(ses.motion_set.all()), "votes": len(ses.vote_set.all()), "ballots": sum([len(vote.ballot_set.all()) for vote in ses.vote_set.all()]), "speeches": len(ses.speech_set.all())} for ses in sess])
-
-
-    return render(request, "debug_parser.html", context)
+                csvwriter.writerow([vote.start_time,
+                                    personMem.id,
+                                    personMem.person.id,
+                                    personMem.person.name])
 
 
 def postMembersFixer(request):
+    """Fixes post of PGs."""
+
     context = {}
     context["posts"] = []
     for member in Membership.objects.all():
@@ -477,59 +320,58 @@ def postMembersFixer(request):
         firstpost = member.memberships.filter(start_time=start_time)
         line = {"member": member, "fails": []}
         if not posts:
-            #Post(start_time=member.start_time, end_time=member.end_time, membership=member, role="član", label="cl", organization=member.organization).save()
-            #print "Dodajanje novega psota", member
             line["fails"].append({"type": "empty"})
         elif firstpost:
             posts = posts.exclude(start_time=None)
-            if posts.count()==0:
+            if posts.count() == 0:
                 if firstpost[0].end_time != member.end_time:
-                    line["fails"].append({"type": "fail", "note": "sam post z None start_timeom je in endtime se ne matcha z membershipom", "posts": posts})
+                    line["fails"].append({"type": "fail",
+                                          "note": "sam post z None start_timeom je in endtime se ne matcha z membershipom",
+                                          "posts": posts})
                 continue
-            #There is a post which start on membership start time
+            # There is a post which start on membership start time
             if posts[0] == firstpost:
-                temp_start = posts[0].start_time
                 temp_end = posts[0].end_time
                 for post in list(posts)[1:]:
-                    if post.start_time > temp_end+timedelta(days=2):
-                        #print "Lukna"
-                        line["fails"].append({"type": "fail", "note": "Med posti je luknja", "posts": posts})
+                    if post.start_time > temp_end + timedelta(days=2):
+                        line["fails"].append({"type": "fail",
+                                              "note": "Med posti je luknja",
+                                              "posts": posts})
                 if list(posts)[-1].end_time != membership.end_time:
-                    #print "konc zadnega posta in membership_end nista ista"
-                    line["fails"].append({"type": "fail", "note": "endtime ni ok", "posts": posts})
+                    line["fails"].append({"type": "fail",
+                                          "note": "endtime ni ok",
+                                         "posts": posts})
         else:
-            line["fails"].append({"type": "fail", "note": "start_time je neki cudn", "posts": posts})
-            #print member.person.name, "start membership:", member.start_time, "start post_prvi:", posts[0].start_time, "start post_zadn:", list(posts)[-1].start_time
+            line["fails"].append({"type": "fail",
+                                  "note": "start_time je neki cudn",
+                                  "posts": posts})
         context["posts"].append(line)
-
-    print context["posts"]
 
     return render(request, "post.html", context)
 
 
 def checkSessions(request, date_=None):
-    
-    allSessoins = requests.get("https://data.parlameter.si/v1/getSessions/"+date_).json()
+    """Returns number of sessions adjust to organization."""
+
+    allSessoins = requests.get("https://data.parlameter.si/v1/getSessions/" + date_).json()
     ses = []
     mot = []
     for s in Organization.objects.all():
-        session = requests.get("https://data.parlameter.si/v1/getSessionsOfOrg/"+str(s.id)+"/"+date_).json()
+        session = requests.get("https://data.parlameter.si/v1/getSessionsOfOrg/" + str(s.id) + "/" + date_).json()
         for m in session:
-            motionOfSession = requests.get("https://data.parlameter.si/v1/motionOfSession/"+str(m['id'])).json()
-            mot.append({"Ime seje":m['name'], "St. glasovanj":len(motionOfSession)})
-        ses.append({"Ime organizacije":s.name, "St. sej":len(session), "Seje":mot})
+            motionOfSession = requests.get("https://data.parlameter.si/v1/motionOfSession/" + str(m['id'])).json()
+            mot.append({"Ime seje": m['name'], "St. glasovanj": len(motionOfSession)})
+        ses.append({"Ime organizacije": s.name, "St. sej": len(session), "Seje": mot})
         mot = []
-    out = {
-    "DZ":{"Število sej": len(allSessoins), "Po org":ses}
-
-    }
+    out = {"DZ": {"Število sej": len(allSessoins), "Po org": ses}}
     return JsonResponse(out)
+
 
 def membersFlowInOrg(request):
     context = {}
     context["orgs"]=[]
     orgs_all = requests.get("https://data.parlameter.si/v1/getOrganizatonByClassification").json()
-    orgs = [ org["id"] for org in orgs_all["working_bodies"] + orgs_all["council"] ]
+    orgs = [ org["id"] for org in orgs_all["working_bodies"] + orgs_all["council"]]
     for org in orgs:
         flow = []
         org_id = org
@@ -614,32 +456,44 @@ def getMPsOrganizationsByClassification():
             csvwriter.writerow([smart_str(person_mps.person.name)]+[",".join(counter[clas]) for clas in classes])
 
 def updateSpeechOrg():
+    """Updates all speeches."""
+
     members =  requests.get('https://data.parlameter.si/v1/getMembersOfPGsRanges').json()
     for mem in members:
         edate = datetime.strptime(mem['end_date'], settings.API_DATE_FORMAT)
         sdate = datetime.strptime(mem['start_date'], settings.API_DATE_FORMAT)
-        speeches = Speech.objects.filter(start_time__range=[sdate, edate+timedelta(hours=23, minutes=59)])
+        speeches = Speech.objects.filter(start_time__range=[sdate, edate + timedelta(hours=23, minutes=59)])
         print "count range speeches", speeches.count()
         for spee in speeches:
-            for m,ids in mem['members'].items():
+            for m, ids in mem['members'].items():
                 if spee.speaker.id in ids:
-                    spee.party=Organization.objects.get(id=int(m))
+                    spee.party = Organization.objects.get(id=int(m))
                     spee.save()
 
+
 def getNonPGSpeekers():
-    parliamentary_group = Organization.objects.filter(Q(classification="poslanska skupina") | Q(classification="nepovezani poslanec"))
+    """Return speakers that are not in PG."""
+
+    parliamentary_group = Organization.objects.filter(Q(classification="poslanska skupina") |
+                                                      Q(classification="nepovezani poslanec"))
     memberships = Membership.objects.filter(organization=parliamentary_group).values_list("person__id", flat=True)
-    ids=list(memberships)
+    ids = list(memberships)
     Speech.objects.all().exclude(speaker__id__in=ids)
     nonPgSpeakers = Speech.objects.all().exclude(speaker__id__in=ids).values_list("speaker__id", flat=True)
-    nonPGspeekers = {speaker : {"name": Person.objects.get(id=speaker).name, "id": Person.objects.get(id=speaker).id, "count": Speech.objects.filter(speaker__id=speaker).count()} for speaker in nonPgSpeakers}
-    data = sorted(nonPGspeekers.values(), key=lambda k,: k["count"], reverse=True)
+    nonPGspeekers = {speaker: {"name": Person.objects.get(id=speaker).name,
+                                "id": Person.objects.get(id=speaker).id,
+                                "count": Speech.objects.filter(speaker__id=speaker).count()} for speaker in nonPgSpeakers}
+    data = sorted(nonPGspeekers.values(), key=lambda k: k["count"], reverse=True)
     with open('non_pg_speakers.csv', 'w') as csvfile:
-        svwriter = csv.writer(csvfile, delimiter=',',quotechar='|', quoting=csv.QUOTE_MINIMAL)
+        svwriter = csv.writer(csvfile, delimiter=',',quotechar='|',
+                                       quoting=csv.QUOTE_MINIMAL)
         for person in data:
             csvwriter.writerow([person["id"], smart_str(person["name"]), person["count"]])
 
+
 def updateMotins():
+    """Updates motion."""
+
     for motion in Motion.objects.all():
         yes = dict(Counter(Ballot.objects.filter(vote__motion=motion).values_list("option", flat=True))).get("za", 0)
         against = dict(Counter(Ballot.objects.filter(vote__motion=motion).values_list("option", flat=True))).get("proti", 0)
@@ -647,69 +501,82 @@ def updateMotins():
         no = dict(Counter(Ballot.objects.filter(vote__motion=motion).values_list("option", flat=True))).get("ni", 0)
         if motion.text == "Dnevni red v celoti" or motion.text == "Širitev dnevnega reda".decode('utf8'):
             if yes > (yes + against + kvorum + no) / 2:
-                print 1
                 motion.result = 1
                 motion.save()
             else:
-                print 0
                 motion.result = 0
                 motion.save()
 
+
 def exportTagsOfVotes():
+    """Exports all tags of all votes."""
+
     with open('tagged_votes.csv', 'w') as csvfile:
-        csvwriter = csv.writer(csvfile, 
+        csvwriter = csv.writer(csvfile,
                                delimiter=',',
-                               quotechar='|', 
+                               quotechar='|',
                                quoting=csv.QUOTE_MINIMAL)
-        votes = Vote.objects.all() 
+        votes = Vote.objects.all()
         for vote in votes:
             if vote.tags.all():
                 print vote.session.name, vote.motion.text, vote.tags.all().values_list("name", flat=True)
-                csvwriter.writerow([unicode(vote.session.name), unicode(vote.motion.text), unicode(";".join(vote.tags.all().values_list("name", flat=True)))])
+                csvwriter.writerow([unicode(vote.session.name),
+                                    unicode(vote.motion.text),
+                                    unicode(";".join(vote.tags.all().values_list("name", flat=True)))])
     return 1
 
 
 def exportResultOfVotes():
+    """Exports results of votes."""
+
     with open('result_of_votes.csv', 'w') as csvfile:
-        csvwriter = csv.writer(csvfile, 
+        csvwriter = csv.writer(csvfile,
                                delimiter=',',
-                               quotechar='|', 
+                               quotechar='|',
                                quoting=csv.QUOTE_MINIMAL)
         votes = Motion.objects.all()
-        count = 0 
+        count = 0
         for vote in votes:
-            csvwriter.writerow([unicode(vote.session.name), unicode(vote.text), unicode(vote.result)])
+            csvwriter.writerow([unicode(vote.session.name),
+                                unicode(vote.text),
+                                unicode(vote.result)])
             if vote.result:
                 count += 1
-        print count
     return 1
 
-def updateBallotOrg():    
+
+def updateBallotOrg():
+    """Updates all ballots."""
+
     for ballot in Ballot.objects.all():
-        members =  requests.get('https://data.parlameter.si/v1/getMembersOfPGsOnDate/'+ballot.vote.session.start_time.strftime('%d.%m.%Y')).json()
+        members = requests.get('https://data.parlameter.si/v1/getMembersOfPGsOnDate/' + ballot.vote.session.start_time.strftime('%d.%m.%Y')).json()
         for ids, mem in members.items():
             if ballot.voter.id in mem:
                 print Organization.objects.get(id=int(ids)).name
                 print ballot.id
-                ballot.voterparty=Organization.objects.get(id=int(ids))
+                ballot.voterparty = Organization.objects.get(id=int(ids))
                 ballot.save()
-                print "org: ",ids
-
+                print "org: ", ids
 
 
 def migrateVotesInMotions():
-    for vote in Motion.objects.filter(created_at__gte=datetime.now()-timedelta(minutes=60)):
+    """Migrates objects Votes to Motion."""
+
+    for vote in Motion.objects.filter(created_at__gte=datetime.now() - timedelta(minutes=60)):
         org = vote.session.organization
         session_name = vote.session.name
-        ses = Session.objects.filter(name=session_name, created_at__lte=datetime.now()-timedelta(minutes=60), organization=org)
-        #vote.session = ses[0]
-        #vote.save()
+        ses = Session.objects.filter(name=session_name,
+                                     created_at__lte=datetime.now() - timedelta(minutes=60),
+                                     organization=org)
+        vote.session = ses[0]
+        vote.save()
         print ses[0].name, ses[0].created_at, vote.created_at
 
-        
+
 def showSpeechesDuplicate():
+    """Return all deplicated speeches."""
+
     def showData(qverySet, f):
-        #if len(list(set(list(qverySet.values_list("start_time", flat=True))))) < 2:
         if len(list(set(list(qverySet.values_list("session_id", flat=True))))) > 1:
             f.write(qverySet[0].content)
             f.write(qverySet[0].speaker.name)
@@ -731,14 +598,12 @@ def showSpeechesDuplicate():
         speakers = speeches.values("speaker_id").annotate(Count('id')).order_by().filter(id__count__gt=1)
         for speaker in speakers:
             showData(speeches.filter(speaker_id=speaker["speaker_id"]), f)
-            """sessions = speeches.filter(speaker_id=speaker["speaker_id"]).values("session_id").annotate(Count('id')).order_by().filter(id__count__gt=1)
-        for session in sessions:
-                showData(speeches.filter(speaker_id=speaker["speaker_id"], session_id=session["session_id"]))"""
-
-    c.close()   
+    c.close()
 
 
 def updateSessionInReviewStatus(filename):
+    """Updates in review status of sessions."""
+
     with open(filename, 'rb') as csvfile:
         spamreader = csv.reader(csvfile, delimiter=',', quotechar='"')
         for row in spamreader:
@@ -751,7 +616,6 @@ def updateSessionInReviewStatus(filename):
                 if id_session:
                     session = Session.objects.filter(id=id_session)
                     if session.count() == 1:
-                        #Do update
                         print "updejtam", session[0].name, "ivan"
                         session[0].in_review = True
                         session[0].save()
@@ -759,10 +623,9 @@ def updateSessionInReviewStatus(filename):
                         print "Neki ni ql s sejo count je : ", session.count()
 
 
-"""
-determineSession get session of DZ (redna seja) on given date
-"""
 def determineSession(date_):
+    """Returns session of DZ (redna seja) on given date."""
+
     fdate = datetime.strptime(date_, '%d.%m.%Y')
     toDate = fdate + timedelta(hours=23, minutes=59)
     session = Session.objects.filter(start_time__gte=fdate,
@@ -776,10 +639,9 @@ def determineSession(date_):
         return None
 
 
-"""
-determinePerson get person
-"""
 def determinePerson(full_name):
+    """Checks if the person is in the attribute name_parser."""
+
     person = Person.objects.filter(name_parser__icontains=full_name)
     if person:
         return person[0]
@@ -788,6 +650,8 @@ def determinePerson(full_name):
 
 
 def getIdSafe(obj):
+    """Returns ID of object if exists."""
+
     if obj:
         return obj.id
     else:
@@ -795,6 +659,10 @@ def getIdSafe(obj):
 
 
 def replace_all(text, dic):
+    """Replace all words in text attribute
+       with the words in dic attribute.
+    """
+
     for i, j in dic.iteritems():
         pattern = re.compile(i, re.IGNORECASE)
         text = pattern.sub(j, text)
