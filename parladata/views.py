@@ -702,8 +702,7 @@ def getAllBallots(requests, date_=None):
 
 def getAllPeople(requests):
     """Returns all people."""
-    parliamentary_group = Organization.objects.filter(Q(classification=PS) |
-                                                      Q(classification=NP))
+    parliamentary_group = Organization.objects.filter(classification__in=PS_NP)
     data = []
     pg = ''
     person = Person.objects.all()
