@@ -925,6 +925,8 @@ def getMembersOfPGsRanges(request, date_=None):
     """Returns all memberships(start date, end date and members
        in this dates) of all PGs from start of mandate to end date
        which is an argument of method.
+
+    Vrne seznam unikatnih zasedb DZ.
     """
 
     if date_:
@@ -934,7 +936,13 @@ def getMembersOfPGsRanges(request, date_=None):
     tempDate = settings.MANDATE_START_TIME.date()
     parliamentary_group = Organization.objects.filter(classification__in=PS_NP)
     members = Membership.objects.filter(organization__in=parliamentary_group)
-    out = {(tempDate + timedelta(days=days)): {grup: [] for grup in parliamentary_group.values_list("id", flat=True)} for days in range((fdate - tempDate).days + 1)}
+
+    pgs_ids = parliamentary_group.values_list("id", flat=True)
+    out = {(tempDate + timedelta(days=days)): {grup: []
+                                               for grup
+                                               in pgs_ids}
+           for days in range((fdate - tempDate).days + 1)}
+
     for member in members:
         if not member.start_time and not member.end_time:
             start_time = tempDate
@@ -952,7 +960,8 @@ def getMembersOfPGsRanges(request, date_=None):
             else:
                 end_time = fdate
         for days in range((end_time - start_time).days + 1):
-            out[(start_time + timedelta(days=days))][member.organization.id].append(member.person.id)
+            day = out[(start_time + timedelta(days=days))]
+            day[member.organization.id].append(member.person.id)
 
     keys = out.keys()
     keys.sort()
@@ -963,8 +972,9 @@ def getMembersOfPGsRanges(request, date_=None):
         if out[key] == outList[-1]["members"]:
             outList[-1]["end_date"] = key.strftime(settings.API_DATE_FORMAT)
         else:
-            outList.append({"start_date": key.strftime(settings.API_DATE_FORMAT),
-                            "end_date": key.strftime(settings.API_DATE_FORMAT),
+            the_data = key.strftime(settings.API_DATE_FORMAT)
+            outList.append({"start_date": the_data,
+                            "end_date": the_data,
                             "members": out[key]})
 
     return JsonResponse(outList, safe=False)
@@ -1021,13 +1031,20 @@ def getMembersOfOrgsRanges(request, org_id, date_=None):
 
 
 def getMembersOfPGRanges(request, org_id, date_=None):
+    """
+    Vrne seznam objektov, ki predstavljajo unikatno zasedbo v
+    poslanski skupini.
+    """
     if date_:
         fdate = datetime.strptime(date_, settings.API_DATE_FORMAT).date()
     else:
         fdate = datetime.now().date()
-    tempDate=settings.MANDATE_START_TIME.date()
+    tempDate = settings.MANDATE_START_TIME.date()
     members = Membership.objects.filter(organization__id=org_id)
-    out = {(tempDate+timedelta(days=days)): {int(org_id): []} for days in range((fdate-tempDate).days+1)}
+    out = {(tempDate+timedelta(days=days)): {int(org_id): []}
+           for days
+           in range((fdate-tempDate).days+1)}
+
     for member in members:
         if not member.start_time and not member.end_time:
             start_time = tempDate
@@ -1045,20 +1062,22 @@ def getMembersOfPGRanges(request, org_id, date_=None):
             else:
                 end_time = fdate
         for days in range((end_time-start_time).days + 1):
-            out[(start_time+timedelta(days=days))][member.organization.id].append(member.person.id)
+            day = out[(start_time+timedelta(days=days))]
+            day[member.organization.id].append(member.person.id)
 
     keys = out.keys()
     keys.sort()
-    outList = [{"start_date":keys[0].strftime(settings.API_DATE_FORMAT),
+    outList = [{"start_date": keys[0].strftime(settings.API_DATE_FORMAT),
                 "end_date":keys[0].strftime(settings.API_DATE_FORMAT),
                 "members":out[keys[0]][int(org_id)]}]
     for key in keys:
-        if out[key][int(org_id)]==outList[-1]["members"]:
-            outList[-1]["end_date"]=key.strftime(settings.API_DATE_FORMAT)
+        if out[key][int(org_id)] == outList[-1]["members"]:
+            outList[-1]["end_date"] = key.strftime(settings.API_DATE_FORMAT)
         else:
-            outList.append({"start_date":key.strftime(settings.API_DATE_FORMAT),
-                            "end_date":key.strftime(settings.API_DATE_FORMAT),
-                            "members":out[key][int(org_id)]})
+            the_date = key.strftime(settings.API_DATE_FORMAT)
+            outList.append({"start_date": the_date,
+                            "end_date": the_date,
+                            "members": out[key][int(org_id)]})
 
     return JsonResponse(outList, safe=False)
 
@@ -1155,22 +1174,45 @@ def getOrganizatonByClassification(request):
 
 
 def getOrganizationRolesAndMembers(request, org_id, date_=None):
+    """
+    Returns all roles of Organization. This doesn't work with PGs.
+    """
     if date_:
         fdate = datetime.strptime(date_, settings.API_DATE_FORMAT).date()
     else:
-        fdate=datetime.now().today()
+        fdate = datetime.now().today()
     org = Organization.objects.filter(id=org_id)
     out = {}
-    trans_map = {"debug": "debug","predsednik": "president", "predsednica": "president", smart_str("član"): "members", smart_str("namestnica člana"): "viceMember", smart_str("namestnik člana"): "viceMember", smart_str("članica"): "members", "podpredsednica": "vice_president", "podpredsednik": "vice_president"}
+    trans_map = {"debug": "debug",
+                 "predsednik": "president",
+                 "predsednica": "president",
+                 smart_str("član"): "members",
+                 smart_str("namestnica člana"): "viceMember",
+                 smart_str("namestnik člana"): "viceMember",
+                 smart_str("članica"): "members",
+                 "podpredsednica": "vice_president",
+                 "podpredsednik": "vice_president"}
     if org:
-        out = {"debug": [],"members":[], "president":[], "vice_president":[], "viceMember":[]}
-        out["name"]=org[0].name
-        memberships = Membership.objects.filter(Q(start_time__lte=fdate)|Q(start_time=None), Q(end_time__gte=fdate)|Q(end_time=None), organization_id=org_id)
-        #out = {trans_map[mem_type.encode("utf-8")]: [] for mem_type in set(list(memberships.values_list("role", flat=True)))}
+        out = {"debug": [],
+               "members": [],
+               "president": [],
+               "vice_president": [],
+               "viceMember": []}
+        out["name"] = org[0].name
+        memberships = Membership.objects.filter(Q(start_time__lte=fdate) |
+                                                Q(start_time=None),
+                                                Q(end_time__gte=fdate) |
+                                                Q(end_time=None),
+                                                organization_id=org_id)
+
         for member in memberships:
-            post = member.memberships.filter(Q(start_time__lte=fdate)|Q(start_time=None), Q(end_time__gte=fdate)|Q(end_time=None))
+            post = member.memberships.filter(Q(start_time__lte=fdate) |
+                                             Q(start_time=None),
+                                             Q(end_time__gte=fdate) |
+                                             Q(end_time=None))
             if post:
-                out[trans_map[smart_str(post[0].role)]].append(member.person.id)
+                role = out[trans_map[smart_str(post[0].role)]]
+                role.append(member.person.id)
             else:
                 out[trans_map[smart_str("debug")]].append(member.person.id)
         out["members"] += out["debug"]
@@ -1311,10 +1353,18 @@ def getPGsSpeechesIDs(request, org_id, date_=None):
 
 
 def getMembersWithFuction(request):
+    """
+    Returns ids of all members with function in DZ.
+    (president and vice president)
+    """
     fdate = datetime.today()
     data = []
-    dz = Organization.objects.filter(id=95)
-    members = Membership.objects.filter(Q(start_time__lte=fdate)|Q(start_time=None), Q(end_time__gte=fdate)|Q(end_time=None), organization__in=dz)
+    dz = Organization.objects.filter(id=DZ_ID)
+    members = Membership.objects.filter(Q(start_time__lte=fdate) |
+                                        Q(start_time=None),
+                                        Q(end_time__gte=fdate) |
+                                        Q(end_time=None),
+                                        organization__in=dz)
     for member in members:
         for post in member.memberships.all():
             if post.role in ["predsednik", "podpredsednik"]:
@@ -1324,7 +1374,9 @@ def getMembersWithFuction(request):
 
 
 def getDocumentOfMotion(request, motion_id):
-    """Returns all documents of specific motion/vote."""
+    """
+    Returns all documents of specific motion/vote
+    """
 
     if Link.objects.filter(motion=motion_id):
         link = str(Link.objects.filter(motion=motion_id)[0]).split('/')
@@ -1335,6 +1387,9 @@ def getDocumentOfMotion(request, motion_id):
 
 
 def getAllQuestions(request, date_=None):
+    """
+    Returns array of all questions. Objects have only link with note Besedilo.
+    """
     if date_:
         fdate = datetime.strptime(date_, settings.API_DATE_FORMAT).date()
     else:
@@ -1448,6 +1503,11 @@ def addQuestion(request):
 
 
 def getAllChangesAfter(request, datetime_):
+    """
+    This is an api endpoint function that uses for fast update of parlalize.
+    Returns all session, person, speeches, ballots and questions updated
+    after {datetime_}
+    """
     time_of = datetime.strptime(datetime_,
                                 settings.API_DATE_FORMAT + "_%H:%M")
 
