@@ -257,13 +257,13 @@ def getSessions(request, date_=None):
     sessions = Session.objects.filter(start_time__lte=fdate).order_by('-start_time')
 
     for i in sessions:
+        organizations = i.organizations.all().values_list('id', flat=True)
         data.append({'mandate': i.mandate,
                      'name': i.name,
                      'gov_id': i.gov_id,
                      'start_time': i.start_time,
                      'end_time': i.end_time,
-                     'organization': i.organization.name,
-                     'organization_id': i.organization.id,
+                     'organizations_id': map(str, organizations),
                      'classification': i.classification,
                      'id': i.id,
                      'is_in_review': i.in_review,
@@ -289,8 +289,6 @@ def getSessionsOfOrg(request, org_id, date_=None):
                      'gov_id': i.gov_id,
                      'start_time': i.start_time,
                      'end_time': i.end_time,
-                     'organization': i.organization.name,
-                     'organization_id': i.organization.id,
                      'classification': i.classification,
                      'id': i.id
                      }
@@ -1612,13 +1610,13 @@ def getAllChangesAfter(request, datetime_):
     data['sessions'] = []
     sessions = Session.objects.filter(updated_at__gte=time_of)
     for i in sessions.order_by('-start_time'):
+        organizations = i.organizations.all().values_list("id", flat=True)
         data["sessions"].append({'mandate': i.mandate,
                                  'name': i.name,
                                  'gov_id': i.gov_id,
                                  'start_time': i.start_time,
                                  'end_time': i.end_time,
-                                 'organization': i.organization.name,
-                                 'organization_id': i.organization.id,
+                                 'organizations_id': map(str, organizations),
                                  'classification': i.classification,
                                  'id': i.id,
                                  'is_in_review': i.in_review})
