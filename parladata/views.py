@@ -764,7 +764,7 @@ def motionOfSession(request, id_se):
             data = [{'id': mot.motion.id,
                      'vote_id': mot.id,
                      'text': mot.motion.text,
-                     'result': mot.result,
+                     'result': mot.motion.result,
                      'tags': map(smart_str, mot.tags.names())} for mot in motion]
         else:
             data = []
