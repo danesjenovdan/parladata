@@ -667,3 +667,9 @@ def replace_all(text, dic):
         pattern = re.compile(i, re.IGNORECASE)
         text = pattern.sub(j, text)
     return text
+
+
+def jointSessionDataFix():
+    ss = Session.objects.all()
+    for s in ss:
+        s.organizations.add(s.organization)
