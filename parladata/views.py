@@ -759,13 +759,16 @@ def motionOfSession(request, id_se):
     for i in allIDs:
         tab.append(i['id'])
     if int(id_se) in tab:
-        motion = Vote.objects.filter(motion__session__id=id_se)
-        if motion:
-            data = [{'id': mot.motion.id,
-                     'vote_id': mot.id,
-                     'text': mot.motion.text,
-                     'result': mot.motion.result,
-                     'tags': map(smart_str, mot.tags.names())} for mot in motion]
+        votes = Vote.objects.filter(session__id=id_se)
+        if votes:
+            for vote in votes:
+                motion = vote.motion
+                data.append({'id': motion.id,
+                             'vote_id': vote.id,
+                             'text': motion.text,
+                             'result': motion.result,
+                             'tags': map(smart_str, vote.tags.names()),
+                             'doc_url': vote.document_url})
         else:
             data = []
         return JsonResponse(data, safe=False)
