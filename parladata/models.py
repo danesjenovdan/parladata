@@ -862,6 +862,9 @@ class tmp_votelinks(Timestampable, models.Model):
                                    blank=True,
                                    null=True)
 
+    def __str__(self):
+        return self.session_id
+
 
 @python_2_unicode_compatible
 class session_deleted(Timestampable, models.Model):
@@ -891,6 +894,9 @@ class session_deleted(Timestampable, models.Model):
 
     in_review = models.BooleanField(default=False,
                                     help_text='Is session in review?')
+
+    def __str__(self):
+        return self.name
 
 
 @receiver(pre_save, sender=Organization)
