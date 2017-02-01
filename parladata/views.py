@@ -753,6 +753,7 @@ def motionOfSession(request, id_se):
 
     data = {}
     tab = []
+    data = []
     allIDs = Session.objects.values('id')
     for i in allIDs:
         tab.append(i['id'])
@@ -801,16 +802,17 @@ def getVotesOfMotion(request, motion_id):
     """Returns all ballots of specific motion."""
 
     data = []
-    for bal in Ballot.objects.filter(vote__id=str(motion_id)):
-        mem = Membership.objects.get(Q(end_time__gte=bal.vote.start_time) |
+    vote = Vote.objects.get(id=motion_id)
+    motion = vote.motion
+    for bal in Ballot.objects.filter(vote=vote):
+        mem = Membership.objects.get(Q(end_time__gte=vote.start_time) |
                                      Q(end_time=None),
-                                     Q(start_time__lte=bal.vote.start_time) |
+                                     Q(start_time__lte=vote.start_time) |
                                      Q(start_time=None),
-                                     person__id=bal.voter.id,
+                                     person__id=bal.voter_id,
                                      organization__classification__in=PS_NP)
-
-        data.append({'mo_id': bal.vote.motion.id,
-                     "mp_id": bal.voter.id,
+        data.append({'mo_id': motion.id,
+                     "mp_id": bal.voter_id,
                      "Acronym": mem.organization.acronym,
                      "option": bal.option,
                      "pg_id": mem.organization.id})
