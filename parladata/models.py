@@ -841,7 +841,7 @@ class Question(Timestampable, models.Model):
                                  help_text=_('Debug data'))
 
     def __str__(self):
-        return self.author.nameauthor
+        return self.author.name
 
 @receiver(pre_save, sender=Organization)
 def copy_date_fields(sender, **kwargs):
