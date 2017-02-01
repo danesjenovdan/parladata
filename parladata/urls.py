@@ -112,6 +112,12 @@ urlpatterns = patterns('',
     # Ballots URLs
     url(r'^getAllBallots/(?P<date_>[\w].+)', getAllBallots),
     url(r'^getAllBallots/', getAllBallots),
+    
+    url(r'^getBallotsCounterOfPerson/(?P<person_id>\d+)/(?P<date_>[\w].+|)', getBallotsCounterOfPerson),
+    url(r'^getBallotsCounterOfPerson/(?P<person_id>\d+)', getBallotsCounterOfPerson),
+
+    url(r'^getBallotsCounterOfParty/(?P<party_id>\d+)/(?P<date_>[\w].+|)', getBallotsCounterOfParty),
+    url(r'^getBallotsCounterOfParty/(?P<party_id>\d+)', getBallotsCounterOfParty),
 
     # Sessions URLs
     url(r'^getSessions/(?P<date_>[\w].+)', getSessions),
@@ -131,7 +137,6 @@ urlpatterns = patterns('',
 
     # debug helpers
     url(r'^getMembershipDuplications', getMembershipDuplications),
-    # url(r'^parserChecker', parserChecker),
     url(r'^postMembersFixer', postMembersFixer),
     url(r'^membersFlowInOrg', membersFlowInOrg),
     url(r'^membersFlowInPGs', membersFlowInPGs),
