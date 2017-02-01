@@ -25,7 +25,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = 'exkqi8xb2vnn4a*fyh@1y)z7*amz0!9p15ce9acqotf@y*wjn&'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
@@ -115,8 +115,10 @@ USE_TZ = False
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.8/howto/static-files/
 
-STATIC_URL = '/static/'
-STATIC_ROOT = '/home/parladaddy/parladata/static/'
+# STATIC_URL = '/static/'
+# STATIC_ROOT = '/home/parladaddy/parladata/static/'
+STATIC_ROOT = '/home/djnd/webapps/djstatic/parladata/'
+STATIC_URL = 'https://parladata.muzikasuper.si/djstatic/parladata/'
 
 RAVEN_CONFIG = {
     'dsn': 'http://338491150ce2417fb770eb4afa77102f:b9b2bf8011b14643b4bd8eabd3e367f4@sentry.ilol.si/40',
