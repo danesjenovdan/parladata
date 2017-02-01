@@ -90,7 +90,7 @@ WSGI_APPLICATION = 'parladata_project.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'HOST': '192.168.110.31',
+        'HOST': 'localhost',
         'NAME': 'parladata',
         'USER': 'parladaddy',
         'PASSWORD': 'razvrat',
