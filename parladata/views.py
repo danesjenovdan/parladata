@@ -1106,15 +1106,28 @@ def getMembershipsOfMember(request, person_id, date=None):
                                             Q(start_time=None),
                                             Q(end_time__gte=fdate) |
                                             Q(end_time=None),
-                                              person__id=person_id)
+                                            person__id=person_id)
 
-    out_init_dict = {org_type: [] for org_type in set([member.organization.classification for member in memberships])}
+    out_init_dict = {org_type: []
+                     for org_type
+                     in set([member.organization.classification
+                            for member
+                            in memberships]
+                            )
+                     }
 
     for mem in memberships:
-        out_init_dict[mem.organization.classification].append({"org_type": mem.organization.classification,
-                                                               "org_id": mem.organization.id,
-                                                               "name": mem.organization.name})
-
+        links = mem.organization.links.filter(note__in=['spletno mesto DZ',
+                                                        'DZ page url'])
+        if links:
+            url = links.first().url
+        else:
+            url = None
+        classification = out_init_dict[mem.organization.classification]
+        classification.append({'org_type': mem.organization.classification,
+                               'org_id': mem.organization.id,
+                               'name': mem.organization.name,
+                               'url': url})
     return JsonResponse(out_init_dict)
 
 
