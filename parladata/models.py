@@ -445,8 +445,10 @@ class Link(Timestampable, Taggable, models.Model):
     session = models.ForeignKey('Session', blank=True, null=True)
 
     organization = models.ForeignKey('Organization',
-                                     blank=True, null=True,
-                                     help_text='The organization of this link.')
+                                     blank=True,
+                                     null=True,
+                                     help_text='The organization of this link.',
+                                     related_name='links')
 
     person = models.ForeignKey('Person',
                                blank=True, null=True,
