@@ -846,6 +846,53 @@ class Question(Timestampable, models.Model):
     def __str__(self):
         return self.author.name
 
+
+# Parser "buffer" storage models
+@python_2_unicode_compatible
+class tmp_votelinks(Timestampable, models.Model):
+    session_id = models.CharField(max_length=255,
+                                  blank=True,
+                                  null=True)
+
+    gov_id = models.CharField(max_length=255,
+                              blank=True,
+                              null=True)
+
+    votedoc_url = models.CharField(max_length=255,
+                                   blank=True,
+                                   null=True)
+
+
+@python_2_unicode_compatible
+class session_deleted(Timestampable, models.Model):
+    mandate_id = models.IntegerField(blank=True,
+                                     null=True)
+
+    name = models.CharField(max_length=255,
+                            blank=True, null=True,
+                            help_text='Session name')
+
+    gov_id = models.CharField(max_length=255,
+                              blank=True, null=True,
+                              help_text='Gov website ID.')
+
+    start_time = PopoloDateTimeField(blank=True, null=True,
+                                     help_text='Start time')
+
+    end_time = PopoloDateTimeField(blank=True, null=True,
+                                   help_text='End time')
+
+    organization_id = models.IntegerField(blank=True,
+                                          null=True)
+
+    classification = models.CharField(max_length=128,
+                                      blank=True, null=True,
+                                      help_text='Session classification')
+
+    in_review = models.BooleanField(default=False,
+                                    help_text='Is session in review?')
+
+
 @receiver(pre_save, sender=Organization)
 def copy_date_fields(sender, **kwargs):
     obj = kwargs['instance']
