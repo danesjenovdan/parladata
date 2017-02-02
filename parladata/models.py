@@ -459,8 +459,10 @@ class Link(Timestampable, Taggable, models.Model):
                                    help_text='The membership of this link.')
 
     motion = models.ForeignKey('Motion',
-                               blank=True, null=True,
-                               help_text='The motion of this link.')
+                               blank=True,
+                               null=True,
+                               help_text='The motion of this link.',
+                               related_name='links')
 
     question = models.ForeignKey('Question',
                                  blank=True,

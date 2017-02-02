@@ -761,12 +761,17 @@ def motionOfSession(request, id_se):
         if votes:
             for vote in votes:
                 motion = vote.motion
+                links = motion.links.all()
+                if links:
+                    links_str = str(links.values_list('url', flat=True))
+                else:
+                    links_str = None
                 data.append({'id': motion.id,
                              'vote_id': vote.id,
                              'text': motion.text,
                              'result': motion.result,
                              'tags': map(smart_str, vote.tags.names()),
-                             'doc_url': vote.document_url})
+                             'doc_url': links_str})
         else:
             data = []
         return JsonResponse(data, safe=False)
