@@ -763,7 +763,7 @@ def motionOfSession(request, id_se):
                 motion = vote.motion
                 links = motion.links.all()
                 if links:
-                    links_str = str(links.values_list('url', flat=True))
+                    links_str = list(links.values_list('url', flat=True))
                 else:
                     links_str = None
                 data.append({'id': motion.id,
