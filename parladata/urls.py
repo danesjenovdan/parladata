@@ -87,9 +87,6 @@ urlpatterns = patterns('',
     url(r'^getMembersOfPGRanges/(?P<org_id>\d+)/(?P<date_>[\w].+)', getMembersOfPGRanges),
     url(r'^getMembersOfPGRanges/(?P<org_id>\d+)', getMembersOfPGRanges),
 
-    url(r'^getMembersOfOrgsRanges/(?P<org_id>\d+)/(?P<date_>[\w].+)', getMembersOfOrgsRanges),
-    url(r'^getMembersOfOrgsRanges/(?P<org_id>\d+)', getMembersOfOrgsRanges),
-
     url(r'^getOrganizatonByClassification', getOrganizatonByClassification),
     url(r'^getOrganizationRolesAndMembers/(?P<org_id>\d+)/(?P<date_>[\w].+)', getOrganizationRolesAndMembers),
     url(r'^getOrganizationRolesAndMembers/(?P<org_id>\d+)', getOrganizationRolesAndMembers),
