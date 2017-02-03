@@ -762,7 +762,8 @@ def motionOfSession(request, id_se):
             for vote in votes:
                 motion = vote.motion
                 links = motion.links.all()
-                links_list = list(links.values_list('url', flat=True))
+                links_list = [{'name': link.name, 'url': link.url}
+                              for link in links]
                 data.append({'id': motion.id,
                              'vote_id': vote.id,
                              'text': motion.text,
