@@ -12,6 +12,10 @@ from django.utils.encoding import smart_str
 from django.db.models import Count
 import re
 
+DZ_ID = 95
+PS_NP = ['poslanska skupina', 'nepovezani poslanec']
+PS = 'poslanska skupina'
+
 
 def AverageList(list):
     """Returns average from list of integers."""
@@ -123,16 +127,23 @@ def getFails():
 
 
 def getMembershipDuplications(request):
-    """Returns duplicate memberships."""
+    """
+    Debug method:
+        - check if person has membership in more than one party at time
+        - check if person has more than one membership per organization
+        - organization role chacher
+        - chack members in DZ
+        - members without votres
+        - check if person has more than one post per organization
+    """
 
     context = {}
     start_time = datetime(day=1, month=8, year=2014)
     end_time = datetime.now()
-    parliamentary_groups = Organization.objects.filter(Q(classification="poslanska skupina") | Q(classification="nepovezani poslanec"))
+    parliamentary_groups = Organization.objects.filter(classification__in=PS_NP)
 
     members = Membership.objects.filter(organization__in=parliamentary_groups)
 
-    #members = members.filter(Q(start_time__lte=date_)|Q(start_time=None), Q(end_time__gte=date_)|Q(end_time=None))
     out = []
     checked = []
     for membership in members:
@@ -147,35 +158,41 @@ def getMembershipDuplications(request):
             chk_end = chk_mem.end_time if chk_mem.end_time else end_time
 
             if chk_start <= mem_start:
-                #preverji da je chk_mem pred membershipom
+                # preverji da je chk_mem pred membershipom
                 if chk_end >= mem_start:
-                    #FAIL
-                    out.append({"member": membership.person, "mem1": membership, "mem2": chk_mem})
+                    # FAIL
+                    out.append({"member": membership.person,
+                                "mem1": membership,
+                                "mem2": chk_mem})
 
             elif chk_start >= mem_start:
-                #preverji da je chk_mem pred membershipom
+                # preverji da je chk_mem pred membershipom
                 if mem_end >= chk_start:
-                    #FAIL
-                    out.append({"member": membership.person, "mem1": membership, "mem2": chk_mem})
+                    # FAIL
+                    out.append({"member": membership.person,
+                                "mem1": membership,
+                                "mem2": chk_mem})
 
             else:
                 print "WTF enaka sta?"
 
     context["data"] = out
 
-    #check if one person have more then one membership per organization
+    # check if one person have more then one membership per organization
     members_list = list(members.values_list("person", flat=True))
-    org_per_person=[]
+    org_per_person = []
     added_mems = []
     for member in members_list:
         temp = dict(Counter(list(members.filter(person__id=member).values_list("organization", flat=True))))
         print temp
         for key, val in temp.items():
-            if val>1 and not Membership.objects.filter(person__id=member, organization__id=key)[0].id in added_mems:
+            if val > 1 and not Membership.objects.filter(person__id=member,
+                                                         organization__id=key)[0].id in added_mems:
                 print val
-                added_mems.append(Membership.objects.filter(person__id=member, organization__id=key)[0].id)
-                org_per_person.append({"member": Person.objects.get(id=member), 
-                                       "organization": Organization.objects.get(id=key), 
+                added_mems.append(Membership.objects.filter(person__id=member,
+                                                            organization__id=key)[0].id)
+                org_per_person.append({"member": Person.objects.get(id=member),
+                                       "organization": Organization.objects.get(id=key),
                                        "mem1": list(Membership.objects.filter(person__id=member, organization__id=key))[0],
                                        "mem2": list(Membership.objects.filter(person__id=member, organization__id=key))[1]})
 
@@ -368,6 +385,9 @@ def checkSessions(request, date_=None):
 
 
 def membersFlowInOrg(request):
+    """
+    Debug method which shows when members joins and leave oragnizations.
+    """
     context = {}
     context["orgs"]=[]
     orgs_all = requests.get("https://data.parlameter.si/v1/getOrganizatonByClassification").json()
@@ -395,6 +415,9 @@ def membersFlowInOrg(request):
 
 
 def membersFlowInPGs(request):
+    """
+    Debug method which shows when members joins and leave partys.
+    """
     context = {}
     context["orgs"]=[]
     orgs_all = requests.get("https://data.parlameter.si/v1/getOrganizatonByClassification").json()
@@ -421,6 +444,9 @@ def membersFlowInPGs(request):
     return render(request, "org_memberships.html", context)
 
 def membersFlowInDZ(request):
+    """
+    Debug method which shows when members joins and leave DZ.
+    """
     parliamentary_groups = Organization.objects.filter(Q(classification="poslanska skupina") | Q(classification="nepovezani poslanec"))
 
     context = {}
@@ -440,20 +466,44 @@ def membersFlowInDZ(request):
     context["orgs"].append({"name": "DZ:", "flow":context["count_of_persons"],  "allMps": context["allMps"]})
     return render(request, "org_memberships.html", context)
 
+
 def getMPsOrganizationsByClassification():
-    classes = ["skupina prijateljstva", "delegacija", "komisija", "poslanska skupina", "odbor", "kolegij", "preiskovalna komisija", "", "nepovezani poslanec"]
+    """
+    CSV export memberships of all DZ members grouped by classification
+    """
+    classes = ["skupina prijateljstva",
+               "delegacija",
+               "komisija",
+               "poslanska skupina",
+               "odbor", "kolegij",
+               "preiskovalna komisija",
+               "",
+               "nepovezani poslanec"]
     with open('members_orgs.csv', 'w') as csvfile:
-        csvwriter = csv.writer(csvfile, delimiter=';',
-                                quotechar='|', quoting=csv.QUOTE_MINIMAL)
+        csvwriter = csv.writer(csvfile,
+                               delimiter=';',
+                               quotechar='|',
+                               quoting=csv.QUOTE_MINIMAL)
         csvwriter.writerow(["Person"]+[clas for clas in classes])
-        parliamentary_group = Organization.objects.filter(Q(classification="poslanska skupina") | Q(classification="nepovezani poslanec"))
+        parliamentary_group = Organization.objects.filter(classification__in=PS_NP)
         pgs = Membership.objects.filter(organization__in=parliamentary_group)
         for person_mps in pgs:
             memberships = person_mps.person.memberships.all()
-            counter = {"skupina prijateljstva":[], "delegacija": [], "komisija" : [], "poslanska skupina": [], "odbor": [], "kolegij": [], "preiskovalna komisija": [], "": [], "nepovezani poslanec":[]}
+            counter = {"skupina prijateljstva": [],
+                       "delegacija": [],
+                       "komisija": [],
+                       "poslanska skupina": [],
+                       "odbor": [],
+                       "kolegij": [],
+                       "preiskovalna komisija": [],
+                       "": [],
+                       "nepovezani poslanec": []}
             for mem in memberships:
-                counter[mem.organization.classification].append(smart_str(mem.organization.name))
-            csvwriter.writerow([smart_str(person_mps.person.name)]+[",".join(counter[clas]) for clas in classes])
+                c_obj = counter[mem.organization.classification]
+                c_obj.append(smart_str(mem.organization.name))
+            data = [smart_str(person_mps.person.name)]
+            data = data + [",".join(counter[clas]) for clas in classes]
+            csvwriter.writerow(data)
 
 def updateSpeechOrg():
     """Updates all speeches."""
