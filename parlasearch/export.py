@@ -13,7 +13,7 @@ def exportSpeeches():
     speeches = Speech.getValidSpeeches(datetime.now())
 
     # get all ids from solr
-    a = requests.get(SORL_URL + "/select?wt=json&q=id:*&fl=id&rows=100000000")
+    a = requests.get(SOLR_URL + "/select?wt=json&q=id:*&fl=id&rows=100000000")
     indexes = a.json()["response"]["docs"]
 
     # find ids of speeches and remove g from begining of id string
@@ -243,7 +243,7 @@ def exportAll():
 
 def deleteNonValidSpeeches():
     # get all ids from solr
-    a = requests.get(SORL_URL + "/select?wt=json&q=id:*&fl=id&rows=100000000")
+    a = requests.get(SOLR_URL + "/select?wt=json&q=id:*&fl=id&rows=100000000")
     indexes = a.json()["response"]["docs"]
 
     # find ids of speeches and remove g from begining of id string
