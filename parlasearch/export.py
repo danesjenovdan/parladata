@@ -3,7 +3,7 @@ import json
 from parladata.models import Person, Speech, Session, Organization, Vote
 from datetime import datetime
 
-SORL_URL = 'http://127.0.0.1:8983/solr/knedl'
+SOLR_URL = 'http://127.0.0.1:8983/solr/knedl'
 PS = 'poslanska skupina'
 
 
