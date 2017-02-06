@@ -3,14 +3,27 @@ import json
 from parladata.models import Person, Speech, Session, Organization, Vote
 from datetime import datetime
 
+SORL_URL = 'http://127.0.0.1:8983/solr/knedl'
+PS = 'poslanska skupina'
+
 
 def exportSpeeches():
 
+    # get all valid speeches
     speeches = Speech.getValidSpeeches(datetime.now())
+
+    # get all ids from solr
+    a = requests.get(SORL_URL + "/select?wt=json&q=id:*&fl=id&rows=100000000")
+    indexes = a.json()["response"]["docs"]
+
+    # find ids of speeches and remove g from begining of id string
+    idsInSolr = [int(line["id"].replace('g', ''))
+                 for line
+                 in indexes if "g" in line["id"]]
 
     i = 0
 
-    for speech in speeches:
+    for speech in speeches.exclude(id__in=idsInSolr):
         output = [{
             'id': 'g' + str(speech.id),
             'speaker_i': speech.speaker.id,
@@ -27,7 +40,7 @@ def exportSpeeches():
         output = json.dumps(output)
 
         if i % 100 == 0:
-            url = 'http://127.0.0.1:8983/solr/knedl/update?commit=true'
+            url = SOLR_URL + '/update?commit=true'
             r = requests.post(url,
                               data=output,
                               headers={'Content-Type': 'application/json'})
@@ -35,7 +48,7 @@ def exportSpeeches():
             print r.text
 
         else:
-            r = requests.post('http://127.0.0.1:8983/solr/knedl/update',
+            r = requests.post(SOLR_URL + '/update',
                               data=output,
                               headers={'Content-Type': 'application/json'})
 
@@ -73,7 +86,7 @@ def exportSessions():
         output = json.dumps(output)
 
         if i % 100 == 0:
-            url = 'http://127.0.0.1:8983/solr/knedl/update?commit=true'
+            url = SOLR_URL + '/update?commit=true'
             r = requests.post(url,
                               data=output,
                               headers={'Content-Type': 'application/json'})
@@ -81,7 +94,7 @@ def exportSessions():
             print r.text
 
         else:
-            r = requests.post('http://127.0.0.1:8983/solr/knedl/update',
+            r = requests.post(SOLR_URL + '/update',
                               data=output,
                               headers={'Content-Type': 'application/json'})
 
@@ -117,14 +130,14 @@ def exportPeopleSpeeches():
         output = json.dumps(output)
 
         if i % 100 == 0:
-            r = requests.post('http://127.0.0.1:8983/solr/knedl/update?commit=true',
+            r = requests.post(SOLR_URL + '/update?commit=true',
                               data=output,
                               headers={'Content-Type': 'application/json'})
 
             print r.text
 
         else:
-            r = requests.post('http://127.0.0.1:8983/solr/knedl/update',
+            r = requests.post(SOLR_URL + '/update',
                               data=output,
                               headers={'Content-Type': 'application/json'})
 
@@ -145,7 +158,7 @@ def getOrganizationContent(organization):
 
 def exportPartySpeeches():
 
-    organizations = Organization.objects.filter(classification='poslanska skupina')
+    organizations = Organization.objects.filter(classification=PS)
 
     i = 0
 
@@ -160,14 +173,14 @@ def exportPartySpeeches():
         output = json.dumps(output)
 
         if i % 100 == 0:
-            r = requests.post('http://127.0.0.1:8983/solr/knedl/update?commit=true',
+            r = requests.post(SOLR_URL + '/update?commit=true',
                               data=output,
                               headers={'Content-Type': 'application/json'})
 
             print r.text
 
         else:
-            r = requests.post('http://127.0.0.1:8983/solr/knedl/update',
+            r = requests.post(SOLR_URL + '/update',
                               data=output,
                               headers={'Content-Type': 'application/json'})
 
@@ -195,12 +208,14 @@ def exportVotes():
         output = json.dumps(output)
 
         if i % 100 == 0:
-            r = requests.post('http://127.0.0.1:8983/solr/knedl/update?commit=true', data=output, headers={'Content-Type': 'application/json'})
+            r = requests.post(SOLR_URL + '/update?commit=true',
+                              data=output,
+                              headers={'Content-Type': 'application/json'})
 
             print r.text
 
         else:
-            r = requests.post('http://127.0.0.1:8983/solr/knedl/update',
+            r = requests.post(SOLR_URL + '/update',
                               data=output,
                               headers={'Content-Type': 'application/json'})
 
@@ -210,7 +225,8 @@ def exportVotes():
 
 
 def exportAll():
-
+    print "deleteing non valid speeches"
+    deleteNonValidSpeeches()
     print 'exporting speeches'
     exportSpeeches()
     print 'exporting sessions'
@@ -223,3 +239,34 @@ def exportAll():
     exportVotes()
 
     return 'all done'
+
+
+def deleteNonValidSpeeches():
+    # get all ids from solr
+    a = requests.get(SORL_URL + "/select?wt=json&q=id:*&fl=id&rows=100000000")
+    indexes = a.json()["response"]["docs"]
+
+    # find ids of speeches and remove g from begining of id string
+    idsInSolr = [int(line["id"].replace('g', ''))
+                 for line
+                 in indexes if "g" in line["id"]]
+
+    # get all valid speeches
+    validSpeeches = Speech.getValidSpeeches(datetime.now())
+    idsInData = validSpeeches.values_list("id", flat=True)
+
+    # find ids of speeches in solr for delete
+    idsForDelete = list(set(idsInSolr) - set(idsInData))
+    idsForDelete = ['g'+str(gid) for gid in idsForDelete]
+
+    # prepare query data
+    data = {'delete': idsForDelete
+            }
+
+    r = requests.post(SOLR_URL + '/update?commit=true',
+                      data=json.dumps(data),
+                      headers={'Content-Type': 'application/json'})
+
+    print r.text
+
+    return

@@ -445,8 +445,10 @@ class Link(Timestampable, Taggable, models.Model):
     session = models.ForeignKey('Session', blank=True, null=True)
 
     organization = models.ForeignKey('Organization',
-                                     blank=True, null=True,
-                                     help_text='The organization of this link.')
+                                     blank=True,
+                                     null=True,
+                                     help_text='The organization of this link.',
+                                     related_name='links')
 
     person = models.ForeignKey('Person',
                                blank=True, null=True,
@@ -457,8 +459,10 @@ class Link(Timestampable, Taggable, models.Model):
                                    help_text='The membership of this link.')
 
     motion = models.ForeignKey('Motion',
-                               blank=True, null=True,
-                               help_text='The motion of this link.')
+                               blank=True,
+                               null=True,
+                               help_text='The motion of this link.',
+                               related_name='links')
 
     question = models.ForeignKey('Question',
                                  blank=True,
@@ -619,8 +623,11 @@ class Session(Timestampable, Taggable, models.Model):
 
     organization = models.ForeignKey('Organization',
                                      blank=True, null=True,
+                                     related_name='session',
                                      help_text='The organization in session')
-
+    organizations = models.ManyToManyField('Organization',
+                                           related_name='sessions',
+                                           help_text='The organization in session')
     classification = models.CharField(max_length=128,
                                       blank=True, null=True,
                                       help_text='Session classification')
@@ -839,7 +846,60 @@ class Question(Timestampable, models.Model):
                                  help_text=_('Debug data'))
 
     def __str__(self):
-        return self.author.nameauthor
+        return self.author.name
+
+
+# Parser "buffer" storage models
+@python_2_unicode_compatible
+class tmp_votelinks(Timestampable, models.Model):
+    session_id = models.CharField(max_length=255,
+                                  blank=True,
+                                  null=True)
+
+    gov_id = models.CharField(max_length=255,
+                              blank=True,
+                              null=True)
+
+    votedoc_url = models.CharField(max_length=255,
+                                   blank=True,
+                                   null=True)
+
+    def __str__(self):
+        return self.session_id
+
+
+@python_2_unicode_compatible
+class session_deleted(Timestampable, models.Model):
+    mandate_id = models.IntegerField(blank=True,
+                                     null=True)
+
+    name = models.CharField(max_length=255,
+                            blank=True, null=True,
+                            help_text='Session name')
+
+    gov_id = models.CharField(max_length=255,
+                              blank=True, null=True,
+                              help_text='Gov website ID.')
+
+    start_time = PopoloDateTimeField(blank=True, null=True,
+                                     help_text='Start time')
+
+    end_time = PopoloDateTimeField(blank=True, null=True,
+                                   help_text='End time')
+
+    organization_id = models.IntegerField(blank=True,
+                                          null=True)
+
+    classification = models.CharField(max_length=128,
+                                      blank=True, null=True,
+                                      help_text='Session classification')
+
+    in_review = models.BooleanField(default=False,
+                                    help_text='Is session in review?')
+
+    def __str__(self):
+        return self.name
+
 
 @receiver(pre_save, sender=Organization)
 def copy_date_fields(sender, **kwargs):
