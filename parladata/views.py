@@ -98,10 +98,10 @@ def getMPs(request, date_=None):
                 districts = None
         else:
             districts = None
-        membership = Membership.objects.filter(Q(start_time__lte=fdate) |
-                                               Q(start_time=None),
-                                               Q(end_time__gte=fdate) |
-                                               Q(end_time=None))
+        membership = i.memberships.all().filter(Q(start_time__lte=fdate) |
+                                                Q(start_time=None),
+                                                Q(end_time__gte=fdate) |
+                                                Q(end_time=None))
         membership = membership.filter(organization__classification__in=PS_NP)
         ps = membership[0] if membership else None
 
