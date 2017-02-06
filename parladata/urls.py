@@ -87,9 +87,6 @@ urlpatterns = patterns('',
     url(r'^getMembersOfPGRanges/(?P<org_id>\d+)/(?P<date_>[\w].+)', getMembersOfPGRanges),
     url(r'^getMembersOfPGRanges/(?P<org_id>\d+)', getMembersOfPGRanges),
 
-    url(r'^getMembersOfOrgsRanges/(?P<org_id>\d+)/(?P<date_>[\w].+)', getMembersOfOrgsRanges),
-    url(r'^getMembersOfOrgsRanges/(?P<org_id>\d+)', getMembersOfOrgsRanges),
-
     url(r'^getOrganizatonByClassification', getOrganizatonByClassification),
     url(r'^getOrganizationRolesAndMembers/(?P<org_id>\d+)/(?P<date_>[\w].+)', getOrganizationRolesAndMembers),
     url(r'^getOrganizationRolesAndMembers/(?P<org_id>\d+)', getOrganizationRolesAndMembers),
@@ -112,6 +109,12 @@ urlpatterns = patterns('',
     # Ballots URLs
     url(r'^getAllBallots/(?P<date_>[\w].+)', getAllBallots),
     url(r'^getAllBallots/', getAllBallots),
+    
+    url(r'^getBallotsCounterOfPerson/(?P<person_id>\d+)/(?P<date_>[\w].+|)', getBallotsCounterOfPerson),
+    url(r'^getBallotsCounterOfPerson/(?P<person_id>\d+)', getBallotsCounterOfPerson),
+
+    url(r'^getBallotsCounterOfParty/(?P<party_id>\d+)/(?P<date_>[\w].+|)', getBallotsCounterOfParty),
+    url(r'^getBallotsCounterOfParty/(?P<party_id>\d+)', getBallotsCounterOfParty),
 
     # Sessions URLs
     url(r'^getSessions/(?P<date_>[\w].+)', getSessions),

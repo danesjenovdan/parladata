@@ -3,7 +3,7 @@
 from django.http import JsonResponse, HttpResponse
 from datetime import date, datetime, timedelta
 from parladata.models import *
-from django.db.models import Q
+from django.db.models import Q, Count
 from django.forms.models import model_to_dict
 import json
 from utils import *
@@ -15,6 +15,7 @@ from django.utils.encoding import smart_str
 from taggit.models import Tag
 from django.shortcuts import get_object_or_404
 from django.views.decorators.csrf import csrf_exempt
+from django.db.models.expressions import DateTime
 
 DZ_ID = 95
 PS_NP = ['poslanska skupina', 'nepovezani poslanec']
@@ -256,13 +257,13 @@ def getSessions(request, date_=None):
     sessions = Session.objects.filter(start_time__lte=fdate).order_by('-start_time')
 
     for i in sessions:
+        organizations = i.organizations.all().values_list('id', flat=True)
         data.append({'mandate': i.mandate,
                      'name': i.name,
                      'gov_id': i.gov_id,
                      'start_time': i.start_time,
                      'end_time': i.end_time,
-                     'organization': i.organization.name,
-                     'organization_id': i.organization.id,
+                     'organizations_id': map(str, organizations),
                      'classification': i.classification,
                      'id': i.id,
                      'is_in_review': i.in_review,
@@ -288,8 +289,6 @@ def getSessionsOfOrg(request, org_id, date_=None):
                      'gov_id': i.gov_id,
                      'start_time': i.start_time,
                      'end_time': i.end_time,
-                     'organization': i.organization.name,
-                     'organization_id': i.organization.id,
                      'classification': i.classification,
                      'id': i.id
                      }
@@ -758,13 +757,19 @@ def motionOfSession(request, id_se):
     for i in allIDs:
         tab.append(i['id'])
     if int(id_se) in tab:
-        motion = Vote.objects.filter(motion__session__id=id_se)
-        if motion:
-            data = [{'id': mot.motion.id,
-                     'vote_id': mot.id,
-                     'text': mot.motion.text,
-                     'result': mot.result,
-                     'tags': map(smart_str, mot.tags.names())} for mot in motion]
+        votes = Vote.objects.filter(session__id=id_se)
+        if votes:
+            for vote in votes:
+                motion = vote.motion
+                links = motion.links.all()
+                links_list = [{'name': link.name, 'url': link.url}
+                              for link in links]
+                data.append({'id': motion.id,
+                             'vote_id': vote.id,
+                             'text': motion.text,
+                             'result': motion.result,
+                             'tags': map(smart_str, vote.tags.names()),
+                             'doc_url': links_list})
         else:
             data = []
         return JsonResponse(data, safe=False)
@@ -933,11 +938,10 @@ def getTaggedVotes(request, person_id):
 
 
 def getMembersOfPGsRanges(request, date_=None):
-    """Returns all memberships(start date, end date and members
-       in this dates) of all PGs from start of mandate to end date
-       which is an argument of method.
-
-    Vrne seznam unikatnih zasedb DZ.
+    """
+    Returns all memberships(start date, end date and members
+    in this dates) of all PGs from start of mandate to end date
+    which is an argument of method.
     """
 
     if date_:
@@ -991,60 +995,12 @@ def getMembersOfPGsRanges(request, date_=None):
     return JsonResponse(outList, safe=False)
 
 
-def getMembersOfOrgsRanges(request, org_id, date_=None):
-    if date_:
-        fdate = datetime.strptime(date_, settings.API_DATE_FORMAT).date()
-    else:
-        fdate = datetime.now().date()
-
-    organization = Organization.objects.filter(id=org_id)
-    members = Membership.objects.filter(organization__in=organization)
-    try:
-        tempDate = min([mem for mem in members.values_list("start_time",
-                                                           flat=True) if mem]).date()
-    # if in org isn't members
-    except:
-        tempDate=settings.MANDATE_START_TIME.date()
-    out = {(tempDate+timedelta(days=days)): {grup: [] for grup in organization.values_list("id", flat=True)} for days in range((fdate-tempDate).days+1)}
-    for member in members:
-        if not member.start_time and not member.end_time:
-            start_time = tempDate
-            end_time = fdate
-        elif member.start_time and not member.end_time:
-            if member.start_time.date() < tempDate:
-                start_time = tempDate
-            else:
-                start_time = member.start_time.date()
-            end_time = fdate
-        else:
-            start_time = member.start_time.date()
-            if fdate > member.end_time.date():
-                end_time = member.end_time.date()
-            else:
-                end_time = fdate
-        for days in range((end_time-start_time).days+1):
-            out[(start_time+timedelta(days=days))][member.organization.id].append(member.person.id)
-
-    keys = out.keys()
-    keys.sort()
-    outList = [{"start_date":keys[0].strftime(settings.API_DATE_FORMAT),
-                "end_date":keys[0].strftime(settings.API_DATE_FORMAT),
-                "members":out[keys[0]]}]
-    for key in keys:
-        if out[key]==outList[-1]["members"]:
-            outList[-1]["end_date"]=key.strftime(settings.API_DATE_FORMAT)
-        else:
-            outList.append({"start_date":key.strftime(settings.API_DATE_FORMAT),
-                            "end_date":key.strftime(settings.API_DATE_FORMAT),
-                            "members":out[key]})
-
-    return JsonResponse(outList, safe=False)
-
-
 def getMembersOfPGRanges(request, org_id, date_=None):
     """
-    Vrne seznam objektov, ki predstavljajo unikatno zasedbo v
-    poslanski skupini.
+    Vrne seznam objektov, ki vsebujejo poslance v poslanski skupini.
+    Vsak objekt ima start_time, end_time in id-je poslancev. Objektov je
+    toliko, kot je sprememb članstev v poslanski skupini. Vsak dan, ko poslanska
+    skupina dobi, izgubi, ali zamenja člana zgeneriramo nov objekt.
     """
     if date_:
         fdate = datetime.strptime(date_, settings.API_DATE_FORMAT).date()
@@ -1105,15 +1061,28 @@ def getMembershipsOfMember(request, person_id, date=None):
                                             Q(start_time=None),
                                             Q(end_time__gte=fdate) |
                                             Q(end_time=None),
-                                              person__id=person_id)
+                                            person__id=person_id)
 
-    out_init_dict = {org_type: [] for org_type in set([member.organization.classification for member in memberships])}
+    out_init_dict = {org_type: []
+                     for org_type
+                     in set([member.organization.classification
+                            for member
+                            in memberships]
+                            )
+                     }
 
     for mem in memberships:
-        out_init_dict[mem.organization.classification].append({"org_type": mem.organization.classification,
-                                                               "org_id": mem.organization.id,
-                                                               "name": mem.organization.name})
-
+        links = mem.organization.links.filter(note__in=['spletno mesto DZ',
+                                                        'DZ page url'])
+        if links:
+            url = links.first().url
+        else:
+            url = None
+        classification = out_init_dict[mem.organization.classification]
+        classification.append({'org_type': mem.organization.classification,
+                               'org_id': mem.organization.id,
+                               'name': mem.organization.name,
+                               'url': url})
     return JsonResponse(out_init_dict)
 
 
@@ -1431,6 +1400,78 @@ def getAllQuestions(request, date_=None):
     return JsonResponse(data, safe=False)
 
 
+def getBallotsCounter(voter_obj, date_=None):
+    """
+    Returns monthly ballots count of voter/voter_org
+    """
+    if date_:
+        fdate = datetime.strptime(date_, settings.API_DATE_FORMAT).date()
+    else:
+        fdate = datetime.now().date()
+
+    fdate = fdate + timedelta(days=1)
+
+    data = []
+
+    if type(voter_obj) == Person:
+        ballots = Ballot.objects.filter(voter=voter_obj,
+                                        vote__start_time__lt=fdate)
+    elif type(voter_obj) == Organization:
+        ballots = Ballot.objects.filter(voterparty=voter_obj,
+                                        vote__start_time__lt=fdate)
+
+    ballots = ballots.annotate(month=DateTime("vote__start_time",
+                                              "month",
+                               tzinfo=None)).values("month").values('option',
+                                                                    'month')
+    ballots = ballots.annotate(ballot_count=Count('option')).order_by('month')
+
+    votes = Vote.objects.filter(start_time__lt=fdate)
+    votes = votes.annotate(month=DateTime("start_time",
+                                          "month",
+                           tzinfo=None)).values("month")
+    votes = votes.annotate(total_votes=Count('id')).order_by("month")
+
+    for month in votes:
+        date_ = month['month']
+        total = month['total_votes']
+
+        temp_data = {'date': date_.strftime(settings.API_DATE_FORMAT),
+                     'date_ts': date_,
+                     'ni': 0,
+                     'kvorum': 0,
+                     'za': 0,
+                     'proti': 0,
+                     'total': total
+                     }
+
+        sums_of_month = ballots.filter(month=date_)
+        for sums in sums_of_month:
+            temp_data[sums['option']] = sums['ballot_count']
+
+        data.append(temp_data)
+
+    return data
+
+
+def getBallotsCounterOfPerson(request, person_id, date_=None):
+    """
+    Api endpoint which returns ballots count of voter
+    """
+    person = Person.objects.get(id=person_id)
+    data = getBallotsCounter(person, date_=None)
+    return JsonResponse(data, safe=False)
+
+
+def getBallotsCounterOfParty(request, party_id, date_=None):
+    """
+    Api endpoint which returns ballots count of party
+    """
+    party = Organization.objects.get(id=party_id)
+    data = getBallotsCounter(party, date_=None)
+    return JsonResponse(data, safe=False)
+
+
 @csrf_exempt
 def addQuestion(request):
     """
@@ -1532,13 +1573,13 @@ def getAllChangesAfter(request, datetime_):
     data['sessions'] = []
     sessions = Session.objects.filter(updated_at__gte=time_of)
     for i in sessions.order_by('-start_time'):
+        organizations = i.organizations.all().values_list("id", flat=True)
         data["sessions"].append({'mandate': i.mandate,
                                  'name': i.name,
                                  'gov_id': i.gov_id,
                                  'start_time': i.start_time,
                                  'end_time': i.end_time,
-                                 'organization': i.organization.name,
-                                 'organization_id': i.organization.id,
+                                 'organizations_id': map(str, organizations),
                                  'classification': i.classification,
                                  'id': i.id,
                                  'is_in_review': i.in_review})
