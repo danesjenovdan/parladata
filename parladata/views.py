@@ -1554,16 +1554,31 @@ def addQuestion(request):
         return JsonResponse({"link": None}, safe=False)
 
 
-def getAllChangesAfter(request, datetime_):
+def getAllChangesAfter(request,
+                       person_update_time,
+                       session_update_time,
+                       speech_update_time,
+                       ballots_update_time,
+                       question_update_time):
     """
     This is an api endpoint function that uses for fast update of parlalize.
     Returns all session, person, speeches, ballots and questions updated
     after {datetime_}
     """
-    time_of = datetime.strptime(datetime_,
-                                settings.API_DATE_FORMAT + "_%H:%M")
+    time_of_person = datetime.strptime(person_update_time,
+                                       settings.API_DATE_FORMAT + "_%H:%M")
 
-    print time_of
+    time_of_session = datetime.strptime(session_update_time,
+                                        settings.API_DATE_FORMAT + "_%H:%M")
+
+    time_of_speech = datetime.strptime(speech_update_time,
+                                       settings.API_DATE_FORMAT + "_%H:%M")
+
+    time_of_ballot = datetime.strptime(ballots_update_time,
+                                       settings.API_DATE_FORMAT + "_%H:%M")
+
+    time_of_question = datetime.strptime(question_update_time,
+                                         settings.API_DATE_FORMAT + "_%H:%M")
 
     par_group = Organization.objects.all()
     par_group = par_group.filter(classification__in=PS_NP)
@@ -1571,7 +1586,7 @@ def getAllChangesAfter(request, datetime_):
 
     print "sessions"
     data['sessions'] = []
-    sessions = Session.objects.filter(updated_at__gte=time_of)
+    sessions = Session.objects.filter(updated_at__gte=time_of_session)
     for i in sessions.order_by('-start_time'):
         organizations = i.organizations.all().values_list("id", flat=True)
         data["sessions"].append({'mandate': i.mandate,
@@ -1586,7 +1601,7 @@ def getAllChangesAfter(request, datetime_):
 
     print "persons"
     data['persons'] = []
-    persons = Person.objects.filter(updated_at__gte=time_of)
+    persons = Person.objects.filter(updated_at__gte=time_of_person)
     for i in persons:
         pg = i.memberships.filter(organization=par_group)
         data["persons"].append({'id': i.id,
@@ -1614,26 +1629,30 @@ def getAllChangesAfter(request, datetime_):
                                 'active': i.active})
 
     print "speeches"
-    speeches = Speech.objects.filter(Q(updated_at__gte=time_of) |
-                                     Q(created_at__gte=time_of))
+    speeches = Speech.objects.filter(Q(updated_at__gte=time_of_speech) |
+                                     Q(created_at__gte=time_of_speech))
     print speeches.count()
-    data['speeches'] = [model_to_dict(speech, fields=[field.name for field in speech._meta.fields]) for speech in speeches]
+    data['speeches'] = [model_to_dict(speech, fields=[field.name
+                                                      for field
+                                                      in speech._meta.fields])
+                        for speech in speeches]
 
     print "ballots"
-    ballots = Ballot.objects.filter(updated_at__gte=time_of)
+    ballots = Ballot.objects.filter(updated_at__gte=time_of_ballot)
     print ballots.count()
     data['ballots'] = [model_to_dict(ballot,
                                      fields=['id',
                                              'vote',
                                              'voter',
                                              'option']) for ballot in ballots]
-    newVotes = list(set(list(ballots.values_list("vote__session__id", flat=True))))
+    newVotes = list(set(list(ballots.values_list("vote__session__id",
+                                                 flat=True))))
     data['sessions_of_updated_votes'] = newVotes
 
     print "questions"
     data['questions'] = []
 
-    question_queryset = Question.objects.filter(updated_at__gte=time_of)
+    question_queryset = Question.objects.filter(updated_at__gte=time_of_question)
 
     for question in question_queryset:
         link = question.links.filter(note__icontains="Besedilo")
