@@ -1595,6 +1595,7 @@ def getAllChangesAfter(request,
                                  'start_time': i.start_time,
                                  'end_time': i.end_time,
                                  'organizations_id': map(str, organizations),
+                                 'organization_id': i.organization.id,
                                  'classification': i.classification,
                                  'id': i.id,
                                  'is_in_review': i.in_review})
