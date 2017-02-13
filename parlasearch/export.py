@@ -229,8 +229,8 @@ def exportAll():
     deleteNonValidSpeeches()
     print 'exporting speeches'
     exportSpeeches()
-    print 'exporting sessions'
-    exportSessions()
+    #print 'exporting sessions'
+    #exportSessions()
     # print 'exporting people_speeches'
     # exportPeopleSpeeches()
     # print 'exporting party speeches'
