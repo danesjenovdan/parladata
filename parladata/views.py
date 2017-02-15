@@ -767,7 +767,7 @@ def motionOfSession(request, id_se):
                 data.append({'id': motion.id,
                              'vote_id': vote.id,
                              'text': motion.text,
-                             'result': motion.result,
+                             'result': False if motion.result == '0' else True,
                              'tags': map(smart_str, vote.tags.names()),
                              'doc_url': links_list})
         else:
