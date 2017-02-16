@@ -12,8 +12,6 @@ urlpatterns = patterns('',
     url(r'^post-autocomplete/$', PostAutocomplete.as_view(), name='post-autocomplete'),
 
     # MPs URLs with and without dates
-    url(r'^getActivity/(?P<person_id>\d+)', getActivity),
-
     url(r'^getMPs/(?P<date_>[\w].+)', getMPs),
     url(r'^getMPs', getMPs),
 

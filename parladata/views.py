@@ -22,53 +22,6 @@ PS_NP = ['poslanska skupina', 'nepovezani poslanec']
 PS = 'poslanska skupina'
 
 
-def getActivity(request, person_id):
-    """Return all ballots and speaches agregated by date
-       id: id of person
-    """
-
-    def appendBallot(data, b):
-        tempBallot = dict()
-        tempBallot['type'] = 'ballot'
-        tempBallot['date'] = str(b.vote.start_time.date())
-        tempBallot['option'] = b.option
-        tempBallot['result'] = b.vote.result
-        tempBallot['vote_id'] = b.vote.id
-        tempBallot['vote_name'] = b.vote.name
-        if tempBallot['date'] in data:
-            data[tempBallot['date']].append(tempBallot)
-        else:
-            data[tempBallot['date']] = [tempBallot]
-
-    def appendSpeech(data, s):
-        tempSpeech = dict()
-        tempSpeech['type'] = "speech"
-        tempSpeech['date'] = str(s.start_time.date())
-        tempSpeech['session_name'] = s.session.name
-        tempSpeech['session_id'] = s.session.id
-        tempSpeech['speech_id'] = s.id
-        if tempSpeech['date'] in data:
-            data[tempSpeech['date']].append(tempSpeech)
-        else:
-            data[tempSpeech['date']] = [tempSpeech]
-
-    data = dict()
-    person = Person.objects.filter(id=person_id)
-    if person:
-        ballots = Ballot.objects.filter(voter=person)
-        speeches_queryset = Speech.getValidSpeeches(fdate)
-        speeches = speeches_queryset.filter(speaker=person)
-
-        for b in ballots.order_by('vote__start_time'):
-            appendBallot(data, b)
-        for s in speeches.order_by('start_time'):
-            appendSpeech(data, s)
-    data = collections.OrderedDict(sorted(data.items(), key=lambda t: t[0]))
-
-    data_list = [data[x] for x in data]
-    return JsonResponse(data_list, safe=False)
-
-
 def getMPs(request, date_=None):
     """
     * @api {get} getMPs/{?date} List of MPs active today
