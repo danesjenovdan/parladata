@@ -1354,47 +1354,6 @@ def getAllTimeMemberships(request):
                         safe=False)
 
 
-def getAllTimeMPs(request, date_=None):
-    """Returns all memberhips for all MPs."""
-
-    if date_:
-        fdate = datetime.strptime(date_, settings.API_DATE_FORMAT).date()
-    else:
-        fdate = datetime.now().today()
-
-    parliamentary_group = Organization.objects.filter(classification__in=PS_NP)
-    members = Membership.objects.filter(Q(start_time__lte=fdate) |
-                                        Q(start_time=None),
-                                        organization__in=parliamentary_group)
-
-    return JsonResponse([{'id': i.person.id,
-                          'name': i.person.name,
-                          'membership': i.organization.name,
-                          'acronym': i.organization.acronym,
-                          'classification': i.person.classification,
-                          'family_name': i.person.family_name,
-                          'given_name': i.person.given_name,
-                          'additional_name': i.additional_name,
-                          'honorific_prefix': i.honorific_prefix,
-                          'honorific_suffix': i.honorific_suffix,
-                          'patronymic_name': i.patronymic_name,
-                          'sort_name': i.sort_name,
-                          'email': i.email,
-                          'gender': i.gender,
-                          'birth_date': str(i.birth_date),
-                          'death_date': str(i.death_date),
-                          'summary': i.summary,
-                          'biography': i.biography,
-                          'image': i.image,
-                          'district': '',
-                          'gov_url': i.gov_url.url,
-                          'gov_id': i.gov_id,
-                          'gov_picture_url': i.gov_picture_url,
-                          'voters': i.voters,
-                          'active': i.active,
-                          'party_id': i[0].organization.id} for i in members], safe=False)
-
-
 def getOrganizatonByClassification(request):
     """Returns organizations by classification(working bodies, PG, council)."""
 
