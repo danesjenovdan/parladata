@@ -46,7 +46,6 @@ urlpatterns = patterns('',
     url(r'^getMembersWithFuction/', getMembersWithFuction), # TODO fix spelling
 
     url(r'^getNumberOfFormalSpeeches/(?P<person_id>\d+)', getNumberOfFormalSpeeches), # TODO check and decide if delete
-    url(r'^getTaggedVotes/(?P<person_id>\d+)', getTaggedVotes), # TODO delete
 
     url(r'^getNumberOfPersonsSessions/(?P<person_id>\d+)/(?P<date_>[\w].+)', getNumberOfPersonsSessions),
     url(r'^getNumberOfPersonsSessions/(?P<person_id>\d+)', getNumberOfPersonsSessions),
