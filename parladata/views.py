@@ -678,29 +678,6 @@ def getSpeechesOfMP(request, person_id, date_=None):
     return JsonResponse(content, safe=False)
 
 
-def getSpeechesOfMPbyDate(request, person_id, date_=None):
-    """Returns all speeches of all MP to specific date."""
-
-    if date_:
-        fdate = datetime.strptime(date_, settings.API_DATE_FORMAT).date()
-    else:
-        fdate = datetime.now().date()
-
-    speeches_queryset = Speech.getValidSpeeches(fdate)
-    speeches_queryset = speeches_queryset.filter(speaker__id=person_id,
-                                                 start_time__lte=fdate)
-    dates = speeches_queryset.order_by("start_time").dates("start_time", "day")
-    content = [{"date": date.strftime(settings.API_DATE_FORMAT),
-                "speeches": [speech.content
-                             for speech in speeches_queryset.filter(Q(start_time__gte=date) |
-                                                                    Q(start_time__lte=date + timedelta(days=1)),
-                                                                    speaker__id=person_id)]}
-               for date in dates]
-
-    return JsonResponse(content, safe=False)
-
-
-
 def getAllSpeechesOfMPs(request, date_=None):
     """
     * @api {get} getAllMPsSpeeches/{?date}/ All MPs' speeches
