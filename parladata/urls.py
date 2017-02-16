@@ -89,7 +89,6 @@ urlpatterns = patterns('',
     # Votes and Motion URLs
     url(r'^getAllVotes/(?P<date_>[\w].+)', getAllVotes), # TODO refactor with getVotes
     url(r'^getAllVotes/', getAllVotes),
-    url(r'^getDocumentOfMotion/(?P<motion_id>[\w].+)', getDocumentOfMotion), # TODO delete
     url(r'^isVoteOnDay/(?P<date_>[\w].+)', isVoteOnDay),
     url(r'^isVoteOnDay/', isVoteOnDay),
     url(r'^getTags', getTags),

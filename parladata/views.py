@@ -1538,19 +1538,6 @@ def getMembersWithFuction(request):
     return JsonResponse({"members_with_function": data}, safe=False)
 
 
-def getDocumentOfMotion(request, motion_id):
-    """
-    Returns all documents of specific motion/vote
-    """
-
-    if Link.objects.filter(motion=motion_id):
-        link = str(Link.objects.filter(motion=motion_id)[0]).split('/')
-        true_link = str('https://cdn.parlameter.si/v1/dokumenti/' + link[4])
-        return JsonResponse({"link": true_link}, safe=False)
-    else:
-        return JsonResponse({"link": None}, safe=False)
-
-
 def getAllQuestions(request, date_=None):
     """
     Returns array of all questions. Objects have only link with note Besedilo.
