@@ -25,8 +25,6 @@ urlpatterns = patterns('',
     url(r'^getSpeechesOfMP/(?P<person_id>\d+)/(?P<date_>[\w].+)', getSpeechesOfMP),
     url(r'^getSpeechesOfMP/(?P<person_id>\d+)', getSpeechesOfMP),
 
-    url(r'^getSpeechesOfMPbyDate/(?P<person_id>\d+)/(?P<date_>[\w].+)', getSpeechesOfMPbyDate), # TODO delete
-
     url(r'^getAllMPsSpeeches/(?P<date_>[\w].+)', getAllSpeechesOfMPs),
     url(r'^getAllMPsSpeeches', getAllSpeechesOfMPs),
 
