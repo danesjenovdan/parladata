@@ -570,21 +570,6 @@ def getCoalitionPGs(request):
     return JsonResponse({'coalition': list(coalition), 'opposition': list(oppo)})
 
 
-def getNumberOfMPAttendedSessions(request, person_id):
-    """
-    TODO DELETE!!!
-    Returns number of MP attended sessions.
-    """
-    
-
-    data = {}
-    allBallots = Ballot.objects.filter(option='za')
-    for i in getMPObjects():
-        data[i.id] = len(list(set(allBallots.filter(voter=i.id).values_list('vote__session', flat=True))))
-
-    return JsonResponse(data[int(person_id)], safe=False)
-
-
 def getNumberOfAllMPAttendedSessions(request, date_):
     """
     * @api {get} getNumberOfAllMPAttendedSessions/{date}/ Percentage of attended sessions and votes
