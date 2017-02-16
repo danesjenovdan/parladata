@@ -33,9 +33,6 @@ urlpatterns = patterns('',
 
     url(r'^getMPSpeechesIDs/(?P<person_id>\d+)/(?P<date_>[\w].+)', getSpeechesIDs), # TODO check
 
-    url(r'^getAllTimeMPs/(?P<date_>[\w].+)', getAllTimeMPs), # TODO delete
-    url(r'^getAllTimeMPs', getAllTimeMPs), # TODO delete
-
     url(r'^getSpeechesInRange/(?P<person_id>\d+)/(?P<date_from>[\w].+)/(?P<date_to>[\w].+)', getSpeechesInRange),
     url(r'^getMPParty/(?P<person_id>\d+)', getMPParty),
     url(r'^getAllPeople/', getAllPeople),
