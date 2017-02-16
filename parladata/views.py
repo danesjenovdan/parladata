@@ -1144,56 +1144,6 @@ def getExtendedSpeechesOfMP(request, person_id):
     return JsonResponse(speeches, safe=False)
 
 
-def getTaggedVotes(request, person_id):
-    """Returns ballots for specific MP from working bodies."""
-
-    tags = ['Komisija za nadzor javnih financ',
-            'Kolegij predsednika Državnega zbora',
-            'Komisija za narodni skupnosti',
-            'Komisija za odnose s Slovenci v zamejstvu in po svetu',
-            'Komisija za poslovnik',
-            'Mandatno-volilna komisija',
-            'Odbor za delo, družino, socialne zadeve in invalide',
-            'Odbor za finance in monetarno politiko',
-            'Odbor za gospodarstvo',
-            'Odbor za infrastrukturo, okolje in prostor',
-            'Odbor za izobraževanje, znanost, šport in mladino',
-            'Odbor za kmetijstvo, gozdarstvo in prehrano',
-            'Odbor za kulturo',
-            'Odbor za notranje zadeve, javno upravo in lokalno samoupravo',
-            'Odbor za obrambo',
-            'Odbor za pravosodje',
-            'Odbor za zadeve Evropske unije',
-            'Odbor za zdravstvo',
-            'Odbor za zunanjo politiko',
-            'Preiskovalna komisija o ugotavljanju zlorab v slovenskem bančnem sistemu ter ugotavljanju vzrokov in',
-            'Preiskovalna komisija za ugotavljanje politične odgovornosti nosilcev javnih funkcij pri investiciji',
-            'Ustavna komisija',
-            'Proceduralna glasovanja',
-            'Zunanja imenovanja',
-            'Poslanska vprašanja',
-            'Komisija za nadzor obveščevalnih in varnostnih služb',
-            'Preiskovalne komisije']
-
-    votes_queryset = Vote.objects.filter(tags__name__in=tags)
-
-    person = Person.objects.filter(id=int(person_id))[0]
-    ballots = person.ballot_set.filter(vote__in=votes_queryset)
-
-    ballots_out = [{'option': ballot.option,
-                    'vote': {'name': ballot.vote.name,
-                             'motion_id': ballot.vote.motion.id,
-                             'session_id': ballot.vote.session.id,
-                             'id': ballot.vote.id,
-                             'result': ballot.vote.result,
-                             'date': ballot.vote.start_time,
-                             'tags': [tag.name
-                                      for tag in ballot.vote.tags.all()]}}
-                   for ballot in ballots]
-
-    return JsonResponse(ballots_out, safe=False)
-
-
 def getMembersOfPGsRanges(request, date_=None):
     """
     Returns all memberships(start date, end date and members
