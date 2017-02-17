@@ -263,6 +263,7 @@ def getSessions(request, date_=None):
                      'gov_id': i.gov_id,
                      'start_time': i.start_time,
                      'end_time': i.end_time,
+                     'organization_id': i.organization_id,
                      'organizations_id': map(str, organizations),
                      'classification': i.classification,
                      'id': i.id,
