@@ -717,6 +717,10 @@ class Motion(Timestampable, Taggable, models.Model):
                               blank=True, null=True,
                               help_text='Did the motion pass?')
 
+    epa = models.CharField(blank=True, null=True,
+                           max_length=255,
+                           help_text='EPA number')
+
 
 class Vote(Timestampable, Taggable, models.Model):
     """Votings which taken place in parlament."""
