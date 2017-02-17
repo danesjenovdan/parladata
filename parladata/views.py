@@ -1684,3 +1684,31 @@ def monitorMe(request):
         return HttpResponse('All iz well.')
     else:
         return HttpResponse('PANIC!')
+
+
+def getVotesTable(request):
+    """
+    Pandas table
+    """
+    data = []
+    for session in Session.objects.all():
+        for motion in Motion.objects.filter(session=session):
+            vote = Vote.objects.get(motion=motion)
+            for ballot in Ballot.objects.filter(vote__motion=motion):
+                data.append({'id': ballot.id,
+                             'voter': ballot.voter_id,
+                             'option': ballot.option,
+                             'voterparty': ballot.voterparty_id,
+                             'orgvoter': ballot.orgvoter_id,
+                             'result': False if motion.result == '0' else True,
+                             'text': motion.text,
+                             'date': vote.start_time,
+                             'vote_id': vote.id,
+                             'session_id': session.id})
+
+    return JsonResponse(data, safe=False)
+
+
+def getAllSpeechesIDs(request):
+    ids = list(Speech.objects.all().values_list('id', flat=True))
+    return JsonResponse(ids, safe=False)
