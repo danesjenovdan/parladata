@@ -130,7 +130,7 @@ urlpatterns = patterns('',
     url(r'^isSpeechOnDay/(?P<date_>[\w].+)', isSpeechOnDay),
     url(r'^isSpeechOnDay/', isSpeechOnDay),
     url(r'^getSpeechData/(?P<speech_id>\d+)', getSpeechData),
-    url(r'^getSAllSpeechesIDs/$', getAllSpeechesIDs),
+    url(r'^getAllAllSpeeches/$', getAllAllSpeeches),
 
     # POST save url's for parser
     url(r'^addQuestion/', addQuestion),

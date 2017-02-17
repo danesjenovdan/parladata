@@ -1710,6 +1710,16 @@ def getVotesTable(request):
     return JsonResponse(data, safe=False)
 
 
-def getAllSpeechesIDs(request):
-    ids = list(Speech.objects.all().values_list('id', flat=True))
-    return JsonResponse(ids, safe=False)
+def getAllAllSpeeches(request):
+    """
+    return non valid speeches too
+    """
+    data = []
+    speeches_queryset = Speech.objects.all()
+    speeches = speeches_queryset.filter()
+    for speech in speeches:
+        data.append(model_to_dict(speech,
+                                  fields=[field.name for field in speech._meta.fields],
+                                  exclude=[]))
+
+    return JsonResponse(data, safe=False)
