@@ -20,13 +20,13 @@ urlpatterns = patterns('',
     url(r'^getMPStatic/(?P<person_id>\d+)/(?P<date_>[\w].+)', getMPStatic),
     url(r'^getMPStatic/(?P<person_id>\d+)', getMPStatic),
 
-    url(r'^getNumberOfMPAttendedSessions/(?P<person_id>\d+)', getNumberOfMPAttendedSessions),
+    url(r'^getNumberOfMPAttendedSessions/(?P<person_id>\d+)', getNumberOfMPAttendedSessions), # TODO delete
     url(r'^getNumberOfAllMPAttendedSessions/(?P<date_>[\w].+)', getNumberOfAllMPAttendedSessions),
 
     url(r'^getSpeechesOfMP/(?P<person_id>\d+)/(?P<date_>[\w].+)', getSpeechesOfMP),
     url(r'^getSpeechesOfMP/(?P<person_id>\d+)', getSpeechesOfMP),
 
-    url(r'^getSpeechesOfMPbyDate/(?P<person_id>\d+)/(?P<date_>[\w].+)', getSpeechesOfMPbyDate),
+    url(r'^getSpeechesOfMPbyDate/(?P<person_id>\d+)/(?P<date_>[\w].+)', getSpeechesOfMPbyDate), # TODO delete
 
     url(r'^getAllMPsSpeeches/(?P<date_>[\w].+)', getAllSpeechesOfMPs),
     url(r'^getAllMPsSpeeches', getAllSpeechesOfMPs),
@@ -34,25 +34,25 @@ urlpatterns = patterns('',
     url(r'^getSpeeches/(?P<person_id>\d+)/(?P<date_>[\w].+)', getSpeeches),
     url(r'^getSpeeches/(?P<person_id>\d+)', getSpeeches),
 
-    url(r'^getMPSpeechesIDs/(?P<person_id>\d+)/(?P<date_>[\w].+)', getSpeechesIDs),
+    url(r'^getMPSpeechesIDs/(?P<person_id>\d+)/(?P<date_>[\w].+)', getSpeechesIDs), # TODO check
 
-    url(r'^getAllTimeMPs/(?P<date_>[\w].+)', getAllTimeMPs),
-    url(r'^getAllTimeMPs', getAllTimeMPs),
+    url(r'^getAllTimeMPs/(?P<date_>[\w].+)', getAllTimeMPs), # TODO delete
+    url(r'^getAllTimeMPs', getAllTimeMPs), # TODO delete
 
     url(r'^getSpeechesInRange/(?P<person_id>\d+)/(?P<date_from>[\w].+)/(?P<date_to>[\w].+)', getSpeechesInRange),
     url(r'^getMPParty/(?P<person_id>\d+)', getMPParty),
     url(r'^getAllPeople/', getAllPeople),
 
-    url(r'^getExtendedSpeechesOfMP/(?P<person_id>\d+)', getExtendedSpeechesOfMP),
+    url(r'^getExtendedSpeechesOfMP/(?P<person_id>\d+)', getExtendedSpeechesOfMP), # TODO check
 
-    url(r'^getPersonData/(?P<person_id>\d+)', getPersonData),
+    url(r'^getPersonData/(?P<person_id>\d+)', getPersonData), # TODO check
 
     url(r'^getMembershipsOfMember/(?P<person_id>\d+)/(?P<date>[\w].+|)', getMembershipsOfMember),
 
-    url(r'^getMembersWithFuction/', getMembersWithFuction),
+    url(r'^getMembersWithFuction/', getMembersWithFuction), # TODO fix spelling
 
-    url(r'^getNumberOfFormalSpeeches/(?P<person_id>\d+)', getNumberOfFormalSpeeches),
-    url(r'^getTaggedVotes/(?P<person_id>\d+)', getTaggedVotes),
+    url(r'^getNumberOfFormalSpeeches/(?P<person_id>\d+)', getNumberOfFormalSpeeches), # TODO check and decide if delete
+    url(r'^getTaggedVotes/(?P<person_id>\d+)', getTaggedVotes), # TODO delete
 
     url(r'^getNumberOfPersonsSessions/(?P<person_id>\d+)/(?P<date_>[\w].+)', getNumberOfPersonsSessions),
     url(r'^getNumberOfPersonsSessions/(?P<person_id>\d+)', getNumberOfPersonsSessions),
@@ -94,14 +94,14 @@ urlpatterns = patterns('',
     url(r'^getPGsSpeechesIDs/(?P<org_id>\d+)/(?P<date_>[\w].+)', getPGsSpeechesIDs),
 
     # Votes and Motion URLs
-    url(r'^getAllVotes/(?P<date_>[\w].+)', getAllVotes),
+    url(r'^getAllVotes/(?P<date_>[\w].+)', getAllVotes), # TODO refactor with getVotes
     url(r'^getAllVotes/', getAllVotes),
-    url(r'^getDocumentOfMotion/(?P<motion_id>[\w].+)', getDocumentOfMotion),
+    url(r'^getDocumentOfMotion/(?P<motion_id>[\w].+)', getDocumentOfMotion), # TODO delete
     url(r'^isVoteOnDay/(?P<date_>[\w].+)', isVoteOnDay),
     url(r'^isVoteOnDay/', isVoteOnDay),
     url(r'^getTags', getTags),
-    url(r'^getVotes/(?P<date_>[\w].+)', getVotes),
-    url(r'^getVotes/', getVotes),
+    url(r'^getVotes/(?P<date_>[\w].+)', getVotes), # TODO refactor with getAllVotes
+    url(r'^getVotes/', getVotes), # TODO refactor with getAllVotes
     url(r'^motionOfSession/(?P<id_se>\d+)', motionOfSession),
     url(r'^getVotesOfMotion/(?P<motion_id>\d+)', getVotesOfMotion),
     url(r'^getVotesOfSession/(?P<id_se>\d+)', getVotesOfSession),
@@ -125,8 +125,8 @@ urlpatterns = patterns('',
     url(r'^getSessionsOfOrg/(?P<org_id>\d+)', getSessionsOfOrg),
 
     # Speech URLs
-    url(r'^getAllSpeeches/(?P<date_>[\w].+)', getAllSpeeches),
-    url(r'^getAllSpeeches', getAllSpeeches),
+    url(r'^getAllSpeeches/(?P<date_>[\w].+)', getAllSpeeches), # TODO refactor with other speeches
+    url(r'^getAllSpeeches', getAllSpeeches), # TODO refactor with other speeches
     url(r'^isSpeechOnDay/(?P<date_>[\w].+)', isSpeechOnDay),
     url(r'^isSpeechOnDay/', isSpeechOnDay),
     url(r'^getSpeechData/(?P<speech_id>\d+)', getSpeechData),
