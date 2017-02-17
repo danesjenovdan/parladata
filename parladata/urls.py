@@ -116,6 +116,8 @@ urlpatterns = patterns('',
     url(r'^getBallotsCounterOfParty/(?P<party_id>\d+)/(?P<date_>[\w].+|)', getBallotsCounterOfParty),
     url(r'^getBallotsCounterOfParty/(?P<party_id>\d+)', getBallotsCounterOfParty),
 
+    url(r'^getVotesTable/', getVotesTable),
+
     # Sessions URLs
     url(r'^getSessions/(?P<date_>[\w].+)', getSessions),
     url(r'^getSessions/', getSessions),
@@ -128,6 +130,7 @@ urlpatterns = patterns('',
     url(r'^isSpeechOnDay/(?P<date_>[\w].+)', isSpeechOnDay),
     url(r'^isSpeechOnDay/', isSpeechOnDay),
     url(r'^getSpeechData/(?P<speech_id>\d+)', getSpeechData),
+    url(r'^getSAllSpeechesIDs/$', getAllSpeechesIDs),
 
     # POST save url's for parser
     url(r'^addQuestion/', addQuestion),
