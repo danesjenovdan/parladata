@@ -332,7 +332,7 @@ def getSpeechesInRange(request, person_id, date_from, date_to):
     tdate = datetime.strptime(date_to, settings.API_DATE_FORMAT).date()
 
     speaker = get_object_or_404(Person, id=person_id)
-    speeches_queryset = Speech.getValidSpeeches(fdate)
+    speeches_queryset = Speech.getValidSpeeches(tdate)
     speeches_queryset = speeches_queryset.filter(speaker=speaker,
                                                  start_time__lte=tdate,
                                                  start_time__gte=fdate)
