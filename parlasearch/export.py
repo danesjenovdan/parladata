@@ -60,8 +60,8 @@ def exportSpeeches():
 def getSessionContent(session):
 
     megastring = u''
-
-    for speech in session.speech_set.all():
+    speeches = Speech.getValidSpeeches(datetime.now()).filter(session=session)
+    for speech in speeches:
         megastring = megastring + ' ' + speech.content
 
     return megastring
