@@ -1581,6 +1581,9 @@ def getAllChangesAfter(request,
     time_of_question = datetime.strptime(question_update_time,
                                          settings.API_DATE_FORMAT + "_%H:%M")
 
+    # delete motions without text before each update of parlalize
+    deleteMotionsWithoutText()
+
     par_group = Organization.objects.all()
     par_group = par_group.filter(classification__in=PS_NP)
     data = {}

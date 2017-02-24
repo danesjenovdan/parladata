@@ -723,3 +723,7 @@ def jointSessionDataFix():
     ss = Session.objects.all()
     for s in ss:
         s.organizations.add(s.organization)
+
+
+def deleteMotionsWithoutText():
+    Motion.objects.filter(text="").delete()
