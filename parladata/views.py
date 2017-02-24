@@ -1650,9 +1650,11 @@ def getAllChangesAfter(request,
                                              'vote',
                                              'voter',
                                              'option']) for ballot in ballots]
-    newVotes = list(set(list(ballots.values_list("vote__session__id",
+    newVotesSessions = list(set(list(ballots.values_list("vote__session__id",
+                                                         flat=True))))
+    newVotes = list(set(list(ballots.values_list("vote_id",
                                                  flat=True))))
-    data['sessions_of_updated_votes'] = newVotes
+    data['sessions_of_updated_votes'] = newVotesSessions
 
     print "questions"
     data['questions'] = []
@@ -1676,6 +1678,13 @@ def getAllChangesAfter(request,
                  'link': link,
                  }
         data['questions'].append(q_obj)
+
+    # build mail for update votes
+    sendMailForEditVotes({vote.id: vote.session_id
+                          for vote
+                          in Vote.objects.filter(id__in=newVotes)
+                          }
+                         )
 
     return JsonResponse(data)
 
