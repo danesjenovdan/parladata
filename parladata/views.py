@@ -1680,11 +1680,12 @@ def getAllChangesAfter(request,
         data['questions'].append(q_obj)
 
     # build mail for update votes
-    sendMailForEditVotes({vote.id: vote.session_id
-                          for vote
-                          in Vote.objects.filter(id__in=newVotes)
-                          }
-                         )
+    if data['ballots']:
+        sendMailForEditVotes({vote.id: vote.session_id
+                              for vote
+                              in Vote.objects.filter(id__in=newVotes)
+                              }
+                             )
 
     return JsonResponse(data)
 
