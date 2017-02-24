@@ -769,5 +769,5 @@ def sendMailForEditVotes(votes):
     send_mail('Nekaj novih glasovanj je za pottagat :)',
               content,
               'test@parlameter.si',
-              [admin[1] for admin in settings.ADMINS settings.DATA_ADMINS],
+              [admin[1] for admin in settings.ADMINS + settings.DATA_ADMINS],
               fail_silently=False,)
