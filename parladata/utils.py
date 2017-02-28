@@ -744,9 +744,6 @@ def sendMailForEditVotes(votes):
     updateUrls = []
     sesUpdateUrls = []
     graphUpdateUrls = []
-    for vote in updated_votes:
-        url = motionAdmin + str(vote.motion.id)
-        motionUrls.append(url)
     for session in list(set(votes.values())):
         url = setMotionsUrl + str(session)
         updateUrls.append(url)
@@ -756,8 +753,8 @@ def sendMailForEditVotes(votes):
         url = pageGraph + str(session) + '/' + str(vote) + '?forceRender=true'
         graphUpdateUrls.append(url)
 
-    pre = 'Na naslednjih povezavah najdes glasovanja, ki jih je potrebno poupdejtat: \n'
-    content = pre + "\n".join(motionUrls)
+    pre = 'Na naslednji povezavi najdes glasovanja, ki jih je potrebno poupdejtat: \n'
+    content = pre + "\n " + motionAdmin
     content += '\n \n nato jih potagaj: \n' + tagsUrl
     content += "\n \n Ko vse to uredis poklikaj naslednje linke, da vse to spravis na parlalize: \n"
     content += "\n".join(updateUrls)
