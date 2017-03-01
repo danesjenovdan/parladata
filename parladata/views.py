@@ -380,7 +380,70 @@ def getMPStatic(request, person_id, date_=None):
 
 
 def getSessions(request, date_=None):
-    """Returns all Sessions from beginning of mandate."""
+    """
+    * @api {get} getSessions/{?date} List all sessions
+    * @apiName getSessions
+    * @apiGroup Sessions
+    * @apiDescription This function returns an array of objects listing
+      all sessions that have happened since the beggining of the current mandate.
+      The optional date parameter determines the date up until which sessions should
+      be returned. If no date is specified it is assumed the date is today.
+    * @apiParam {date} date Optional date.
+
+    * @apiSucess {Object[]} / An array of objects, each object representing a session.
+    * @apiSuccess {String} /.classification Session classification. Returns null if the session
+      doesn't have classification. Sometimes used for internal sorting purposes.
+    * @apiSuccess {Boolean} /.is_in_review Return true if the session is in review, returns false otherwise.
+    * @apiSuccess {String} /.name Session name.
+    * @apiSuccess {String} /.gov_id Session id on http://www.dz-rs.si. Not technically an ID, more of an URI,
+      but it is still used to match the session to the government's website.
+    * @apiSuccess {String} /.mandate Currently return null, but functions as a placeholder to determine
+      the mandate the session belongs to.
+    * @apiSuccess {String} /.start_time Timestamp of the session's start.
+    * @apiSuccess {String[]} /.organizations_id An array of strings representing Parladata ids of organizations
+      this session belongs to.
+    * @apiSuccess {Integer} /.id The session's Parladata id.
+    * @apiSuccess {String} /.end_time Placeholder for session's end time. Currently returns null because we don't
+      know when exactly the session ends.
+
+    * @apiExample {curl} Example:
+        curl -i https://data.parlameter.si/v1/getSessions/
+    * @apiExample {curl} Example with date:
+        curl -i https://data.parlameter.si/v1/getSessions/21.12.2016
+
+    * @apiSuccessExample {json} Example response:
+    [{
+        "classification": null,
+        "is_in_review": false,
+        "name": "71. nujna seja",
+        "gov_id": "/wps/portal/Home/deloDZ/seje/izbranaSejaDt?mandat=VII&amp;seja=14%20071.%20Nujna&amp;uid=B5BC47C4DF4749B3C12580C60036936E",
+        "mandate": null,
+        "start_time": "2017-02-15T01:00:00",
+        "organizations_id": [],
+        "id": 9179,
+        "end_time": null
+        }, {
+        "classification": null,
+        "is_in_review": false,
+        "name": "27. redna seja",
+        "gov_id": "/wps/portal/Home/deloDZ/seje/izbranaSeja?mandat=VII&amp;seja=27.%20Redna&amp;uid=1B788DD37B254072C125807900377C52",
+        "mandate": null,
+        "start_time": "2017-02-13T01:00:00",
+        "organizations_id": ["95"],
+        "id": 9158,
+        "end_time": null
+        }, {
+        "classification": null,
+        "is_in_review": false,
+        "name": "47. nujna seja",
+        "gov_id": "/wps/portal/Home/deloDZ/seje/izbranaSejaDt?mandat=VII&amp;seja=12%20047.%20Nujna&amp;uid=B93F45394862FB17C12580BF003F8548",
+        "mandate": null,
+        "start_time": "2017-02-13T01:00:00",
+        "organizations_id": ["19"],
+        "id": 9159,
+        "end_time": null
+    }]
+    """
 
     if date_:
         fdate = datetime.strptime(date_, settings.API_DATE_FORMAT).date()
@@ -408,6 +471,63 @@ def getSessions(request, date_=None):
 
 def getSessionsOfOrg(request, org_id, date_=None):
     """Returns all Sesisons of specific organization."""
+    """
+    * @api {get} getSessionsOfOrg/{id}/{?date} List all sessions of a specific organization
+    * @apiName getSessionsOfOrg
+    * @apiGroup Sessions
+    * @apiDescription This function returns an array of objects listing
+      all sessions that have happened since the beggining of the current mandate in
+      the specified organization. The optional date parameter determines the date up
+      until which sessions should be returned. If no date is specified it is assumed
+      the date is today.
+    * @apiParam {id} id Organization id.
+    * @apiParam {date} date Optional date.
+
+    * @apiSucess {Object[]} / An array of objects, each object representing a session.
+    * @apiSuccess {String} /.name Session name.
+    * @apiSuccess {String} /.classification Session classification. Returns null if the session
+      doesn't have classification. Sometimes used for internal sorting purposes.
+    * @apiSuccess {String} /.start_time Timestamp of the session's start.
+    * @apiSuccess {String} /.end_time Placeholder for session's end time. Currently returns null because we don't
+      know when exactly the session ends.
+    * @apiSuccess {String} /.mandate Currently return null, but functions as a placeholder to determine
+      the mandate the session belongs to.
+    * @apiSuccess {Integer} /.id The session's Parladata id.
+    * @apiSuccess {String} /.gov_id Session id on http://www.dz-rs.si. Not technically an ID, more of an URI,
+      but it is still used to match the session to the government's website.
+
+    * @apiExample {curl} Example:
+        curl -i https://data.parlameter.si/v1/getSessionsOfOrg/95
+    * @apiExample {curl} Example with date:
+        curl -i https://data.parlameter.si/v1/getSessionsOfOrg/95/21.12.2016
+
+    * @apiSuccessExample {json} Example response:
+    [{
+        "name": "26. izredna seja",
+        "classification": null,
+        "start_time": "2015-12-09T01:00:00",
+        "end_time": null,
+        "mandate": null,
+        "id": 5595,
+        "gov_id": "/wps/portal/Home/deloDZ/seje/izbranaSeja?mandat=VII&amp;seja=26.%20Izredna&amp;uid=3B664ACC0A79164EC1257F11003317C8"
+        }, {
+        "name": "25. izredna seja",
+        "classification": null,
+        "start_time": "2015-12-01T01:00:00",
+        "end_time": null,
+        "mandate": null,
+        "id": 5596,
+        "gov_id": "/wps/portal/Home/deloDZ/seje/izbranaSeja?mandat=VII&amp;seja=25.%20Izredna&amp;uid=5F0E4C54348C32D1C1257F0D0035ABF5"
+        }, {
+        "name": "24. izredna seja",
+        "classification": null,
+        "start_time": "2015-11-20T01:00:00",
+        "end_time": null,
+        "mandate": null,
+        "id": 5597,
+        "gov_id": "/wps/portal/Home/deloDZ/seje/izbranaSeja?mandat=VII&amp;seja=24.%20Izredna&amp;uid=52A5C4FAC552CB55C1257EF80042C358"
+    }]
+    """
 
     if date_:
         fdate = datetime.strptime(date_, settings.API_DATE_FORMAT).date()
@@ -432,12 +552,86 @@ def getSessionsOfOrg(request, org_id, date_=None):
 
 def getVotes(request, date_=None):
     """Returns votes of MPs."""
+    """
+    * @api {get} getVotes/{?date} List all ballots of all MPs
+    * @apiName getVotes
+    * @apiGroup MPs
+    * @apiDescription This function returns an object with MP's Parladata ids as keys
+      listing all votes and the MP's ballot up until the specified date. The optional
+      date parameter determines the date up until which sessions should be returned.
+      If no date is specified it is assumed the date is today.
+    * @apiParam {date} date Optional date.
+
+    * @apiSuccess {Object} / An object with MPs' ids as keys.
+    * @apiSuccess {Object} /.mp MP's ballots for all votes up until the specified date.
+    * @apiSuccess {String} /.mp.motion Motion ids as keys with a string representing the ballot: "za" "ni" "proti" "kvorum".
+
+    * @apiExample {curl} Example:
+        curl -i https://data.parlameter.si/v1/getVotes/
+    * @apiExample {curl} Example with date:
+        curl -i https://data.parlameter.si/v1/getVotes/21.12.2016
+
+    * @apiSuccessExample {json} Example response:
+    {
+        "24": {
+            "6512": "za",
+            "6513": "za",
+            "6509": "za",
+            "6510": "za",
+            "6511": "za"
+        },
+        "25": {
+            "6512": "za",
+            "6513": "za",
+            "6509": "kvorum",
+            "6510": "za",
+            "6511": "proti"
+        },
+        "26": {
+            "6512": "za",
+            "6513": "za",
+            "6509": "kvorum",
+            "6510": "za",
+            "6511": "proti"
+        }
+    }
+    """
 
     return JsonResponse(getVotesDict(date_))
 
 
 def getSpeeches(request, person_id, date_=None):
     """Returns speechs of MP."""
+    """
+    * @api {get} getSpeeches/{id}/{?date} MP's speeches as objects
+    * @apiName getSpeeches
+    * @apiGroup MPs
+    * @apiDescription This function returns an array of objects, each object
+      contains the corresponding speech's Parladata id and it's content. Optionally
+      it returns speeches up until the optionally passed date.
+    * @apiParam {Integer} id MP's Parladata id.
+    * @apiParam {date} date Optional date.
+
+    * @apiSuccess {Object[]} / An array of all speeches as objects.
+    * @apiSuccess {String} /.content The speach's content.
+    * @apiSuccess {Integer} /.speech_id The speach's Parladata id.
+
+    * @apiExample {curl} Example:
+        curl -i https://data.parlameter.si/v1/getSpeeches/12
+    * @apiExample {curl} Example with date:
+        curl -i https://data.parlameter.si/v1/getSpeeches/12/21.12.2016
+
+    * @apiSuccessExample {json} Example response:
+    [
+        {
+            "content": "Hvala za besedo. \nSlovenija je, vsaj po mojem mnenju, na neki to\u010dki, poudarjam, na to\u010dki, na kateri si nikakor ne moremo privo\u0161\u010diti bohotenja javnega sektorja oziroma javne uprave. Kot smo \u017ee danes sli\u0161ali v razpravi, imamo okrog 4 tiso\u010d na\u0161ih dr\u017eavljanov, ki \u017eivijo na robu socialne stiske, okrog 120 tiso\u010d je brezposelnih, in te bo tudi to pove\u010danje ministrstev kar precej obremenilo. \u0160e najbolj obremenilo v negativnem smislu pa bo to na\u0161e gospodarstvo. Moram re\u010di, da sem pri\u010dakovala, da si bo ta vlada zamislila nek koncept vitke in produktivne javne uprave. To so pri\u010dakovali tudi na\u0161i dr\u017eavljani, ki so to tudi izrazili v svoji anketi, pa kljub temu, da nismo navedli oziroma ne navajam vira ankete, ampak je bila objavljena v ponedeljek zjutraj. Predlog sprememb zakona, ki ga imamo pred seboj, je tudi brez neke vsebinske analize in brez finan\u010dne konstrukcije. Pravite, da ta reorganizacija oziroma pove\u010danje \u0161tevila ministrstev ne bo imelo finan\u010dnih posledic. Pa \u0161e kak\u0161ne finan\u010dne posledice bodo. Upam, da bomo dobili na koncu poro\u010dilo o u\u010dinkovitosti tega va\u0161ega zakona, kot smo to tudi z na\u0161o pobudo oziroma z vlo\u017eitvijo tega amandmaja zahtevali. Menim, da bi morali razmi\u0161ljati predvsem v smeri zdru\u017eevanja ministrstev in se tako nekako poenotiti oziroma poistovetiti z drugimi dr\u017eavami, kot je \u017ee bilo danes v razpravi omenjeno, primerljivimi evropskimi dr\u017eavami. \u010ce pa bi \u017ee razmi\u0161ljali o pove\u010danju \u0161tevila ministrstev, bi bilo pa verjetno dobro, da bi razmi\u0161ljali o ministrstvih, ki prina\u0161ajo neko dodano vrednost, ministrstvo za gospodarske, evropske zadeve in tako naprej. Moram pa re\u010di, da sem danes vesela, glede na to, da se v\u010deraj na odboru za notranjo politiko nih\u010de iz SMC ni oglasil, danes je pa zelo lepo, da ste se vsi razpravljavci prijavili. Hvala.",
+            "speech_id": 524506
+        }, {
+            "content": "Hvala za besedo. Lepo pozdravljeni vsi.\nGlede na dano situacijo v kateri se nahajamo in vsi vemo, da ni prav ro\u017enata, moram re\u010di, da sem bila prepri\u010dana, da bo vlada \u0161la prav v nasprotno smer, se pravi v kr\u010denje ministrstva ne pa v \u0161iritev. Pri\u010dakovala sem tudi, da se bo zavzela za koncept vitke in produktivne javne uprave. Prav tako mislim, da so to pri\u010dakovali od te vlade tudi na\u0161i dr\u017eavljani, na\u0161i davkopla\u010devalci tako kot je rekel kolega Vinko, so se izrekli tudi na anketi, ki je bila objavljena v ponedeljek, kar nekaj \u010dez 80% so proti \u0161iritvi javne uprave. Nikakor pa se ne morem dati prepri\u010dati oziroma me ne morete prepri\u010dati, da ta predlog sprememb ne bo imel finan\u010dnih posledic, kot je zapisano. Pri\u010dakovala sem tudi neko finan\u010dno konstrukcijo. \u010ce povem za primer kako smo to delali na lokalni samoupravi. \u010ce smo \u017eeleli ustanoviti nek odbor s petimi \u010dlani, smo morali narediti temeljito finan\u010dno konstrukcijo in potem tudi \u010dez \u010das poro\u010dati o realizaciji. Prav zanimivo bi bilo videti meseca januarja, februarja, ko bodo nova ministrstva prevzela vse svoje naloge, kak\u0161na bi bila ta slika s finan\u010dnega in seveda kadrovskega podro\u010dja. Hvala.",
+            "speech_id": 580777
+        }
+    ]
+    """
 
     if date_:
         fdate = datetime.strptime(date_, settings.API_DATE_FORMAT).date()
@@ -458,7 +652,32 @@ def getSpeeches(request, person_id, date_=None):
 
 
 def getSpeechesInRange(request, person_id, date_from, date_to):
-    """Returns speechs of MP in range(from specific date to specific date)."""
+    """Returns speeches of MP in range(from specific date to specific date)."""
+    """
+    * @api {get} getSpeechesInRange/{id}/{date_from}/{date_to} Get all MP's speeches between two dates
+    * @apiName getSpeechesInRange
+    * @apiGroup MPs
+    * @apiDescription This function returns an array of objects, each object
+      contains the corresponding speech's Parladata id and it's content. All the
+      speeches have happened between the two dates set in the url.
+
+    * @apiSuccess {Object[]} / An array of objects containing speech's content and Parladata id.
+    * @apiSuccess {String} /.content The speach's content.
+    * @apiSuccess {Integer} /.speech_id The speach's Parladata id.
+
+    * @apiExample {curl} Example:
+        curl -i https://data.parlameter.si/v1/getSpeechesInRange/12/10.12.2015/1.2.2016
+
+    * @apiSuccessExample {json} Example response:
+    [{
+        "content": "Hvala za besedo, predsedujo\u010di. Lep pozdrav vsem tukaj v dvorani! \nDejstvo je, da na\u0161a vlada ne vlada. To ni samo moje mnenje, to je mnenje tudi mnogih, mnogih dr\u017eavljanov. Oziroma bom rekla tako, da ko gre za sprejem nekih ukrepov, ki jih Vlada sprejema in s katerimi se \u0161e bolj praznijo \u017eepi na\u0161ih dr\u017eavljanov ali pa \u0161e bolj slabijo na\u0161e gospodarstvo, \u0161e nekako kar ob\u010dutimo delo te vlade. Ko pa gre za to, da bi naj ta vlada nekako za\u0161\u010ditila svoje dr\u017eavljane, pa vidimo, da ta vlada tega nikakor ne zmore. \nDanes smo \u017ee ve\u010dkrat sli\u0161ali, da je na\u0161a stranka pet ali \u0161estkrat zahtevala sklic seje na to temo. Seveda smo sklicali seje na to temo, ampak vse to z namenom, da nekako izvemo, kak\u0161no je mnenje, kak\u0161ni so predlogi in pa seveda tudi ukrepi te vlade. \u017dal moram re\u010di, da smo poslu\u0161ali, kot je \u017ee bilo danes tudi ugotovljeno, v bistvu samo poro\u010dila oziroma to, kaj se ne bo v Sloveniji zgodilo. Ampak moram re\u010di, glej ga vraga, vse, kar je Vlada napovedala, da se ne bo zgodilo, se je zgodilo. \n\u010ce malo pogledamo po medijih oziroma \u010dasopisih nekatere izjave predstavnikov vlade, lahko vidimo, da je avgusta predsednik Cerar rekel: \"Slovenija je pripravljena na prihod ve\u010djega \u0161tevila migrantov.\" Migranti so pa pre\u010dkali hrva\u0161ko-slovensko mejo preko nezavarovanih obmo\u010dij, \u0161li so \u010dez gozdove, sadovnjake, prebivalci Rigonc pa so bili na koncu z \u017eivci in potrpljenjem. Avgusta lanskega leta je dr\u017eavni sekretar \u0160efic rekel, da bodo migranti Slovenijo zgolj pre\u010dkali. Ja, zgodila pa se je razlika v \u0161tevilu migrantov. Septembra lanskega leta ste prav tako rekli: \"Poskrbljeno bo za varnost tako znotraj centrov kot v dr\u017eavi\". Dogajali pa so se pretepi znotraj nastanitvenih centrov, za\u017eiganje \u0161otorov, kraje na bencinskih \u010drpalkah in \u010de so to za vas, gospod dr\u017eavni sekretar, okoli\u0161\u010dine, ki so zna\u010dilne za varno dr\u017eavo, za nas to niso. V septembru je predsednik Vlade rekel: Slovenija se je odli\u010dno soo\u010dila z begunsko migrantsko krizo in postavila primer dobre prakse v EU. Zaskrbljeni ob\u010dani obmejnih krajev, smeti in \u010dlove\u0161ki iztrebki ter seveda opozorila EU in gro\u017enja z mini Schengenom, zaradi tega me mo\u010dno skrbi, \u010de je to dobra praksa za Slovenijo. Januarja leto\u0161njega leta je predsednik Vlade tudi rekel, da so za postavljanje tehni\u010dnih ovir krivi Hrvati. Prosim, to je va\u0161a ocena, o tem ocenjujete vi. Rekla bom, da me je kar po\u0161teno strah, ker je Vlada v mnenju za dana\u0161njo sejo zapisala bojazen, da bo Republika Slovenija prejela nazaj vse migrante, ki jih bodo v ciljnih dr\u017eavah zavrnili, je odve\u010d. Glede na vse navedbe prej, ki sem jih prebrala in ne dr\u017eijo, me mo\u010dno skrbi, da bomo vse te migrante pa\u010d dobili oziroma se bo to zgodilo. \nKo smo na mati\u010dnih delovnih telesih opozarjali na migrantsko krizo ste nam nekako vsi o\u010ditali, da se gremo populizem. Ko je na\u0161 predsednik, predsednik na\u0161e stranke, ob koncu avgusta podal sedem ukrepov za re\u0161itev iz teh krize, jih je Vlada lepo in \u010dedno prezrla, Evropa pa jih je seveda malo kasneje tudi vse povzela. \u010ce grem \u0161e naprej, konec oktobra se predsednik na\u0161e stranke ni udele\u017eil seje Sveta za nacionalno varnost. V pismu, ki ga je poslal Svetu, je opozoril na vse napake te vlade in podal osem predlogov oziroma ukrepov. Predlagal je: da Slovenija oblikuje operativno koordinacijsko skupino za obvladovanje migrantskih valov po vzoru koordinacijske skupine iz leta 1991; da Slovenija vzpostavi tehni\u010dne mo\u017enosti za nastavitev zapornih ograj na najbolj izpostavljenih delih meje; da Slovenija pospe\u0161eno dopolni oziroma ukrepi in pa usposobi prostovoljno rezervo Slovenske vojske in policije; da Slovenija takoj zagotovi izpla\u010dilo izrednih dodatkov policistom in vojakom ter ostalim zaposlenim, ki so izjemno obremenjeni z obvladovanjem migrantskih valov; da Slovenija preneha na\u010drtovati velike begunske centre za namestitev 5 tiso\u010d ali ve\u010d ljudi; da Slovenija zagotovi razbremenitev prebivalstva ob\u010dine Bre\u017eice in drugih obmejnih ob\u010din s prenosom administrativnih postopkov v ve\u010dje \u0161tevilo tranzitnih zbirnih centrov po celi dr\u017eavi; da se pospe\u0161eno zmanj\u0161uje razlika med \u0161tevilom migrantov, ki vstopajo v dr\u017eavo in pa tistimi, ki jo zapu\u0161\u010dajo; da se ob sprejemu migrantov iz humanitarnih in varnostnih razlogov takoj in dosledno lo\u010duje \u017eenske in otroke oziroma dru\u017eine kot najbolj ranljive skupine ter da se jih obravnava prednostno. Pismo je takrat predsednik na\u0161e stranke zaklju\u010dil s tem stavkom: \"Naj slovenska diplomacija kon\u010dno spet zaslu\u017ei denar, ki ga zanjo namenjajo davkopla\u010devalci.\" Na to njegovo pismo oziroma predloge se je odzval predsednik Vlade 28. oktobra na tiskovni konferenci, ko je to njegovo pisanje ocenil kot nedr\u017eavotvorno in poskus delitve Slovencev. Prebrala sem malo prej teh osem predlogov in vas zdaj spra\u0161ujem: Kateri od teh ukrepov je nedr\u017eavotvoren in kateri od teh ukrepov se vam zdi, da deli Slovence? To je tudi vpra\u0161anje za spo\u0161tovano ministrico.\nZa konec bom rekla tole, da je na\u0161e dr\u017eavljane strah. Strah jih je za njihovo varnost, blaginjo in nenazadnje \u2013priznajmo si \u2013 tudi za na\u0161o kulturo. Hvala lepa.",
+        "speech_id": 520693
+        }, {
+        "content": "Predsednik, hvala lepa za besedo. Lep pozdrav vsem prisotnim. Za\u010dela bom s takimi besedami, kot sem za\u010dela pri razpravi na Dr\u017eavnem zboru ob sprejemanju prora\u010duna za leto 2016 in 2017 in sicer, da \u017ee samo Ministrstvo za zdravje potrebuje zdravnika, pa je \u010disto vseeno ali to koncesionar ali pa je iz javnega zdravstva. Zakaj tako mislim? \u017de kolegica Jelka Godec je prej omenila kaj se je dogajalo s pravilnikom o nujni medicinski pomo\u010di. Najprej kako je potekal postopek in tu se bom ustavila predvsem na objavi tega pravilnika in pa na priporo\u010dilo sklepa Dr\u017eavnega zbora in pa tega mati\u010dnega odbora.",
+        "speech_id": 534332
+        }
+    }]
+    """
 
     fdate = datetime.strptime(date_from, settings.API_DATE_FORMAT).date()
     tdate = datetime.strptime(date_to, settings.API_DATE_FORMAT).date()
@@ -479,6 +698,40 @@ def getMembersOfPGs(request):
     """Returns list of member's id for each PG.
     PG = Parlamentary group
     """
+    """
+    * @api {get} getMembersOfPGs/ Get PGs and their members today
+    * @apiName getMembersOfPGs
+    * @apiGroup PGs
+    * @apiDescription This function returns object with PG Parladata ids as keys.
+      Each key corresponds to an array of integers containing Parladata ids of 
+      all MPs that are members of the corresponging PG.
+
+    * @apiSuccess {Object} / An object with PG ids as keys.
+    * @apiSuccess {Integer[]} /.id An array of integers corresponding to members' Parladata ids.
+
+    * @apiExample {curl} Example:
+        curl -i https://data.parlameter.si/v1/getMembersOfPGs/
+
+    * @apiSuccessExample {json} Example response:
+    {
+        "1": [3, 14, 21, 39, 44, 68, 71, 74, 88, 16, 11, 27, 33, 40, 43, 57, 60, 70, 72, 19, 76, 77, 87, 89, 1354, 73, 84, 67, 48, 59, 92, 2933, 2934, 1357, 1355],
+        "2": [4, 24],
+        "3": [69, 22, 29, 34, 45, 52, 96, 85, 37, 41, 5],
+        "4": [],
+        "5": [10, 12, 26, 35, 51, 54, 55, 64, 66, 75, 36, 78, 25, 2, 23, 47, 53, 65, 91],
+        "6": [32, 86, 63, 81, 17, 49],
+        "7": [61, 62, 1356, 83, 30, 95],
+        "8": [80, 82, 31, 42, 79, 58],
+        "107": [],
+        "108": [15],
+        "109": [50, 9, 18, 7],
+        "110": [],
+        "111": [],
+        "112": [],
+        "97": [],
+        "100": []
+    }
+    """
 
     parliamentary_group = Organization.objects.filter(classification__in=PS_NP)
     members = Membership.objects.filter(Q(end_time=None) |
@@ -495,6 +748,42 @@ def getMembersOfPGs(request):
 
 def getMembersOfPGsOnDate(request, date_=None):
     """Returns list of member's id for each PG, on specific date."""
+    """
+    * @api {get} getMembersOfPGsOnDate/{date} Get PGs and their members on a specific date
+    * @apiName getMembersOfPGsOnDate
+    * @apiGroup PGs
+    * @apiDescription This function returns object with PG Parladata ids as keys.
+      Each key corresponds to an array of integers containing Parladata ids of 
+      all MPs that are members of the corresponging PG.
+
+    * @apiParam {date} date The date for which memberships should be displayed.
+
+    * @apiSuccess {Object} / An object with PG ids as keys.
+    * @apiSuccess {Integer[]} /.id An array of integers corresponding to members' Parladata ids.
+
+    * @apiExample {curl} Example:
+        curl -i https://data.parlameter.si/v1/getMembersOfPGsOnDate/12.12.2015
+
+    * @apiSuccessExample {json} Example response:
+    {
+        "1": [3, 14, 21, 39, 44, 68, 71, 74, 88, 16, 11, 27, 33, 40, 43, 57, 60, 70, 72, 19, 76, 77, 87, 89, 1354, 73, 84, 67, 48, 59, 92, 2933, 2934, 1357, 1355],
+        "2": [4, 24],
+        "3": [69, 22, 29, 34, 45, 52, 96, 85, 37, 41, 5],
+        "4": [],
+        "5": [10, 12, 26, 35, 51, 54, 55, 64, 66, 75, 36, 78, 25, 2, 23, 47, 53, 65, 91],
+        "6": [32, 86, 63, 81, 17, 49],
+        "7": [61, 62, 1356, 83, 30, 95],
+        "8": [80, 82, 31, 42, 79, 58],
+        "107": [],
+        "108": [15],
+        "109": [50, 9, 18, 7],
+        "110": [],
+        "111": [],
+        "112": [],
+        "97": [],
+        "100": []
+    }
+    """
 
     if date_:
         fdate = datetime.strptime(date_, settings.API_DATE_FORMAT).date()
@@ -595,7 +884,7 @@ def getNumberOfAllMPAttendedSessions(request, date_):
 
 def getSpeechesOfMP(request, person_id, date_=None):
     """
-    * @api {get} getSpeechesOfMP/{id}/{?date} MP's speeches
+    * @api {get} getSpeechesOfMP/{id}/{?date} MP's speeches as strings
     * @apiName getSpeechesOfMP
     * @apiGroup MPs
     * @apiDescription This function returns an array of strings, each string
@@ -702,6 +991,27 @@ def getAllSpeechesOfMPs(request, date_=None):
 
 def getMPParty(request, person_id):
     """Returns party of specific MP."""
+    """
+    * @api {get} getMPParty/{id}/ MP's party
+    * @apiName getMPParty
+    * @apiGroup MPs
+    * @apiDescription This function returns MP's party affiliation.
+    * @apiParam {Integer} id MP's Parladata id.
+
+    * @apiSuccess {String} acronym Party acronym.
+    * @apiSuccess {String} name Full name of the party.
+    * @apiSucess {Integer} id The MP's party's Parladata id.
+
+    * @apiExample {curl} Example:
+        curl -i https://data.parlameter.si/v1/getMPParty
+
+    * @apiSuccessExample {json} Example response:
+    {
+        "acronym": "SDS",
+        "name": "PS Slovenska Demokratska Stranka",
+        "id": 5
+    }
+    """
 
     person = Person.objects.get(id=person_id)
     party = [{'name': membership.organization.name,
@@ -720,6 +1030,24 @@ def getMPParty(request, person_id):
 
 def getNumberOfSeatsOfPG(request, pg_id):
     """Returns number of seats in each PG."""
+    """
+    * @api {get} getNumberOfSeatsOfPG/{id}/ Number of PG's seats
+    * @apiName getNumberOfSeatsOfPG
+    * @apiGroup PGs
+    * @apiDescription This function returns an object with the PG's id as the key
+      and the number of seats for the desired PG.
+    * @apiParam {Integer} id PG's id.
+
+    * @apiSuccess {Integer} id The number of seats the PG with the same id as the key holds.
+
+    * @apiExample {curl} Example:
+        curl -i https://data.parlameter.si/v1/getNumberOfSeatsOfPG/1
+
+    * @apiSuccessExample {json} Example response:
+    {
+        "1": 45
+    }
+    """
 
     value = dict()
     parliamentary_group = Organization.objects.filter(classification=PS,
@@ -731,8 +1059,41 @@ def getNumberOfSeatsOfPG(request, pg_id):
     return JsonResponse(value, safe=False)
 
 
-def getBasicInfOfPG(request, pg_id, date_):
+def getBasicInfOfPG(request, pg_id, date_=None):
     """Returns basic info of PG."""
+    """
+    * @api {get} getBasicInfoOfPG/{id}/{?date} PG's basic info
+    * @apiName getBasicInfoOfPG
+    * @apiGroup PGs
+    * @apiDescription This function returns an object with the PG's basic info. If
+      the date parameter is specified, it returns the info that was valid on that day.
+    * @apiParam {Integer} id PG's id.
+    * @apiParam {date} date Optional date.
+
+    * @apiSuccess {Integer} AllVoters The number of voters that voted for this person.
+    * @apiSuccess {Integer} HeadOfPG Parladata id of the person who heads the PG.
+    * @apiSuccess {String} Twitter PG's Twitter url.
+    * @apiSuccess {Integer} ViceOfPG Parladata id of the person who is the vice president of the PG.
+    * @apiSuccess {String} Facebook PG's Facebook url.
+    * @apiSuccess {String} Mail PG's official email.
+    * @apiSuccess {Integer} NumberOfSeats Number of seats the PG holds in the parliament.
+
+    * @apiExample {curl} Example:
+        curl -i https://data.parlameter.si/v1/getBasicInfoOfPG/2
+    * @apiExample {curl} Example with date:
+        curl -i https://data.parlameter.si/v1/getBasicInfoOfPG/2/12.12.2016
+
+    * @apiSuccessExample {json} Example response:
+    {
+        "AllVoters": 2957,
+        "HeadOfPG": 24,
+        "Twitter": null,
+        "ViceOfPG": null,
+        "Facebook": null,
+        "Mail": "petra.jamnik@dz-rs.si",
+        "NumberOfSeats": 2
+    }
+    """
 
     if date_:
         fdate = datetime.strptime(date_, settings.API_DATE_FORMAT).date()
@@ -825,6 +1186,78 @@ def getBasicInfOfPG(request, pg_id, date_):
 
 def getAllPGs(request, date_=None):
     """Returns all PGs."""
+    """
+    * @api {get} getAllPGs/{?date} Get all PGs
+    * @apiName getAllPGs
+    * @apiGroup PGs
+    * @apiDescription This function returns an object with all the PG's active on a given date.
+      If no optional date parameter is given, it is assumed the date is today. It lists PGs in 
+      an object with the PGs Parladata ids as keys.
+    * @apiParam {date} date Optional date.
+
+    * @apiSuccess {Object} id PG object with their id as key.
+    * @apiSuccess {String} id.acronym The PG's acronym.
+    * @apiSuccess {Boolean} id.is_coalition Is the PG in coalition with the government?
+    * @apiSuccess {String} name The name of the PG.
+    * @apiSuccess {Integer} id Parladata id of the PG.
+
+    * @apiExample {curl} Example:
+        curl -i https://data.parlameter.si/v1/getAllPGs/
+    * @apiExample {curl} Example with date:
+        curl -i https://data.parlameter.si/v1/getAllPGs/12.12.2016
+
+    * @apiSuccessExample {json} Example response:
+    {
+        "1": {
+            "acronym": "SMC",
+            "is_coalition": true,
+            "name": "PS Stranka modernega centra",
+            "id": 1
+        },
+        "2": {
+            "acronym": "IMNS",
+            "is_coalition": false,
+            "name": "PS italijanske in mad\u017earske narodne skupnosti",
+            "id": 2
+        },
+        "3": {
+            "acronym": "DeSUS",
+            "is_coalition": true,
+            "name": "PS Demokratska Stranka Upokojencev Slovenije",
+            "id": 3
+        },
+        "5": {
+            "acronym": "SDS",
+            "is_coalition": false,
+            "name": "PS Slovenska Demokratska Stranka",
+            "id": 5
+        },
+        "6": {
+            "acronym": "NSI",
+            "is_coalition": false,
+            "name": "PS Nova Slovenija",
+            "id": 6
+        },
+        "7": {
+            "acronym": "SD",
+            "is_coalition": true,
+            "name": "PS Socialni Demokrati",
+            "id": 7
+        },
+        "8": {
+            "acronym": "ZL",
+            "is_coalition": false,
+            "name": "PS Zdru\u017eena Levica",
+            "id": 8
+        },
+        "109": {
+            "acronym": "PS NP",
+            "is_coalition": false,
+            "name": "PS nepovezanih poslancev ",
+            "id": 109
+        }
+    }
+    """
 
     if date_:
         fdate = datetime.strptime(date_, settings.API_DATE_FORMAT)
