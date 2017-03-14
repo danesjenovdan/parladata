@@ -15,4 +15,5 @@ def checkDuplVotes():
             for dupl in uniq:
                 dd = vv.filter(start_time=dupl)
                 print 'is_equal_result', dd[0].getResult() == dd[1].getResult()
-                print 'Text', dd[0].name == dd[1].name
+                print 'Text', dd[0].name, dd[1].name
+                print 'motion text', dd[0].motion.text, dd[1].motion.text
