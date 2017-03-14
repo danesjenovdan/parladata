@@ -11,6 +11,7 @@ from datetime import datetime
 from .behaviors.models import Timestampable, Taggable, Versionable
 from .querysets import PostQuerySet, OtherNameQuerySet, ContactDetailQuerySet, MembershipQuerySet, OrganizationQuerySet, PersonQuerySet
 from djgeojson.fields import PolygonField
+from django.db.models import Count as dCount
 
 
 class PopoloDateTimeField(models.DateTimeField):
@@ -762,6 +763,20 @@ class Vote(Timestampable, Taggable, models.Model):
     document_url = models.CharField(blank=True, null=True,
                                     max_length=515,
                                     help_text='"document" url for this vote')
+
+    def getResult(self):
+        opts = self.ballot_set.all().values_list("option")
+        opt_counts = opts.annotate(dCount('option'))
+
+        out = {'ni': 0,
+               'proti': 0,
+               'za': 0,
+               'kvorum': 0
+               }
+        for opt in opt_counts:
+            out[opt[0]] = opt[1]
+
+        return out
 
 
 class Count(Timestampable, models.Model):
