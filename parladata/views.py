@@ -770,7 +770,8 @@ def motionOfSession(request, id_se):
                              'text': motion.text,
                              'result': False if motion.result == '0' else True,
                              'tags': map(smart_str, vote.tags.names()),
-                             'doc_url': links_list})
+                             'doc_url': links_list,
+                             'start_time': vote.start_time})
         else:
             data = []
         return JsonResponse(data, safe=False)
