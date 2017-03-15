@@ -675,6 +675,8 @@ class Speech(Versionable, Timestampable, Taggable, models.Model):
 
 class Motion(Timestampable, Taggable, models.Model):
     """Votings which taken place in parlament."""
+    uuid = models.UUIDField(blank=True, null=True,
+                            help_text='motions uuid from DZ page')
 
     organization = models.ForeignKey('Organization',
                                      blank=True, null=True,
