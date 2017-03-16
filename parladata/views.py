@@ -1112,32 +1112,45 @@ def getAllTimeMPs(request, date_=None):
                                         Q(start_time=None),
                                         organization__in=parliamentary_group)
 
-    return JsonResponse([{'id': i.person.id,
-                          'name': i.person.name,
-                          'membership': i.organization.name,
-                          'acronym': i.organization.acronym,
-                          'classification': i.person.classification,
-                          'family_name': i.person.family_name,
-                          'given_name': i.person.given_name,
-                          'additional_name': i.additional_name,
-                          'honorific_prefix': i.honorific_prefix,
-                          'honorific_suffix': i.honorific_suffix,
-                          'patronymic_name': i.patronymic_name,
-                          'sort_name': i.sort_name,
-                          'email': i.email,
-                          'gender': i.gender,
-                          'birth_date': str(i.birth_date),
-                          'death_date': str(i.death_date),
-                          'summary': i.summary,
-                          'biography': i.biography,
-                          'image': i.image,
-                          'district': '',
-                          'gov_url': i.gov_url.url,
-                          'gov_id': i.gov_id,
-                          'gov_picture_url': i.gov_picture_url,
-                          'voters': i.voters,
-                          'active': i.active,
-                          'party_id': i[0].organization.id} for i in members], safe=False)
+    data = []
+    for i in members:
+        p = i.person
+        districts = ''
+
+        if p.districts:
+            districts = p.districts.all().values_list("name", flat=True)
+            districts = [smart_str(dist) for dist in districts]
+            if not districts:
+                districts = None
+        else:
+            districts = None
+
+        data.append({'id': p.id,
+                     'name': p.name,
+                     'membership': i.organization.name,
+                     'acronym': i.organization.acronym,
+                     'classification': p.classification,
+                     'family_name': p.family_name,
+                     'given_name': p.given_name,
+                     'additional_name': p.additional_name,
+                     'honorific_prefix': p.honorific_prefix,
+                     'honorific_suffix': p.honorific_suffix,
+                     'patronymic_name': p.patronymic_name,
+                     'sort_name': p.sort_name,
+                     'email': p.email,
+                     'birth_date': str(p.birth_date),
+                     'death_date': str(p.death_date),
+                     'summary': p.summary,
+                     'biography': p.biography,
+                     'image': p.image,
+                     'district': districts,
+                     'gov_url': p.gov_url.url,
+                     'gov_id': p.gov_id,
+                     'gov_picture_url': p.gov_picture_url,
+                     'voters': p.voters,
+                     'active': p.active,
+                     'party_id': i.organization.id})
+    return JsonResponse(data, safe=False)
 
 
 def getOrganizatonByClassification(request):
@@ -1701,15 +1714,23 @@ def monitorMe(request):
         return HttpResponse('PANIC!')
 
 
-def getVotesTable(request):
+def getVotesTable(request, date_to=None):
     """
     Pandas table
     """
+
+    if date_to:
+        fdate = datetime.strptime(date_to,
+                                  settings.API_DATE_FORMAT).date()
+    else:
+        fdate = datetime.now().date()
     data = []
     for session in Session.objects.all():
-        for motion in Motion.objects.filter(session=session):
-            vote = Vote.objects.get(motion=motion)
-            for ballot in Ballot.objects.filter(vote__motion=motion):
+        votes = Vote.objects.filter(session=session,
+                                    start_time__lte=fdate)
+        for vote in votes:
+            motion = vote.motion
+            for ballot in Ballot.objects.filter(vote=vote):
                 data.append({'id': ballot.id,
                              'voter': ballot.voter_id,
                              'option': ballot.option,
