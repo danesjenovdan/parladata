@@ -762,13 +762,19 @@ def motionOfSession(request, id_se):
         if votes:
             for vote in votes:
                 motion = vote.motion
+                if motion.result == '0':
+                    result = False
+                elif motion.result == '1':
+                    result = True
+                else:
+                    result = None
                 links = motion.links.all()
                 links_list = [{'name': link.name, 'url': link.url}
                               for link in links]
                 data.append({'id': motion.id,
                              'vote_id': vote.id,
                              'text': motion.text,
-                             'result': False if motion.result == '0' else True,
+                             'result': result,
                              'tags': map(smart_str, vote.tags.names()),
                              'doc_url': links_list,
                              'start_time': vote.start_time})
