@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from parladata.models import Organization, Speech, Membership
+from parladata.models import Organization, Speech, Membership, Session, Vote, Ballot
 from django.db.models import Q
 import lemmagen.lemmatizer
 from lemmagen.lemmatizer import Lemmatizer
@@ -9,6 +9,7 @@ from collections import Counter
 from datetime import datetime
 from slugify import slugify
 import requests
+from django.http import JsonResponse
 
 from sandbox.export import listToCSV
 
@@ -149,3 +150,19 @@ def getCountOfMentionedOthers(typeOf='pg', from_year=2016):
             file_name = str(key) + '_mentioned' + '.csv'
         data = [["Priimek", "Števec"]]+[[pairs[lem], cP[key][lem]] for lem in lemNames]
         listToCSV(data, file_name)
+
+
+def getPresence(request):
+    ses = Session.objects.filter(organization_id=95)
+    presence = []
+    for s in ses:
+        votes = s.vote_set.all()
+        sesData = {}
+        for v in votes:
+            sesData[str(v.id)] = list(v.ballot_set.exclude(option='ni').values_list('voter_id', flat=True))
+            print len(sesData[str(v.id)])
+        sesData['on_session'] = list(set(sum(sesData.values(), [])))
+        print 'on session', len(sesData['on_session'])
+        sesData['name'] = s.name
+        presence.append(sesData)
+    return JsonResponse(presence, safe=False)
