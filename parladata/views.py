@@ -1192,7 +1192,7 @@ def getAllPGs(request, date_=None):
     * @apiGroup PGs
     * @apiDescription This function returns an object with all the PG's active on a given date.
       If no optional date parameter is given, it is assumed the date is today. It lists PGs in 
-      an object with the PGs Parladata ids as keys.
+      an object with the PGs' Parladata ids as keys.
     * @apiParam {date} date Optional date.
 
     * @apiSuccess {Object} id PG object with their id as key.
@@ -1278,6 +1278,90 @@ def getAllPGs(request, date_=None):
 
 def getAllPGsExt(request):
     """Reutrns all PGs with founded and disbanded dates."""
+    """
+    * @api {get} getAllPGsExt/{?date} Get all PGs with founded and disbanded dates
+    * @apiName getAllPGsExt
+    * @apiGroup PGs
+    * @apiDescription This function returns an object with all the PG's active on a given date.
+      If no optional date parameter is given, it is assumed the date is today. It lists PGs in 
+      an object with the PGs' Parladata ids as keys.
+    * @apiParam {date} date Optional date.
+
+    * @apiSuccess {Object} id PG object with their id as key.
+    * @apiSuccess {String} id.acronym The PG's acronym.
+    * @apiSuccess {date} id.founded Date when the PG was founded.
+    * @apiSuccess {String} name The name of the PG.
+    * @apiSuccess {date} id.disbanded Date when the PG was disbanded.
+
+    * @apiExample {curl} Example:
+        curl -i https://data.parlameter.si/v1/getAllPGsExt/
+    * @apiExample {curl} Example with date:
+        curl -i https://data.parlameter.si/v1/getAllPGsExt/12.12.2016
+
+    * @apiSuccessExample {json} Example response:
+    {
+        "1": {
+            "acronym": "SMC",
+            "founded": null,
+            "name": "PS Stranka modernega centra",
+            "disbanded": null
+        },
+        "2": {
+            "acronym": "IMNS",
+            "founded": null,
+            "name": "PS italijanske in mad\u017earske narodne skupnosti",
+            "disbanded": null
+        },
+        "3": {
+            "acronym": "DeSUS",
+            "founded": null,
+            "name": "PS Demokratska Stranka Upokojencev Slovenije",
+            "disbanded": null
+        },
+        "4": {
+            "acronym": "ZAAB",
+            "founded": "2014-08-01T00:00:00",
+            "name": "PS Zavezni\u0161tvo Alenke Bratu\u0161ek",
+            "disbanded": "2015-09-08T00:00:00"
+        },
+        "5": {
+            "acronym": "SDS",
+            "founded": "2014-08-01T00:00:00",
+            "name": "PS Slovenska Demokratska Stranka",
+            "disbanded": null
+        },
+        "6": {
+            "acronym": "NSI",
+            "founded": null,
+            "name": "PS Nova Slovenija",
+            "disbanded": null
+        },
+        "7": {
+            "acronym": "SD",
+            "founded": null,
+            "name": "PS Socialni Demokrati",
+            "disbanded": null
+        },
+        "8": {
+            "acronym": "ZL",
+            "founded": "2014-08-06T00:00:00",
+            "name": "PS Zdru\u017eena Levica",
+            "disbanded": null
+        },
+        "109": {
+            "acronym": "PS NP",
+            "founded": "2016-01-29T00:00:00",
+            "name": "PS nepovezanih poslancev ",
+            "disbanded": null
+        },
+        "97": {
+            "acronym": "PS NP",
+            "founded": "2015-09-14T00:00:00",
+            "name": "PS nepovezanih poslancev ",
+            "disbanded": "2016-01-28T00:00:00"
+        }
+    }
+    """
 
     parliamentary_group = Organization.objects.filter(classification=PS)
     data = {pg.id: {'name': pg.name,
@@ -1287,8 +1371,55 @@ def getAllPGsExt(request):
 
     return JsonResponse(data, safe=False)
 
-def getAllOrganizations(requests):
+def getAllOrganizations(request):
     """Returns all organizations."""
+    """
+    * @api {get} getAllOrganizations/{?date} Get all Organizations
+    * @apiName getAllOrganizations
+    * @apiGroup Other
+    * @apiDescription This function returns an object with all the organizations active on a given date.
+      If no optional date parameter is given, it is assumed the date is today. It lists organizations in 
+      an object with the organizations' Parladata ids as keys.
+    * @apiParam {date} date Optional date.
+
+    * @apiSuccess {Object} id PG object with their id as key.
+    * @apiSuccess {String} id.acronym The organization's acronym.
+    * @apiSuccess {String} name The name of the organization.
+    * @apiSuccess {Boolean} id.is_coalition Is the organization in coalition with the government?
+
+    * @apiExample {curl} Example:
+        curl -i https://data.parlameter.si/v1/getAllOrganizations/
+    * @apiExample {curl} Example with date:
+        curl -i https://data.parlameter.si/v1/getAllOrganizations/12.12.2016
+
+    * @apiSuccessExample {json} Example response:
+    {
+        "8": {
+            "acronym": "ZL",
+            "name": "PS Zdru\u017eena Levica",
+            "classification": "poslanska skupina",
+            "is_coalition": false
+        },
+        "9": {
+            "acronym": "",
+            "name": "Kolegij predsednika dr\u017eavnega zbora",
+            "classification": "kolegij",
+            "is_coalition": false
+        },
+        "10": {
+            "acronym": "",
+            "name": "Komisija za nadzor javnih financ",
+            "classification": "komisija",
+            "is_coalition": false
+        },
+        "11": {
+            "acronym": "",
+            "name": "Komisija za narodni skupnosti",
+            "classification": "komisija",
+            "is_coalition": false
+        }
+    }
+    """
 
     org = Organization.objects.all()
     data = {pg.id: {'name': pg.name,
@@ -1299,8 +1430,56 @@ def getAllOrganizations(requests):
     return JsonResponse(data)
 
 
-def getAllSpeeches(requests, date_=None):
+def getAllSpeeches(request, date_=None):
     """Returns all speeches."""
+    """
+    * @api {get} getAllSpeeches/{?date} Get all Speeches
+    * @apiName getAllSpeeches
+    * @apiGroup Other
+    * @apiDescription This function returns an object with all the organizations active on a given date.
+      If no optional date parameter is given, it is assumed the date is today. It lists organizations in 
+      an object with the organizations' Parladata ids as keys.
+    * @apiParam {date} date Optional date.
+
+    * @apiSuccess {Object} id PG object with their id as key.
+    * @apiSuccess {String} id.acronym The organization's acronym.
+    * @apiSuccess {String} name The name of the organization.
+    * @apiSuccess {Boolean} id.is_coalition Is the organization in coalition with the government?
+
+    * @apiExample {curl} Example:
+        curl -i https://data.parlameter.si/v1/getAllOrganizations/
+    * @apiExample {curl} Example with date:
+        curl -i https://data.parlameter.si/v1/getAllOrganizations/12.12.2016
+
+    * @apiSuccessExample {json} Example response:
+    {
+        "8": {
+            "acronym": "ZL",
+            "name": "PS Zdru\u017eena Levica",
+            "classification": "poslanska skupina",
+            "is_coalition": false
+        },
+        "9": {
+            "acronym": "",
+            "name": "Kolegij predsednika dr\u017eavnega zbora",
+            "classification": "kolegij",
+            "is_coalition": false
+        },
+        "10": {
+            "acronym": "",
+            "name": "Komisija za nadzor javnih financ",
+            "classification": "komisija",
+            "is_coalition": false
+        },
+        "11": {
+            "acronym": "",
+            "name": "Komisija za narodni skupnosti",
+            "classification": "komisija",
+            "is_coalition": false
+        }
+    }
+    """
+
 
     if date_:
         fdate = datetime.strptime(date_, settings.API_DATE_FORMAT).date()
@@ -1317,8 +1496,64 @@ def getAllSpeeches(requests, date_=None):
     return JsonResponse(data, safe=False)
 
 
-def getAllVotes(requests, date_):
+def getAllVotes(request, date_):
     """Returns all votes."""
+    """
+    * @api {get} getAllVotes/{date} Get all Votes up until a date
+    * @apiName getAllVotes
+    * @apiGroup Votes
+    * @apiDescription This function returns a list of all votes that
+      took place until a given date.
+
+    * @apiSuccess {Object[]} / List of vote objects
+    * @apiSuccess {date} /.start_time Vote's start time in UTF-8 datetime as string.
+    * @apiSuccess {String} /.motion Motion name - what is the vote about.
+    * @apiSuccess {Integer} /.session Session's at which the vote took place parladata id.
+    * @apiSuccess {date} /.start_time Vote's end time in UTF-8 datetime as string. Currently return null.
+    * @apiSuccess {Integer} /.organization_id Parladata id of the organization in which the vote took place.
+    * @apiSuccess {Integer} /.id Parladata id of the vote.
+    * @apiSuccess {String} /.result String with the result of the vote. Currently always returns "-".
+
+    * @apiExample {curl} Example:
+        curl -i https://data.parlameter.si/v1/getAllVotes/12.12.2016
+
+    * @apiSuccessExample {json} Example response:
+    [
+        {
+            "start_time": "2014-08-01T12:16:54",
+            "motion": "Dnevni red v celoti",
+            "session": 6684,
+            "end_time": null,
+            "party": 95,
+            "id": 6513,
+            "result": "-"
+        }, {
+            "start_time": "2014-08-01T12:43:48",
+            "motion": "Proceduralni predlog za prekinitev 1. to\u010dke dnevnega reda",
+            "session": 6684,
+            "end_time": null,
+            "party": 95,
+            "id": 6512,
+            "result": "-"
+        }, {
+            "start_time": "2014-08-01T12:49:10",
+            "motion": "Sklep o imenovanju predsednika in podpredsednika Mandatno-volilne komisije - Sklep",
+            "session": 6684,
+            "end_time": null,
+            "party": 95,
+            "id": 6511,
+            "result": "-"
+        }, {
+            "start_time": "2014-08-01T14:18:26",
+            "motion": "Poro\u010dilo o izidu pred\u010dasnih volitev v Dr\u017eavni zbor Republike Slovenije - Glasovanje o predlogu sklepa",
+            "session": 6684,
+            "end_time": null,
+            "party": 95,
+            "id": 6510,
+            "result": "-"
+        }
+    ]
+    """
 
     fdate = datetime.strptime(date_, settings.API_DATE_FORMAT).date() + timedelta(days=1) - timedelta(minutes=1)
     data = []
@@ -1327,7 +1562,7 @@ def getAllVotes(requests, date_):
     for vote in votes:
         data.append({'id': vote.id,
                      'motion': vote.motion.text,
-                     'party': vote.organization.id,
+                     'organization_id': vote.organization.id,
                      'session': vote.session.id,
                      'start_time': vote.start_time,
                      'end_time': vote.end_time,
@@ -1336,8 +1571,52 @@ def getAllVotes(requests, date_):
     return JsonResponse(data, safe=False)
 
 
-def getAllBallots(requests, date_=None):
+def getAllBallots(request, date_=None):
     """Returns all ballots."""
+    """
+    * @api {get} getAllBallots/{?date} Get all Ballots
+    * @apiName getAllBallots
+    * @apiGroup Votes
+    * @apiDescription This function returns a list of all ballots
+      submitted until a given date. If no date is supplied it is assumed
+      the date is today.
+
+    * @apiSuccess {Object[]} / List of vote objects
+    * @apiSuccess {Integer} /.vote Parladata ID of the vote.
+    * @apiSuccess {Integer} /.voter Parladata ID of the MP who submitted the ballot.
+    * @apiSuccess {Integer} /.id Parladata ID of the ballot.
+    * @apiSuccess {String} /.option The option of the ballot (za, proti, kvorum, ni).
+
+    * @apiExample {curl} Example:
+        curl -i https://data.parlameter.si/v1/getAllBallots
+    * @apiExample {curl} Example with date:
+        curl -i https://data.parlameter.si/v1/getAllBallots/12.12.2016
+
+    * @apiSuccessExample {json} Example response:
+    [
+        {
+            "vote": 6601,
+            "voter": 95,
+            "id": 593806,
+            "option": "za"
+        }, {
+            "vote": 6601,
+            "voter": 2,
+            "id": 593807,
+            "option": "kvorum"
+        }, {
+            "vote": 6601,
+            "voter": 3,
+            "id": 593808,
+            "option": "za"
+        }, {
+            "vote": 6601,
+            "voter": 4,
+            "id": 593809,
+            "option": "ni"
+        }
+    ]
+    """
 
     if date_:
         fdate = datetime.strptime(date_, settings.API_DATE_FORMAT).date()
@@ -1351,8 +1630,132 @@ def getAllBallots(requests, date_=None):
     return JsonResponse(data, safe=False)
 
 
-def getAllPeople(requests):
+def getAllPeople(request):
     """Returns all people."""
+    """
+    * @api {get} getAllPeople Get all People
+    * @apiName getAllPeople
+    * @apiGroup Other
+    * @apiDescription This function returns a list of all people in Parladata.
+      This includes people who only spoke in the parliament as well as MPs and
+      government members. The objects returned resemble those of getMPStatic,
+      but keep in mind, that for people who only spoke in the parliament, no
+      extra information is collected.
+
+    * @apiSuccess {Object[]} / List of person objects.
+    * @apiSuccess {String} /.gov_id MP's "government id". The ID this
+      particular MP is given on http://www.dz-rs.si
+      If not returns null.
+    * @apiSuccess {Integer} /.voters The number of voters the MP was elected with.
+      Only MPs have voters.
+    * @apiSuccess {String} /.image URL to the person's image on http://www.dz-rs.si.
+    * @apiSuccess {String} /.patronymic_name The person's patronymic name if applicable.
+      If not returns empty string.
+    * @apiSuccess {String} /.sort_name The person's sorting name if applicable.
+      If not returns empty string.
+    * @apiSuccess {Integer} /.id The person's Parladata id.
+    * @apiSuccess {String} /.biography The person's biography if applicable.
+    * @apiSuccess {String} /.classification The person's classification if applicable.
+      If not returns empty string. Sometimes used for internal sorting purposes.
+    * @apiSuccess {String} /.district Name of the district (or districts) the MP was elected in.
+      Only MP's have districts. Currently always returns empty string. TODO
+    * @apiSuccess {String} /.additional_name The person's additional name if applicable.
+      If not returns empty string.
+    * @apiSuccess {String} /.hovorific_suffix The person's honorific suffix, such as "PhD".
+    * @apiSuccess {String} /.honorific_prefix The person's honorific prefix name if applicable.
+      If not returns empty string.
+    * @apiSuccess {String} /.given_name The person's given name.
+    * @apiSuccess {String} /.email The person's email.
+    * @apiSuccess {String} /.membership The person's current party.
+    * @apiSuccess {Boolean} /.active The person's active state.
+    * @apiSuccess {String} /.family_name The person's family name.
+    * @apiSuccess {String} /.name The person's full/display name.
+    * @apiSuccess {String} /.gov_picture_url URL to Person's image on http://www.dz-rs.si if applicable.
+    * @apiSuccess {String} /.summary Person's summary if applicable. If not returns empty string.
+    * @apiSuccess {String} /.birth_date Person's date of birth. Returns time as well, so that all
+      objects are datetime, but the time can be ignored.
+    
+
+    * @apiExample {curl} Example:
+        curl -i https://data.parlameter.si/v1/getAllPeople/
+
+    * @apiSuccessExample {json} Example response:
+    [
+        {
+            "gov_id": null,
+            "voters": null,
+            "image": null,
+            "patronymic_name": null,
+            "sort_name": null,
+            "id": 1329,
+            "biography": null,
+            "classification": null,
+            "district": "",
+            "additional_name": null,
+            "honorific_suffix": null,
+            "honorific_prefix": null,
+            "given_name": null,
+            "email": null,
+            "membership": "",
+            "active": true,
+            "family_name": null,
+            "name": "Mateja Ko\u017euh Novak",
+            "gov_picture_url": null,
+            "gender": null,
+            "death_date": "None",
+            "summary": null,
+            "birth_date": "None"
+        }, {
+            "gov_id": null,
+            "voters": null,
+            "image": null,
+            "patronymic_name": null,
+            "sort_name": null,
+            "id": 1331,
+            "biography": null,
+            "classification": null,
+            "district": "",
+            "additional_name": null,
+            "honorific_suffix": null,
+            "honorific_prefix": null,
+            "given_name": null,
+            "email": null,
+            "membership": null,
+            "active": true,
+            "family_name": null,
+            "name": "Vlasta Nussdorfer",
+            "gov_picture_url": null,
+            "gender": null,
+            "death_date": "None",
+            "summary": null,
+            "birth_date": "None"
+        }, {
+            "gov_id": "P225",
+            "voters": 2496,
+            "image": "http://www.dz-rs.si/wps/PA_DZ-LN-Osebe/CommonRes?idOseba=P225",
+            "patronymic_name": "",
+            "sort_name": "",
+            "id": 15,
+            "biography": "",
+            "classification": "",
+            "district": "",
+            "additional_name": "",
+            "honorific_suffix": "mag.",
+            "honorific_prefix": "",
+            "given_name": "Andrej",
+            "email": "andrej.cus@dz-rs.si",
+            "membership": "Nepovezani poslanec Andrej \u010cu\u0161",
+            "active": true,
+            "family_name": "\u010cu\u0161",
+            "name": "Andrej \u010cu\u0161",
+            "gov_picture_url": "http://www.dz-rs.si/wps/PA_DZ-LN-Osebe/CommonRes?idOseba=P225",
+            "gender": "male",
+            "death_date": "None",
+            "summary": "",
+            "birth_date": "1990-07-29 02:00:00"
+        }
+    ]
+    """
     parliamentary_group = Organization.objects.filter(classification__in=PS_NP)
     data = []
     pg = ''
@@ -1392,6 +1795,64 @@ def getAllPeople(requests):
 
 def motionOfSession(request, id_se):
     """Returns all votes of specific Session."""
+    """
+    * @api {get} motionOfSession/{id} Get all votes on a specific Session
+    * @apiName motionOfSession
+    * @apiGroup Sessions
+    * @apiDescription This function returns a list of all motions voted upon
+      in a specific session.
+
+    * @apiSuccess {Object[]} / List of Motion objects.
+    * @apiSuccess {Object[]} /.doc_url List of document objects that belong to the motion.
+    * @apiSuccess {String} /.doc_url.url Document URL.
+    * @apiSuccess {String} /.doc_url.name Document name.
+    * @apiSuccess {String[]} /.tags An array of tags that belong to the motion.
+    * @apiSuccess {String} /.text Motion text (what the motion is about).
+    * @apiSuccess {date} /.start_time Motion start time as string.
+    * @apiSuccess {Boolean} /.result Returns true if the motion passed, false if it didn't null if we don't know.
+    * @apiSuccess {Integer} /.vote_id Parladata id of the vote that took place for this motion.
+    * @apiSuccess {Integer} /.id Parladata id of the motion.
+      
+
+    * @apiExample {curl} Example:
+        curl -i https://data.parlameter.si/v1/motionOfSession/9158
+
+    * @apiSuccessExample {json} Example response:
+    [
+        {
+            "doc_url": [{
+            "url": "http://imss.dz-rs.si/IMiS/ImisAdmin.nsf/ImisnetAgent?OpenAgent&2&DZ-MSS-01/ca20e005b2b645b53a0715714f6ae78cb5276f4b6144a93f432b13c76b532975",
+            "name": "Dopis Dr\u017eavnemu svetu | Zakon o spremembah in dopolnitvah Zakona o trgu finan\u010dnih instrumentov"
+            }, {
+            "url": "http://imss.dz-rs.si/IMiS/ImisAdmin.nsf/ImisnetAgent?OpenAgent&2&DZ-MSS-01/ca20e005af6c4e0407faa583537d72f288c917218a4f7202b119a68253c7b302",
+            "name": "Besedilo zakona poslano Dr\u017eavnemu svetu | Zakon o spremembah in dopolnitvah Zakona o trgu finan\u010dnih instrumentov"
+            }, {
+            "url": "http://imss.dz-rs.si/IMiS/ImisAdmin.nsf/ImisnetAgent?OpenAgent&2&DZ-MSS-01/ca20e00555897ad23d4b3750966a27416b777766702e97964fb34b8ecec49f96",
+            "name": " | Zakon o spremembah in dopolnitvah Zakona o trgu finan\u010dnih instrumentov"
+            }],
+            "tags": ["Odbor za finance in monetarno politiko"],
+            "text": "Zakon o spremembah in dopolnitvah Zakona o trgu finan\u010dnih instrumentov - Amandma: K 25. \u010dlenu 7.2.2017 [SMC - Poslanska skupina Stranke modernega centra]",
+            "start_time": "2017-02-15T16:18:28",
+            "result": true,
+            "vote_id": 6894,
+            "id": 6650
+        }, {
+            "doc_url": [{
+            "url": "http://imss.dz-rs.si/IMiS/ImisAdmin.nsf/ImisnetAgent?OpenAgent&2&DZ-MSS-01/ca20e005b2b645b53a0715714f6ae78cb5276f4b6144a93f432b13c76b532975",
+            "name": "Dopis Dr\u017eavnemu svetu | Zakon o spremembah in dopolnitvah Zakona o trgu finan\u010dnih instrumentov"
+            }, {
+            "url": "http://imss.dz-rs.si/IMiS/ImisAdmin.nsf/ImisnetAgent?OpenAgent&2&DZ-MSS-01/ca20e005af6c4e0407faa583537d72f288c917218a4f7202b119a68253c7b302",
+            "name": "Besedilo zakona poslano Dr\u017eavnemu svetu | Zakon o spremembah in dopolnitvah Zakona o trgu finan\u010dnih instrumentov"
+            }],
+            "tags": ["Odbor za finance in monetarno politiko"],
+            "text": "Zakon o spremembah in dopolnitvah Zakona o trgu finan\u010dnih instrumentov - Amandma: K 51. \u010dlenu 7.2.2017 [SMC - Poslanska skupina Stranke modernega centra]",
+            "start_time": "2017-02-15T16:19:22",
+            "result": true,
+            "vote_id": 6893,
+            "id": 6649
+        }
+    ]
+    """
 
     data = {}
     tab = []
@@ -1420,8 +1881,66 @@ def motionOfSession(request, id_se):
         return JsonResponse([], safe=False)
 
 
-def getVotesOfSession(request, id_se):
-    """Returns all votes of specific Session."""
+def getVotesOfSession(request, id_se): # TODO KUNST refactor so the name is getBallotsOfSession - isto v urls.py
+    """Returns all ballots of specific Session. TODO"""
+    """
+    * @api {get} getBallotsOfSession/{id} Get all ballots from a specific Session
+    * @apiName getBallotsOfSession
+    * @apiGroup Sessions
+    * @apiDescription This function returns a list of all ballots for all motions voted
+      upon in this session.
+
+    * @apiSuccess {Object[]} / List of Ballot objects.
+    * @apiSuccess {String} /.Acronym PG acronym for MP's PG.
+    * @apiSuccess {Integer} /.pg_id Parladata id of the PG the MP that submitted the ballot belongs to.
+    * @apiSuccess {Integer} /.mo_id Parladata id of the motion this ballot belongs to.
+    * @apiSuccess {String} /.option The option on the ballot. One of "za", "proti", "kvorum", "ni").
+      
+
+    * @apiExample {curl} Example:
+        curl -i https://data.parlameter.si/v1/getBallotsOfSession/9158
+
+    * @apiSuccessExample {json} Example response:
+    [
+        {
+            "Acronym": "SDS",
+            "pg_id": 5,
+            "mp_id": 91,
+            "mo_id": 6650,
+            "option": "kvorum"
+        }, {
+            "Acronym": "SMC",
+            "pg_id": 1,
+            "mp_id": 89,
+            "mo_id": 6650,
+            "option": "za"
+        }, {
+            "Acronym": "SMC",
+            "pg_id": 1,
+            "mp_id": 88,
+            "mo_id": 6650,
+            "option": "za"
+        }, {
+            "Acronym": "SMC",
+            "pg_id": 1,
+            "mp_id": 87,
+            "mo_id": 6650,
+            "option": "za"
+        }, {
+            "Acronym": "NSI",
+            "pg_id": 6,
+            "mp_id": 86,
+            "mo_id": 6650,
+            "option": "kvorum"
+        }, {
+            "Acronym": "DeSUS",
+            "pg_id": 3,
+            "mp_id": 85,
+            "mo_id": 6650,
+            "option": "za"
+        }
+    ]
+    """
 
     fdate = Session.objects.get(id=str(id_se)).start_time
     mems_qs = Membership.objects.filter(Q(end_time__gte=fdate) |
@@ -1446,8 +1965,59 @@ def getVotesOfSession(request, id_se):
     return JsonResponse(data, safe=False)
 
 
-def getVotesOfMotion(request, motion_id):
-    """Returns all ballots of specific motion."""
+def getVotesOfMotion(request, motion_id): # TODO KUNST refactor -> getBallotsOfMotion isto v urls.py
+    """Returns all ballots of specific motion. TODO"""
+    """
+    * @api {get} getBallotsOfMotion/{id} Get all ballots from a specific motion
+    * @apiName getBallotsOfMotion
+    * @apiGroup Votes
+    * @apiDescription This function returns a list of all ballots for a specific motion.
+
+    * @apiSuccess {Object[]} / List of Ballot objects.
+    * @apiSuccess {String} /.Acronym PG acronym for MP's PG.
+    * @apiSuccess {Integer} /.pg_id Parladata id of the PG the MP that submitted the ballot belongs to.
+    * @apiSuccess {Integer} /.mo_id Parladata id of the motion this ballot belongs to.
+    * @apiSuccess {String} /.option The option on the ballot. One of "za", "proti", "kvorum", "ni").
+      
+
+    * @apiExample {curl} Example:
+        curl -i https://data.parlameter.si/v1/getBallotsOfMotion/6650
+
+    * @apiSuccessExample {json} Example response:
+    [
+        {
+            "Acronym": "SD",
+            "pg_id": 7,
+            "mp_id": 95,
+            "mo_id": 6406,
+            "option": "za"
+        }, {
+            "Acronym": "SDS",
+            "pg_id": 5,
+            "mp_id": 2,
+            "mo_id": 6406,
+            "option": "za"
+        }, {
+            "Acronym": "SMC",
+            "pg_id": 1,
+            "mp_id": 3,
+            "mo_id": 6406,
+            "option": "za"
+        }, {
+            "Acronym": "IMNS",
+            "pg_id": 2,
+            "mp_id": 4,
+            "mo_id": 6406,
+            "option": "ni"
+        }, {
+            "Acronym": "DeSUS",
+            "pg_id": 3,
+            "mp_id": 5,
+            "mo_id": 6406,
+            "option": "za"
+        }
+    ]
+    """
 
     data = []
     vote = Vote.objects.get(id=motion_id)
@@ -1470,6 +2040,31 @@ def getVotesOfMotion(request, motion_id):
 
 def getNumberOfPersonsSessions(request, person_id, date_=None):
     """Returns number of MPs attended Sessions."""
+    """
+    * @api {get} getNumberOfPersonsSessions/{id}/{?date} Get MP's number of attended sessions
+    * @apiName getNumberOfPersonsSessions
+    * @apiGroup MPs
+    * @apiDescription This function returns an object with the calculated presence for a specific person up until
+      a given date. If no date is supplied it is assumed the date is today.
+
+    * @apiSuccess {Object} / 
+    * @apiSuccess {Integer} /.sessions_with_speeches The number of sessions this person spoke at at least once.
+    * @apiSuccess {Integer} /.all_sessions The number of sessions this person either voted or spoke at.
+    * @apiSuccess {Integer} /.session_with_vote The number of sessions this person voted on at least once.
+      
+
+    * @apiExample {curl} Example:
+        curl -i https://data.parlameter.si/v1/getNumberOfPersonsSessions/2
+    * @apiExample {curl} Example with date:
+        curl -i https://data.parlameter.si/v1/getNumberOfPersonsSessions/2/12.12.2015
+
+    * @apiSuccessExample {json} Example response:
+    {
+        "sessions_with_speech": 107,
+        "all_sessions": 119,
+        "sessions_with_vote": 39
+    }
+    """
 
     if date_:
         fdate = datetime.strptime(date_, settings.API_DATE_FORMAT).date()
@@ -1497,44 +2092,105 @@ def getNumberOfPersonsSessions(request, person_id, date_=None):
         return JsonResponse(result, safe=False)
 
 
-def getNumberOfFormalSpeeches(request, person_id):
-    """Returns number of formal speeches of specific MP."""
-
-    url = 'http://isci.parlameter.si/filter/besedo%20dajem?people=' + person_id
-
-    person = Person.objects.get(id=int(person_id))
-
-    dz = Organization.objects.get(id=95)
-
-    if len(person.memberships.filter(organization=dz).filter(Q(label='podp') |
-                                                             Q(label='p'))) > 0:
-        r = requests.get(url).json()
-        return HttpResponse(int(r['response']['numFound']))
-    else:
-        return HttpResponse(0)
-
-
-def getExtendedSpeechesOfMP(request, person_id):
-    """Returns speeches of specific MP."""
-
-    speeches_queryset = Speech.getValidSpeeches(fdate)
-    speeches_queryset = speeches_queryset.filter(speaker__id=person_id)
-
-    speeches = [{'content': speech.content,
-                 'speech_id': speech.id,
-                 'speaker': speech.speaker.id,
-                 'session_name': speech.session.name,
-                 'session_id': speech.session.id}
-                for speech in speeches_queryset]
-
-    return JsonResponse(speeches, safe=False)
-
-
 def getMembersOfPGsRanges(request, date_=None):
     """
     Returns all memberships(start date, end date and members
     in this dates) of all PGs from start of mandate to end date
     which is an argument of method.
+    """
+    """
+    * @api {get} getMembersOfPGsRanges/{?date} Get membership ranges for all PGs
+    * @apiName getMembersOfPGsRanges
+    * @apiGroup PGs
+    * @apiDescription This function returns a list of objects representing uninterupted
+      membership constellations in the national assembly. In other words, it returns as many
+      objects as there were different membership settings. If no date is specified it is assumed
+      the date is today, otherwise the results returned span only until the supplied date.
+
+    * @apiSuccess {Object[]} / 
+    * @apiSuccess {Object} /.members Object with PG Parladata ids as keys.
+    * @apiSuccess {Integer[]} /.members.PG_ID List of Parladata ids for all members of this PG in the current timespan.
+    * @apiSuccess {date} /.start_date This range's start date (from).
+    * @apiSuccess {date} /.end_date This range's end date (to).      
+
+    * @apiExample {curl} Example:
+        curl -i https://data.parlameter.si/v1/getMembersOfPGsRanges/
+    * @apiExample {curl} Example with date:
+        curl -i https://data.parlameter.si/v1/getMembersOfPGsRanges/12.12.2015
+
+    * @apiSuccessExample {json} Example response:
+    [
+        {
+            "members": {
+            "1": [],
+            "2": [],
+            "3": [],
+            "4": [],
+            "5": [],
+            "6": [],
+            "7": [],
+            "8": [],
+            "107": [],
+            "108": [],
+            "109": [],
+            "110": [],
+            "111": [],
+            "112": [],
+            "97": [],
+            "100": [],
+            "124": [],
+            "125": []
+            },
+            "start_date": "31.07.2014",
+            "end_date": "31.07.2014"
+        }, {
+            "members": {
+            "1": [3, 14, 21, 39, 44, 68, 71, 74, 88, 16, 11, 27, 33, 40, 43, 57, 60, 70, 72, 19, 76, 77, 87, 89, 18, 56, 73, 84, 67, 28, 48, 6, 8, 50, 46, 13],
+            "2": [4, 24],
+            "3": [69, 22, 29, 34, 45, 52, 20, 37, 41, 5],
+            "4": [59, 9, 85, 7],
+            "5": [10, 12, 26, 35, 51, 54, 55, 64, 66, 75, 15, 49, 36, 78, 25, 2, 23, 47, 53, 65, 91],
+            "6": [32, 86, 63, 81, 17],
+            "7": [61, 62, 38, 83, 90, 30],
+            "8": [80, 82, 31, 79, 58, 42],
+            "107": [],
+            "108": [],
+            "109": [],
+            "110": [],
+            "111": [],
+            "112": [],
+            "97": [],
+            "100": [],
+            "124": [],
+            "125": []
+            },
+            "start_date": "01.08.2014",
+            "end_date": "25.08.2014"
+        }, {
+            "members": {
+            "1": [3, 14, 21, 39, 44, 68, 71, 74, 88, 16, 11, 27, 33, 40, 43, 57, 60, 70, 72, 19, 76, 77, 87, 89, 18, 56, 73, 84, 67, 28, 48, 6, 8, 50, 46],
+            "2": [4, 24],
+            "3": [69, 22, 29, 34, 45, 52, 20, 37, 41, 5],
+            "4": [59, 9, 85, 7],
+            "5": [10, 12, 26, 35, 51, 54, 55, 64, 66, 75, 15, 49, 36, 78, 25, 2, 23, 47, 53, 65, 91],
+            "6": [32, 86, 63, 81, 17],
+            "7": [61, 62, 38, 83, 90, 30],
+            "8": [80, 82, 31, 79, 58, 42],
+            "107": [],
+            "108": [],
+            "109": [],
+            "110": [],
+            "111": [],
+            "112": [],
+            "97": [],
+            "100": [],
+            "124": [],
+            "125": []
+            },
+            "start_date": "26.08.2014",
+            "end_date": "26.08.2014"
+        }
+    ]
     """
 
     if date_:
@@ -1595,6 +2251,39 @@ def getMembersOfPGRanges(request, org_id, date_=None):
     toliko, kot je sprememb članstev v poslanski skupini. Vsak dan, ko poslanska
     skupina dobi, izgubi, ali zamenja člana zgeneriramo nov objekt.
     """
+    """
+    * @api {get} getMembersOfPGRanges/{id}/{?date} Get membership ranges for a specific PGs
+    * @apiName getMembersOfPGRanges
+    * @apiGroup PGs
+    * @apiDescription This function returns a list of objects representing uninterupted
+      membership constellations in a single PG. In other words, it returns as many
+      objects as there were different membership settings. If no date is specified it is assumed
+      the date is today, otherwise the results returned span only until the supplied date.
+
+    * @apiSuccess {Object[]} / 
+    * @apiSuccess {Integer[]} /.members List of Parladata ids for all members of this PG in the current timespan.
+    * @apiSuccess {date} /.start_date This range's start date (from).
+    * @apiSuccess {date} /.end_date This range's end date (to).      
+
+    * @apiExample {curl} Example:
+        curl -i https://data.parlameter.si/v1/getMembersOfPGRanges/2
+    * @apiExample {curl} Example with date:
+        curl -i https://data.parlameter.si/v1/getMembersOfPGRanges/2/12.12.2015
+
+    * @apiSuccessExample {json} Example response:
+    [
+        {
+            "members": [],
+            "start_date": "31.07.2014",
+            "end_date": "31.07.2014"
+        }, {
+            "members": [4, 24],
+            "start_date": "01.08.2014",
+            "end_date": "17.03.2017"
+        }
+    ]
+    """
+
     if date_:
         fdate = datetime.strptime(date_, settings.API_DATE_FORMAT).date()
     else:
@@ -1642,8 +2331,103 @@ def getMembersOfPGRanges(request, org_id, date_=None):
     return JsonResponse(outList, safe=False)
 
 
-def getMembershipsOfMember(request, person_id, date=None):
-    """Returns all memberships of specific MP."""
+def getMembershipsOfMember(request, person_id, date=None): # TODO KUNST refactor poslanska_skupina, skupina_prijateljstva
+    """Returns all memberships of specific MP. TODO"""
+    """
+    * @api {get} getMembershipsOfMember/{id}/{?date} Get memberships of an MP
+    * @apiName getMembershipsOfMember
+    * @apiGroup MPs
+    * @apiDescription This function returns an object with keys representing groups
+      of organisations this person belongs to. If no date is specified it is assumed the
+      date is today, otherwise the results returned correspond to the state of the MPs
+      memberships on that specific date.
+
+    * @apiSuccess {Object[]} / 
+    * @apiSuccess {Object[]} /.delegacija List of membership objects in "delegations".
+    * @apiSuccess {String} /.delegacija.url The organizations public URL if applicable.
+    * @apiSuccess {String} /.delegacija.org_type The organization type.
+    * @apiSuccess {Integer} /.delegacija.org_id The organization's Parladata id.
+    * @apiSuccess {String} /.delegacija.name The organization's name.
+    * @apiSuccess {Object[]} /.odbor List of membership objects in "delegations".
+    * @apiSuccess {String} /.odbor.url The organizations public URL if applicable.
+    * @apiSuccess {String} /.odbor.org_type The organization type.
+    * @apiSuccess {Integer} /.odbor.org_id The organization's Parladata id.
+    * @apiSuccess {String} /.odbor.name The organization's name.
+    * @apiSuccess {Object[]} /.poslanska_skupina List of membership objects in "delegations".
+    * @apiSuccess {String} /.poslanska_skupina.url The organizations public URL if applicable.
+    * @apiSuccess {String} /.poslanska_skupina.org_type The organization type.
+    * @apiSuccess {Integer} /.poslanska_skupina.org_id The organization's Parladata id.
+    * @apiSuccess {String} /.poslanska_skupina.name The organization's name.
+    * @apiSuccess {Object[]} /.komisija List of membership objects in "delegations".
+    * @apiSuccess {String} /.komisija.url The organizations public URL if applicable.
+    * @apiSuccess {String} /.komisija.org_type The organization type.
+    * @apiSuccess {Integer} /.komisija.org_id The organization's Parladata id.
+    * @apiSuccess {String} /.komisija.name The organization's name.
+    * @apiSuccess {Object[]} /.skupina_prijateljstva List of membership objects in "delegations".
+    * @apiSuccess {String} /.skupina_prijateljstva.url The organizations public URL if applicable.
+    * @apiSuccess {String} /.skupina_prijateljstva.org_type The organization type.
+    * @apiSuccess {Integer} /.skupina_prijateljstva.org_id The organization's Parladata id.
+    * @apiSuccess {String} /.skupina_prijateljstva.name The organization's name.
+
+
+    * @apiSuccess {Integer[]} /.members List of Parladata ids for all members of this PG in the current timespan.
+    * @apiSuccess {date} /.start_date This range's start date (from).
+    * @apiSuccess {date} /.end_date This range's end date (to).      
+
+    * @apiExample {curl} Example:
+        curl -i https://data.parlameter.si/v1/getMembershipsOfMember/2
+    * @apiExample {curl} Example with date:
+        curl -i https://data.parlameter.si/v1/getMembershipsOfMember/2/12.12.2015
+
+    * @apiSuccessExample {json} Example response:
+    {
+        "delegacija": [{
+            "url": "http://www.dz-rs.si/wps/portal/Home/ODrzavnemZboru/KdoJeKdo/StalnaDelegacija?idSD=SD003",
+            "org_type": "delegacija",
+            "org_id": 32,
+            "name": "Delegacija Dr\u017eavnega zbora v Parlamentarni skup\u0161\u010dini Organizacije za varnost in sodelovanje v Evropi"
+        }],
+        "odbor": [{
+            "url": null,
+            "org_type": "odbor",
+            "org_id": 25,
+            "name": "Odbor za pravosodje"
+        }, {
+            "url": null,
+            "org_type": "odbor",
+            "org_id": 23,
+            "name": "Odbor za notranje zadeve, javno upravo in lokalno samoupravo"
+        }, {
+            "url": null,
+            "org_type": "odbor",
+            "org_id": 22,
+            "name": "Odbor za kulturo"
+        }, {
+            "url": null,
+            "org_type": "odbor",
+            "org_id": 24,
+            "name": "Odbor za obrambo"
+        }],
+        "poslanska skupina": [{
+            "url": "https://www.dz-rs.si/wps/portal/Home/ODrzavnemZboru/KdoJeKdo/PoslanskaSkupina?idPS=PS012",
+            "org_type": "poslanska skupina",
+            "org_id": 5,
+            "name": "PS Slovenska Demokratska Stranka"
+        }],
+        "komisija": [{
+            "url": null,
+            "org_type": "komisija",
+            "org_id": 15,
+            "name": "Mandatno-volilna komisija"
+        }],
+        "skupina prijateljstva": [{
+            "url": "http://www.dz-rs.si/wps/portal/Home/ODrzavnemZboru/KdoJeKdo/SkupinaPrijateljstva?idSP=SP044",
+            "org_type": "skupina prijateljstva",
+            "org_id": 79,
+            "name": "Skupina prijateljstva z Veliko Britanijo"
+        }]
+    }
+    """
 
     if date:
         fdate = datetime.strptime(date, settings.API_DATE_FORMAT).date()
@@ -1681,6 +2465,47 @@ def getMembershipsOfMember(request, person_id, date=None):
 
 def getAllTimeMemberships(request):
     """Returns all memberships of all MPs."""
+    """
+    * @api {get} getAllTimeMemberships Get all membership times of all MPs
+    * @apiName getAllTimeMemberships
+    * @apiGroup MPs
+    * @apiDescription This function returns a list of objects representing membership streaks
+      for individual MPs. Iterating through these objects will give you a complete picture of when
+      an MP was a member of the national assembly.
+
+    * @apiSuccess {Object[]} / 
+    * @apiSuccess {date} /.start_time Membership start time (from).
+    * @apiSuccess {date} /.end_time Membership end time (to).
+    * @apiSuccess {Integer} /.id The person's Parladata id.
+
+    * @apiExample {curl} Example:
+        curl -i https://data.parlameter.si/v1/getAllTimeMemberships
+
+    * @apiSuccessExample {json} Example response:
+    [
+        {
+            "start_time": "2014-08-01T00:00:00",
+            "end_time": null,
+            "id": 69
+        }, {
+            "start_time": "2014-08-01T00:00:00",
+            "end_time": null,
+            "id": 80
+        }, {
+            "start_time": "2014-08-01T00:00:00",
+            "end_time": null,
+            "id": 82
+        }, {
+            "start_time": "2014-08-01T00:00:00",
+            "end_time": null,
+            "id": 3
+        }, {
+            "start_time": "2014-08-01T00:00:00",
+            "end_time": null,
+            "id": 14
+        }
+    ]
+    """
 
     parliamentary_group = Organization.objects.filter(classification__in=PS_NP)
     members = Membership.objects.filter(organization__in=parliamentary_group)
@@ -1690,8 +2515,69 @@ def getAllTimeMemberships(request):
                         safe=False)
 
 
-def getOrganizatonByClassification(request):
-    """Returns organizations by classification(working bodies, PG, council)."""
+def getOrganizatonByClassification(request): # TODO KUNST refactor to plural -> getOrganizatonsByClassification
+    """Returns organizations by classification(working bodies, PG, council). TODO"""
+    """
+    * @api {get} getOrganizatonsByClassification Get all Organizations organized by classification
+    * @apiName getOrganizatonsByClassification
+    * @apiGroup Other
+    * @apiDescription This function returns an object with the keys corresponding to different
+      organization classifications.
+
+    * @apiSuccess {Object[]} / 
+    * @apiSuccess {Object[]} /.working_bodies Organizations classified as working bodies.
+    * @apiSuccess {Integer} /.working_bodies.id The organization's Parladata id.
+    * @apiSuccess {String} /.working_bodies.name The organization's name.
+    * @apiSuccess {Object[]} /.parliamentary_groups Organizations classified as PGs.
+    * @apiSuccess {Integer} /.parliamentary_groups.id The organization's Parladata id.
+    * @apiSuccess {String} /.parliamentary_groups.name The organization's name.
+    * @apiSuccess {Object[]} /.council Organizations classified as councils.
+    * @apiSuccess {Integer} /.council.id The organization's Parladata id.
+    * @apiSuccess {String} /.council.name The organization's name.
+
+    * @apiExample {curl} Example:
+        curl -i https://data.parlameter.si/v1/getOrganizatonsByClassification
+
+    * @apiSuccessExample {json} Example response:
+    {
+        "working_bodies": [{
+            "id": 22,
+            "name": "Odbor za kulturo"
+        }, {
+            "id": 26,
+            "name": "Odbor za zadeve Evropske unije"
+        }, {
+            "id": 27,
+            "name": "Odbor za zdravstvo"
+        }, {
+            "id": 24,
+            "name": "Odbor za obrambo"
+        }, {
+            "id": 29,
+            "name": "Ustavna komisija"
+        }],
+        "parliamentary_groups": [{
+            "id": 4,
+            "name": "PS Zavezni\u0161tvo Alenke Bratu\u0161ek"
+        }, {
+            "id": 7,
+            "name": "PS Socialni Demokrati"
+        }, {
+            "id": 1,
+            "name": "PS Stranka modernega centra"
+        }, {
+            "id": 6,
+            "name": "PS Nova Slovenija"
+        }, {
+            "id": 125,
+            "name": "Stranka modernega centra"
+        }],
+        "council": [{
+            "id": 9,
+            "name": "Kolegij predsednika dr\u017eavnega zbora"
+        }]
+    }
+    """
 
     workingBodies = Organization.objects.filter(classification__in=["odbor", "komisija", "preiskovalna komisija"])
     parliamentaryGroups = Organization.objects.filter(classification__in=PS_NP)
@@ -1753,6 +2639,37 @@ def getOrganizationRolesAndMembers(request, org_id, date_=None):
 
 def getTags(request):
     """Returns all tags."""
+    """
+    * @api {get} getTags Get all Tags
+    * @apiName getTags
+    * @apiGroup Other
+    * @apiDescription This function returns a list of objects representing individual
+      tags used for tagging motions.
+
+    * @apiSuccess {Object[]} / 
+    * @apiSuccess {String} /.name The tag's name.
+    * @apiSuccess {Integer} /.id The tag's Parladata id.
+
+    * @apiExample {curl} Example:
+        curl -i https://data.parlameter.si/v1/getTags
+
+    * @apiSuccessExample {json} Example response:
+    [
+        {
+            "name": "Komisija za nadzor javnih financ",
+            "id": 13
+        }, {
+            "name": "Kolegij predsednika Dr\u017eavnega zbora",
+            "id": 12
+        }, {
+            "name": "Komisija za narodni skupnosti",
+            "id": 14
+        }, {
+            "name": "Komisija za odnose s Slovenci v zamejstvu in po svetu",
+            "id": 15
+        }
+    ]
+    """
 
     out = [{"name": tag.name,
             "id": tag.id} for tag in Tag.objects.all().exclude(id__in=[1, 2, 3, 4, 5, 8, 9])]
@@ -1762,6 +2679,37 @@ def getTags(request):
 
 def getDistricts(request):
     """Returns all districts."""
+    """
+    * @api {get} getDistricts Get all Districts
+    * @apiName getDistricts
+    * @apiGroup Other
+    * @apiDescription This function returns a list of objects representing individual
+      voting districts.
+
+    * @apiSuccess {Object[]} / 
+    * @apiSuccess {String} /.name The district's name.
+    * @apiSuccess {Integer} /.id The district's Parladata id.
+
+    * @apiExample {curl} Example:
+        curl -i https://data.parlameter.si/v1/getDistricts
+
+    * @apiSuccessExample {json} Example response:
+    [
+        {
+            "id": 89,
+            "name": "Ajdov\u0161\u010dina"
+        }, {
+            "id": 88,
+            "name": "Nova Gorica I"
+        }, {
+            "id": 87,
+            "name": "Nova Gorica II"
+        }, {
+            "id": 86,
+            "name": "Postojna"
+        }
+    ]
+    """
 
     out = [{"id": area.id,
             "name": area.name} for area in Area.objects.filter(calssification="okraj")]
@@ -1771,6 +2719,30 @@ def getDistricts(request):
 
 def getSpeechData(request, speech_id):
     """Returns data of specific speech."""
+    """
+    * @api {get} getSpeechData Get info about a speech
+    * @apiName getSpeechData
+    * @apiGroup Other
+    * @apiDescription This function returns an object with the speech's basic info.
+
+    * @apiSuccess {Object[]} / 
+    * @apiSuccess {String} /.date The date of the speech.
+    * @apiSuccess {String} /.session_name The name of the session at which the speech took place.
+    * @apiSuccess {Integer} /.session_id The Parladata id of the session at which the speech took place.
+    * @apiSuccess {Integer} /.speaker_id Parladata id of the speaker who said the words.
+
+    * @apiExample {curl} Example:
+        curl -i https://data.parlameter.si/v1/getSpeechData/996415
+
+    * @apiSuccessExample {json} Example response:
+    {
+        "date": "2017-01-18",
+        "session_name": "69. redna seja",
+        "id": 996415,
+        "session_id": 8935,
+        "speaker_id": 39
+    }
+    """
 
     speech = Speech.objects.filter(pk=speech_id)
 
@@ -1790,7 +2762,7 @@ def getSpeechData(request, speech_id):
     return HttpResponse(-1)
 
 
-def getResultOfMotion(request, motion_id):
+def getResultOfMotion(request, motion_id): # TODO refactor delete
     """Returns result of motion/vote."""
 
     output = {"result": Motion.objects.get(id=motion_id).result}
@@ -1801,6 +2773,27 @@ def getResultOfMotion(request, motion_id):
 def getPersonData(request, person_id):
     """Returns data of specific person.
        Method is used for data enrichment in parlalize.
+    """
+    """
+    * @api {get} getPersonData Get basic info about a person
+    * @apiName getPersonData
+    * @apiGroup Other
+    * @apiDescription This function returns an object with the person's basic info.
+
+    * @apiSuccess {Object[]} / 
+    * @apiSuccess {String} /.gender The person's recorded gender, usually female or male. Used primarily for front-end grammar.
+    * @apiSuccess {String} /.name The name of the person.
+    * @apiSuccess {String} /.gov_id The person's gov_id if applicable.
+
+    * @apiExample {curl} Example:
+        curl -i https://data.parlameter.si/v1/getPersonData/2
+
+    * @apiSuccessExample {json} Example response:
+    {
+        "gender": "female",
+        "name": "Anja Bah \u017dibert",
+        "gov_id": "P239"
+    }
     """
 
     person = Person.objects.filter(id=person_id)
@@ -1816,6 +2809,27 @@ def getPersonData(request, person_id):
 
 def isSpeechOnDay(request, date_=None):
     """Returns True if at least one speech happened on a specific day."""
+    """
+    * @api {get} isSpeechOnDay/{?date} Check whether a speech happened on a specific day
+    * @apiName isSpeechOnDay
+    * @apiGroup Other
+    * @apiDescription This function returns an object with the answer to the question:
+      did a speech happen on a specific day? If no date is supplied it is assumed the date
+      is today.
+
+    * @apiSuccess {Object[]} / 
+    * @apiSuccess {Boolean} /.isSpeech True if a speech happened on the supplied date.
+
+    * @apiExample {curl} Example:
+        curl -i https://data.parlameter.si/v1/isSpeechOnDay/
+    * @apiExample {curl} Example with date:
+        curl -i https://data.parlameter.si/v1/isSpeechOnDay/12.12.2015
+
+    * @apiSuccessExample {json} Example response:
+    {
+        "isSpeech": false
+    }
+    """
 
     if date_:
         fdate = datetime.strptime(date_, settings.API_DATE_FORMAT)
@@ -1829,6 +2843,27 @@ def isSpeechOnDay(request, date_=None):
 
 def isVoteOnDay(request, date_=None):
     """Returns True if vote happend on a specific day."""
+    """
+    * @api {get} isVoteOnDay/{?date} Check whether a vote happened on a specific day
+    * @apiName isVoteOnDay
+    * @apiGroup Other
+    * @apiDescription This function returns an object with the answer to the question:
+      did a vote happen on a specific day? If no date is supplied it is assumed the date
+      is today.
+
+    * @apiSuccess {Object[]} / 
+    * @apiSuccess {Boolean} /.isVote True if a speech happened on the supplied date.
+
+    * @apiExample {curl} Example:
+        curl -i https://data.parlameter.si/v1/isVoteOnDay/
+    * @apiExample {curl} Example with date:
+        curl -i https://data.parlameter.si/v1/isVoteOnDay/12.12.2015
+
+    * @apiSuccessExample {json} Example response:
+    {
+        "isVote": false
+    }
+    """
 
     if date_:
         fdate = datetime.strptime(date_, settings.API_DATE_FORMAT)
@@ -1842,8 +2877,25 @@ def isVoteOnDay(request, date_=None):
     return JsonResponse({"isVote": True if votes else False})
 
 
-def getSpeechesIDs(request, person_id, date_=None):
+def getSpeechesIDs(request, person_id, date_=None): # TODO KUNST refactor function name -> getMPSpeechesIDs
     """Returns all speech ids of MP."""
+    """
+    * @api {get} getMPSpeechesIDs/{id}/{?date} Get all MP's speeches ids
+    * @apiName getMPSpeechesIDs
+    * @apiGroup MPs
+    * @apiDescription This function returns a list of all MP's speeches up until a specific date.
+      If no date is supplied it is assumed the date is today.
+
+    * @apiSuccess {Integer[]} / List of speech ids as integers.
+
+    * @apiExample {curl} Example:
+        curl -i https://data.parlameter.si/v1/getMPSpeechesIDs/2
+    * @apiExample {curl} Example with date:
+        curl -i https://data.parlameter.si/v1/getMPSpeechesIDs/2/12.12.2014
+
+    * @apiSuccessExample {json} Example response:
+    [592488, 580811, 567944, 567950, 538605]
+    """
 
     if date_:
         fdate = datetime.strptime(date_, settings.API_DATE_FORMAT)
@@ -1860,6 +2912,23 @@ def getSpeechesIDs(request, person_id, date_=None):
 
 def getPGsSpeechesIDs(request, org_id, date_=None):
     """Returns speechs ids of specifig PG."""
+    """
+    * @api {get} getPGsSpeechesIDs/{id}/{?date} Get all PG's speeches ids
+    * @apiName getPGsSpeechesIDs
+    * @apiGroup PGs
+    * @apiDescription This function returns a list of all PG's speeches up until a specific date.
+      If no date is supplied it is assumed the date is today.
+
+    * @apiSuccess {Integer[]} / List of speech ids as integers.
+
+    * @apiExample {curl} Example:
+        curl -i https://data.parlameter.si/v1/getPGsSpeechesIDs/2
+    * @apiExample {curl} Example with date:
+        curl -i https://data.parlameter.si/v1/getPGsSpeechesIDs/2/12.12.2014
+
+    * @apiSuccessExample {json} Example response:
+    [592488, 580811, 567944, 567950, 538605]
+    """
 
     if date_:
         fdate = datetime.strptime(date_, settings.API_DATE_FORMAT)
@@ -1886,9 +2955,9 @@ def getPGsSpeechesIDs(request, org_id, date_=None):
 
 def getMembersWithFuction(request):
     """
-    TODO fix spelling
-    * @api {get} getMembersWithFuction/ MPs with functions in DZ
-    * @apiName getMembersWithFuction
+    TODO KUNST fix spelling refactor -> getMembersWithFunction
+    * @api {get} getMembersWithFunction/ MPs with functions in DZ
+    * @apiName getMembersWithFunction
     * @apiGroup MPs
     * @apiDescription This function returns all MPs that have a function in DZ.
       That means president or vice president of the national council.
@@ -1896,7 +2965,7 @@ def getMembersWithFuction(request):
     * @apiSuccess {Integer[]} members_with_function Parladata ids of MPs with functions in DZ.
 
     * @apiExample {curl} Example:
-        curl -i https://data.parlameter.si/v1/getMembersWithFuction/
+        curl -i https://data.parlameter.si/v1/getMembersWithFunction/
     
     * @apiSuccessExample {json} Example response:
     {
@@ -1927,6 +2996,64 @@ def getMembersWithFuction(request):
 def getAllQuestions(request, date_=None):
     """
     Returns array of all questions. Objects have only link with note Besedilo.
+    """
+    """
+    * @api {get} getAllQuestions/{?date} Get all MP's questions
+    * @apiName getAllQuestions
+    * @apiGroup Other
+    * @apiDescription This function returns all MP's questions that have been asked
+      up to a specific date. If no date is supplied it is assumed the date is today.
+
+    * @apiSuccess {Object[]} / List of Question objects.
+    * @apiSuccess {String} /.recipient_text Recipient in text form as written on www.dz-rs.si.
+    * @apiSuccess {Integer} /.recipient_org_id Parladata id of the organization the recipient is a member of if applicable.
+    * @apiSuccess {Integer} /.recipien_id Parladata id of the recipient if applicable.
+    * @apiSuccess {String} /.link URL to the relevant question document.
+    * @apiSuccess {String} /.title Question title.
+    * @apiSuccess {date} /.date The date on which the question was asked.
+    * @apiSuccess {Integer} /.author_id The Parladata id of the MP who asked the question.
+    * @apiSuccess {Integer} /.id Parladata id of the question.
+    * @apiSuccess {Integer} /.session_id Parladata id of the session where this question was asked.
+
+    * @apiExample {curl} Example:
+        curl -i https://data.parlameter.si/v1/getAllQuestions/
+    * @apiExample {curl} Example with date:
+        curl -i https://data.parlameter.si/v1/getAllQuestions/12.12.2014
+    
+    * @apiSuccessExample {json} Example response:
+    [
+        {
+            "recipient_text": "minister za infrastrukturo in prostor, ki opravlja teko\u010de posle",
+            "recipient_org_id": null,
+            "recipient_id": null,
+            "link": "http://imss.dz-rs.si/IMiS/ImisAdmin.nsf/ImisnetAgent?OpenAgent&2&DZ-MSS-01/ca20e0051c03fcabad65a8c60e1ab07b2f598715f9b4384afed907db7a549169",
+            "title": "v zvezi z spremenjenimi pravili za opravljanje vozni\u0161kih izpitov",
+            "date": "2014-08-27T00:00:00",
+            "author_id": 83,
+            "id": 4973,
+            "session_id": null
+        }, {
+            "recipient_text": "generalna sekretarka Vlade",
+            "recipient_org_id": null,
+            "recipient_id": null,
+            "link": "http://imss.dz-rs.si/IMiS/ImisAdmin.nsf/ImisnetAgent?OpenAgent&2&DZ-MSS-01/ca20e005dd49e02aa5a4bdf82cd726ec231c5db754de339461cec5f929cc2f3c",
+            "title": "v zvezi z glasovanjem na sejah Vlade RS",
+            "date": "2014-09-10T00:00:00",
+            "author_id": 78,
+            "id": 4974,
+            "session_id": 5618
+        }, {
+            "recipient_text": "ministrica za delo dru\u017eino socialne zadeve in enake mo\u017enosti",
+            "recipient_org_id": null,
+            "recipient_id": null,
+            "link": "http://imss.dz-rs.si/IMiS/ImisAdmin.nsf/ImisnetAgent?OpenAgent&2&DZ-MSS-01/ca20e00538fae5d9cbae4b468d3b346c4e28915089345234281182daa8b033fb",
+            "title": "v zvezi z oskrbo starej\u0161ih",
+            "date": "2014-09-26T00:00:00",
+            "author_id": 23,
+            "id": 4975,
+            "session_id": null
+        }
+    ]
     """
     if date_:
         fdate = datetime.strptime(date_, settings.API_DATE_FORMAT).date()
@@ -2016,6 +3143,58 @@ def getBallotsCounterOfPerson(request, person_id, date_=None):
     """
     Api endpoint which returns ballots count of voter
     """
+    """
+    * @api {get} getBallotsCounterOfPerson/{id}/{?date} Get MP's ballot counts
+    * @apiName getBallotsCounterOfPerson
+    * @apiGroup MPs
+    * @apiDescription This function returns a list of objects representing monthly
+      ballot counts for a specific MP.
+
+    * @apiSuccess {Object[]} / List of BalloutCounter objects.
+    * @apiSuccess {Integer} /.ni Number of times the MP didn't participate in a voting event.
+    * @apiSuccess {Integer} /.proti Number of times the MP voted against the motion.
+    * @apiSuccess {date} /.date_ts UTF-8 date for easier sorting. The first of the month
+      signifies the month in which we're counting ballots.
+    * @apiSuccess {Integer} /.za Number of times the MP voted for the motion.
+    * @apiSuccess {Integer} /.kvorum Number of times the MP abstained.
+    * @apiSuccess {date} /.date Human-readable "Slovenian" date. The first of the month
+      signifies the month in which we're counting ballots.
+    * @apiSuccess {Integer} /.total Total number of ballots for this person
+
+    * @apiExample {curl} Example:
+        curl -i https://data.parlameter.si/v1/getBallotsCounterOfPerson/2
+    * @apiExample {curl} Example with date:
+        curl -i https://data.parlameter.si/v1/getBallotsCounterOfPerson/2/12.12.2014
+    
+    * @apiSuccessExample {json} Example response:
+    [
+        {
+            "ni": 2,
+            "proti": 3,
+            "date_ts": "2014-08-01T00:00:00",
+            "za": 7,
+            "kvorum": 5,
+            "date": "01.08.2014",
+            "total": 17
+        }, {
+            "ni": 2,
+            "proti": 8,
+            "date_ts": "2014-09-01T00:00:00",
+            "za": 2,
+            "kvorum": 3,
+            "date": "01.09.2014",
+            "total": 15
+        }, {
+            "ni": 1,
+            "proti": 1,
+            "date_ts": "2014-10-01T00:00:00",
+            "za": 2,
+            "kvorum": 0,
+            "date": "01.10.2014",
+            "total": 4
+        }
+    ]
+    """
     person = Person.objects.get(id=person_id)
     data = getBallotsCounter(person, date_=None)
     return JsonResponse(data, safe=False)
@@ -2025,13 +3204,65 @@ def getBallotsCounterOfParty(request, party_id, date_=None):
     """
     Api endpoint which returns ballots count of party
     """
+    """
+    * @api {get} getBallotsCounterOfParty/{id}/{?date} Get MP's ballot counts
+    * @apiName getBallotsCounterOfParty
+    * @apiGroup PGs
+    * @apiDescription This function returns a list of objects representing monthly
+      ballot counts for a specific PG.
+
+    * @apiSuccess {Object[]} / List of BalloutCounter objects.
+    * @apiSuccess {Integer} /.ni Number of times members of the PG didn't participate in a voting event.
+    * @apiSuccess {Integer} /.proti Number of times members of the PG voted against the motion.
+    * @apiSuccess {date} /.date_ts UTF-8 date for easier sorting. The first of the month
+      signifies the month in which we're counting ballots.
+    * @apiSuccess {Integer} /.za Number of times members of the PG voted for the motion.
+    * @apiSuccess {Integer} /.kvorum Number of times members of the PG abstained.
+    * @apiSuccess {date} /.date Human-readable "Slovenian" date. The first of the month
+      signifies the month in which we're counting ballots.
+    * @apiSuccess {Integer} /.total Total number of ballots for this person
+
+    * @apiExample {curl} Example:
+        curl -i https://data.parlameter.si/v1/getBallotsCounterOfParty/2
+    * @apiExample {curl} Example with date:
+        curl -i https://data.parlameter.si/v1/getBallotsCounterOfParty/2/12.12.2014
+    
+    * @apiSuccessExample {json} Example response:
+    [
+        {
+            "ni": 0,
+            "proti": 3,
+            "date_ts": "2014-08-01T00:00:00",
+            "za": 28,
+            "kvorum": 3,
+            "date": "01.08.2014",
+            "total": 17
+        }, {
+            "ni": 9,
+            "proti": 1,
+            "date_ts": "2014-09-01T00:00:00",
+            "za": 20,
+            "kvorum": 0,
+            "date": "01.09.2014",
+            "total": 15
+        }, {
+            "ni": 0,
+            "proti": 0,
+            "date_ts": "2014-10-01T00:00:00",
+            "za": 6,
+            "kvorum": 2,
+            "date": "01.10.2014",
+            "total": 4
+        }
+    ]
+    """
     party = Organization.objects.get(id=party_id)
     data = getBallotsCounter(party, date_=None)
     return JsonResponse(data, safe=False)
 
 
 @csrf_exempt
-def addQuestion(request):
+def addQuestion(request): # TODO not documented because private refactor with security
     """
     This is an api endpoint function that saves a new question when prompted with a POST request.
 
@@ -2112,7 +3343,7 @@ def addQuestion(request):
         return JsonResponse({"link": None}, safe=False)
 
 
-def getAllChangesAfter(request,
+def getAllChangesAfter(request, # TODO not documented because strange
                        person_update_time,
                        session_update_time,
                        speech_update_time,
@@ -2234,8 +3465,23 @@ def getAllChangesAfter(request,
     return JsonResponse(data)
 
 
-def monitorMe(request):
+def monitorMe(request): # TODO refactor name KUNST
     """Checks if API is working."""
+    """
+    * @api {get} monitoring Check if API is running
+    * @apiName monitoring
+    * @apiGroup Other
+    * @apiDescription This function returns the state of the API. Either it says
+      "All iz well." or it instructs you to "PANIC!"
+
+    * @apiSuccess {String} status Either "All iz well." or it's time to "PANIC!"
+
+    * @apiExample {curl} Example:
+        curl -i https://data.parlameter.si/v1/monitoring
+    
+    * @apiSuccessExample {json} Example response:
+    All iz well.
+    """
 
     r = requests.get('https://data.parlameter.si/v1/getMPs')
     if r.status_code == 200:
