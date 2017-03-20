@@ -131,3 +131,17 @@ MANDATE_START_TIME = datetime(day=31, month=7, year=2014)
 
 # CORS config
 CORS_ORIGIN_ALLOW_ALL = True
+
+# Mail settings
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_USE_TLS = True
+EMAIL_HOST = 'posta.owca.info'
+EMAIL_PORT = 587
+EMAIL_HOST_USER = 'muki'
+EMAIL_HOST_PASSWORD = 'Iamanonsmoker'
+
+ADMINS = [('Tomaz Kunst', 'cofek0@gmail.com')]
+
+DATA_ADMINS = [('Nika Mahnic', 'nika@danesjenovdan.si')]
+
+PARSER_ADMINS = [('Primoz Klemenske', 'klemensek@gmail.com')]
