@@ -18,10 +18,13 @@ urlpatterns = patterns('',
     url(r'^getMPStatic/(?P<person_id>\d+)/(?P<date_>[\w].+)', getMPStatic),
     url(r'^getMPStatic/(?P<person_id>\d+)', getMPStatic),
 
+    url(r'^getNumberOfMPAttendedSessions/(?P<person_id>\d+)', getNumberOfMPAttendedSessions), # TODO delete
     url(r'^getNumberOfAllMPAttendedSessions/(?P<date_>[\w].+)', getNumberOfAllMPAttendedSessions),
 
     url(r'^getSpeechesOfMP/(?P<person_id>\d+)/(?P<date_>[\w].+)', getSpeechesOfMP),
     url(r'^getSpeechesOfMP/(?P<person_id>\d+)', getSpeechesOfMP),
+
+    url(r'^getSpeechesOfMPbyDate/(?P<person_id>\d+)/(?P<date_>[\w].+)', getSpeechesOfMPbyDate), # TODO delete
 
     url(r'^getAllMPsSpeeches/(?P<date_>[\w].+)', getAllSpeechesOfMPs),
     url(r'^getAllMPsSpeeches', getAllSpeechesOfMPs),
@@ -31,15 +34,23 @@ urlpatterns = patterns('',
 
     url(r'^getMPSpeechesIDs/(?P<person_id>\d+)/(?P<date_>[\w].+)', getSpeechesIDs), # TODO check
 
+    url(r'^getAllTimeMPs/(?P<date_>[\w].+)', getAllTimeMPs), # TODO delete
+    url(r'^getAllTimeMPs', getAllTimeMPs), # TODO delete
+
     url(r'^getSpeechesInRange/(?P<person_id>\d+)/(?P<date_from>[\w].+)/(?P<date_to>[\w].+)', getSpeechesInRange),
     url(r'^getMPParty/(?P<person_id>\d+)', getMPParty),
     url(r'^getAllPeople/', getAllPeople),
+
+    url(r'^getExtendedSpeechesOfMP/(?P<person_id>\d+)', getExtendedSpeechesOfMP), # TODO check
 
     url(r'^getPersonData/(?P<person_id>\d+)', getPersonData), # TODO check
 
     url(r'^getMembershipsOfMember/(?P<person_id>\d+)/(?P<date>[\w].+|)', getMembershipsOfMember),
 
     url(r'^getMembersWithFuction/', getMembersWithFuction), # TODO fix spelling
+
+    url(r'^getNumberOfFormalSpeeches/(?P<person_id>\d+)', getNumberOfFormalSpeeches), # TODO check and decide if delete
+    url(r'^getTaggedVotes/(?P<person_id>\d+)', getTaggedVotes), # TODO delete
 
     url(r'^getNumberOfPersonsSessions/(?P<person_id>\d+)/(?P<date_>[\w].+)', getNumberOfPersonsSessions),
     url(r'^getNumberOfPersonsSessions/(?P<person_id>\d+)', getNumberOfPersonsSessions),
@@ -83,6 +94,7 @@ urlpatterns = patterns('',
     # Votes and Motion URLs
     url(r'^getAllVotes/(?P<date_>[\w].+)', getAllVotes), # TODO refactor with getVotes
     url(r'^getAllVotes/', getAllVotes),
+    url(r'^getDocumentOfMotion/(?P<motion_id>[\w].+)', getDocumentOfMotion), # TODO delete
     url(r'^isVoteOnDay/(?P<date_>[\w].+)', isVoteOnDay),
     url(r'^isVoteOnDay/', isVoteOnDay),
     url(r'^getTags', getTags),
@@ -102,6 +114,9 @@ urlpatterns = patterns('',
     url(r'^getBallotsCounterOfParty/(?P<party_id>\d+)/(?P<date_>[\w].+|)', getBallotsCounterOfParty),
     url(r'^getBallotsCounterOfParty/(?P<party_id>\d+)', getBallotsCounterOfParty),
 
+    url(r'^getVotesTable/(?P<date_to>[\w].+|)', getVotesTable),
+    url(r'^getVotesTable/', getVotesTable),
+
     # Sessions URLs
     url(r'^getSessions/(?P<date_>[\w].+)', getSessions),
     url(r'^getSessions/', getSessions),
@@ -114,6 +129,7 @@ urlpatterns = patterns('',
     url(r'^isSpeechOnDay/(?P<date_>[\w].+)', isSpeechOnDay),
     url(r'^isSpeechOnDay/', isSpeechOnDay),
     url(r'^getSpeechData/(?P<speech_id>\d+)', getSpeechData),
+    url(r'^getAllAllSpeeches/$', getAllAllSpeeches),
 
     # POST save url's for parser
     url(r'^addQuestion/', addQuestion),

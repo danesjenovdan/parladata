@@ -459,6 +459,7 @@ def getSessions(request, date_=None):
                      'gov_id': i.gov_id,
                      'start_time': i.start_time,
                      'end_time': i.end_time,
+                     'organization_id': i.organization_id,
                      'organizations_id': map(str, organizations),
                      'classification': i.classification,
                      'id': i.id,
@@ -683,7 +684,7 @@ def getSpeechesInRange(request, person_id, date_from, date_to):
     tdate = datetime.strptime(date_to, settings.API_DATE_FORMAT).date()
 
     speaker = get_object_or_404(Person, id=person_id)
-    speeches_queryset = Speech.getValidSpeeches(fdate)
+    speeches_queryset = Speech.getValidSpeeches(tdate)
     speeches_queryset = speeches_queryset.filter(speaker=speaker,
                                                  start_time__lte=tdate,
                                                  start_time__gte=fdate)
@@ -1865,15 +1866,22 @@ def motionOfSession(request, id_se):
         if votes:
             for vote in votes:
                 motion = vote.motion
+                if motion.result == '0':
+                    result = False
+                elif motion.result == '1':
+                    result = True
+                else:
+                    result = None
                 links = motion.links.all()
                 links_list = [{'name': link.name, 'url': link.url}
                               for link in links]
                 data.append({'id': motion.id,
                              'vote_id': vote.id,
                              'text': motion.text,
-                             'result': False if motion.result == '0' else True,
+                             'result': result,
                              'tags': map(smart_str, vote.tags.names()),
-                             'doc_url': links_list})
+                             'doc_url': links_list,
+                             'start_time': vote.start_time})
         else:
             data = []
         return JsonResponse(data, safe=False)
@@ -2513,6 +2521,59 @@ def getAllTimeMemberships(request):
                           "end_time": member.end_time,
                           "id": member.person.id} for member in members],
                         safe=False)
+
+def getAllTimeMPs(request, date_=None):
+    """Returns all memberhips for all MPs."""
+
+    if date_:
+        fdate = datetime.strptime(date_, settings.API_DATE_FORMAT).date()
+    else:
+        fdate = datetime.now().today()
+
+    parliamentary_group = Organization.objects.filter(classification__in=PS_NP)
+    members = Membership.objects.filter(Q(start_time__lte=fdate) |
+                                        Q(start_time=None),
+                                        organization__in=parliamentary_group)
+
+    data = []
+    for i in members:
+        p = i.person
+        districts = ''
+
+        if p.districts:
+            districts = p.districts.all().values_list("name", flat=True)
+            districts = [smart_str(dist) for dist in districts]
+            if not districts:
+                districts = None
+        else:
+            districts = None
+
+        data.append({'id': p.id,
+                     'name': p.name,
+                     'membership': i.organization.name,
+                     'acronym': i.organization.acronym,
+                     'classification': p.classification,
+                     'family_name': p.family_name,
+                     'given_name': p.given_name,
+                     'additional_name': p.additional_name,
+                     'honorific_prefix': p.honorific_prefix,
+                     'honorific_suffix': p.honorific_suffix,
+                     'patronymic_name': p.patronymic_name,
+                     'sort_name': p.sort_name,
+                     'email': p.email,
+                     'birth_date': str(p.birth_date),
+                     'death_date': str(p.death_date),
+                     'summary': p.summary,
+                     'biography': p.biography,
+                     'image': p.image,
+                     'district': districts,
+                     'gov_url': p.gov_url.url,
+                     'gov_id': p.gov_id,
+                     'gov_picture_url': p.gov_picture_url,
+                     'voters': p.voters,
+                     'active': p.active,
+                     'party_id': i.organization.id})
+    return JsonResponse(data, safe=False)
 
 
 def getOrganizatonByClassification(request): # TODO KUNST refactor to plural -> getOrganizatonsByClassification
@@ -3369,6 +3430,9 @@ def getAllChangesAfter(request, # TODO not documented because strange
     time_of_question = datetime.strptime(question_update_time,
                                          settings.API_DATE_FORMAT + "_%H:%M")
 
+    # delete motions without text before each update of parlalize
+    deleteMotionsWithoutText()
+
     par_group = Organization.objects.all()
     par_group = par_group.filter(classification__in=PS_NP)
     data = {}
@@ -3435,9 +3499,11 @@ def getAllChangesAfter(request, # TODO not documented because strange
                                              'vote',
                                              'voter',
                                              'option']) for ballot in ballots]
-    newVotes = list(set(list(ballots.values_list("vote__session__id",
+    newVotesSessions = list(set(list(ballots.values_list("vote__session__id",
+                                                         flat=True))))
+    newVotes = list(set(list(ballots.values_list("vote_id",
                                                  flat=True))))
-    data['sessions_of_updated_votes'] = newVotes
+    data['sessions_of_updated_votes'] = newVotesSessions
 
     print "questions"
     data['questions'] = []
@@ -3461,6 +3527,14 @@ def getAllChangesAfter(request, # TODO not documented because strange
                  'link': link,
                  }
         data['questions'].append(q_obj)
+
+    # build mail for update votes
+    if data['ballots']:
+        sendMailForEditVotes({vote.id: vote.session_id
+                              for vote
+                              in Vote.objects.filter(id__in=newVotes)
+                              }
+                             )
 
     return JsonResponse(data)
 
@@ -3488,3 +3562,49 @@ def monitorMe(request): # TODO refactor name KUNST
         return HttpResponse('All iz well.')
     else:
         return HttpResponse('PANIC!')
+
+
+def getVotesTable(request, date_to=None):
+    """
+    Pandas table
+    """
+
+    if date_to:
+        fdate = datetime.strptime(date_to,
+                                  settings.API_DATE_FORMAT).date()
+    else:
+        fdate = datetime.now().date()
+    data = []
+    for session in Session.objects.all():
+        votes = Vote.objects.filter(session=session,
+                                    start_time__lte=fdate)
+        for vote in votes:
+            motion = vote.motion
+            for ballot in Ballot.objects.filter(vote=vote):
+                data.append({'id': ballot.id,
+                             'voter': ballot.voter_id,
+                             'option': ballot.option,
+                             'voterparty': ballot.voterparty_id,
+                             'orgvoter': ballot.orgvoter_id,
+                             'result': False if motion.result == '0' else True,
+                             'text': motion.text,
+                             'date': vote.start_time,
+                             'vote_id': vote.id,
+                             'session_id': session.id})
+
+    return JsonResponse(data, safe=False)
+
+
+def getAllAllSpeeches(request):
+    """
+    return non valid speeches too
+    """
+    data = []
+    speeches_queryset = Speech.objects.all()
+    speeches = speeches_queryset.filter()
+    for speech in speeches:
+        data.append(model_to_dict(speech,
+                                  fields=[field.name for field in speech._meta.fields],
+                                  exclude=[]))
+
+    return JsonResponse(data, safe=False)
