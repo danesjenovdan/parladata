@@ -739,6 +739,7 @@ def sendMailForEditVotes(votes):
     tagsUrl = 'https://data.parlameter.si/tags/'
     pageVotes = 'https://parlameter.si/seja/glasovanja/'
     pageGraph = 'https://parlameter.si/seja/glasovanje/'
+    reNavigatePage = 'https://parlameter.si/fetch/sps?t=vkSzv8Nu4eDkLBk7kUw4BBhyLjysJm'
     updated_votes = Vote.objects.filter(id__in=votes.keys())
     motionUrls = []
     updateUrls = []
@@ -758,6 +759,8 @@ def sendMailForEditVotes(votes):
     content += '\n \n nato jih potagaj: \n' + tagsUrl
     content += "\n \n Ko vse to uredis poklikaj naslednje linke, da vse to spravis na parlalize: \n"
     content += "\n".join(updateUrls)
+    content += "\n Pozen se to: \n"
+    content += reNavigatePage
     content += "\n \n Zdj spremembe dodaj na sezname glasovanj od sej: \n"
     content += "\n".join(sesUpdateUrls)
     content += "\n \n Pa se grafe glasovanj: \n"
