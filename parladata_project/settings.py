@@ -142,6 +142,7 @@ EMAIL_HOST_PASSWORD = 'Iamanonsmoker'
 
 ADMINS = [('Tomaz Kunst', 'cofek0@gmail.com')]
 
-DATA_ADMINS = [('Nika Mahnic', 'nika@danesjenovdan.si')]
+DATA_ADMINS = [('Nika Mahnic', 'nika@danesjenovdan.si'),
+               ('Ziga Vrtacic', 'ziga@danesjenovdan.si')]
 
 PARSER_ADMINS = [('Primoz Klemenske', 'klemensek@gmail.com')]
