@@ -17,8 +17,14 @@ urlpatterns = patterns('',
     url(r'^getMPs/(?P<date_>[\w].+)', getMPs),
     url(r'^getMPs', getMPs),
 
+    url(r'^getIDsOfAllMinisters/(?P<date_>[\w].+)', getIDsOfAllMinisters),
+    url(r'^getIDsOfAllMinisters', getIDsOfAllMinisters),
+
     url(r'^getMPStatic/(?P<person_id>\d+)/(?P<date_>[\w].+)', getMPStatic),
     url(r'^getMPStatic/(?P<person_id>\d+)', getMPStatic),
+
+    url(r'^getMinistrStatic/(?P<person_id>\d+)/(?P<date_>[\w].+)', getMinistrStatic),
+    url(r'^getMinistrStatic/(?P<person_id>\d+)', getMinistrStatic),
 
     url(r'^getNumberOfMPAttendedSessions/(?P<person_id>\d+)', getNumberOfMPAttendedSessions), # TODO delete
     url(r'^getNumberOfAllMPAttendedSessions/(?P<date_>[\w].+)', getNumberOfAllMPAttendedSessions),

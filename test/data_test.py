@@ -57,4 +57,25 @@ def testDuplSpeeches():
                   [admin[1] for admin in settings.ADMINS],
                   fail_silently=False,)
 
-        return "Test fail" if motionsWithoutLink else "Test pass"
+        return "Test fail" if motionsWithoutLink else 'Test pass'
+
+
+def speechesOnSessionTest():
+    mails = [admin[1] for admin in settings.ADMINS]# + settings.PARSER_ADMINS]
+    data = []
+    for s in Session.objects.all().order_by('organization_id'):
+        if not s.speech_set.all():
+            data.append({'id': s.id,
+                         'name': s.name,
+                         'org_name': s.organization.name})
+
+    mail_text = 'Sessions without Speeches: \n'
+    for s in data:
+        mail_text += str(s) + '\n'
+
+    if data:
+        send_mail('Sessions without Speeches',
+                  'Sessions without Speeches: \n' + mail_text,
+                  'test@parlameter.si',
+                  mails,
+                  fail_silently=False,)
