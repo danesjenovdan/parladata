@@ -286,7 +286,7 @@ def getMinistrStatic(request, person_id, date_=None):
     ministry = memberships.filter(organization__classification__in=['ministrstvo',
                                                                  'vlada'])
     if len(ministry) > 1:
-        ministry.filter(organization__classification='ministrstvo')
+        ministry = ministry.filter(organization__classification='ministrstvo')
     ministry_data = {'name': ministry[0].organization.name,
                      'id': ministry[0].organization.id,
                      'acronym': ministry[0].organization.acronym}
