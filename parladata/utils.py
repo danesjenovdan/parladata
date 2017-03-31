@@ -771,3 +771,45 @@ def sendMailForEditVotes(votes):
               'test@parlameter.si',
               [admin[1] for admin in settings.ADMINS + settings.DATA_ADMINS],
               fail_silently=False,)
+
+
+def parseRecipient(text, date_of):
+    mv = Organization.objects.filter(classification__in=["vlada",
+                                                         "ministrstvo"])
+    out = []
+    orgs = mv.values("name", "id")
+    data = {org["name"].replace(",", ""): org for org in orgs}
+    rts = text.split(", ")
+    for rt in rts:
+        added = False
+        text = ""
+        if "minister" in rt:
+            text = rt.split("minister ")[1]
+        elif "ministrica" in rt:
+            text = rt.split("ministrica ")[1]
+        elif "predsednik Vlade" in rt:
+            text = "Vlada"
+        elif "Vlada" in rt:
+            out.append({'recipient': mv.get(name="Vlada"), 'type': 'org'})
+            continue
+        if text:
+            for d in data:
+                if text in d:
+                    org = mv.get(id=data[d]['id'])
+                    posts = org.posts.filter(Q(start_time__lte=date_of) |
+                                             Q(start_time=None),
+                                             Q(end_time__gte=date_of) |
+                                             Q(end_time=None))
+                    if posts:
+                        out.append({'recipient': posts[0].membership.person,
+                                    'type': 'person'})
+                        added = True
+                    else:
+                        print "There is no POsts", text, date_of
+                    break
+                else:
+                    pass
+
+        if not added:
+            out.append(None)
+    return out
