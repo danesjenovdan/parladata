@@ -246,6 +246,118 @@ def getMPStatic(request, person_id, date_=None):
     return JsonResponse(data)
 
 
+def getIDsOfAllMinisters(request, date_=None):
+    """
+    TODO: write doc
+    """
+    if date_:
+        fdate = datetime.strptime(date_, settings.API_DATE_FORMAT).date()
+    else:
+        fdate = datetime.now().date()
+    ministry = Organization.objects.filter(classification__in=['ministrstvo',
+                                                               'vlada'])
+    memberships = Membership.objects.filter(Q(start_time__lte=fdate) |
+                                            Q(start_time=None),
+                                            Q(end_time__gte=fdate) |
+                                            Q(end_time=None),
+                                            organization__in=ministry)
+    ids = list(set(list(memberships.values_list('person_id', flat=True))))
+
+    return JsonResponse({'ministers_ids': ids}, safe=False)
+
+
+def getMinistrStatic(request, person_id, date_=None):
+    """
+    TODO: write doc
+    """
+    if date_:
+        fdate = datetime.strptime(date_, settings.API_DATE_FORMAT).date()
+    else:
+        fdate = datetime.now().date()
+    data = dict()
+    ministry = Organization.objects.filter(classification__in=['ministrstvo',
+                                                              'vlada'])
+    person = get_object_or_404(Person, id=person_id)
+    memberships = person.memberships.filter(Q(start_time__lte=fdate) |
+                                            Q(start_time=None),
+                                            Q(end_time__gte=fdate) |
+                                            Q(end_time=None))
+
+    ministry = memberships.filter(organization__classification__in=['ministrstvo',
+                                                                 'vlada'])
+    if len(ministry) > 1:
+        ministry = ministry.filter(organization__classification='ministrstvo')
+    ministry_data = {'name': ministry[0].organization.name,
+                     'id': ministry[0].organization.id,
+                     'acronym': ministry[0].organization.acronym}
+
+    party = memberships.filter(organization__classification__in=PS_NP)
+    if party:
+        party_data = {'name': party[0].organization.name,
+                      'id': party[0].organization.id,
+                      'acronym': party[0].organization.acronym}
+    else:
+        party_data = {}
+
+    PS_NP_VLADA = ['ministrstvo', 'vlada'] + PS_NP
+    groups = memberships.exclude(organization__classification__in=PS_NP_VLADA)
+
+    groups_data = [{'name': membership.organization.name,
+                    'id': membership.organization.id,
+                    'acronym': membership.organization.acronym}
+                   for membership
+                   in groups]
+
+    # calcutaes age of MP
+    try:
+        birth_date = str(person.birth_date)
+        age = date.today() - date(int(birth_date[:4]),
+                                  int(birth_date[5:7]),
+                                  int(birth_date[8:10]))
+        age = age.days / 365
+    except:
+        client.captureException()
+        age = None
+
+    twitter = person.link_set.filter(tags__name__in=['tw'])
+    facebook = person.link_set.filter(tags__name__in=['fb'])
+    linkedin = person.link_set.filter(tags__name__in=['linkedin'])
+
+    social_output = {}
+    if len(twitter) > 0:
+        social_output['twitter'] = twitter[0].url
+    else:
+        social_output['twitter'] = False
+    if len(facebook) > 0:
+        social_output['facebook'] = facebook[0].url
+    else:
+        social_output['facebook'] = False
+    if len(linkedin) > 0:
+        social_output['linkedin'] = linkedin[0].url
+    else:
+        social_output['linkedin'] = False
+
+    district = list(person.districts.all().values_list('id',
+                                                       flat=True))
+    if not district:
+        district = None
+
+    data = {
+        'previous_occupation': person.previous_occupation,
+        'education': person.education,
+        'party': party_data,
+        'district': district,
+        'age': age,
+        'groups': groups_data,
+        'name': person.name,
+        'social': social_output,
+        'gov_id': person.gov_id,
+        'gender': 'm' if person.gender == 'male' else 'f',
+        'ministry': ministry_data,
+    }
+    return JsonResponse(data)
+
+
 def getSessions(request, date_=None):
     """Returns all Sessions from beginning of mandate."""
 
@@ -1406,13 +1518,17 @@ def getAllQuestions(request, date_=None):
             link = link[0].url
         else:
             link = None
+        recipient_person = question.recipient_person.all().values_list('id',
+                                                                       flat=True)
+        recipient_org = question.recipient_organization.all().values_list('id',
+                                                                          flat=True)
         q_obj = {'date': question.date,
                  'id': question.id,
                  'title': question.title,
                  'session_id': getIdSafe(question.session),
                  'author_id': getIdSafe(question.author),
-                 'recipient_id': getIdSafe(question.recipient_person),
-                 'recipient_org_id': getIdSafe(question.recipient_organization),
+                 'recipient_id': list(recipient_person),
+                 'recipient_org_id': list(recipient_org),
                  'recipient_text': question.recipient_text,
                  'link': link,
                  }
@@ -1526,31 +1642,42 @@ def addQuestion(request):
     if request.method == 'POST':
         rep = {" mag. ": " ", " mag ": " ", " dr. ": " ", " dr ": " "}
         data = json.loads(request.body)
+        print data
         session = determineSession(data['datum'])
         name = replace_all(data['vlagatelj'], rep)
-        person = determinePerson(name)
+        authorPerson = determinePerson(name)
         dz = Organization.objects.get(id=DZ_ID)
-
+        date_of = datetime.strptime(data['datum'], '%d.%m.%Y')
+        recipients = parseRecipient(data['naslovljenec'], date_of)
+        recipient_persons = [person['recipient']
+                             for person
+                             in recipients
+                             if person['type'] == 'person']
+        recipient_organizations = [person['recipient']
+                                   for person
+                                   in recipients
+                                   if person['type'] == 'org']
+        print session, data['naslov'], datetime.strptime(data['datum'], '%d.%m.%Y'), person, data['naslovljenec']
         if Question.objects.filter(session=session,# TODO use data['datum']
                                    title=data['naslov'],
                                    date=datetime.strptime(data['datum'], '%d.%m.%Y'),
-                                   author=person, # TODO use data['vlagatelj']
-                                   # recipient_person=determinePerson2(), # TODO use data['naslovljenec'], not MVP
+                                   author=authorPerson, # TODO use data['vlagatelj']
+                                   #recipient_person=determinePerson2(), # TODO use data['naslovljenec'], not MVP
                                    # recipient_organization=determineOrganization(), # TODO use data['naslovljenec'], not MVP
                                    recipient_text=data['naslovljenec']
                                    ):
             return JsonResponse({'status': 'This question is allready saved'})
 
-        question = Question(session=session,# TODO use data['datum']
+        question = Question(session=session,
                             date=datetime.strptime(data['datum'], '%d.%m.%Y'),
                             title=data['naslov'],
-                            author=person, # TODO use data['vlagatelj']
-                            # recipient_person=determinePerson2(), # TODO use data['naslovljenec'], not MVP
-                            # recipient_organization=determineOrganization(), # TODO use data['naslovljenec'], not MVP
+                            author=authorPerson,
                             recipient_text=data['naslovljenec'],
                             json_data=request.body
                             )
         question.save()
+        question.recipient_person.add(*recipient_persons)
+        question.recipient_organization.add(*recipient_organizations)
 
         print 'save question'
 
@@ -1687,13 +1814,17 @@ def getAllChangesAfter(request,
             link = link[0].url
         else:
             link = None
+        recipient_person = question.recipient_person.all().values_list('id',
+                                                                       flat=True)
+        recipient_org = question.recipient_organization.all().values_list('id', 
+                                                                          flat=True)
         q_obj = {'date': question.date,
                  'id': question.id,
                  'title': question.title,
                  'session_id': getIdSafe(question.session),
                  'author_id': getIdSafe(question.author),
-                 'recipient_id': getIdSafe(question.recipient_person),
-                 'recipient_org_id': getIdSafe(question.recipient_organization),
+                 'recipient_id': recipient_person,
+                 'recipient_org_id': recipient_org,
                  'recipient_text': question.recipient_text,
                  'link': link,
                  }
