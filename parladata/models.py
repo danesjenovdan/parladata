@@ -846,17 +846,15 @@ class Question(Timestampable, models.Model):
                                help_text='The person (MP) who asked the question.',
                                related_name='asked')
 
-    recipient_person = models.ForeignKey('Person',
-                                         blank=True,
-                                         null=True,
-                                         help_text='Recipient person (if it\'s a person).',
-                                         related_name='questions')
+    recipient_person = models.ManyToManyField('Person',
+                                              blank=True,
+                                              help_text='Recipient person (if it\'s a person).',
+                                              related_name='questions')
 
-    recipient_organization = models.ForeignKey('Organization',
-                                               blank=True,
-                                               null=True,
-                                               help_text='Recipient organization (if it\'s an organization).',
-                                               related_name='questions_org')
+    recipient_organization = models.ManyToManyField('Organization',
+                                                    blank=True,
+                                                    help_text='Recipient organization (if it\'s an organization).',
+                                                    related_name='questions_org')
 
     recipient_text = models.TextField(blank=True,
                                       null=True,
