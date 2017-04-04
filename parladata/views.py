@@ -1882,6 +1882,39 @@ def getVotesTable(request, date_to=None):
     return JsonResponse(data, safe=False)
 
 
+def getVotesTableExtended(request, date_to=None):
+    """
+    Pandas table
+    """
+
+    if date_to:
+        fdate = datetime.strptime(date_to,
+                                  settings.API_DATE_FORMAT).date()
+    else:
+        fdate = datetime.now().date()
+    data = []
+    for session in Session.objects.all():
+        votes = Vote.objects.filter(session=session,
+                                    start_time__lte=fdate)
+        for vote in votes:
+            tags = [tag.name for tag in vote.tags.all()]
+            motion = vote.motion
+            for ballot in Ballot.objects.filter(vote=vote):
+                data.append({'id': ballot.id,
+                             'voter': ballot.voter_id,
+                             'option': ballot.option,
+                             'voterparty': ballot.voterparty_id,
+                             'orgvoter': ballot.orgvoter_id,
+                             'result': False if motion.result == '0' else True,
+                             'text': motion.text,
+                             'date': vote.start_time,
+                             'vote_id': vote.id,
+                             'session_id': session.id,
+                             'tags': ','.join(tags)})
+
+    return JsonResponse(data, safe=False)
+
+
 def getAllAllSpeeches(request):
     """
     return non valid speeches too
