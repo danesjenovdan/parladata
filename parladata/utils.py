@@ -774,26 +774,28 @@ def sendMailForEditVotes(votes):
 
 
 def parseRecipient(text, date_of):
-    mv = Organization.objects.filter(classification__in=["vlada",
-                                                         "ministrstvo"])
+    mv = Organization.objects.filter(classification__in=['vlada',
+                                                         'ministrstvo',
+                                                         'sluzba vlade',
+                                                         'urad vlade'])
     out = []
-    orgs = mv.values("name", "id")
-    data = {org["name"].replace(",", ""): org for org in orgs}
-    rts = text.split(", ")
+    orgs = mv.values('name', 'id')
+    data = {org['name'].replace(',', ''): org for org in orgs}
+    rts = text.split(', ')
     for rt in rts:
         added = False
-        text = ""
-        if "minister" in rt:
-            text = rt.split("minister ")[1]
-            text = text.split(" v funkciji")[0]
-        elif "ministrica" in rt:
-            text = rt.split("ministrica ")[1]
-            text = text.split(" v funkciji")[0]
-        elif "predsednik Vlade" in rt:
-            text = "Vlada"
-            text = text.split(" v funkciji")[0]
-        elif "Vlada" in rt:
-            out.append({'recipient': mv.get(name="Vlada"), 'type': 'org'})
+        text = ''
+        if 'minister' in rt:
+            text = rt.split('minister ')[1]
+            text = text.split(' v funkciji')[0]
+        elif 'ministrica' in rt:
+            text = rt.split('ministrica ')[1]
+            text = text.split(' v funkciji')[0]
+        elif 'predsednik Vlade' in rt:
+            text = 'Vlada'
+            text = text.split(' v funkciji')[0]
+        elif 'Vlada' in rt:
+            out.append({'recipient': mv.get(name='Vlada'), 'type': 'org'})
             continue
         if text:
             if 'za razvoj strate\u0161ke projekte in kohezijo' in text:
@@ -812,7 +814,7 @@ def parseRecipient(text, date_of):
                                     'type': 'person'})
                         added = True
                     else:
-                        print "There is no POsts", text, date_of
+                        print 'There is no POsts', text, date_of
                     break
                 else:
                     pass
