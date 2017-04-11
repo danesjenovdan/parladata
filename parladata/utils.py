@@ -783,6 +783,7 @@ def parseRecipient(text, date_of):
     data = {org['name'].replace(',', ''): org for org in orgs}
     rts = text.split(', ')
     for rt in rts:
+        role = None
         added = False
         text = ''
         if 'minister' in rt:
@@ -794,12 +795,18 @@ def parseRecipient(text, date_of):
         elif 'predsednik Vlade' in rt:
             text = 'Vlada'
             text = text.split(' v funkciji')[0]
+            role = ['predsednik', 'predsednica']
         elif 'Vlada' in rt:
             out.append({'recipient': mv.get(name='Vlada'), 'type': 'org'})
             continue
+        elif 'generaln' in rt and 'sekretar' in rt and 'Vlade' in rt:
+            text = 'Vlada'
+            text = text.split(' v funkciji')[0]
+            role = ['generalni sekretar', 'generalna sekretarka']
+
         if text:
             if 'za razvoj strate\u0161ke projekte in kohezijo' in text:
-                text = 'za Slovence v zamejstvu in po svetu'
+                text = 'vlade za razvoj in evropsko kohezijsko politiko'
             elif 'za Slovence v zamejstvu in po svetu' in text:
                 text = 'Urad vlade za Slovence v zamejstvu in po svetu'
             for d in data:
@@ -809,6 +816,8 @@ def parseRecipient(text, date_of):
                                              Q(start_time=None),
                                              Q(end_time__gte=date_of) |
                                              Q(end_time=None))
+                    if role:
+                        posts = posts.filter(role__in=role)
                     if posts:
                         out.append({'recipient': posts[0].membership.person,
                                     'type': 'person'})
