@@ -785,14 +785,21 @@ def parseRecipient(text, date_of):
         text = ""
         if "minister" in rt:
             text = rt.split("minister ")[1]
+            text = text.split(" v funkciji")[0]
         elif "ministrica" in rt:
             text = rt.split("ministrica ")[1]
+            text = text.split(" v funkciji")[0]
         elif "predsednik Vlade" in rt:
             text = "Vlada"
+            text = text.split(" v funkciji")[0]
         elif "Vlada" in rt:
             out.append({'recipient': mv.get(name="Vlada"), 'type': 'org'})
             continue
         if text:
+            if 'za razvoj strate\u0161ke projekte in kohezijo' in text:
+                text = 'za Slovence v zamejstvu in po svetu'
+            elif 'za Slovence v zamejstvu in po svetu' in text:
+                text = 'Urad vlade za Slovence v zamejstvu in po svetu'
             for d in data:
                 if text in d:
                     org = mv.get(id=data[d]['id'])
