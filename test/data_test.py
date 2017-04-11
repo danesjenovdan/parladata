@@ -51,8 +51,8 @@ def testDuplSpeeches():
     unique_pairs = [list(x) for x in set(tuple(x) for x in sessions)]
 
     if duplications:
-        send_mail('Motions without documents',
-                  'Motions without documents: \n' + str(duplications),
+        send_mail('Speech duplications',
+                  'Speech duplications: \n' + str(duplications),
                   'test@parlameter.si',
                   [admin[1] for admin in settings.ADMINS],
                   fail_silently=False,)
@@ -66,6 +66,7 @@ def speechesOnSessionTest():
     for s in Session.objects.all().order_by('organization_id'):
         if not s.speech_set.all():
             data.append({'id': s.id,
+                         'date': s.start_time,
                          'name': s.name,
                          'org_name': s.organization.name})
 
