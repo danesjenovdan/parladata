@@ -1830,8 +1830,11 @@ def getAllChangesAfter(request,
                  }
         data['questions'].append(q_obj)
 
-    # build mail for update votes
-    if data['ballots']:
+    ballots = Ballot.objects.filter(created_at__gte=time_of_ballot)
+    newVotes = list(set(list(ballots.values_list("vote_id",
+                                                 flat=True))))
+    # build mail for new votes
+    if newVotes:
         sendMailForEditVotes({vote.id: vote.session_id
                               for vote
                               in Vote.objects.filter(id__in=newVotes)
