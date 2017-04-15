@@ -1885,10 +1885,44 @@ def getVotesTable(request, date_to=None):
     return JsonResponse(data, safe=False)
 
 
+def getVotesOfSessionTable(request, session_id, date_to=None):
+    """
+    Pandas table
+    """
+
+    if date_to:
+        fdate = datetime.strptime(date_to,
+                                  settings.API_DATE_FORMAT).date()
+    else:
+        fdate = datetime.now().date()
+    data = []
+    session = get_object_or_404(Session, id=session_id)
+    votes = Vote.objects.filter(session=session,
+                                start_time__lte=fdate)
+    for vote in votes:
+        motion = vote.motion
+        for ballot in Ballot.objects.filter(vote=vote):
+            data.append({'id': ballot.id,
+                         'voter': ballot.voter_id,
+                         'option': ballot.option,
+                         'voterparty': ballot.voterparty_id,
+                         'orgvoter': ballot.orgvoter_id,
+                         'result': False if motion.result == '0' else True,
+                         'text': motion.text,
+                         'date': vote.start_time,
+                         'vote_id': vote.id,
+                         'session_id': session.id})
+
+    return JsonResponse(data, safe=False)
+
+
 def getVotesTableExtended(request, date_to=None):
     """
     Pandas table
     """
+    orgs = {}
+    for org in Organization.objects.filter(classification__in=PS_NP):
+        orgs[org.id] = org.acronym
 
     if date_to:
         fdate = datetime.strptime(date_to,
