@@ -125,6 +125,8 @@ urlpatterns = patterns('',
     url(r'^getVotesTable/(?P<date_to>[\w].+|)', getVotesTable),
     url(r'^getVotesTable/', getVotesTable),
 
+    url(r'^getVotesOfSessionTable/(?P<session_id>\d+)/', getVotesOfSessionTable),
+
     url(r'^getVotesTableExtended/(?P<date_to>[\w].+|)', getVotesTableExtended),
     url(r'^getVotesTableExtended/', getVotesTableExtended),
 
