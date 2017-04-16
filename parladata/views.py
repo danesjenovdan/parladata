@@ -1363,7 +1363,9 @@ def getSpeechData(request, speech_id):
             'date': speech.session.start_time.date(),
             'speaker_id': speech.speaker.id,
             'session_id': speech.session.id,
-            'session_name': speech.session.name
+            'session_name': speech.session.name,
+            'start_time': speech.start_time,
+            'order': speech.order
         }
 
         return JsonResponse(output, safe=False)
