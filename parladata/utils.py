@@ -806,7 +806,7 @@ def parseRecipient(text, date_of):
 
         if text:
             # edge cases or fails on government page
-            if 'za razvoj strate\u0161ke projekte in kohezijo' in text:
+            if 'za razvoj strateške projekte in kohezijo' in text:
                 text = 'vlade za razvoj in evropsko kohezijsko politiko'
             elif 'za Slovence v zamejstvu in po svetu' in text:
                 text = 'Urad vlade za Slovence v zamejstvu in po svetu'
