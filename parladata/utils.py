@@ -805,10 +805,13 @@ def parseRecipient(text, date_of):
             role = ['generalni sekretar', 'generalna sekretarka']
 
         if text:
+            # edge cases or fails on government page
             if 'za razvoj strate\u0161ke projekte in kohezijo' in text:
                 text = 'vlade za razvoj in evropsko kohezijsko politiko'
             elif 'za Slovence v zamejstvu in po svetu' in text:
                 text = 'Urad vlade za Slovence v zamejstvu in po svetu'
+            elif 'infrastrukturo in prostor' in text:
+                text = 'za infrastrukturo'
             for d in data:
                 if text in d:
                     org = mv.get(id=data[d]['id'])
