@@ -774,6 +774,11 @@ def sendMailForEditVotes(votes):
 
 
 def parseRecipient(text, date_of):
+    # set utf-8 encoding
+    import sys
+    reload(sys)
+    sys.setdefaultencoding("UTF-8")
+
     mv = Organization.objects.filter(classification__in=['vlada',
                                                          'ministrstvo',
                                                          'sluzba vlade',
@@ -811,7 +816,7 @@ def parseRecipient(text, date_of):
             elif 'za Slovence v zamejstvu in po svetu' in text:
                 text = 'Urad vlade za Slovence v zamejstvu in po svetu'
             elif 'infrastrukturo in prostor' in text:
-                text = 'za infrastrukturo'
+                text = 'za okolje in prostor'
             for d in data:
                 if text in d:
                     org = mv.get(id=data[d]['id'])
@@ -819,8 +824,10 @@ def parseRecipient(text, date_of):
                                              Q(start_time=None),
                                              Q(end_time__gte=date_of) |
                                              Q(end_time=None))
+                    if not posts:
+                        posts = org.posts.filter(start_time__gte=date_of).order_by('start_time')
                     if role:
-                        posts = posts.filter(role__in=role)
+                        posts = posts.filter(role__in=role).order_by('start_time')
                     if posts:
                         out.append({'recipient': posts[0].membership.person,
                                     'type': 'person'})
