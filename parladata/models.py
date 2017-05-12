@@ -675,8 +675,9 @@ class Speech(Versionable, Timestampable, Taggable, models.Model):
 
 class Motion(Timestampable, Taggable, models.Model):
     """Votings which taken place in parlament."""
-    uuid = models.UUIDField(blank=True, null=True,
-                            help_text='motions uuid from DZ page')
+    uid = models.CharField(max_length=64,
+                           blank=True, null=True,
+                           help_text='motions uid from DZ page')
 
     organization = models.ForeignKey('Organization',
                                      blank=True, null=True,
@@ -918,6 +919,15 @@ class session_deleted(Timestampable, models.Model):
 
     def __str__(self):
         return self.name
+
+
+class Ignore(Timestampable, Taggable, models.Model):
+    """
+    id's for ignore
+    """
+    uid = models.CharField(max_length=64,
+                           blank=True, null=True,
+                           help_text='motions uid from DZ page')
 
 
 @receiver(pre_save, sender=Organization)
