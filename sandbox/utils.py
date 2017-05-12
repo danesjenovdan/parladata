@@ -4,6 +4,7 @@ import csv
 from datetime import datetime, timedelta
 import requests
 from django.conf import settings
+from django.db.models import Q
 
 
 def getPMMemberships():
@@ -44,3 +45,25 @@ def checkNumberOfMembers1():
         r = requests.get("http://localhost:8000/v1/getMembersOfPGsRanges/05.05.2016").json()
         for g in r:
             csvwriter.writerow([g["start_date"], str(sum([len(g["members"][g_]) for g_ in g["members"]]))])
+
+
+def checkMinistersParser():
+    with open('ministers.csv', 'wb') as csvfile:
+        csvwriter = csv.writer(csvfile, delimiter=';',
+                                        quotechar='|', quoting=csv.QUOTE_MINIMAL)
+        csvwriter.writerow(['recipient_text', 'recipient_person', 'recipient_organization'])
+        mv = Organization.objects.filter(classification__in=['vlada',
+                                                             'ministrstvo',
+                                                             'sluzba vlade',
+                                                             'urad vlade'])
+
+        for q in qq:
+            date_of = q.date
+            csvwriter.writerow([q.recipient_text,
+                                [{'name': p.name, 'org': Post.objects.filter(Q(start_time__lte=date_of) |
+                                                                             Q(start_time=None),
+                                                                             Q(end_time__gte=date_of) |
+                                                                             Q(end_time=None),
+                                                                             organization__in=mv,
+                                                                             membership__person=p).values_list('organization__name')} for p in q.recipient_person.all()],
+                                q.recipient_organization.all().values_list("name")]
