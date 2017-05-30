@@ -1896,7 +1896,7 @@ def getVotesOfSessionTable(request, session_id, date_to=None):
         fdate = datetime.strptime(date_to,
                                   settings.API_DATE_FORMAT).date()
     else:
-        fdate = datetime.now().date()
+        fdate = datetime.now()
     data = []
     session = get_object_or_404(Session, id=session_id)
     votes = Vote.objects.filter(session=session,
