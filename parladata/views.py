@@ -1363,7 +1363,9 @@ def getSpeechData(request, speech_id):
             'date': speech.session.start_time.date(),
             'speaker_id': speech.speaker.id,
             'session_id': speech.session.id,
-            'session_name': speech.session.name
+            'session_name': speech.session.name,
+            'start_time': speech.start_time,
+            'order': speech.order
         }
 
         return JsonResponse(output, safe=False)
@@ -1894,7 +1896,7 @@ def getVotesOfSessionTable(request, session_id, date_to=None):
         fdate = datetime.strptime(date_to,
                                   settings.API_DATE_FORMAT).date()
     else:
-        fdate = datetime.now().date()
+        fdate = datetime.now()
     data = []
     session = get_object_or_404(Session, id=session_id)
     votes = Vote.objects.filter(session=session,
