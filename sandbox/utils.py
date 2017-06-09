@@ -66,4 +66,4 @@ def checkMinistersParser():
                                                                              Q(end_time=None),
                                                                              organization__in=mv,
                                                                              membership__person=p).values_list('organization__name')} for p in q.recipient_person.all()],
-                                q.recipient_organization.all().values_list("name")]
+                                q.recipient_organization.all().values_list("name")])
