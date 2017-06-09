@@ -1818,7 +1818,7 @@ def getAllChangesAfter(request,
             link = None
         recipient_person = question.recipient_person.all().values_list('id',
                                                                        flat=True)
-        recipient_org = question.recipient_organization.all().values_list('id', 
+        recipient_org = question.recipient_organization.all().values_list('id',
                                                                           flat=True)
         q_obj = {'date': question.date,
                  'id': question.id,
@@ -1946,6 +1946,7 @@ def getVotesTableExtended(request, date_to=None):
                              'orgvoter': ballot.orgvoter_id,
                              'result': False if motion.result == '0' else True,
                              'text': motion.text,
+                             'acronym': orgs[ballot.voterparty_id],
                              'date': vote.start_time,
                              'vote_id': vote.id,
                              'session_id': session.id,
