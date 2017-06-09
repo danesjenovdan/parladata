@@ -147,4 +147,4 @@ DATA_ADMINS = [('Nika Mahnic', 'nmahnich@gmail.com'),
 
 PARSER_ADMINS = [('Primoz Klemenske', 'klemensek@gmail.com')]
 
-PARLALIZE_API_KEY = 'vednoboljsi112358''
+PARLALIZE_API_KEY = 'vednoboljsi112358'
