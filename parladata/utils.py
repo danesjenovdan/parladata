@@ -734,6 +734,7 @@ def sendMailForEditVotes(votes):
     """
     Send mail to data admin to for tag votes and set votes results
     """
+    api_key = '/?key=' + settings.PARLALIZE_API_KEY
     motionAdmin = 'https://data.parlameter.si/admin/parladata/motion/'
     setMotionsUrl = 'https://analize.parlameter.si/v1/s/setMotionOfSession/'
     tagsUrl = 'https://data.parlameter.si/tags/'
@@ -746,7 +747,7 @@ def sendMailForEditVotes(votes):
     sesUpdateUrls = []
     graphUpdateUrls = []
     for session in list(set(votes.values())):
-        url = setMotionsUrl + str(session)
+        url = setMotionsUrl + str(session) + api_key
         updateUrls.append(url)
         url = pageVotes + str(session) + '?forceRender=true'
         sesUpdateUrls.append(url)
