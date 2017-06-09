@@ -26,13 +26,8 @@ urlpatterns = patterns('',
     url(r'^getMinistrStatic/(?P<person_id>\d+)/(?P<date_>[\w].+)', getMinistrStatic),
     url(r'^getMinistrStatic/(?P<person_id>\d+)', getMinistrStatic),
 
-    url(r'^getNumberOfMPAttendedSessions/(?P<person_id>\d+)', getNumberOfMPAttendedSessions), # TODO delete
-    url(r'^getNumberOfAllMPAttendedSessions/(?P<date_>[\w].+)', getNumberOfAllMPAttendedSessions),
-
     url(r'^getSpeechesOfMP/(?P<person_id>\d+)/(?P<date_>[\w].+)', getSpeechesOfMP),
     url(r'^getSpeechesOfMP/(?P<person_id>\d+)', getSpeechesOfMP),
-
-    url(r'^getSpeechesOfMPbyDate/(?P<person_id>\d+)/(?P<date_>[\w].+)', getSpeechesOfMPbyDate), # TODO delete
 
     url(r'^getAllMPsSpeeches/(?P<date_>[\w].+)', getAllSpeechesOfMPs),
     url(r'^getAllMPsSpeeches', getAllSpeechesOfMPs),
@@ -40,25 +35,17 @@ urlpatterns = patterns('',
     url(r'^getSpeeches/(?P<person_id>\d+)/(?P<date_>[\w].+)', getSpeeches),
     url(r'^getSpeeches/(?P<person_id>\d+)', getSpeeches),
 
-    url(r'^getMPSpeechesIDs/(?P<person_id>\d+)/(?P<date_>[\w].+)', getSpeechesIDs), # TODO check
-
-    url(r'^getAllTimeMPs/(?P<date_>[\w].+)', getAllTimeMPs), # TODO delete
-    url(r'^getAllTimeMPs', getAllTimeMPs), # TODO delete
+    url(r'^getMPSpeechesIDs/(?P<person_id>\d+)/(?P<date_>[\w].+)', getSpeechesIDs),
 
     url(r'^getSpeechesInRange/(?P<person_id>\d+)/(?P<date_from>[\w].+)/(?P<date_to>[\w].+)', getSpeechesInRange),
     url(r'^getMPParty/(?P<person_id>\d+)', getMPParty),
     url(r'^getAllPeople/', getAllPeople),
 
-    url(r'^getExtendedSpeechesOfMP/(?P<person_id>\d+)', getExtendedSpeechesOfMP), # TODO check
-
-    url(r'^getPersonData/(?P<person_id>\d+)', getPersonData), # TODO check
+    url(r'^getPersonData/(?P<person_id>\d+)', getPersonData),
 
     url(r'^getMembershipsOfMember/(?P<person_id>\d+)/(?P<date>[\w].+|)', getMembershipsOfMember),
 
-    url(r'^getMembersWithFuction/', getMembersWithFuction), # TODO fix spelling
-
-    url(r'^getNumberOfFormalSpeeches/(?P<person_id>\d+)', getNumberOfFormalSpeeches), # TODO check and decide if delete
-    url(r'^getTaggedVotes/(?P<person_id>\d+)', getTaggedVotes), # TODO delete
+    url(r'^getMembersWithFunction/', getMembersWithFunction),
 
     url(r'^getNumberOfPersonsSessions/(?P<person_id>\d+)/(?P<date_>[\w].+)', getNumberOfPersonsSessions),
     url(r'^getNumberOfPersonsSessions/(?P<person_id>\d+)', getNumberOfPersonsSessions),
