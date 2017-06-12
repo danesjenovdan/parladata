@@ -2402,7 +2402,7 @@ def getMembersOfPGRanges(request, org_id, date_=None):
     return JsonResponse(outList, safe=False)
 
 
-def getMembershipsOfMember(request, person_id, date=None): # TODO KUNST refactor poslanska_skupina, skupina_prijateljstva
+def getMembershipsOfMember(request, person_id, date=None):
     """Returns all memberships of specific MP. TODO"""
     """
     * @api {get} getMembershipsOfMember/{id}/{?date} Get memberships of an MP
@@ -2413,7 +2413,7 @@ def getMembershipsOfMember(request, person_id, date=None): # TODO KUNST refactor
       date is today, otherwise the results returned correspond to the state of the MPs
       memberships on that specific date.
 
-    * @apiSuccess {Object[]} / 
+    * @apiSuccess {Object[]} /
     * @apiSuccess {Object[]} /.delegacija List of membership objects in "delegations".
     * @apiSuccess {String} /.delegacija.url The organizations public URL if applicable.
     * @apiSuccess {String} /.delegacija.org_type The organization type.
@@ -2513,7 +2513,7 @@ def getMembershipsOfMember(request, person_id, date=None): # TODO KUNST refactor
 
     out_init_dict = {org_type: []
                      for org_type
-                     in set([member.organization.classification
+                     in set([member.organization.classification.replace(' ', '_')
                             for member
                             in memberships]
                             )
@@ -2526,7 +2526,7 @@ def getMembershipsOfMember(request, person_id, date=None): # TODO KUNST refactor
             url = links.first().url
         else:
             url = None
-        classification = out_init_dict[mem.organization.classification]
+        classification = out_init_dict[mem.organization.classification.replace(' ', '_')]
         classification.append({'org_type': mem.organization.classification,
                                'org_id': mem.organization.id,
                                'name': mem.organization.name,
