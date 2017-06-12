@@ -1560,7 +1560,7 @@ def getAllSpeeches(request, date_=None):
     return JsonResponse(data, safe=False)
 
 
-def getVotes(request, date_):
+def getVotes(request, date_=None):
     """Returns all votes."""
     """
     * @api {get} getVotes/{date} Get all Votes up until a date
