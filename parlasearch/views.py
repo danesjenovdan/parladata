@@ -9,53 +9,6 @@ from utils import *
 import requests
 
 
-"""return all ballots and speaches agregated by date
-
-id: id of person
-"""
-def getActivity(request, person_id):
-
-    def appendBallot(data, b):
-        tempBallot = dict()
-        tempBallot['type'] = 'ballot'
-        tempBallot['date'] = str(b.vote.start_time.date())
-        tempBallot['option'] = b.option
-        tempBallot['result'] = b.vote.result
-        tempBallot['vote_id'] = b.vote.id
-        tempBallot['vote_name'] = b.vote.name
-        #motion is currently empty
-        #tempBallot.text = b.vote.motion.recap
-        if tempBallot['date'] in data:
-            data[tempBallot['date']].append(tempBallot)
-        else:
-            data[tempBallot['date']] = [tempBallot]
-
-    def appendSpeech(data, s):
-        tempSpeech = dict()
-        tempSpeech['type'] = "speech"
-        tempSpeech['date'] = str(s.start_time.date())
-        tempSpeech['session_name'] = s.session.name
-        tempSpeech['session_id'] = s.session.id
-        tempSpeech['speech_id'] = s.id
-        if tempSpeech['date'] in data:
-            data[tempSpeech['date']].append(tempSpeech)
-        else:
-            data[tempSpeech['date']] = [tempSpeech]
-
-    data = dict()
-    person = Person.objects.filter(id=person_id)
-    if person:
-        ballots = Ballot.objects.filter(voter=person).order_by('vote__start_time');
-        speeches = Speech.objects.filter(speaker=person).order_by('start_time');
-
-        for b in ballots:
-            appendBallot(data, b)
-        for s in speeches:
-            appendSpeech(data, s)
-
-    data_list = [data[x] for x in data]
-    return JsonResponse(data_list, safe=False)
-
 '''
 MP = Members of parlament
 #Function: git config
