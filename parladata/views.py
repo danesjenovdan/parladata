@@ -663,56 +663,6 @@ def getSessionsOfOrg(request, org_id, date_=None):
     return JsonResponse(data, safe=False)
 
 
-def getVotes(request, date_=None):
-    """Returns votes of MPs."""
-    """
-    * @api {get} getVotes/{?date} List all ballots of all MPs
-    * @apiName getVotes
-    * @apiGroup MPs
-    * @apiDescription This function returns an object with MP's Parladata ids as keys
-      listing all votes and the MP's ballot up until the specified date. The optional
-      date parameter determines the date up until which sessions should be returned.
-      If no date is specified it is assumed the date is today.
-    * @apiParam {date} date Optional date.
-
-    * @apiSuccess {Object} / An object with MPs' ids as keys.
-    * @apiSuccess {Object} /.mp MP's ballots for all votes up until the specified date.
-    * @apiSuccess {String} /.mp.motion Motion ids as keys with a string representing the ballot: "za" "ni" "proti" "kvorum".
-
-    * @apiExample {curl} Example:
-        curl -i https://data.parlameter.si/v1/getVotes/
-    * @apiExample {curl} Example with date:
-        curl -i https://data.parlameter.si/v1/getVotes/21.12.2016
-
-    * @apiSuccessExample {json} Example response:
-    {
-        "24": {
-            "6512": "za",
-            "6513": "za",
-            "6509": "za",
-            "6510": "za",
-            "6511": "za"
-        },
-        "25": {
-            "6512": "za",
-            "6513": "za",
-            "6509": "kvorum",
-            "6510": "za",
-            "6511": "proti"
-        },
-        "26": {
-            "6512": "za",
-            "6513": "za",
-            "6509": "kvorum",
-            "6510": "za",
-            "6511": "proti"
-        }
-    }
-    """
-
-    return JsonResponse(getVotesDict(date_))
-
-
 def getSpeeches(request, person_id, date_=None):
     """Returns speechs of MP."""
     """
@@ -1484,6 +1434,7 @@ def getAllPGsExt(request):
 
     return JsonResponse(data, safe=False)
 
+
 def getAllOrganizations(request):
     """Returns all organizations."""
     """
@@ -1543,6 +1494,7 @@ def getAllOrganizations(request):
     return JsonResponse(data)
 
 
+# TODO Filip napiši pravi opis metode :) Ta metoda vrne vse govore (tudi gostov) in se uporablja za export govorov v parlalize.
 def getAllSpeeches(request, date_=None):
     """Returns all speeches."""
     """
@@ -1593,7 +1545,6 @@ def getAllSpeeches(request, date_=None):
     }
     """
 
-
     if date_:
         fdate = datetime.strptime(date_, settings.API_DATE_FORMAT).date()
     else:
@@ -1609,11 +1560,11 @@ def getAllSpeeches(request, date_=None):
     return JsonResponse(data, safe=False)
 
 
-def getAllVotes(request, date_):
+def getVotes(request, date_):
     """Returns all votes."""
     """
-    * @api {get} getAllVotes/{date} Get all Votes up until a date
-    * @apiName getAllVotes
+    * @api {get} getVotes/{date} Get all Votes up until a date
+    * @apiName getVotes
     * @apiGroup Votes
     * @apiDescription This function returns a list of all votes that
       took place until a given date.
@@ -1628,7 +1579,7 @@ def getAllVotes(request, date_):
     * @apiSuccess {String} /.result String with the result of the vote. Currently always returns "-".
 
     * @apiExample {curl} Example:
-        curl -i https://data.parlameter.si/v1/getAllVotes/12.12.2016
+        curl -i https://data.parlameter.si/v1/getVotes/12.12.2016
 
     * @apiSuccessExample {json} Example response:
     [
@@ -2001,7 +1952,7 @@ def motionOfSession(request, id_se):
         return JsonResponse([], safe=False)
 
 
-def getVotesOfSession(request, id_se): # TODO KUNST refactor so the name is getBallotsOfSession - isto v urls.py
+def getBallotsOfSession(request, id_se):
     """Returns all ballots of specific Session. TODO"""
     """
     * @api {get} getBallotsOfSession/{id} Get all ballots from a specific Session
@@ -2085,7 +2036,7 @@ def getVotesOfSession(request, id_se): # TODO KUNST refactor so the name is getB
     return JsonResponse(data, safe=False)
 
 
-def getVotesOfMotion(request, motion_id): # TODO KUNST refactor -> getBallotsOfMotion isto v urls.py
+def getBallotsOfMotion(request, motion_id):
     """Returns all ballots of specific motion. TODO"""
     """
     * @api {get} getBallotsOfMotion/{id} Get all ballots from a specific motion
@@ -2634,61 +2585,8 @@ def getAllTimeMemberships(request):
                           "id": member.person.id} for member in members],
                         safe=False)
 
-def getAllTimeMPs(request, date_=None):
-    """Returns all memberhips for all MPs."""
 
-    if date_:
-        fdate = datetime.strptime(date_, settings.API_DATE_FORMAT).date()
-    else:
-        fdate = datetime.now().today()
-
-    parliamentary_group = Organization.objects.filter(classification__in=PS_NP)
-    members = Membership.objects.filter(Q(start_time__lte=fdate) |
-                                        Q(start_time=None),
-                                        organization__in=parliamentary_group)
-
-    data = []
-    for i in members:
-        p = i.person
-        districts = ''
-
-        if p.districts:
-            districts = p.districts.all().values_list("name", flat=True)
-            districts = [smart_str(dist) for dist in districts]
-            if not districts:
-                districts = None
-        else:
-            districts = None
-
-        data.append({'id': p.id,
-                     'name': p.name,
-                     'membership': i.organization.name,
-                     'acronym': i.organization.acronym,
-                     'classification': p.classification,
-                     'family_name': p.family_name,
-                     'given_name': p.given_name,
-                     'additional_name': p.additional_name,
-                     'honorific_prefix': p.honorific_prefix,
-                     'honorific_suffix': p.honorific_suffix,
-                     'patronymic_name': p.patronymic_name,
-                     'sort_name': p.sort_name,
-                     'email': p.email,
-                     'birth_date': str(p.birth_date),
-                     'death_date': str(p.death_date),
-                     'summary': p.summary,
-                     'biography': p.biography,
-                     'image': p.image,
-                     'district': districts,
-                     'gov_url': p.gov_url.url,
-                     'gov_id': p.gov_id,
-                     'gov_picture_url': p.gov_picture_url,
-                     'voters': p.voters,
-                     'active': p.active,
-                     'party_id': i.organization.id})
-    return JsonResponse(data, safe=False)
-
-
-def getOrganizatonByClassification(request): # TODO KUNST refactor to plural -> getOrganizatonsByClassification
+def getOrganizatonsByClassification(request):
     """Returns organizations by classification(working bodies, PG, council). TODO"""
     """
     * @api {get} getOrganizatonsByClassification Get all Organizations organized by classification
@@ -2697,7 +2595,7 @@ def getOrganizatonByClassification(request): # TODO KUNST refactor to plural -> 
     * @apiDescription This function returns an object with the keys corresponding to different
       organization classifications.
 
-    * @apiSuccess {Object[]} / 
+    * @apiSuccess {Object[]} /
     * @apiSuccess {Object[]} /.working_bodies Organizations classified as working bodies.
     * @apiSuccess {Integer} /.working_bodies.id The organization's Parladata id.
     * @apiSuccess {String} /.working_bodies.name The organization's name.
@@ -3052,7 +2950,7 @@ def isVoteOnDay(request, date_=None):
     return JsonResponse({"isVote": True if votes else False})
 
 
-def getSpeechesIDs(request, person_id, date_=None): # TODO KUNST refactor function name -> getMPSpeechesIDs
+def getMPSpeechesIDs(request, person_id, date_=None):
     """Returns all speech ids of MP."""
     """
     * @api {get} getMPSpeechesIDs/{id}/{?date} Get all MP's speeches ids
@@ -3128,9 +3026,8 @@ def getPGsSpeechesIDs(request, org_id, date_=None):
     return JsonResponse(speeches_ids, safe=False)
 
 
-def getMembersWithFuction(request):
+def getMembersWithFunction(request):
     """
-    TODO KUNST fix spelling refactor -> getMembersWithFunction
     * @api {get} getMembersWithFunction/ MPs with functions in DZ
     * @apiName getMembersWithFunction
     * @apiGroup MPs

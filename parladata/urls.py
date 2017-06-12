@@ -24,18 +24,6 @@ urlpatterns = patterns('',
     url(r'^getMinistrStatic/(?P<person_id>\d+)/(?P<date_>[\w].+)', getMinistrStatic),
     url(r'^getMinistrStatic/(?P<person_id>\d+)', getMinistrStatic),
 
-    url(r'^getSpeechesOfMP/(?P<person_id>\d+)/(?P<date_>[\w].+)', getSpeechesOfMP),
-    url(r'^getSpeechesOfMP/(?P<person_id>\d+)', getSpeechesOfMP),
-
-    url(r'^getAllMPsSpeeches/(?P<date_>[\w].+)', getAllSpeechesOfMPs),
-    url(r'^getAllMPsSpeeches', getAllSpeechesOfMPs),
-
-    url(r'^getSpeeches/(?P<person_id>\d+)/(?P<date_>[\w].+)', getSpeeches),
-    url(r'^getSpeeches/(?P<person_id>\d+)', getSpeeches),
-
-    url(r'^getMPSpeechesIDs/(?P<person_id>\d+)/(?P<date_>[\w].+)', getSpeechesIDs),
-
-    url(r'^getSpeechesInRange/(?P<person_id>\d+)/(?P<date_from>[\w].+)/(?P<date_to>[\w].+)', getSpeechesInRange),
     url(r'^getMPParty/(?P<person_id>\d+)', getMPParty),
     url(r'^getAllPeople/', getAllPeople),
 
@@ -78,29 +66,26 @@ urlpatterns = patterns('',
     url(r'^getMembersOfPGRanges/(?P<org_id>\d+)/(?P<date_>[\w].+)', getMembersOfPGRanges),
     url(r'^getMembersOfPGRanges/(?P<org_id>\d+)', getMembersOfPGRanges),
 
-    url(r'^getOrganizatonByClassification', getOrganizatonByClassification),
+    url(r'^getOrganizatonsByClassification', getOrganizatonsByClassification),
     url(r'^getOrganizationRolesAndMembers/(?P<org_id>\d+)/(?P<date_>[\w].+)', getOrganizationRolesAndMembers),
     url(r'^getOrganizationRolesAndMembers/(?P<org_id>\d+)', getOrganizationRolesAndMembers),
 
     url(r'^getPGsSpeechesIDs/(?P<org_id>\d+)/(?P<date_>[\w].+)', getPGsSpeechesIDs),
 
     # Votes and Motion URLs
-    url(r'^getAllVotes/(?P<date_>[\w].+)', getAllVotes), # TODO refactor with getVotes
-    url(r'^getAllVotes/', getAllVotes),
-    url(r'^getDocumentOfMotion/(?P<motion_id>[\w].+)', getDocumentOfMotion), # TODO delete
+    url(r'^getVotes/(?P<date_>[\w].+)', getVotes),
+    url(r'^getVotes/', getVotes),
     url(r'^isVoteOnDay/(?P<date_>[\w].+)', isVoteOnDay),
     url(r'^isVoteOnDay/', isVoteOnDay),
     url(r'^getTags', getTags),
-    url(r'^getVotes/(?P<date_>[\w].+)', getVotes), # TODO refactor with getAllVotes
-    url(r'^getVotes/', getVotes), # TODO refactor with getAllVotes
     url(r'^motionOfSession/(?P<id_se>\d+)', motionOfSession),
-    url(r'^getVotesOfMotion/(?P<motion_id>\d+)', getVotesOfMotion),
-    url(r'^getVotesOfSession/(?P<id_se>\d+)', getVotesOfSession),
+    url(r'^getBallotsOfMotion/(?P<motion_id>\d+)', getBallotsOfMotion),
+    url(r'^getBallotsOfSession/(?P<id_se>\d+)', getBallotsOfSession),
 
     # Ballots URLs
     url(r'^getAllBallots/(?P<date_>[\w].+)', getAllBallots),
     url(r'^getAllBallots/', getAllBallots),
-    
+
     url(r'^getBallotsCounterOfPerson/(?P<person_id>\d+)/(?P<date_>[\w].+|)', getBallotsCounterOfPerson),
     url(r'^getBallotsCounterOfPerson/(?P<person_id>\d+)', getBallotsCounterOfPerson),
 
@@ -122,12 +107,25 @@ urlpatterns = patterns('',
     url(r'^getSessionsOfOrg/(?P<org_id>\d+)', getSessionsOfOrg),
 
     # Speech URLs
-    url(r'^getAllSpeeches/(?P<date_>[\w].+)', getAllSpeeches), # TODO refactor with other speeches
-    url(r'^getAllSpeeches', getAllSpeeches), # TODO refactor with other speeches
+    url(r'^getAllSpeeches/(?P<date_>[\w].+)', getAllSpeeches),
+    url(r'^getAllSpeeches', getAllSpeeches),
     url(r'^isSpeechOnDay/(?P<date_>[\w].+)', isSpeechOnDay),
     url(r'^isSpeechOnDay/', isSpeechOnDay),
     url(r'^getSpeechData/(?P<speech_id>\d+)', getSpeechData),
     url(r'^getAllAllSpeeches/$', getAllAllSpeeches),
+
+    url(r'^getSpeechesOfMP/(?P<person_id>\d+)/(?P<date_>[\w].+)', getSpeechesOfMP),
+    url(r'^getSpeechesOfMP/(?P<person_id>\d+)', getSpeechesOfMP),
+
+    url(r'^getAllMPsSpeeches/(?P<date_>[\w].+)', getAllSpeechesOfMPs),
+    url(r'^getAllMPsSpeeches', getAllSpeechesOfMPs),
+
+    url(r'^getSpeeches/(?P<person_id>\d+)/(?P<date_>[\w].+)', getSpeeches),
+    url(r'^getSpeeches/(?P<person_id>\d+)', getSpeeches),
+
+    url(r'^getMPSpeechesIDs/(?P<person_id>\d+)/(?P<date_>[\w].+)', getMPSpeechesIDs),
+
+    url(r'^getSpeechesInRange/(?P<person_id>\d+)/(?P<date_from>[\w].+)/(?P<date_to>[\w].+)', getSpeechesInRange),
 
     # POST save url's for parser
     url(r'^addQuestion/', addQuestion),
