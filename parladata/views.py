@@ -1618,8 +1618,10 @@ def getVotes(request, date_):
         }
     ]
     """
-
-    fdate = datetime.strptime(date_, settings.API_DATE_FORMAT).date() + timedelta(days=1) - timedelta(minutes=1)
+    if date_:
+        fdate = datetime.strptime(date_, settings.API_DATE_FORMAT).date() + timedelta(days=1) - timedelta(minutes=1)
+    else:
+        fdate = datetime.now().date() + timedelta(days=1) - timedelta(minutes=1)
     data = []
 
     votes = Vote.objects.filter(start_time__lte=fdate).order_by("start_time")
