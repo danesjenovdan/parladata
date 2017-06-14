@@ -596,20 +596,6 @@ def exportResultOfVotes():
     return 1
 
 
-def updateBallotOrg():
-    """Updates all ballots."""
-
-    for ballot in Ballot.objects.all():
-        members = requests.get('https://data.parlameter.si/v1/getMembersOfPGsOnDate/' + ballot.vote.session.start_time.strftime('%d.%m.%Y')).json()
-        for ids, mem in members.items():
-            if ballot.voter.id in mem:
-                print Organization.objects.get(id=int(ids)).name
-                print ballot.id
-                ballot.voterparty = Organization.objects.get(id=int(ids))
-                ballot.save()
-                print "org: ", ids
-
-
 def migrateVotesInMotions():
     """Migrates objects Votes to Motion."""
 
