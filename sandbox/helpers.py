@@ -4,6 +4,7 @@ from parladata.models import Speech, Question
 from parladata.utils import parseRecipient
 
 from datetime import datetime
+PS_NP = ['poslanska skupina', 'nepovezani poslanec']
 
 
 def fixSpeeches():
@@ -47,3 +48,31 @@ def setRecipientsToQuestions():
             else:
                 not_a_member.append({text.split(',')[i]: date})
     return not_a_member
+
+
+def fixBallotsVoterParty(person_id):
+    """
+    set voter party for each ballot of person
+    """
+    mems = Membership.objects.filter(person_id=person_id,
+                                     organization__classification__in=PS_NP)
+    print mems
+    for mem in mems:
+        start_time, end_time = getStartEndTime(mem)
+        ballots = Ballot.objects.filter(voter_id=person_id,
+                                        vote__start_time__gte=start_time,
+                                        vote__start_time__lte=end_time)
+        print list(set(list(ballots.values_list("voterparty", flat=True))))
+        ballots.update(voterparty=mem.organization)
+
+
+def getStartEndTime(membership):
+    if membership.start_time:
+        start_time = membership.start_time
+    else:
+        start_time = datetime(day=1, month=8, year=2014)
+    if membership.end_time:
+        end_time = membership.end_time
+    else:
+        end_time = datetime.now()
+    return start_time, end_time
