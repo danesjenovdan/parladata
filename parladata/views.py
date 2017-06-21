@@ -3711,3 +3711,55 @@ def getAllAllSpeeches(request):
                                   exclude=[]))
 
     return JsonResponse(data, safe=False)
+
+
+def getStrip(request):
+    tempDate = settings.MANDATE_START_TIME.date()
+    fdate = datetime.now().date()
+    parliamentary_group = Organization.objects.filter(classification__in=PS_NP)
+    members = Membership.objects.filter(organization__in=parliamentary_group)
+
+    pgs_ids = parliamentary_group.values_list("id", flat=True)
+    out = {(tempDate + timedelta(days=days)): {grup: []
+                                               for grup
+                                               in pgs_ids}
+           for days in range((fdate - tempDate).days + 1)}
+
+    for member in members:
+        if not member.start_time and not member.end_time:
+            start_time = tempDate
+            end_time = fdate
+        elif member.start_time and not member.end_time:
+            if member.start_time.date() < tempDate:
+                start_time = tempDate
+            else:
+                start_time = member.start_time.date()
+            end_time = fdate
+        else:
+            start_time = member.start_time.date()
+            if fdate > member.end_time.date():
+                end_time = member.end_time.date()
+            else:
+                end_time = fdate
+        for days in range((end_time - start_time).days + 1):
+            day = out[(start_time + timedelta(days=days))]
+            day[member.organization.id].append(member.person.id)
+
+    keys = out.keys()
+    keys.sort()
+    print out[keys[0]]
+    outList = [{"start": 0,
+                "duration": 1,
+                "chars": [{'id': key,
+                           'members': value} for key, value in out[keys[0]].items() if value]}]
+    for key in keys:
+        temp_data = [{'id': key,
+                      'members': value} for key, value in out[key].items() if value]
+        if temp_data == outList[-1]["chars"]:
+            outList[-1]["duration"] += 1
+        else:
+            outList.append({"start": outList[-1]["duration"] + outList[-1]["start"],
+                            "duration": 1,
+                            "chars": temp_data})
+
+    return JsonResponse(outList, safe=False)
