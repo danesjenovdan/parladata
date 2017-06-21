@@ -138,6 +138,8 @@ urlpatterns = patterns('',
     url(r'^membersFlowInDZ', membersFlowInDZ),
     url(r'^checkSessions/(?P<date_>[\w].+)', checkSessions),
 
+    url(r'^getStrip', getStrip),
+
     # MONITORING
     url(r'^monitoring', monitorMe),
 )

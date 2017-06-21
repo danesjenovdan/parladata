@@ -1,7 +1,8 @@
 from django.db.models import Count
 
-from parladata.models import Speech, Question
+from parladata.models import Speech, Question, Vote, Membership, Organization, Ballot
 from parladata.utils import parseRecipient
+from django.db.models import Q
 
 from datetime import datetime
 PS_NP = ['poslanska skupina', 'nepovezani poslanec']
@@ -76,3 +77,21 @@ def getStartEndTime(membership):
     else:
         end_time = datetime.now()
     return start_time, end_time
+
+
+def fixBallotsVoterPartyByVote(vote_id):
+    vote = Vote.objects.get(id=vote_id)
+    members = Membership.objects.filter(Q(start_time__lte=vote.start_time) |
+                                        Q(start_time=None),
+                                        Q(end_time__gte=vote.start_time) |
+                                        Q(end_time=None),
+                                        organization__classification__in=PS_NP)
+    orgs = list(set(list(members.values_list("organization_id", flat=True))))
+    for org in orgs:
+        people = members.filter(organization_id=org).values_list("person_id",
+                                                                 flat=True)
+        ballots = Ballot.objects.filter(voter__in=people,
+                                        vote=vote)
+
+        org_obj = Organization.objects.get(id=org)
+        ballots.update(voterparty=org_obj)
