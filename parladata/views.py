@@ -3148,6 +3148,8 @@ def getAllQuestions(request, date_=None):
                                                                        flat=True)
         recipient_org = question.recipient_organization.all().values_list('id',
                                                                           flat=True)
+        recipient_posts = question.recipient_post.all().values('organization_id',
+                                                                'membership__person_id')
         q_obj = {'date': question.date,
                  'id': question.id,
                  'title': question.title,
@@ -3155,6 +3157,7 @@ def getAllQuestions(request, date_=None):
                  'author_id': getIdSafe(question.author),
                  'recipient_id': list(recipient_person),
                  'recipient_org_id': list(recipient_org),
+                 'recipient_posts': list(recipient_posts),
                  'recipient_text': question.recipient_text,
                  'link': link,
                  }
@@ -3387,13 +3390,15 @@ def addQuestion(request): # TODO not documented because private refactor with se
                                    for person
                                    in recipients
                                    if person['type'] == 'org']
+        recipient_posts = [post['recipient']
+                           for post
+                           in recipients
+                           if post['type'] == 'post']
         print session, data['naslov'], datetime.strptime(data['datum'], '%d.%m.%Y'), person, data['naslovljenec']
-        if Question.objects.filter(session=session,# TODO use data['datum']
+        if Question.objects.filter(session=session,
                                    title=data['naslov'],
                                    date=datetime.strptime(data['datum'], '%d.%m.%Y'),
-                                   author=authorPerson, # TODO use data['vlagatelj']
-                                   #recipient_person=determinePerson2(), # TODO use data['naslovljenec'], not MVP
-                                   # recipient_organization=determineOrganization(), # TODO use data['naslovljenec'], not MVP
+                                   author=authorPerson,
                                    recipient_text=data['naslovljenec']
                                    ):
             return JsonResponse({'status': 'This question is allready saved'})
@@ -3408,6 +3413,7 @@ def addQuestion(request): # TODO not documented because private refactor with se
         question.save()
         question.recipient_person.add(*recipient_persons)
         question.recipient_organization.add(*recipient_organizations)
+        question.recipient_post.add(*recipient_posts)
 
         print 'save question'
 
@@ -3548,6 +3554,8 @@ def getAllChangesAfter(request, # TODO not documented because strange
                                                                        flat=True)
         recipient_org = question.recipient_organization.all().values_list('id',
                                                                           flat=True)
+        recipient_posts = question.recipient_post.all().values('organization_id',
+                                                                'membership__person_id')
         q_obj = {'date': question.date,
                  'id': question.id,
                  'title': question.title,
@@ -3555,6 +3563,7 @@ def getAllChangesAfter(request, # TODO not documented because strange
                  'author_id': getIdSafe(question.author),
                  'recipient_id': list(recipient_person),
                  'recipient_org_id': list(recipient_org),
+                 'recipient_posts': list(recipient_posts),
                  'recipient_text': question.recipient_text,
                  'link': link,
                  }
