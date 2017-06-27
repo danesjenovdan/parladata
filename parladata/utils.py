@@ -818,6 +818,8 @@ def parseRecipient(text, date_of):
                     if posts:
                         out.append({'recipient': posts[0].membership.person,
                                     'type': 'person'})
+                        out.append({'recipient': posts[0],
+                                    'type': 'post'})
                         added = True
                     else:
                         print 'There is no POsts', text, date_of
