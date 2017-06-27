@@ -388,7 +388,9 @@ def getIDsOfAllMinisters(request, date_=None):
     else:
         fdate = datetime.now().date()
     ministry = Organization.objects.filter(classification__in=['ministrstvo',
-                                                               'vlada'])
+                                                               'vlada',
+                                                               'sluzba vlade',
+                                                               'urad vlade'])
     memberships = Membership.objects.filter(Q(start_time__lte=fdate) |
                                             Q(start_time=None),
                                             Q(end_time__gte=fdate) |
@@ -409,7 +411,9 @@ def getMinistrStatic(request, person_id, date_=None):
         fdate = datetime.now().date()
     data = dict()
     ministry = Organization.objects.filter(classification__in=['ministrstvo',
-                                                              'vlada'])
+                                                               'vlada',
+                                                               'sluzba vlade',
+                                                               'urad vlade'])
     person = get_object_or_404(Person, id=person_id)
     memberships = person.memberships.filter(Q(start_time__lte=fdate) |
                                             Q(start_time=None),
@@ -417,7 +421,9 @@ def getMinistrStatic(request, person_id, date_=None):
                                             Q(end_time=None))
 
     ministry = memberships.filter(organization__classification__in=['ministrstvo',
-                                                                 'vlada'])
+                                                                    'vlada',
+                                                                    'sluzba vlade',
+                                                                    'urad vlade'])
     if len(ministry) > 1:
         ministry = ministry.filter(organization__classification='ministrstvo')
     ministry_data = {'name': ministry[0].organization.name,
