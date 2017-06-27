@@ -852,6 +852,11 @@ class Question(Timestampable, models.Model):
                                               help_text='Recipient person (if it\'s a person).',
                                               related_name='questions')
 
+    recipient_post = models.ManyToManyField('Post',
+                                            blank=True,
+                                            help_text='Recipient person\'s post).',
+                                            related_name='questions')
+
     recipient_organization = models.ManyToManyField('Organization',
                                                     blank=True,
                                                     help_text='Recipient organization (if it\'s an organization).',

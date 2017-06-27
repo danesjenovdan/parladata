@@ -38,6 +38,7 @@ def setRecipientsToQuestions():
         text = question.recipient_text
         date = question.date
         recipients = parseRecipient(text, date)
+        print recipients, text
         for i, recipient in enumerate(recipients):
             if recipient:
                 if recipient['type'] == 'person':
@@ -46,8 +47,12 @@ def setRecipientsToQuestions():
                 elif recipient['type'] == 'org':
                     print 'save org'
                     question.recipient_organization.add(recipient['recipient'])
+                elif recipient['type'] == 'post':
+                    print 'save post'
+                    question.recipient_post.add(recipient['recipient'])
             else:
-                not_a_member.append({text.split(',')[i]: date})
+                #not_a_member.append({text.split(',')[i]: date})
+                pass
     return not_a_member
 
 
