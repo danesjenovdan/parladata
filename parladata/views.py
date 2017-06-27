@@ -391,11 +391,7 @@ def getIDsOfAllMinisters(request, date_=None):
                                                                'vlada',
                                                                'sluzba vlade',
                                                                'urad vlade'])
-    memberships = Membership.objects.filter(Q(start_time__lte=fdate) |
-                                            Q(start_time=None),
-                                            Q(end_time__gte=fdate) |
-                                            Q(end_time=None),
-                                            organization__in=ministry)
+    memberships = Membership.objects.filter(organization__in=ministry)
     ids = list(set(list(memberships.values_list('person_id', flat=True))))
 
     return JsonResponse({'ministers_ids': ids}, safe=False)
