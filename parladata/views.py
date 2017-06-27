@@ -455,7 +455,7 @@ def getMinistrStatic(request, person_id, date_=None):
                                   int(birth_date[8:10]))
         age = age.days / 365
     except:
-        client.captureException()
+        #client.captureException()
         age = None
 
     twitter = person.link_set.filter(tags__name__in=['tw'])
