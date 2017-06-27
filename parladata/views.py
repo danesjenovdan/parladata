@@ -403,98 +403,97 @@ def getIDsOfAllMinisters(request, date_=None):
 
 def getMinistrStatic(request, person_id, date_=None):
     """
+    Returns all government memberships of person
     TODO: write doc
     """
     if date_:
         fdate = datetime.strptime(date_, settings.API_DATE_FORMAT).date()
     else:
         fdate = datetime.now().date()
-    data = dict()
-    ministry = Organization.objects.filter(classification__in=['ministrstvo',
-                                                               'vlada',
-                                                               'sluzba vlade',
-                                                               'urad vlade'])
+    data = []
+
     person = get_object_or_404(Person, id=person_id)
-    memberships = person.memberships.filter(Q(start_time__lte=fdate) |
+    """memberships = person.memberships.filter(Q(start_time__lte=fdate) |
                                             Q(start_time=None),
                                             Q(end_time__gte=fdate) |
-                                            Q(end_time=None))
+                                            Q(end_time=None))"""
+    memberships = person.memberships.all()
 
     ministry = memberships.filter(organization__classification__in=['ministrstvo',
                                                                     'vlada',
                                                                     'sluzba vlade',
                                                                     'urad vlade'])
-    if len(ministry) > 1:
-        ministry = ministry.filter(organization__classification='ministrstvo')
-    ministry_data = {'name': ministry[0].organization.name,
-                     'id': ministry[0].organization.id,
-                     'acronym': ministry[0].organization.acronym}
+    for ministr in ministry:
+        ministry_data = {'name': ministr.organization.name,
+                         'id': ministr.organization.id,
+                         'acronym': ministr.organization.acronym}
 
-    party = memberships.filter(organization__classification__in=PS_NP)
-    if party:
-        party_data = {'name': party[0].organization.name,
-                      'id': party[0].organization.id,
-                      'acronym': party[0].organization.acronym}
-    else:
-        party_data = {}
+        party = memberships.filter(organization__classification__in=PS_NP)
+        if party:
+            party_data = {'name': party[0].organization.name,
+                          'id': party[0].organization.id,
+                          'acronym': party[0].organization.acronym}
+        else:
+            party_data = {}
 
-    PS_NP_VLADA = ['ministrstvo', 'vlada'] + PS_NP
-    groups = memberships.exclude(organization__classification__in=PS_NP_VLADA)
+        PS_NP_VLADA = ['ministrstvo', 'vlada'] + PS_NP
+        groups = memberships.exclude(organization__classification__in=PS_NP_VLADA)
 
-    groups_data = [{'name': membership.organization.name,
-                    'id': membership.organization.id,
-                    'acronym': membership.organization.acronym}
-                   for membership
-                   in groups]
+        groups_data = [{'name': membership.organization.name,
+                        'id': membership.organization.id,
+                        'acronym': membership.organization.acronym}
+                       for membership
+                       in groups]
 
-    # calcutaes age of MP
-    try:
-        birth_date = str(person.birth_date)
-        age = date.today() - date(int(birth_date[:4]),
-                                  int(birth_date[5:7]),
-                                  int(birth_date[8:10]))
-        age = age.days / 365
-    except:
-        #client.captureException()
-        age = None
+        # calcutaes age of MP
+        try:
+            birth_date = str(person.birth_date)
+            age = date.today() - date(int(birth_date[:4]),
+                                      int(birth_date[5:7]),
+                                      int(birth_date[8:10]))
+            age = age.days / 365
+        except:
+            #client.captureException()
+            age = None
 
-    twitter = person.link_set.filter(tags__name__in=['tw'])
-    facebook = person.link_set.filter(tags__name__in=['fb'])
-    linkedin = person.link_set.filter(tags__name__in=['linkedin'])
+        twitter = person.link_set.filter(tags__name__in=['tw'])
+        facebook = person.link_set.filter(tags__name__in=['fb'])
+        linkedin = person.link_set.filter(tags__name__in=['linkedin'])
 
-    social_output = {}
-    if len(twitter) > 0:
-        social_output['twitter'] = twitter[0].url
-    else:
-        social_output['twitter'] = False
-    if len(facebook) > 0:
-        social_output['facebook'] = facebook[0].url
-    else:
-        social_output['facebook'] = False
-    if len(linkedin) > 0:
-        social_output['linkedin'] = linkedin[0].url
-    else:
-        social_output['linkedin'] = False
+        social_output = {}
+        if len(twitter) > 0:
+            social_output['twitter'] = twitter[0].url
+        else:
+            social_output['twitter'] = False
+        if len(facebook) > 0:
+            social_output['facebook'] = facebook[0].url
+        else:
+            social_output['facebook'] = False
+        if len(linkedin) > 0:
+            social_output['linkedin'] = linkedin[0].url
+        else:
+            social_output['linkedin'] = False
 
-    district = list(person.districts.all().values_list('id',
-                                                       flat=True))
-    if not district:
-        district = None
+        district = list(person.districts.all().values_list('id',
+                                                           flat=True))
+        if not district:
+            district = None
 
-    data = {
-        'previous_occupation': person.previous_occupation,
-        'education': person.education,
-        'party': party_data,
-        'district': district,
-        'age': age,
-        'groups': groups_data,
-        'name': person.name,
-        'social': social_output,
-        'gov_id': person.gov_id,
-        'gender': 'm' if person.gender == 'male' else 'f',
-        'ministry': ministry_data,
-    }
-    return JsonResponse(data)
+        data.append({
+            'previous_occupation': person.previous_occupation,
+            'education': person.education,
+            'party': party_data,
+            'district': district,
+            'age': age,
+            'groups': groups_data,
+            'name': person.name,
+            'social': social_output,
+            'gov_id': person.gov_id,
+            'gender': 'm' if person.gender == 'male' else 'f',
+            'ministry': ministry_data,
+            'start_time': ministr.start_time
+        })
+    return JsonResponse(data, safe=False)
 
 
 def getSessions(request, date_=None):
