@@ -3784,12 +3784,15 @@ def getMembershipNetwork(request):
                                         Q(end_time__gte=fdate) |
                                         Q(end_time=None),
                                         organization__in=parliamentary_group)
+    p_ids = members.values_list("person__id", flat=True)
+    members = Membership.objects.filter(organization__in=parliamentary_group,
+                                        person_id__in=p_ids)
     members = members.order_by("start_time")
 
     mems = {}
 
     for member in members:
-        mems[member.person.id] = {'nodeName': member.person.name, 'group': member.organization.id}
+        mems[member.person.id] = {'nodeName': member.person.name, 'group': member.organization.id, 'id': member.person.id}
 
     links = []
     visited = []
@@ -3825,7 +3828,9 @@ def getMembershipNetwork(request):
     links = []
     for link in temp_links.values():
         links.append({'source': ids[link['source']],
+                      'source_id': link['source'],
                       'target': ids[link['target']],
+                      'target_id': link['target'],
                       'value': link['value']})
 
     return JsonResponse({'nodes': nodes,
