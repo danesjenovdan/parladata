@@ -3778,6 +3778,11 @@ def getStrip(request):
 def getMembershipNetwork(request):
     parliamentary_group = Organization.objects.filter(classification__in=PS_NP)
     members = Membership.objects.filter(organization__in=parliamentary_group)
+    fdate = datetime.now()
+    members = Membership.objects.filter(Q(start_time__lte=fdate) |
+                                        Q(start_time=None),
+                                        Q(end_time__gte=fdate) |
+                                        Q(end_time=None))
     members = members.order_by("start_time")
 
     mems = {}
