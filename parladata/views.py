@@ -3778,7 +3778,7 @@ def getStrip(request):
 def getMembershipNetwork(request):
     parliamentary_group = Organization.objects.filter(classification__in=PS_NP)
     members = Membership.objects.filter(organization__in=parliamentary_group)
-    fdate = datetime.now()
+    """fdate = datetime.now()
     members = Membership.objects.filter(Q(start_time__lte=fdate) |
                                         Q(start_time=None),
                                         Q(end_time__gte=fdate) |
@@ -3786,13 +3786,13 @@ def getMembershipNetwork(request):
                                         organization__in=parliamentary_group)
     p_ids = members.values_list("person__id", flat=True)
     members = Membership.objects.filter(organization__in=parliamentary_group,
-                                        person_id__in=p_ids)
+                                        person_id__in=p_ids)"""
     members = members.order_by("start_time")
 
     mems = {}
 
     for member in members:
-        mems[member.person.id] = {'nodeName': member.person.name, 'group': member.organization.id, 'id': member.person.id}
+        mems[member.person.id] = {'name': member.person.name, 'group': member.organization.id, 'id': member.person.id}
 
     links = []
     visited = []
