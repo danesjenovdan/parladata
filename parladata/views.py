@@ -3787,12 +3787,18 @@ def getMembershipNetwork(request):
     p_ids = members.values_list("person__id", flat=True)
     members = Membership.objects.filter(organization__in=parliamentary_group,
                                         person_id__in=p_ids)"""
+
+    staticData = requests.get('https://analize.parlameter.si/v1/utils/getAllStaticData/').json()
+    
     members = members.order_by("start_time")
 
     mems = {}
 
     for member in members:
-        mems[member.person.id] = {'name': member.person.name, 'group': member.organization.id, 'id': member.person.id}
+        mems[member.person.id] = {'name': member.person.name,
+                                  'group': member.organization.id,
+                                  'id': member.person.id,
+                                  'presonData': staticData['persons'][str(member.person.id)]}
 
     links = []
     visited = []
@@ -3806,7 +3812,8 @@ def getMembershipNetwork(request):
                 if days:
                     links.append({'source': c_m.person_id,
                                   'target': o_m.person_id,
-                                  'value': days})
+                                  'value': days,
+                                  'orgData': staticData['partys'][str(c_m.organization_id)]})
 
     temp_links = {}
     out = []
@@ -3832,7 +3839,8 @@ def getMembershipNetwork(request):
                       'source_id': link['source'],
                       'target': ids[link['target']],
                       'target_id': link['target'],
-                      'value': link['value']})
+                      'value': link['value'],
+                      'orgData': link['orgData']})
 
     return JsonResponse({'nodes': nodes,
                          'links': links})
