@@ -3773,3 +3773,79 @@ def getStrip(request):
                             "chars": temp_data})
 
     return JsonResponse(outList, safe=False)
+
+
+def getMembershipNetwork(request):
+    parliamentary_group = Organization.objects.filter(classification__in=PS_NP)
+    members = Membership.objects.filter(organization__in=parliamentary_group)
+    members = members.order_by("start_time")
+
+    mems = {}
+
+    for member in members:
+        mems[member.person.id] = {'nodeName': member.person.name, 'group': member.organization.id}
+
+    links = []
+    visited = []
+    for m_id in mems.keys():
+        current = members.filter(person_id=m_id)
+        for c_m in current:
+            visited.append(c_m.id)
+            others = members.filter(organization_id=c_m.organization_id).exclude(id__in=visited)
+            for o_m in others:
+                days = getDaysTogether(c_m, o_m)
+                if days:
+                    links.append({'source': c_m.person_id,
+                                  'target': o_m.person_id,
+                                  'value': days})
+
+    temp_links = {}
+    out = []
+    for link in links:
+        key = str(link['source'])+'_'+str(link['target'])
+        if key in temp_links.keys():
+            temp_links[key]['value'] += link['value']
+        else:
+            temp_links[key] = link
+
+    nodes = []
+    ids = {}
+    idx = 0
+    for m in mems.keys():
+        nodes.append(mems[m])
+        ids[m] = idx
+        idx += 1
+
+    links = []
+    for link in temp_links.values():
+        links.append({'source': ids[link['source']],
+                      'target': ids[link['target']],
+                      'value': link['value']})
+
+    return JsonResponse({'nodes': nodes,
+                         'links': links})
+
+
+def getDaysTogether(p1, p2):
+    return has_overlap(setDateIfNone(p1.start_time, 'start'),
+                       setDateIfNone(p1.end_time, 'end'),
+                       setDateIfNone(p2.start_time, 'start'),
+                       setDateIfNone(p2.end_time, 'end'))
+
+
+def has_overlap(A_start, A_end, B_start, B_end):
+    latest_start = max(A_start, B_start)
+    earliest_end = min(A_end, B_end)
+    if latest_start <= earliest_end:
+        return (earliest_end - latest_start).days
+    else:
+        return 0
+
+
+def setDateIfNone(date, type_='start'):
+    if not date:
+        if type_ == 'start':
+            return datetime(day=1, month=8, year=2014)
+        elif type_ == 'end':
+            return datetime.now()
+    return date
