@@ -3820,8 +3820,9 @@ def getMembershipNetwork(request):
     nodes = []
     ids = {}
     idx = 0
-    for m in mems.keys():
-        nodes.append(mems[m])
+    sort_mems = sorted(mems.items(), key=lambda x: x[1]['group'])
+    for m, values in sort_mems:
+        nodes.append(values)
         ids[m] = idx
         idx += 1
 
