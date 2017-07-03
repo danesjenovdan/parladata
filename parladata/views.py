@@ -3782,7 +3782,8 @@ def getMembershipNetwork(request):
     members = Membership.objects.filter(Q(start_time__lte=fdate) |
                                         Q(start_time=None),
                                         Q(end_time__gte=fdate) |
-                                        Q(end_time=None))
+                                        Q(end_time=None),
+                                        organization__in=parliamentary_group)
     members = members.order_by("start_time")
 
     mems = {}
