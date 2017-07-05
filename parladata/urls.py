@@ -140,6 +140,7 @@ urlpatterns = patterns('',
 
     url(r'^getStrip', getStrip),
     url(r'^getMembershipNetwork', getMembershipNetwork),
+    url(r'^getAmendment', getAmendment),
 
     # MONITORING
     url(r'^monitoring', monitorMe),
