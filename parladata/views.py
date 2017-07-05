@@ -3866,6 +3866,7 @@ def getAmendment(request):
     parliamentaryGroups = Organization.objects.filter(classification__in=PS)
     acronyms = list(set(list(parliamentaryGroups.values_list('acronym', flat=True))))
     amandmas = Vote.objects.filter(name__icontains='amandma')
+    staticData = requests.get('https://analize.parlameter.si/v1/utils/getAllStaticData/').json()
     data = []
     for amandma in amandmas:
         result = amandma.motion.result
@@ -3875,8 +3876,24 @@ def getAmendment(request):
         skupni = True if len(pgs) > 1 else False
         for pg in pgs:
             acronym = pg[0] if pg[0] else pg[1]
+            if acronym in ['V', 'vlada', 'Bon', '14']:
+                continue
             data.append({'acronym': acronym,
-                         'result': result,
+                         'result': True if result == '1' else False,
                          'skupni': skupni,
                          'url': 'https://parlameter.si/seja/glasovanje/' + str(session_id) + '/' + str(vote_id)})
+    acronyms = list(set([am['acronym'] for am in data]))
+    d = {}
+    for acronym in acronyms:
+        try:
+            d[acronym] = staticData['partys'][str(Organization.objects.filter(acronym__icontains=acronym)[0].id)]
+        except:
+            print acronym
+
+    for i, dat in enumerate(data):
+        try:
+            data[i].update({'orgData': d[dat['acronym']]})
+        except:
+            pass
+
     return JsonResponse(data, safe=False)
