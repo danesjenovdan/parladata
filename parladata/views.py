@@ -3860,3 +3860,23 @@ def setDateIfNone(date, type_='start'):
         elif type_ == 'end':
             return datetime.now()
     return date
+
+
+def getAmendment():
+    parliamentaryGroups = Organization.objects.filter(classification__in=PS)
+    acronyms = list(set(list(parliamentaryGroups.values_list('acronym', flat=True))))
+    amandmas = Vote.objects.filter(name__icontains='amandma')
+    data = []
+    for amandma in amandmas:
+        result = amandma.motion.result
+        session_id = amandma.session_id
+        vote_id = amandma.id
+        pgs = re.findall("\; \s*(\w+)|\[\s*(\w+)", amandma.name)
+        skupni = True if len(pgs) > 1 else False
+        for pg in pgs:
+            acronym = pg[0] if pg[0] else pg[1]
+            data.append({'acronym': acronym,
+                         'result': result,
+                         'skupni': skupni,
+                         'url': 'https://parlameter.si/seja/glasovanje/' + str(session_id) + '/' + str(vote_id)])
+    return JsonResponse(data, safe=False)
