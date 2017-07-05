@@ -3862,7 +3862,7 @@ def setDateIfNone(date, type_='start'):
     return date
 
 
-def getAmendment():
+def getAmendment(request):
     parliamentaryGroups = Organization.objects.filter(classification__in=PS)
     acronyms = list(set(list(parliamentaryGroups.values_list('acronym', flat=True))))
     amandmas = Vote.objects.filter(name__icontains='amandma')
@@ -3878,5 +3878,5 @@ def getAmendment():
             data.append({'acronym': acronym,
                          'result': result,
                          'skupni': skupni,
-                         'url': 'https://parlameter.si/seja/glasovanje/' + str(session_id) + '/' + str(vote_id)])
+                         'url': 'https://parlameter.si/seja/glasovanje/' + str(session_id) + '/' + str(vote_id)})
     return JsonResponse(data, safe=False)
