@@ -1945,7 +1945,7 @@ def motionOfSession(request, id_se):
                 if 'Amandma' in motion.text:
                     acronyms = re.findall('\; \s*(\w+)|\[\s*(\w+)', motion.text)
                     acronyms = [pg[0] + ',' if pg[0] else pg[1] + ',' for pg in acronyms]
-                    query = reduce(operator.or_, (Q(name_parser__contains=item) for item in acronyms))
+                    query = reduce(operator.or_, (Q(name_parser__icontains=item) for item in acronyms))
                     orgs = list(Organization.objects.filter(query).values_list('id', flat=True))
                 else:
                     orgs = []
