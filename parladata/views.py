@@ -16,6 +16,7 @@ from taggit.models import Tag
 from django.shortcuts import get_object_or_404
 from django.views.decorators.csrf import csrf_exempt
 from django.db.models.expressions import DateTime
+import operator
 
 DZ_ID = 95
 PS_NP = ['poslanska skupina', 'nepovezani poslanec']
@@ -1879,6 +1880,7 @@ def motionOfSession(request, id_se):
     * @apiSuccess {Boolean} /.result Returns true if the motion passed, false if it didn't null if we don't know.
     * @apiSuccess {Integer} /.vote_id Parladata id of the vote that took place for this motion.
     * @apiSuccess {Integer} /.id Parladata id of the motion.
+    * @apiSuccess {Object[]} /.amendment_of Parladata id of organizations that submited amendment.
       
 
     * @apiExample {curl} Example:
@@ -1902,7 +1904,8 @@ def motionOfSession(request, id_se):
             "start_time": "2017-02-15T16:18:28",
             "result": true,
             "vote_id": 6894,
-            "id": 6650
+            "id": 6650,
+            "amendment_of": [1]
         }, {
             "doc_url": [{
             "url": "http://imss.dz-rs.si/IMiS/ImisAdmin.nsf/ImisnetAgent?OpenAgent&2&DZ-MSS-01/ca20e005b2b645b53a0715714f6ae78cb5276f4b6144a93f432b13c76b532975",
@@ -1916,7 +1919,8 @@ def motionOfSession(request, id_se):
             "start_time": "2017-02-15T16:19:22",
             "result": true,
             "vote_id": 6893,
-            "id": 6649
+            "id": 6649,
+            "amendment_of": [1]
         }
     ]
     """
@@ -1938,6 +1942,14 @@ def motionOfSession(request, id_se):
                     result = True
                 else:
                     result = None
+                if 'Amandma' in motion.text:
+                    acronyms = re.findall('\; \s*(\w+)|\[\s*(\w+)', motion.text)
+                    acronyms = [pg[0] + ',' if pg[0] else pg[1] + ',' for pg in acronyms]
+                    query = reduce(operator.or_, (Q(name_parser__contains=item) for item in acronyms))
+                    orgs = list(Organization.objects.filter(query).values_list('id', flat=True))
+                else:
+                    orgs = []
+
                 links = motion.links.all()
                 links_list = [{'name': link.name, 'url': link.url}
                               for link in links]
@@ -1947,7 +1959,8 @@ def motionOfSession(request, id_se):
                              'result': result,
                              'tags': map(smart_str, vote.tags.names()),
                              'doc_url': links_list,
-                             'start_time': vote.start_time})
+                             'start_time': vote.start_time,
+                             'amendment_of': orgs})
         else:
             data = []
         return JsonResponse(data, safe=False)
