@@ -1951,9 +1951,9 @@ def motionOfSession(request, id_se):
                                        Q(founding_date=None),
                                        Q(dissolution_date__gte=vote.start_time) |
                                        Q(dissolution_date=None))
-                    orgs = list(Organization.objects.filter(query).values_list('id', flat=True))
+                    org_ids = list(orgs.values_list('id', flat=True))
                 else:
-                    orgs = []
+                    org_ids = []
 
                 links = motion.links.all()
                 links_list = [{'name': link.name, 'url': link.url}
@@ -1965,7 +1965,7 @@ def motionOfSession(request, id_se):
                              'tags': map(smart_str, vote.tags.names()),
                              'doc_url': links_list,
                              'start_time': vote.start_time,
-                             'amendment_of': orgs})
+                             'amendment_of': org_ids})
         else:
             data = []
         return JsonResponse(data, safe=False)
