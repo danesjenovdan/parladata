@@ -132,7 +132,7 @@ class Person(Timestampable, models.Model):
                                       help_text=_('URL to gov website pic'))
 
     districts = models.ManyToManyField('Area',
-                                       blank=True, null=True,
+                                       blank=True,
                                        help_text='District of person',
                                        related_name="candidates")
 
@@ -185,6 +185,10 @@ class Organization(Timestampable, Taggable, models.Model):
 
     name = models.TextField(_('name'),
                             help_text=_('A primary name, e.g. a legally recognized name'))
+
+    name_parser = models.CharField(max_length=500,
+                                   help_text='Name for parser.',
+                                   blank=True, null=True)
 
     # array of items referencing "http://popoloproject.com/schemas/other_name.json#"
     acronym = models.CharField(_('acronym'),
@@ -851,6 +855,11 @@ class Question(Timestampable, models.Model):
                                               blank=True,
                                               help_text='Recipient person (if it\'s a person).',
                                               related_name='questions')
+
+    recipient_post = models.ManyToManyField('Post',
+                                            blank=True,
+                                            help_text='Recipient person\'s post).',
+                                            related_name='questions')
 
     recipient_organization = models.ManyToManyField('Organization',
                                                     blank=True,

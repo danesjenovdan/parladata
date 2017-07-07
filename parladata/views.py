@@ -16,6 +16,7 @@ from taggit.models import Tag
 from django.shortcuts import get_object_or_404
 from django.views.decorators.csrf import csrf_exempt
 from django.db.models.expressions import DateTime
+import operator
 
 
 DZ_ID = 95
@@ -389,12 +390,10 @@ def getIDsOfAllMinisters(request, date_=None):
     else:
         fdate = datetime.now().date()
     ministry = Organization.objects.filter(classification__in=['ministrstvo',
-                                                               'vlada'])
-    memberships = Membership.objects.filter(Q(start_time__lte=fdate) |
-                                            Q(start_time=None),
-                                            Q(end_time__gte=fdate) |
-                                            Q(end_time=None),
-                                            organization__in=ministry)
+                                                               'vlada',
+                                                               'sluzba vlade',
+                                                               'urad vlade'])
+    memberships = Membership.objects.filter(organization__in=ministry)
     ids = list(set(list(memberships.values_list('person_id', flat=True))))
 
     return JsonResponse({'ministers_ids': ids}, safe=False)
@@ -402,94 +401,97 @@ def getIDsOfAllMinisters(request, date_=None):
 
 def getMinistrStatic(request, person_id, date_=None):
     """
+    Returns all government memberships of person
     TODO: write doc
     """
     if date_:
         fdate = datetime.strptime(date_, settings.API_DATE_FORMAT).date()
     else:
         fdate = datetime.now().date()
-    data = dict()
-    ministry = Organization.objects.filter(classification__in=['ministrstvo',
-                                                              'vlada'])
+    data = []
+
     person = get_object_or_404(Person, id=person_id)
-    memberships = person.memberships.filter(Q(start_time__lte=fdate) |
+    """memberships = person.memberships.filter(Q(start_time__lte=fdate) |
                                             Q(start_time=None),
                                             Q(end_time__gte=fdate) |
-                                            Q(end_time=None))
+                                            Q(end_time=None))"""
+    memberships = person.memberships.all()
 
     ministry = memberships.filter(organization__classification__in=['ministrstvo',
-                                                                 'vlada'])
-    if len(ministry) > 1:
-        ministry = ministry.filter(organization__classification='ministrstvo')
-    ministry_data = {'name': ministry[0].organization.name,
-                     'id': ministry[0].organization.id,
-                     'acronym': ministry[0].organization.acronym}
+                                                                    'vlada',
+                                                                    'sluzba vlade',
+                                                                    'urad vlade'])
+    for ministr in ministry:
+        ministry_data = {'name': ministr.organization.name,
+                         'id': ministr.organization.id,
+                         'acronym': ministr.organization.acronym}
 
-    party = memberships.filter(organization__classification__in=PS_NP)
-    if party:
-        party_data = {'name': party[0].organization.name,
-                      'id': party[0].organization.id,
-                      'acronym': party[0].organization.acronym}
-    else:
-        party_data = {}
+        party = memberships.filter(organization__classification__in=PS_NP)
+        if party:
+            party_data = {'name': party[0].organization.name,
+                          'id': party[0].organization.id,
+                          'acronym': party[0].organization.acronym}
+        else:
+            party_data = {}
 
-    PS_NP_VLADA = ['ministrstvo', 'vlada'] + PS_NP
-    groups = memberships.exclude(organization__classification__in=PS_NP_VLADA)
+        PS_NP_VLADA = ['ministrstvo', 'vlada'] + PS_NP
+        groups = memberships.exclude(organization__classification__in=PS_NP_VLADA)
 
-    groups_data = [{'name': membership.organization.name,
-                    'id': membership.organization.id,
-                    'acronym': membership.organization.acronym}
-                   for membership
-                   in groups]
+        groups_data = [{'name': membership.organization.name,
+                        'id': membership.organization.id,
+                        'acronym': membership.organization.acronym}
+                       for membership
+                       in groups]
 
-    # calcutaes age of MP
-    try:
-        birth_date = str(person.birth_date)
-        age = date.today() - date(int(birth_date[:4]),
-                                  int(birth_date[5:7]),
-                                  int(birth_date[8:10]))
-        age = age.days / 365
-    except:
-        client.captureException()
-        age = None
+        # calcutaes age of MP
+        try:
+            birth_date = str(person.birth_date)
+            age = date.today() - date(int(birth_date[:4]),
+                                      int(birth_date[5:7]),
+                                      int(birth_date[8:10]))
+            age = age.days / 365
+        except:
+            #client.captureException()
+            age = None
 
-    twitter = person.link_set.filter(tags__name__in=['tw'])
-    facebook = person.link_set.filter(tags__name__in=['fb'])
-    linkedin = person.link_set.filter(tags__name__in=['linkedin'])
+        twitter = person.link_set.filter(tags__name__in=['tw'])
+        facebook = person.link_set.filter(tags__name__in=['fb'])
+        linkedin = person.link_set.filter(tags__name__in=['linkedin'])
 
-    social_output = {}
-    if len(twitter) > 0:
-        social_output['twitter'] = twitter[0].url
-    else:
-        social_output['twitter'] = False
-    if len(facebook) > 0:
-        social_output['facebook'] = facebook[0].url
-    else:
-        social_output['facebook'] = False
-    if len(linkedin) > 0:
-        social_output['linkedin'] = linkedin[0].url
-    else:
-        social_output['linkedin'] = False
+        social_output = {}
+        if len(twitter) > 0:
+            social_output['twitter'] = twitter[0].url
+        else:
+            social_output['twitter'] = False
+        if len(facebook) > 0:
+            social_output['facebook'] = facebook[0].url
+        else:
+            social_output['facebook'] = False
+        if len(linkedin) > 0:
+            social_output['linkedin'] = linkedin[0].url
+        else:
+            social_output['linkedin'] = False
 
-    district = list(person.districts.all().values_list('id',
-                                                       flat=True))
-    if not district:
-        district = None
+        district = list(person.districts.all().values_list('id',
+                                                           flat=True))
+        if not district:
+            district = None
 
-    data = {
-        'previous_occupation': person.previous_occupation,
-        'education': person.education,
-        'party': party_data,
-        'district': district,
-        'age': age,
-        'groups': groups_data,
-        'name': person.name,
-        'social': social_output,
-        'gov_id': person.gov_id,
-        'gender': 'm' if person.gender == 'male' else 'f',
-        'ministry': ministry_data,
-    }
-    return JsonResponse(data)
+        data.append({
+            'previous_occupation': person.previous_occupation,
+            'education': person.education,
+            'party': party_data,
+            'district': district,
+            'age': age,
+            'groups': groups_data,
+            'name': person.name,
+            'social': social_output,
+            'gov_id': person.gov_id,
+            'gender': 'm' if person.gender == 'male' else 'f',
+            'ministry': ministry_data,
+            'start_time': ministr.start_time
+        })
+    return JsonResponse(data, safe=False)
 
 
 def getSessions(request, date_=None):
@@ -1879,6 +1881,7 @@ def motionOfSession(request, id_se):
     * @apiSuccess {Boolean} /.result Returns true if the motion passed, false if it didn't null if we don't know.
     * @apiSuccess {Integer} /.vote_id Parladata id of the vote that took place for this motion.
     * @apiSuccess {Integer} /.id Parladata id of the motion.
+    * @apiSuccess {Object[]} /.amendment_of Parladata id of organizations that submited amendment.
       
 
     * @apiExample {curl} Example:
@@ -1902,7 +1905,8 @@ def motionOfSession(request, id_se):
             "start_time": "2017-02-15T16:18:28",
             "result": true,
             "vote_id": 6894,
-            "id": 6650
+            "id": 6650,
+            "amendment_of": [1]
         }, {
             "doc_url": [{
             "url": "http://imss.dz-rs.si/IMiS/ImisAdmin.nsf/ImisnetAgent?OpenAgent&2&DZ-MSS-01/ca20e005b2b645b53a0715714f6ae78cb5276f4b6144a93f432b13c76b532975",
@@ -1916,7 +1920,8 @@ def motionOfSession(request, id_se):
             "start_time": "2017-02-15T16:19:22",
             "result": true,
             "vote_id": 6893,
-            "id": 6649
+            "id": 6649,
+            "amendment_of": [1]
         }
     ]
     """
@@ -1938,6 +1943,19 @@ def motionOfSession(request, id_se):
                     result = True
                 else:
                     result = None
+                if 'Amandma' in motion.text:
+                    acronyms = re.findall('\; \s*(\w+)|\[\s*(\w+)', motion.text)
+                    acronyms = [pg[0] + ',' if pg[0] else pg[1] + ',' for pg in acronyms]
+                    query = reduce(operator.or_, (Q(name_parser__icontains=item) for item in acronyms))
+                    orgs = Organization.objects.filter(query)
+                    orgs = orgs.filter(Q(founding_date__lte=vote.start_time) |
+                                       Q(founding_date=None),
+                                       Q(dissolution_date__gte=vote.start_time) |
+                                       Q(dissolution_date=None))
+                    org_ids = list(orgs.values_list('id', flat=True))
+                else:
+                    org_ids = []
+
                 links = motion.links.all()
                 links_list = [{'name': link.name, 'url': link.url}
                               for link in links]
@@ -1947,7 +1965,8 @@ def motionOfSession(request, id_se):
                              'result': result,
                              'tags': map(smart_str, vote.tags.names()),
                              'doc_url': links_list,
-                             'start_time': vote.start_time})
+                             'start_time': vote.start_time,
+                             'amendment_of': org_ids})
         else:
             data = []
         return JsonResponse(data, safe=False)
@@ -3150,6 +3169,8 @@ def getAllQuestions(request, date_=None):
                                                                        flat=True)
         recipient_org = question.recipient_organization.all().values_list('id',
                                                                           flat=True)
+        recipient_posts = question.recipient_post.all().values('organization_id',
+                                                                'membership__person_id')
         q_obj = {'date': question.date,
                  'id': question.id,
                  'title': question.title,
@@ -3157,6 +3178,7 @@ def getAllQuestions(request, date_=None):
                  'author_id': getIdSafe(question.author),
                  'recipient_id': list(recipient_person),
                  'recipient_org_id': list(recipient_org),
+                 'recipient_posts': list(recipient_posts),
                  'recipient_text': question.recipient_text,
                  'link': link,
                  }
@@ -3390,13 +3412,15 @@ def addQuestion(request): # TODO not documented because private refactor with se
                                    for person
                                    in recipients
                                    if person['type'] == 'org']
+        recipient_posts = [post['recipient']
+                           for post
+                           in recipients
+                           if post['type'] == 'post']
         print session, data['naslov'], datetime.strptime(data['datum'], '%d.%m.%Y'), person, data['naslovljenec']
-        if Question.objects.filter(session=session,# TODO use data['datum']
+        if Question.objects.filter(session=session,
                                    title=data['naslov'],
                                    date=datetime.strptime(data['datum'], '%d.%m.%Y'),
-                                   author=authorPerson, # TODO use data['vlagatelj']
-                                   #recipient_person=determinePerson2(), # TODO use data['naslovljenec'], not MVP
-                                   # recipient_organization=determineOrganization(), # TODO use data['naslovljenec'], not MVP
+                                   author=authorPerson,
                                    recipient_text=data['naslovljenec']
                                    ):
             return JsonResponse({'status': 'This question is allready saved'})
@@ -3411,6 +3435,7 @@ def addQuestion(request): # TODO not documented because private refactor with se
         question.save()
         question.recipient_person.add(*recipient_persons)
         question.recipient_organization.add(*recipient_organizations)
+        question.recipient_post.add(*recipient_posts)
 
         print 'save question'
 
@@ -3551,6 +3576,8 @@ def getAllChangesAfter(request, # TODO not documented because strange
                                                                        flat=True)
         recipient_org = question.recipient_organization.all().values_list('id',
                                                                           flat=True)
+        recipient_posts = question.recipient_post.all().values('organization_id',
+                                                                'membership__person_id')
         q_obj = {'date': question.date,
                  'id': question.id,
                  'title': question.title,
@@ -3558,6 +3585,7 @@ def getAllChangesAfter(request, # TODO not documented because strange
                  'author_id': getIdSafe(question.author),
                  'recipient_id': list(recipient_person),
                  'recipient_org_id': list(recipient_org),
+                 'recipient_posts': list(recipient_posts),
                  'recipient_text': question.recipient_text,
                  'link': link,
                  }
@@ -3766,3 +3794,127 @@ def getStrip(request):
                             "chars": temp_data})
 
     return JsonResponse(outList, safe=False)
+
+
+def getMembershipNetwork(request):
+    parliamentary_group = Organization.objects.filter(classification__in=PS_NP)
+    members = Membership.objects.filter(organization__in=parliamentary_group)
+
+    staticData = requests.get('https://analize.parlameter.si/v1/utils/getAllStaticData/').json()
+    
+    members = members.order_by("start_time")
+
+    mems = {}
+
+    for member in members:
+        mems[member.person.id] = {'name': member.person.name,
+                                  'group': member.organization.id,
+                                  'id': member.person.id,
+                                  'personData': staticData['persons'][str(member.person.id)]}
+
+    links = []
+    visited = []
+    for m_id in mems.keys():
+        current = members.filter(person_id=m_id)
+        for c_m in current:
+            visited.append(c_m.id)
+            others = members.filter(organization_id=c_m.organization_id).exclude(id__in=visited)
+            for o_m in others:
+                days = getDaysTogether(c_m, o_m)
+                if days:
+                    links.append({'source': c_m.person_id,
+                                  'target': o_m.person_id,
+                                  'value': days,
+                                  'orgData': staticData['partys'][str(c_m.organization_id)]})
+
+    temp_links = {}
+    out = []
+    for link in links:
+        key = str(link['source'])+'_'+str(link['target'])
+        if key in temp_links.keys():
+            temp_links[key]['value'] += link['value']
+        else:
+            temp_links[key] = link
+
+    nodes = []
+    ids = {}
+    idx = 0
+    sort_mems = sorted(mems.items(), key=lambda x: x[1]['group'])
+    for m, values in sort_mems:
+        nodes.append(values)
+        ids[m] = idx
+        idx += 1
+
+    links = []
+    for link in temp_links.values():
+        links.append({'source': ids[link['source']],
+                      'source_id': link['source'],
+                      'target': ids[link['target']],
+                      'target_id': link['target'],
+                      'value': link['value'],
+                      'orgData': link['orgData']})
+
+    return JsonResponse({'nodes': nodes,
+                         'links': links})
+
+
+def getDaysTogether(p1, p2):
+    return has_overlap(setDateIfNone(p1.start_time, 'start'),
+                       setDateIfNone(p1.end_time, 'end'),
+                       setDateIfNone(p2.start_time, 'start'),
+                       setDateIfNone(p2.end_time, 'end'))
+
+
+def has_overlap(A_start, A_end, B_start, B_end):
+    latest_start = max(A_start, B_start)
+    earliest_end = min(A_end, B_end)
+    if latest_start <= earliest_end:
+        return (earliest_end - latest_start).days
+    else:
+        return 0
+
+
+def setDateIfNone(date, type_='start'):
+    if not date:
+        if type_ == 'start':
+            return datetime(day=1, month=8, year=2014)
+        elif type_ == 'end':
+            return datetime.now()
+    return date
+
+
+def getAmendment(request):
+    parliamentaryGroups = Organization.objects.filter(classification__in=PS)
+    acronyms = list(set(list(parliamentaryGroups.values_list('acronym', flat=True))))
+    amandmas = Vote.objects.filter(name__icontains='amandma')
+    staticData = requests.get('https://analize.parlameter.si/v1/utils/getAllStaticData/').json()
+    data = []
+    for amandma in amandmas:
+        result = amandma.motion.result
+        session_id = amandma.session_id
+        vote_id = amandma.id
+        pgs = re.findall("\; \s*(\w+)|\[\s*(\w+)", amandma.name)
+        skupni = True if len(pgs) > 1 else False
+        for pg in pgs:
+            acronym = pg[0] if pg[0] else pg[1]
+            if acronym in ['V', 'vlada', 'Bon', '14']:
+                continue
+            data.append({'acronym': acronym,
+                         'result': True if result == '1' else False,
+                         'skupni': skupni,
+                         'url': 'https://parlameter.si/seja/glasovanje/' + str(session_id) + '/' + str(vote_id)})
+    acronyms = list(set([am['acronym'] for am in data]))
+    d = {}
+    for acronym in acronyms:
+        try:
+            d[acronym] = staticData['partys'][str(Organization.objects.filter(acronym__icontains=acronym)[0].id)]
+        except:
+            print acronym
+
+    for i, dat in enumerate(data):
+        try:
+            data[i].update({'orgData': d[dat['acronym']]})
+        except:
+            pass
+
+    return JsonResponse(data, safe=False)
