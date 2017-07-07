@@ -139,6 +139,8 @@ urlpatterns = patterns('',
     url(r'^checkSessions/(?P<date_>[\w].+)', checkSessions),
 
     url(r'^getStrip', getStrip),
+    url(r'^getMembershipNetwork', getMembershipNetwork),
+    url(r'^getAmendments', getAmendment),
 
     # MONITORING
     url(r'^monitoring', monitorMe),
