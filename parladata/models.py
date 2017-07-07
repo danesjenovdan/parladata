@@ -253,11 +253,11 @@ class Organization(Timestampable, Taggable, models.Model):
             return self.acronym
 
     @property
-    def name(self):
+    def name_(self):
         return self.name_on()
 
     @property
-    def acronym(self):
+    def acronym_(self):
         return self.acronym_on()
 
     @property
