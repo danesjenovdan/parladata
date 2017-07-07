@@ -232,6 +232,42 @@ class Organization(Timestampable, Taggable, models.Model):
     def __str__(self):
         return self.name + " " + unicode(self.id)
 
+    def name_on(self, fdate=datetime.now()):
+        name_obj = self.names.filter(models.Q(start_time__lte=fdate) |
+                                     models.Q(start_time=None),
+                                     models.Q(end_time__gte=fdate) |
+                                     models.Q(end_time=None))
+        if name_obj:
+            return name_obj[0].name
+        else:
+            return self.name
+
+    def acronym_on(self, fdate=datetime.now()):
+        name_obj = self.names.filter(models.Q(start_time__lte=fdate) |
+                                     models.Q(start_time=None),
+                                     models.Q(end_time__gte=fdate) |
+                                     models.Q(end_time=None))
+        if name_obj:
+            return name_obj[0].acronym
+        else:
+            return self.acronym
+
+    @property
+    def name(self):
+        return self.name_on()
+
+    @property
+    def acronym(self):
+        return self.acronym_on()
+
+    @property
+    def former_name(self):
+        name_obj = self.names.all().order_by('start_time')
+        if name_obj.count() > 1:
+            return list(name_obj)[-2].name
+        else:
+            return self.name
+
 
 @python_2_unicode_compatible
 class Post(Timestampable, Taggable, models.Model):
@@ -937,6 +973,30 @@ class Ignore(Timestampable, Taggable, models.Model):
     uid = models.CharField(max_length=64,
                            blank=True, null=True,
                            help_text='motions uid from DZ page')
+
+
+class OrganizationName(Timestampable, models.Model):
+    """
+    Objects for name history of organization.
+    """
+    organization = models.ForeignKey('Organization',
+                                     help_text=_('The organization who hold this name.'),
+                                     related_name='names')
+
+    name = models.TextField(_('name'),
+                            help_text=_('A primary name, e.g. a legally recognized name'))
+
+    acronym = models.CharField(_('acronym'),
+                               blank=True,
+                               null=True,
+                               max_length=128,
+                               help_text=_('Organization acronym'))
+
+    start_time = PopoloDateTimeField(blank=True, null=True,
+                                     help_text='Start time')
+
+    end_time = PopoloDateTimeField(blank=True, null=True,
+                                   help_text='End time')
 
 
 @receiver(pre_save, sender=Organization)
