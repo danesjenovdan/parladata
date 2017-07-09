@@ -183,19 +183,19 @@ class Organization(Timestampable, Taggable, models.Model):
     for existence that goes beyond the set of people belonging to it.
     """
 
-    name = models.TextField(_('name'),
-                            help_text=_('A primary name, e.g. a legally recognized name'))
+    _name = models.TextField(_('name'),
+                             help_text=_('A primary name, e.g. a legally recognized name'))
 
     name_parser = models.CharField(max_length=500,
                                    help_text='Name for parser.',
                                    blank=True, null=True)
 
     # array of items referencing "http://popoloproject.com/schemas/other_name.json#"
-    acronym = models.CharField(_('acronym'),
-                               blank=True,
-                               null=True,
-                               max_length=128,
-                               help_text=_('Organization acronym'))
+    _acronym = models.CharField(_('acronym'),
+                                blank=True,
+                                null=True,
+                                max_length=128,
+                                help_text=_('Organization acronym'))
 
     gov_id = models.TextField(_('Gov website ID'),
                               blank=True, null=True,
@@ -240,7 +240,7 @@ class Organization(Timestampable, Taggable, models.Model):
         if name_obj:
             return name_obj[0].name
         else:
-            return self.name
+            return self._name
 
     def acronym_on(self, fdate=datetime.now()):
         name_obj = self.names.filter(models.Q(start_time__lte=fdate) |
@@ -250,14 +250,14 @@ class Organization(Timestampable, Taggable, models.Model):
         if name_obj:
             return name_obj[0].acronym
         else:
-            return self.acronym
+            return self._acronym
 
     @property
-    def name_(self):
+    def name(self):
         return self.name_on()
 
     @property
-    def acronym_(self):
+    def acronym(self):
         return self.acronym_on()
 
     @property
@@ -266,7 +266,7 @@ class Organization(Timestampable, Taggable, models.Model):
         if name_obj.count() > 1:
             return list(name_obj)[-2].name
         else:
-            return self.name
+            return self._name
 
 
 @python_2_unicode_compatible
