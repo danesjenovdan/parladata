@@ -3882,7 +3882,7 @@ def setDateIfNone(date, type_='start'):
 
 def getAmendment(request):
     parliamentaryGroups = Organization.objects.filter(classification__in=PS)
-    acronyms = list(set(list(parliamentaryGroups.values_list('acronym', flat=True))))
+    acronyms = list(set(list(parliamentaryGroups.values_list('_acronym', flat=True))))
     amandmas = Vote.objects.filter(name__icontains='amandma')
     staticData = requests.get('https://analize.parlameter.si/v1/utils/getAllStaticData/').json()
     data = []
@@ -3896,6 +3896,9 @@ def getAmendment(request):
             acronym = pg[0] if pg[0] else pg[1]
             if acronym in ['V', 'vlada', 'Bon', '14']:
                 continue
+            # fix ZL 
+            if acronym == 'ZL':
+                acronym = 'Levica'
             data.append({'acronym': acronym,
                          'result': True if result == '1' else False,
                          'skupni': skupni,
