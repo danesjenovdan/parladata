@@ -771,8 +771,8 @@ def parseRecipient(text, date_of):
                                                          'sluzba vlade',
                                                          'urad vlade'])
     out = []
-    orgs = mv.values('name', 'id')
-    data = {org['name'].replace(',', ''): org for org in orgs}
+    orgs = mv.values('_name', 'id')
+    data = {org['_name'].replace(',', ''): org for org in orgs}
     rts = text.split(', ')
     for rt in rts:
         role = None
@@ -789,7 +789,7 @@ def parseRecipient(text, date_of):
             text = text.split(' v funkciji')[0]
             role = ['predsednik', 'predsednica']
         elif 'Vlada' in rt:
-            out.append({'recipient': mv.get(name='Vlada'), 'type': 'org'})
+            out.append({'recipient': mv.get(_name='Vlada'), 'type': 'org'})
             continue
         elif 'generaln' in rt and 'sekretar' in rt and 'Vlade' in rt:
             text = 'Vlada'
