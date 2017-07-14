@@ -727,6 +727,8 @@ def sendMailForEditVotes(votes):
     pageVotes = 'https://parlameter.si/seja/glasovanja/'
     pageGraph = 'https://parlameter.si/seja/glasovanje/'
     reNavigatePage = 'https://parlameter.si/fetch/sps?t=vkSzv8Nu4eDkLBk7kUw4BBhyLjysJm'
+    reLastSession = 'https://analize.parlameter.si/v1/utils/recacheLastSession' + api_key
+
     updated_votes = Vote.objects.filter(id__in=votes.keys())
     motionUrls = []
     updateUrls = []
@@ -752,6 +754,8 @@ def sendMailForEditVotes(votes):
     content += "\n".join(sesUpdateUrls)
     content += "\n \n Pa se grafe glasovanj: \n"
     content += "\n".join(graphUpdateUrls)
+    content += "\n \n Dj se refreshi zadno sejo ;): \n"
+    content += reLastSession
     content += "\n \n Lep dan ti zelim ;)"
     send_mail('Nekaj novih glasovanj je za pottagat :)',
               content,
