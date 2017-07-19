@@ -886,6 +886,11 @@ class Question(Timestampable, models.Model):
                                null=True,
                                help_text='The person (MP) who asked the question.',
                                related_name='asked')
+    author_org = models.ForeignKey('Organization',
+                                   blank=True,
+                                   null=True,
+                                   help_text='The organization of person (MP) who asked the question.',
+                                   related_name='asked')
 
     recipient_person = models.ManyToManyField('Person',
                                               blank=True,
