@@ -3123,6 +3123,7 @@ def getAllQuestions(request, date_=None):
             "title": "v zvezi z spremenjenimi pravili za opravljanje vozni\u0161kih izpitov",
             "date": "2014-08-27T00:00:00",
             "author_id": 83,
+            "author_org_id": 7,
             "id": 4973,
             "session_id": null
         }, {
@@ -3133,6 +3134,7 @@ def getAllQuestions(request, date_=None):
             "title": "v zvezi z glasovanjem na sejah Vlade RS",
             "date": "2014-09-10T00:00:00",
             "author_id": 78,
+            "author_org_id": 5,
             "id": 4974,
             "session_id": 5618
         }, {
@@ -3143,6 +3145,7 @@ def getAllQuestions(request, date_=None):
             "title": "v zvezi z oskrbo starej\u0161ih",
             "date": "2014-09-26T00:00:00",
             "author_id": 23,
+            "author_org_id": 5,
             "id": 4975,
             "session_id": null
         }
@@ -3174,6 +3177,7 @@ def getAllQuestions(request, date_=None):
                  'title': question.title,
                  'session_id': getIdSafe(question.session),
                  'author_id': getIdSafe(question.author),
+                 'author_org_id': getIdSafe(question.author_org),
                  'recipient_id': list(recipient_person),
                  'recipient_org_id': list(recipient_org),
                  'recipient_posts': list(recipient_posts),
@@ -3413,6 +3417,13 @@ def addQuestion(request): # TODO not documented because private refactor with se
                            for post
                            in recipients
                            if post['type'] == 'post']
+        membership = Membership.objects.filter(Q(start_time__lte=date_of) |
+                                               Q(start_time=None),
+                                               Q(end_time__gte=date_of) |
+                                               Q(end_time=None),
+                                               organization__classification__in=PS_NP)
+        author_org = membership[0].organization if membership.organization else None
+
         print session, data['naslov'], datetime.strptime(data['datum'], '%d.%m.%Y'), person, data['naslovljenec']
         if Question.objects.filter(session=session,
                                    title=data['naslov'],
@@ -3426,6 +3437,7 @@ def addQuestion(request): # TODO not documented because private refactor with se
                             date=datetime.strptime(data['datum'], '%d.%m.%Y'),
                             title=data['naslov'],
                             author=authorPerson,
+                            author_org=author_org,
                             recipient_text=data['naslovljenec'],
                             json_data=request.body
                             )
@@ -3580,6 +3592,7 @@ def getAllChangesAfter(request, # TODO not documented because strange
                  'title': question.title,
                  'session_id': getIdSafe(question.session),
                  'author_id': getIdSafe(question.author),
+                 'author_org_id': getIdSafe(question.author_org),
                  'recipient_id': list(recipient_person),
                  'recipient_org_id': list(recipient_org),
                  'recipient_posts': list(recipient_posts),
