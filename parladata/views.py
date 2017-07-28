@@ -2035,25 +2035,19 @@ def getBallotsOfSession(request, id_se):
     """
 
     fdate = Session.objects.get(id=str(id_se)).start_time
-    mems_qs = Membership.objects.filter(Q(end_time__gte=fdate) |
-                                        Q(end_time=None),
-                                        Q(start_time__lte=fdate) |
-                                        Q(start_time=None),
-                                        organization__classification__in=PS_NP)
-    memberships = {mem.person.id: {'org_id': mem.organization.id,
-                                   'org_acronym': mem.organization.acronym}
-                   for mem in mems_qs}
-    mems_ids = memberships.keys()
+    orgs = Organization.objects.filter(classification__in=PS_NP)
+    org_acronym = {org.id: org.acronym for org in orgs}
+    ballots = Ballot.objects.filter(vote__session__id=str(id_se))
     data = []
-    for bal in Ballot.objects.filter(vote__session__id=str(id_se)):
-        if bal.voter.id in mems_ids:
-            data.append({'mo_id': bal.vote.motion.id,
-                         'mp_id': bal.voter.id,
-                         'Acronym': memberships[bal.voter.id]['org_acronym'],
-                         'option': bal.option,
-                         'pg_id': memberships[bal.voter.id]['org_id']})
-        else:
-            print 'No memberships: ', bal.voter.id
+
+    for bal in ballots:
+        org_id = bal.voterparty_id
+
+        data.append({'mo_id': bal.vote.motion_id,
+                     'mp_id': bal.voter_id,
+                     'Acronym': org_acronym[org_id],
+                     'option': bal.option,
+                     'pg_id': org_id})
     return JsonResponse(data, safe=False)
 
 
