@@ -275,107 +275,102 @@ def getMPStatic(request, person_id, date_=None):
     else:
         fdate = datetime.now().date()
     data = dict()
-    for member in getMPObjects(fdate):
-        memberships = member.memberships.filter(Q(start_time__lte=fdate) |
-                                                Q(start_time=None),
-                                                Q(end_time__gte=fdate) |
-                                                Q(end_time=None))
+    member = Person.objects.get(id=person_id)
+    memberships = member.memberships.filter(Q(start_time__lte=fdate) |
+                                            Q(start_time=None),
+                                            Q(end_time__gte=fdate) |
+                                            Q(end_time=None))
 
-        if str(member.id) == str(person_id):
-            groups = [{'name': membership.organization.name,
-                       'id': membership.organization.id,
-                       'acronym': membership.organization.acronym}
-                      for membership
-                      in memberships
-                      if membership.organization.classification in PS_NP]
-            if not groups:
-                return JsonResponse({})
+    party = memberships.filter(organization__classification__in=PS_NP)
+    if party:
+        party = {'name': party[0].organization.name,
+                 'id': party[0].organization.id,
+                 'acronym': party[0].organization.acronym,
+                 'members_since': party[0].start_time.strftime(settings.API_DATE_FORMAT)}
+    else:
+        return JsonResponse({})
 
-            non_party_groups = [{'name': membership.organization.name,
-                                 'id': membership.organization.id}
-                                for membership
-                                in memberships
-                                if membership.organization.classification not in PS_NP]
+    groups = [{'name': membership.organization.name,
+               'id': membership.organization.id}
+                    for membership
+                    in memberships.exclude(organization__classification__in=PS_NP)]
 
-            for group in non_party_groups:
-                groups.append(group)
 
-            # calcutaes age of MP
-            try:
-                birth_date = str(member.birth_date)
-                age = date.today() - date(int(birth_date[:4]),
-                                          int(birth_date[5:7]),
-                                          int(birth_date[8:10]))
-                age = age.days / 365
-            except:
-                client.captureException()
-                age = None
 
-            twitter = member.link_set.filter(tags__name__in=['tw'])
-            facebook = member.link_set.filter(tags__name__in=['fb'])
-            linkedin = member.link_set.filter(tags__name__in=['linkedin'])
+    # calcutaes age of MP
+    try:
+        birth_date = str(member.birth_date)
+        age = date.today() - date(int(birth_date[:4]),
+                                  int(birth_date[5:7]),
+                                  int(birth_date[8:10]))
+        age = age.days / 365
+    except:
+        client.captureException()
+        age = None
 
-            social_output = {}
-            if len(twitter) > 0:
-                social_output['twitter'] = twitter[0].url
-            else:
-                social_output['twitter'] = False
-            if len(facebook) > 0:
-                social_output['facebook'] = facebook[0].url
-            else:
-                social_output['facebook'] = False
-            if len(linkedin) > 0:
-                social_output['linkedin'] = linkedin[0].url
-            else:
-                social_output['linkedin'] = False
+    twitter = member.link_set.filter(tags__name__in=['tw'])
+    facebook = member.link_set.filter(tags__name__in=['fb'])
+    linkedin = member.link_set.filter(tags__name__in=['linkedin'])
 
-            district = list(member.districts.all().values_list('id',
-                                                               flat=True))
-            if not district:
-                district = None
+    social_output = {}
+    if len(twitter) > 0:
+        social_output['twitter'] = twitter[0].url
+    else:
+        social_output['twitter'] = False
+    if len(facebook) > 0:
+        social_output['facebook'] = facebook[0].url
+    else:
+        social_output['facebook'] = False
+    if len(linkedin) > 0:
+        social_output['linkedin'] = linkedin[0].url
+    else:
+        social_output['linkedin'] = False
 
-            # get functions in working bodies
-            wbs = ['odbor',
-                   'komisija',
-                   'preiskovalna komisija']
+    district = list(member.districts.all().values_list('id',
+                                                       flat=True))
+    if not district:
+        district = None
 
-            roles = ['predsednik',
-                     'predsednica',
-                     'podpredsednica',
-                     'podpredsednik']
+    # get functions in working bodies
+    wbs = ['odbor',
+           'komisija',
+           'preiskovalna komisija']
 
-            trans_map = {'predsednik': 'president',
-                         'predsednica': 'president',
-                         'podpredsednica': 'vice_president',
-                         'podpredsednik': 'vice_president'}
+    roles = ['predsednik',
+             'predsednica',
+             'podpredsednica',
+             'podpredsednik']
 
-            wb = Organization.objects.filter(Q(classification__in=wbs) |
-                                             Q(id=95))
-            posts = Post.objects.filter(membership__person__id=person_id)
-            mp = posts.filter(organization__in=wb, role__in=roles)
-            person_functions = [{'org_id': role.organization.id,
-                                 'role': trans_map[role.role]} for role in mp]
+    trans_map = {'predsednik': 'president',
+                 'predsednica': 'president',
+                 'podpredsednica': 'vice_president',
+                 'podpredsednik': 'vice_president'}
 
-            groupz = [{'name': group['name'],
-                       'id': group['id']} for group in groups[1:]]
+    wb = Organization.objects.filter(Q(classification__in=wbs) |
+                                     Q(id=95))
+    posts = Post.objects.filter(membership__person__id=person_id)
+    mp = posts.filter(organization__in=wb, role__in=roles)
+    person_functions = [{'org_id': role.organization.id,
+                         'role': trans_map[role.role]} for role in mp]
 
-            data = {
-                'previous_occupation': member.previous_occupation,
-                'education': member.education,
-                'mandates': member.mandates,
-                'party': groups[0]['name'],
-                'acronym': groups[0]['acronym'],
-                'party_id': groups[0]['id'],
-                'district': district,
-                'voters': member.voters,
-                'age': age,
-                'groups': groupz,
-                'name': member.name,
-                'social': social_output,
-                'gov_id': member.gov_id,
-                'gender': 'm' if member.gender == 'male' else 'f',
-                'working_bodies_functions': person_functions,
-            }
+    data = {
+        'previous_occupation': member.previous_occupation,
+        'education': member.education,
+        'mandates': member.mandates,
+        'party': party['name'],
+        'acronym': party['acronym'],
+        'party_id': party['id'],
+        'member_at_pg_since': party['members_since'],
+        'district': district,
+        'voters': member.voters,
+        'age': age,
+        'groups': groups,
+        'name': member.name,
+        'social': social_output,
+        'gov_id': member.gov_id,
+        'gender': 'm' if member.gender == 'male' else 'f',
+        'working_bodies_functions': person_functions,
+    }
 
     return JsonResponse(data)
 
