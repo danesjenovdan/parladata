@@ -16,6 +16,10 @@ from parladata_project.settings import SETTER_KEY
 from django.core.exceptions import PermissionDenied
 
 
+from django.core.cache import cache
+from django.core.paginator import Paginator
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+
 DZ_ID = 95
 PS_NP = ['poslanska skupina', 'nepovezani poslanec']
 PS = 'poslanska skupina'
