@@ -834,3 +834,23 @@ def parseRecipient(text, date_of):
         if not added:
             out.append(None)
     return out
+
+
+def parsePager(request, objs, default_per_page=1000):
+    if request.GET:
+        page = int(request.GET.get('page', 1))
+        per_page = int(request.GET.get('per_page', default_per_page))
+    else:
+        page = 1
+        per_page = default_per_page
+
+    per_page = int(per_page)
+    paginator = Paginator(objs, per_page)
+
+    try:
+        out = paginator.page(page)
+    except PageNotAnInteger:
+        out = paginator.page(1)
+    except EmptyPage:
+        out = paginator.page(paginator.num_pages)
+    return out, {'page': page, 'per_page': per_page, 'pages': paginator.num_pages}
