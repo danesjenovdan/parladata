@@ -13,6 +13,10 @@ from django.db.models import Count
 import re
 from django.core.mail import send_mail
 
+from django.core.cache import cache
+from django.core.paginator import Paginator
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+
 DZ_ID = 95
 PS_NP = ['poslanska skupina', 'nepovezani poslanec']
 PS = 'poslanska skupina'
