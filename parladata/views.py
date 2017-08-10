@@ -989,10 +989,7 @@ def getAllSpeechesOfMPs(request, date_=None):
       as an array of objects.
     * @apiParam {date} date Date up until which speeches should be returned.
 
-    * @apiSuccess {Integer} /.per_page Maximum number of items to be returned in result set. Default: 1000
-    * @apiSuccess {Integer} /.page Current page of the collection.
-    * @apiSuccess {Integer} /.pages Count of pages of the collection.
-    * @apiSuccess {Object[]} /.data List of speeches.
+    * @apiSuccess {Object} speech A speech.
     * @apiSuccess {String} speech.valid_from Start time of the speech's validity.
     * @apiSuccess {String} speech.start_time Start time of the speech's transcript.
     * @apiSuccess {String} speech.valid_to End time of the speech's validity (expiration date).
@@ -1010,38 +1007,30 @@ def getAllSpeechesOfMPs(request, date_=None):
     * @apiExample {curl} Example with date:
         curl -i https://data.parlameter.si/v1/getAllMPsSpeeches/5.2.2017
 
-    * @apiSuccessExample {json} Example response:
-    {
-        per_page: 1000,
-        page: 1,
-        pages: 10,
-        data:
-        [   
-            {
-                "valid_from": "2014-08-01T02:00:00",
-                "start_time": "2014-08-01T02:00:00",
-                "valid_to": "2017-02-06T01:59:52.624",
-                "order": 30,
-                "content": "Najlep\u0161a hvala.\nIzvolite.",
-                "session": 7610,
-                "speaker": 33,
-                "end_time": null,
-                "party": 1,
-                "id": 880492
-            }, {
-                "valid_from": "2014-08-01T02:00:00",
-                "start_time": "2014-08-01T02:00:00",
-                "valid_to": "9999-12-31T23:59:59.999",
-                "order": 180,
-                "content": "Hvala lepa, ponovno. \nPoglejte, gospa predsedujo\u010da, vi ste povedali, da ste na osnovi ustne obrazlo\u017eitve Zakonodajno-pravne slu\u017ebe napisali tisto, kar imate in kar berete. Nas ta va\u0161a interpretacija ne zadovolji, ker se mi zdi nekorektno, da sku\u0161a predsedujo\u010di skupaj z generalno sekretarko Dr\u017eavnega zbora tudi zdaj, ko za to ni potrebe, sku\u0161a stvari peljati na nek neposlovni\u0161ki na\u010din in nas peljati preko to\u010dk dnevnega reda v dvomu, da je zadeva pripravljena v skladu z zakonom. Mislim, da je to nekorektno. \nPrva naloga predsedujo\u010dega Dr\u017eavnega zbora in generalne sekretarke Dr\u017eavnega zbora je, da se postopki speljejo korektno, da na njih ni sence dvoma, da nih\u010de ne dvomi, da je karkoli v tem postopku narobe. In zato predlagamo oziroma zahtevamo, da dobimo pisno mnenje Zakonodajno-pravne slu\u017ebe. Zato zahtevamo. Tisto, kar so na\u0161e obveznosti, ne skrbite, jih bomo izpolnili , ko bo \u010das za to in ko bo soglasje v Dr\u017eavnem zboru za to. Ta trenutek ni. Zato predlagam, da, ne vem, namesto, da mu\u010dite dr\u017eavni zbor, da naredite to prekinitev, da naredite tisto, kar se pri\u010dakuje od predsedujo\u010dega, to se pravi, da zagotovi vse podlage, ki so potrebne za to, da se pri tej to\u010dki opravi odlo\u010danje, da se opravi odlo\u010danje tudi pri naslednjih dveh to\u010dkah dnevnega reda, to, da bomo imeli mandatno komisijo, ki bo sestavljena res v skladu z zakonom, in da bodo odlo\u010ditve skladne z zakonom o poslancih. To materijo ureja ve\u010d aktov, poslovnik je en od aktov, ampak neposredno dolo\u010dbo o tem, kako mora biti Mandatno-volilna komisija sestavljena, pa dolo\u010da zakon. Vi nam ne govoriti in razlagati pravic poslanske skupine in poslancev, mi zahtevamo interpretacijo oziroma mnenje Zakonodajno-pravne slu\u017ebe v zvezi z dolo\u010dbo 7. \u010dlena Zakona o poslancih. Mi ne \u017eelimo va\u0161e interpretacije, gospa, mi ne \u017eelimo interpretacije generalne sekretarke Dr\u017eavnega zbora, mi \u017eelimo interpretacijo, obrazlo\u017eitev, obrazlo\u017eeno mnenje Zakonodajno-pravne slu\u017ebe Dr\u017eavnega zbora. In ni\u010d drugega. Od tam naprej pa se bomo odlo\u010dili, kako bomo ravnali, ko bomo to mnenje dobili. Hvala lepa.",
-                "session": 6684,
-                "speaker": 78,
-                "end_time": null,
-                "party": 5,
-                "id": 597620
-            }
-        ]
-    }
+     * @apiSuccessExample {json} Example response:
+     [{
+        "valid_from": "2014-08-01T02:00:00",
+        "start_time": "2014-08-01T02:00:00",
+        "valid_to": "2017-02-06T01:59:52.624",
+        "order": 30,
+        "content": "Najlep\u0161a hvala.\nIzvolite.",
+        "session": 7610,
+        "speaker": 33,
+        "end_time": null,
+        "party": 1,
+        "id": 880492
+      }, {
+        "valid_from": "2014-08-01T02:00:00",
+        "start_time": "2014-08-01T02:00:00",
+        "valid_to": "9999-12-31T23:59:59.999",
+        "order": 180,
+        "content": "Hvala lepa, ponovno. \nPoglejte, gospa predsedujo\u010da, vi ste povedali, da ste na osnovi ustne obrazlo\u017eitve Zakonodajno-pravne slu\u017ebe napisali tisto, kar imate in kar berete. Nas ta va\u0161a interpretacija ne zadovolji, ker se mi zdi nekorektno, da sku\u0161a predsedujo\u010di skupaj z generalno sekretarko Dr\u017eavnega zbora tudi zdaj, ko za to ni potrebe, sku\u0161a stvari peljati na nek neposlovni\u0161ki na\u010din in nas peljati preko to\u010dk dnevnega reda v dvomu, da je zadeva pripravljena v skladu z zakonom. Mislim, da je to nekorektno. \nPrva naloga predsedujo\u010dega Dr\u017eavnega zbora in generalne sekretarke Dr\u017eavnega zbora je, da se postopki speljejo korektno, da na njih ni sence dvoma, da nih\u010de ne dvomi, da je karkoli v tem postopku narobe. In zato predlagamo oziroma zahtevamo, da dobimo pisno mnenje Zakonodajno-pravne slu\u017ebe. Zato zahtevamo. Tisto, kar so na\u0161e obveznosti, ne skrbite, jih bomo izpolnili , ko bo \u010das za to in ko bo soglasje v Dr\u017eavnem zboru za to. Ta trenutek ni. Zato predlagam, da, ne vem, namesto, da mu\u010dite dr\u017eavni zbor, da naredite to prekinitev, da naredite tisto, kar se pri\u010dakuje od predsedujo\u010dega, to se pravi, da zagotovi vse podlage, ki so potrebne za to, da se pri tej to\u010dki opravi odlo\u010danje, da se opravi odlo\u010danje tudi pri naslednjih dveh to\u010dkah dnevnega reda, to, da bomo imeli mandatno komisijo, ki bo sestavljena res v skladu z zakonom, in da bodo odlo\u010ditve skladne z zakonom o poslancih. To materijo ureja ve\u010d aktov, poslovnik je en od aktov, ampak neposredno dolo\u010dbo o tem, kako mora biti Mandatno-volilna komisija sestavljena, pa dolo\u010da zakon. Vi nam ne govoriti in razlagati pravic poslanske skupine in poslancev, mi zahtevamo interpretacijo oziroma mnenje Zakonodajno-pravne slu\u017ebe v zvezi z dolo\u010dbo 7. \u010dlena Zakona o poslancih. Mi ne \u017eelimo va\u0161e interpretacije, gospa, mi ne \u017eelimo interpretacije generalne sekretarke Dr\u017eavnega zbora, mi \u017eelimo interpretacijo, obrazlo\u017eitev, obrazlo\u017eeno mnenje Zakonodajno-pravne slu\u017ebe Dr\u017eavnega zbora. In ni\u010d drugega. Od tam naprej pa se bomo odlo\u010dili, kako bomo ravnali, ko bomo to mnenje dobili. Hvala lepa.",
+        "session": 6684,
+        "speaker": 78,
+        "end_time": null,
+        "party": 5,
+        "id": 597620
+      }]
     """
 
     if date_:
@@ -1055,13 +1044,9 @@ def getAllSpeechesOfMPs(request, date_=None):
     speeches_queryset = Speech.getValidSpeeches(fdate)
     speeches_queryset = speeches_queryset.filter(speaker__in=members,
                                                  start_time__lte=fdate)
-    speeches_queryset = speeches_queryset.order_by('start_time', 'order')
-    speeches_queryset, pager = parsePager(request, speeches_queryset)
     speeches = [model_to_dict(speech, fields=[field.name for field in speech._meta.fields], exclude=[]) for speech in speeches_queryset]
 
-    data = pager
-    data['data'] = speeches
-    return JsonResponse(data, safe=False)
+    return JsonResponse(speeches, safe=False)
 
 
 def getMPParty(request, person_id):
@@ -3101,19 +3086,16 @@ def getAllQuestions(request, date_=None):
     * @apiDescription This function returns all MP's questions that have been asked
       up to a specific date. If no date is supplied it is assumed the date is today.
 
-    * @apiSuccess {Integer} /.per_page Maximum number of items to be returned in result set. Default: 500
-    * @apiSuccess {Integer} /.page Current page of the collection.
-    * @apiSuccess {Integer} /.pages Count of pages of the collection.
-    * @apiSuccess {Object[]} /.data List of Question objects.
-    * @apiSuccess {String} /data.recipient_text Recipient in text form as written on www.dz-rs.si.
-    * @apiSuccess {Integer} /data.recipient_org_id Parladata id of the organization the recipient is a member of if applicable.
-    * @apiSuccess {Integer} /data.recipien_id Parladata id of the recipient if applicable.
-    * @apiSuccess {String} /data.link URL to the relevant question document.
-    * @apiSuccess {String} /data.title Question title.
-    * @apiSuccess {date} /data.date The date on which the question was asked.
-    * @apiSuccess {Integer} /data.author_id The Parladata id of the MP who asked the question.
-    * @apiSuccess {Integer} /data.id Parladata id of the question.
-    * @apiSuccess {Integer} /data.session_id Parladata id of the session where this question was asked.
+    * @apiSuccess {Object[]} / List of Question objects.
+    * @apiSuccess {String} /.recipient_text Recipient in text form as written on www.dz-rs.si.
+    * @apiSuccess {Integer} /.recipient_org_id Parladata id of the organization the recipient is a member of if applicable.
+    * @apiSuccess {Integer} /.recipien_id Parladata id of the recipient if applicable.
+    * @apiSuccess {String} /.link URL to the relevant question document.
+    * @apiSuccess {String} /.title Question title.
+    * @apiSuccess {date} /.date The date on which the question was asked.
+    * @apiSuccess {Integer} /.author_id The Parladata id of the MP who asked the question.
+    * @apiSuccess {Integer} /.id Parladata id of the question.
+    * @apiSuccess {Integer} /.session_id Parladata id of the session where this question was asked.
 
     * @apiExample {curl} Example:
         curl -i https://data.parlameter.si/v1/getAllQuestions/
@@ -3121,61 +3103,54 @@ def getAllQuestions(request, date_=None):
         curl -i https://data.parlameter.si/v1/getAllQuestions/12.12.2014
     
     * @apiSuccessExample {json} Example response:
-    {
-        per_page: 500,
-        page: 1,
-        pages: 10,
-        data:
-        [
-            {
-                "recipient_text": "minister za infrastrukturo in prostor, ki opravlja teko\u010de posle",
-                "recipient_org_id": null,
-                "recipient_id": null,
-                "link": "http://imss.dz-rs.si/IMiS/ImisAdmin.nsf/ImisnetAgent?OpenAgent&2&DZ-MSS-01/ca20e0051c03fcabad65a8c60e1ab07b2f598715f9b4384afed907db7a549169",
-                "title": "v zvezi z spremenjenimi pravili za opravljanje vozni\u0161kih izpitov",
-                "date": "2014-08-27T00:00:00",
-                "author_id": 83,
-                "author_org_id": 7,
-                "id": 4973,
-                "session_id": null
-            }, {
-                "recipient_text": "generalna sekretarka Vlade",
-                "recipient_org_id": null,
-                "recipient_id": null,
-                "link": "http://imss.dz-rs.si/IMiS/ImisAdmin.nsf/ImisnetAgent?OpenAgent&2&DZ-MSS-01/ca20e005dd49e02aa5a4bdf82cd726ec231c5db754de339461cec5f929cc2f3c",
-                "title": "v zvezi z glasovanjem na sejah Vlade RS",
-                "date": "2014-09-10T00:00:00",
-                "author_id": 78,
-                "author_org_id": 5,
-                "id": 4974,
-                "session_id": 5618
-            }, {
-                "recipient_text": "ministrica za delo dru\u017eino socialne zadeve in enake mo\u017enosti",
-                "recipient_org_id": null,
-                "recipient_id": null,
-                "link": "http://imss.dz-rs.si/IMiS/ImisAdmin.nsf/ImisnetAgent?OpenAgent&2&DZ-MSS-01/ca20e00538fae5d9cbae4b468d3b346c4e28915089345234281182daa8b033fb",
-                "title": "v zvezi z oskrbo starej\u0161ih",
-                "date": "2014-09-26T00:00:00",
-                "author_id": 23,
-                "author_org_id": 5,
-                "id": 4975,
-                "session_id": null
-            }
-        ]
-    }
+    [
+        {
+            "recipient_text": "minister za infrastrukturo in prostor, ki opravlja teko\u010de posle",
+            "recipient_org_id": null,
+            "recipient_id": null,
+            "link": "http://imss.dz-rs.si/IMiS/ImisAdmin.nsf/ImisnetAgent?OpenAgent&2&DZ-MSS-01/ca20e0051c03fcabad65a8c60e1ab07b2f598715f9b4384afed907db7a549169",
+            "title": "v zvezi z spremenjenimi pravili za opravljanje vozni\u0161kih izpitov",
+            "date": "2014-08-27T00:00:00",
+            "author_id": 83,
+            "author_org_id": 7,
+            "id": 4973,
+            "session_id": null
+        }, {
+            "recipient_text": "generalna sekretarka Vlade",
+            "recipient_org_id": null,
+            "recipient_id": null,
+            "link": "http://imss.dz-rs.si/IMiS/ImisAdmin.nsf/ImisnetAgent?OpenAgent&2&DZ-MSS-01/ca20e005dd49e02aa5a4bdf82cd726ec231c5db754de339461cec5f929cc2f3c",
+            "title": "v zvezi z glasovanjem na sejah Vlade RS",
+            "date": "2014-09-10T00:00:00",
+            "author_id": 78,
+            "author_org_id": 5,
+            "id": 4974,
+            "session_id": 5618
+        }, {
+            "recipient_text": "ministrica za delo dru\u017eino socialne zadeve in enake mo\u017enosti",
+            "recipient_org_id": null,
+            "recipient_id": null,
+            "link": "http://imss.dz-rs.si/IMiS/ImisAdmin.nsf/ImisnetAgent?OpenAgent&2&DZ-MSS-01/ca20e00538fae5d9cbae4b468d3b346c4e28915089345234281182daa8b033fb",
+            "title": "v zvezi z oskrbo starej\u0161ih",
+            "date": "2014-09-26T00:00:00",
+            "author_id": 23,
+            "author_org_id": 5,
+            "id": 4975,
+            "session_id": null
+        }
+    ]
     """
     if date_:
         fdate = datetime.strptime(date_, settings.API_DATE_FORMAT).date()
     else:
         fdate = datetime.now().date()
 
-    question_queryset = Question.objects.filter(date__lte=fdate).order_by('date')
-    question_queryset, pager = parsePager(request, question_queryset, default_per_page=500)
+    question_queryset = Question.objects.filter(date__lte=fdate)
 
     data = []
 
     for question in question_queryset:
-        link = question.links.filter(note__icontains='Besedilo')
+        link = question.links.filter(note__icontains="Besedilo")
         if link:
             link = link[0].url
         else:
@@ -3200,9 +3175,7 @@ def getAllQuestions(request, date_=None):
                  }
         data.append(q_obj)
 
-    out = pager
-    out['data'] = data
-    return JsonResponse(out, safe=False)
+    return JsonResponse(data, safe=False)
 
 
 def getBallotsCounter(voter_obj, date_=None):
@@ -3947,4 +3920,3 @@ def getAmendment(request):
             pass
 
     return JsonResponse(data, safe=False)
-
