@@ -48,6 +48,7 @@ INSTALLED_APPS = (
     'django_extensions',
     'raven.contrib.django.raven_compat',
     'corsheaders',
+    'rest_framework',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -149,3 +150,10 @@ PARSER_ADMINS = [('Primoz Klemenske', 'klemensek@gmail.com')]
 
 PARLALIZE_API_KEY = 'vednoboljsi112358'
 SETTER_KEY = 'vednoboljsi112358'
+
+REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAdminUser',
+    ],
+    'PAGE_SIZE': 10
+}
