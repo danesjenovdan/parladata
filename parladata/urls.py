@@ -7,6 +7,7 @@ from parladata.admin import PersonAutocomplete, PostAutocomplete, MembershipAuto
 
 router = routers.DefaultRouter()
 router.register(r'person', PersonView)
+router.register(r'session', SessionView)
 
 
 urlpatterns = patterns('',
