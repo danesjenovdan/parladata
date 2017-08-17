@@ -276,107 +276,102 @@ def getMPStatic(request, person_id, date_=None):
     else:
         fdate = datetime.now().date()
     data = dict()
-    for member in getMPObjects(fdate):
-        memberships = member.memberships.filter(Q(start_time__lte=fdate) |
-                                                Q(start_time=None),
-                                                Q(end_time__gte=fdate) |
-                                                Q(end_time=None))
+    member = Person.objects.get(id=person_id)
+    memberships = member.memberships.filter(Q(start_time__lte=fdate) |
+                                            Q(start_time=None),
+                                            Q(end_time__gte=fdate) |
+                                            Q(end_time=None))
 
-        if str(member.id) == str(person_id):
-            groups = [{'name': membership.organization.name,
-                       'id': membership.organization.id,
-                       'acronym': membership.organization.acronym}
-                      for membership
-                      in memberships
-                      if membership.organization.classification in PS_NP]
-            if not groups:
-                return JsonResponse({})
+    party = memberships.filter(organization__classification__in=PS_NP)
+    if party:
+        party = {'name': party[0].organization.name,
+                 'id': party[0].organization.id,
+                 'acronym': party[0].organization.acronym,
+                 'members_since': party[0].start_time.strftime(settings.API_DATE_FORMAT)}
+    else:
+        return JsonResponse({})
 
-            non_party_groups = [{'name': membership.organization.name,
-                                 'id': membership.organization.id}
-                                for membership
-                                in memberships
-                                if membership.organization.classification not in PS_NP]
+    groups = [{'name': membership.organization.name,
+               'id': membership.organization.id}
+                    for membership
+                    in memberships.exclude(organization__classification__in=PS_NP)]
 
-            for group in non_party_groups:
-                groups.append(group)
 
-            # calcutaes age of MP
-            try:
-                birth_date = str(member.birth_date)
-                age = date.today() - date(int(birth_date[:4]),
-                                          int(birth_date[5:7]),
-                                          int(birth_date[8:10]))
-                age = age.days / 365
-            except:
-                client.captureException()
-                age = None
 
-            twitter = member.link_set.filter(tags__name__in=['tw'])
-            facebook = member.link_set.filter(tags__name__in=['fb'])
-            linkedin = member.link_set.filter(tags__name__in=['linkedin'])
+    # calcutaes age of MP
+    try:
+        birth_date = str(member.birth_date)
+        age = date.today() - date(int(birth_date[:4]),
+                                  int(birth_date[5:7]),
+                                  int(birth_date[8:10]))
+        age = age.days / 365
+    except:
+        client.captureException()
+        age = None
 
-            social_output = {}
-            if len(twitter) > 0:
-                social_output['twitter'] = twitter[0].url
-            else:
-                social_output['twitter'] = False
-            if len(facebook) > 0:
-                social_output['facebook'] = facebook[0].url
-            else:
-                social_output['facebook'] = False
-            if len(linkedin) > 0:
-                social_output['linkedin'] = linkedin[0].url
-            else:
-                social_output['linkedin'] = False
+    twitter = member.link_set.filter(tags__name__in=['tw'])
+    facebook = member.link_set.filter(tags__name__in=['fb'])
+    linkedin = member.link_set.filter(tags__name__in=['linkedin'])
 
-            district = list(member.districts.all().values_list('id',
-                                                               flat=True))
-            if not district:
-                district = None
+    social_output = {}
+    if len(twitter) > 0:
+        social_output['twitter'] = twitter[0].url
+    else:
+        social_output['twitter'] = False
+    if len(facebook) > 0:
+        social_output['facebook'] = facebook[0].url
+    else:
+        social_output['facebook'] = False
+    if len(linkedin) > 0:
+        social_output['linkedin'] = linkedin[0].url
+    else:
+        social_output['linkedin'] = False
 
-            # get functions in working bodies
-            wbs = ['odbor',
-                   'komisija',
-                   'preiskovalna komisija']
+    district = list(member.districts.all().values_list('id',
+                                                       flat=True))
+    if not district:
+        district = None
 
-            roles = ['predsednik',
-                     'predsednica',
-                     'podpredsednica',
-                     'podpredsednik']
+    # get functions in working bodies
+    wbs = ['odbor',
+           'komisija',
+           'preiskovalna komisija']
 
-            trans_map = {'predsednik': 'president',
-                         'predsednica': 'president',
-                         'podpredsednica': 'vice_president',
-                         'podpredsednik': 'vice_president'}
+    roles = ['predsednik',
+             'predsednica',
+             'podpredsednica',
+             'podpredsednik']
 
-            wb = Organization.objects.filter(Q(classification__in=wbs) |
-                                             Q(id=95))
-            posts = Post.objects.filter(membership__person__id=person_id)
-            mp = posts.filter(organization__in=wb, role__in=roles)
-            person_functions = [{'org_id': role.organization.id,
-                                 'role': trans_map[role.role]} for role in mp]
+    trans_map = {'predsednik': 'president',
+                 'predsednica': 'president',
+                 'podpredsednica': 'vice_president',
+                 'podpredsednik': 'vice_president'}
 
-            groupz = [{'name': group['name'],
-                       'id': group['id']} for group in groups[1:]]
+    wb = Organization.objects.filter(Q(classification__in=wbs) |
+                                     Q(id=95))
+    posts = Post.objects.filter(membership__person__id=person_id)
+    mp = posts.filter(organization__in=wb, role__in=roles)
+    person_functions = [{'org_id': role.organization.id,
+                         'role': trans_map[role.role]} for role in mp]
 
-            data = {
-                'previous_occupation': member.previous_occupation,
-                'education': member.education,
-                'mandates': member.mandates,
-                'party': groups[0]['name'],
-                'acronym': groups[0]['acronym'],
-                'party_id': groups[0]['id'],
-                'district': district,
-                'voters': member.voters,
-                'age': age,
-                'groups': groupz,
-                'name': member.name,
-                'social': social_output,
-                'gov_id': member.gov_id,
-                'gender': 'm' if member.gender == 'male' else 'f',
-                'working_bodies_functions': person_functions,
-            }
+    data = {
+        'previous_occupation': member.previous_occupation,
+        'education': member.education,
+        'mandates': member.mandates,
+        'party': party['name'],
+        'acronym': party['acronym'],
+        'party_id': party['id'],
+        'member_at_pg_since': party['members_since'],
+        'district': district,
+        'voters': member.voters,
+        'age': age,
+        'groups': groups,
+        'name': member.name,
+        'social': social_output,
+        'gov_id': member.gov_id,
+        'gender': 'm' if member.gender == 'male' else 'f',
+        'working_bodies_functions': person_functions,
+    }
 
     return JsonResponse(data)
 
@@ -2036,25 +2031,19 @@ def getBallotsOfSession(request, id_se):
     """
 
     fdate = Session.objects.get(id=str(id_se)).start_time
-    mems_qs = Membership.objects.filter(Q(end_time__gte=fdate) |
-                                        Q(end_time=None),
-                                        Q(start_time__lte=fdate) |
-                                        Q(start_time=None),
-                                        organization__classification__in=PS_NP)
-    memberships = {mem.person.id: {'org_id': mem.organization.id,
-                                   'org_acronym': mem.organization.acronym}
-                   for mem in mems_qs}
-    mems_ids = memberships.keys()
+    orgs = Organization.objects.filter(classification__in=PS_NP)
+    org_acronym = {org.id: org.acronym for org in orgs}
+    ballots = Ballot.objects.filter(vote__session__id=str(id_se))
     data = []
-    for bal in Ballot.objects.filter(vote__session__id=str(id_se)):
-        if bal.voter.id in mems_ids:
-            data.append({'mo_id': bal.vote.motion.id,
-                         'mp_id': bal.voter.id,
-                         'Acronym': memberships[bal.voter.id]['org_acronym'],
-                         'option': bal.option,
-                         'pg_id': memberships[bal.voter.id]['org_id']})
-        else:
-            print 'No memberships: ', bal.voter.id
+
+    for bal in ballots:
+        org_id = bal.voterparty_id
+
+        data.append({'mo_id': bal.vote.motion_id,
+                     'mp_id': bal.voter_id,
+                     'Acronym': org_acronym[org_id],
+                     'option': bal.option,
+                     'pg_id': org_id})
     return JsonResponse(data, safe=False)
 
 
@@ -3125,6 +3114,7 @@ def getAllQuestions(request, date_=None):
             "title": "v zvezi z spremenjenimi pravili za opravljanje vozni\u0161kih izpitov",
             "date": "2014-08-27T00:00:00",
             "author_id": 83,
+            "author_org_id": 7,
             "id": 4973,
             "session_id": null
         }, {
@@ -3135,6 +3125,7 @@ def getAllQuestions(request, date_=None):
             "title": "v zvezi z glasovanjem na sejah Vlade RS",
             "date": "2014-09-10T00:00:00",
             "author_id": 78,
+            "author_org_id": 5,
             "id": 4974,
             "session_id": 5618
         }, {
@@ -3145,6 +3136,7 @@ def getAllQuestions(request, date_=None):
             "title": "v zvezi z oskrbo starej\u0161ih",
             "date": "2014-09-26T00:00:00",
             "author_id": 23,
+            "author_org_id": 5,
             "id": 4975,
             "session_id": null
         }
@@ -3176,6 +3168,7 @@ def getAllQuestions(request, date_=None):
                  'title': question.title,
                  'session_id': getIdSafe(question.session),
                  'author_id': getIdSafe(question.author),
+                 'author_org_id': getIdSafe(question.author_org),
                  'recipient_id': list(recipient_person),
                  'recipient_org_id': list(recipient_org),
                  'recipient_posts': list(recipient_posts),
@@ -3416,6 +3409,13 @@ def addQuestion(request): # TODO not documented because private refactor with se
                            for post
                            in recipients
                            if post['type'] == 'post']
+        membership = Membership.objects.filter(Q(start_time__lte=date_of) |
+                                               Q(start_time=None),
+                                               Q(end_time__gte=date_of) |
+                                               Q(end_time=None),
+                                               organization__classification__in=PS_NP)
+        author_org = membership[0].organization if membership.organization else None
+
         print session, data['naslov'], datetime.strptime(data['datum'], '%d.%m.%Y'), person, data['naslovljenec']
         if Question.objects.filter(session=session,
                                    title=data['naslov'],
@@ -3429,6 +3429,7 @@ def addQuestion(request): # TODO not documented because private refactor with se
                             date=datetime.strptime(data['datum'], '%d.%m.%Y'),
                             title=data['naslov'],
                             author=authorPerson,
+                            author_org=author_org,
                             recipient_text=data['naslovljenec'],
                             json_data=request.body
                             )
@@ -3583,6 +3584,7 @@ def getAllChangesAfter(request, # TODO not documented because strange
                  'title': question.title,
                  'session_id': getIdSafe(question.session),
                  'author_id': getIdSafe(question.author),
+                 'author_org_id': getIdSafe(question.author_org),
                  'recipient_id': list(recipient_person),
                  'recipient_org_id': list(recipient_org),
                  'recipient_posts': list(recipient_posts),
@@ -3885,7 +3887,7 @@ def setDateIfNone(date, type_='start'):
 
 def getAmendment(request):
     parliamentaryGroups = Organization.objects.filter(classification__in=PS)
-    acronyms = list(set(list(parliamentaryGroups.values_list('acronym', flat=True))))
+    acronyms = list(set(list(parliamentaryGroups.values_list('_acronym', flat=True))))
     amandmas = Vote.objects.filter(name__icontains='amandma')
     staticData = requests.get('https://analize.parlameter.si/v1/utils/getAllStaticData/').json()
     data = []
@@ -3899,6 +3901,9 @@ def getAmendment(request):
             acronym = pg[0] if pg[0] else pg[1]
             if acronym in ['V', 'vlada', 'Bon', '14']:
                 continue
+            # fix ZL 
+            if acronym == 'ZL':
+                acronym = 'Levica'
             data.append({'acronym': acronym,
                          'result': True if result == '1' else False,
                          'skupni': skupni,
@@ -3907,7 +3912,7 @@ def getAmendment(request):
     d = {}
     for acronym in acronyms:
         try:
-            d[acronym] = staticData['partys'][str(Organization.objects.filter(acronym__icontains=acronym)[0].id)]
+            d[acronym] = staticData['partys'][str(Organization.objects.filter(_acronym__icontains=acronym)[0].id)]
         except:
             print acronym
 
