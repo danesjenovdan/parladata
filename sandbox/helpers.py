@@ -100,3 +100,18 @@ def fixBallotsVoterPartyByVote(vote_id):
 
         org_obj = Organization.objects.get(id=org)
         ballots.update(voterparty=org_obj)
+
+
+def addAuthorOrgToQuestion():
+    true_start_time = datetime(day=1, month=8, year=2014)
+    a_ids = list(set(list(Question.objects.all().values_list("author__id", flat=True))))
+    for author in a_ids:
+        memberships = Membership.objects.filter(organization__classification__in=PS_NP,
+                                                person=author)
+        for membership in memberships:
+            start_time = membership.start_time if membership.start_time else true_start_time
+            end_time = membership.end_time if membership.end_time else datetime.now()
+            Question.objects.filter(date__gte=start_time,
+                                    date__lte=end_time,
+                                    author_id=author).update(author_org=membership.organization)
+
