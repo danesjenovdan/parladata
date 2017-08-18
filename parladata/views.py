@@ -356,6 +356,7 @@ def getMPStatic(request, person_id, date_=None):
     data = {
         'previous_occupation': member.previous_occupation,
         'education': member.education,
+        'education_level': member.education_level,
         'mandates': member.mandates,
         'party': party['name'],
         'acronym': party['acronym'],
