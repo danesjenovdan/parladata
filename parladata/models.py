@@ -81,6 +81,10 @@ class Person(Timestampable, models.Model):
                                  blank=True, null=True,
                                  help_text=_('The person\'s education'))
 
+    education_level = models.TextField(_('education level'),
+                                       blank=True, null=True,
+                                       help_text=_('The person\'s education level'))
+
     mandates = models.IntegerField(_('mandates'),
                                    blank=True, null=True,
                                    help_text=_('Person\'s number of mandates, including the current one'))

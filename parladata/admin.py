@@ -354,7 +354,19 @@ class MembershipAutocomplete(autocomplete.Select2QuerySetView):
         return qs
 
 
+class PersonEducation(Person):
+    class Meta:
+        proxy = True
+
+class PersonEducationAdmin(admin.ModelAdmin):
+    list_display = ['name', 'education', 'mandates', 'education_level']
+    search_fields = ['name', 'mandates']
+    list_filter = ['education', 'mandates']
+    fields = ('name', 'education', 'education_level')
+
+
 admin.site.register(Person, PersonAdmin)
+admin.site.register(PersonEducation, PersonEducationAdmin)
 admin.site.register(Organization, OrganizationAdmin)
 admin.site.register(Post, PostAdmin)
 admin.site.register(Membership, MembershipAdmin)
