@@ -3909,7 +3909,7 @@ def getAmendment(request):
     d = {}
     for acronym in acronyms:
         try:
-            d[acronym] = staticData['partys'][str(Organization.objects.filter(acronym__icontains=acronym)[0].id)]
+            d[acronym] = staticData['partys'][str(Organization.objects.filter(_acronym__icontains=acronym)[0].id)]
         except:
             print acronym
 
