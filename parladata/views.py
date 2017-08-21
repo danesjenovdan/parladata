@@ -18,6 +18,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.db.models.expressions import DateTime
 import operator
 
+
 DZ_ID = 95
 PS_NP = ['poslanska skupina', 'nepovezani poslanec']
 PS = 'poslanska skupina'
@@ -3076,6 +3077,7 @@ def getMembersWithFunction(request):
     return JsonResponse({"members_with_function": data}, safe=False)
 
 
+
 def getAllQuestions(request, date_=None):
     """
     Returns array of all questions. Objects have only link with note Besedilo.
@@ -3356,6 +3358,7 @@ def getBallotsCounterOfParty(request, party_id, date_=None):
 
 
 @csrf_exempt
+@lockSetter
 def addQuestion(request): # TODO not documented because private refactor with security
     """
     This is an api endpoint function that saves a new question when prompted with a POST request.
