@@ -3515,7 +3515,7 @@ def getAllChangesAfter(request, # TODO not documented because strange
         pg = i.memberships.filter(organization=par_group)
         data["persons"].append({'id': i.id,
                                 'name': i.name,
-                                'membership': pg[0] if pg else None,
+                                'membership': pg[0].name if pg else None,
                                 'classification': i.classification,
                                 'family_name': i.family_name,
                                 'given_name': i.given_name,
