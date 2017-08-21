@@ -12,6 +12,9 @@ from django.utils.encoding import smart_str
 from django.db.models import Count
 import re
 from django.core.mail import send_mail
+from parladata_project.settings import SETTER_KEY
+from django.core.exceptions import PermissionDenied
+
 
 DZ_ID = 95
 PS_NP = ['poslanska skupina', 'nepovezani poslanec']
@@ -834,3 +837,16 @@ def parseRecipient(text, date_of):
         if not added:
             out.append(None)
     return out
+
+
+def lockSetter(function):
+    def wrap(request, *args, **kwargs):
+        if request:
+            setterKey = request.GET.get('key')
+            if str(setterKey) == str(SETTER_KEY):
+                return function(request, *args, **kwargs)
+            else:
+                raise PermissionDenied
+        else:
+            return function(*args, **kwargs)
+    return wrap
