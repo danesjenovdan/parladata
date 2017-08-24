@@ -1,14 +1,7 @@
 from django.conf.urls import patterns, url, include
 from parladata.views import *
-from parladata.api import *
 from .utils import getMembershipDuplications, membersFlowInOrg, postMembersFixer, membersFlowInPGs, membersFlowInDZ
-from rest_framework import routers
 from parladata.admin import PersonAutocomplete, PostAutocomplete, MembershipAutocomplete
-
-router = routers.DefaultRouter()
-router.register(r'person', PersonView)
-router.register(r'session', SessionView)
-
 
 urlpatterns = patterns('',
 
@@ -151,8 +144,4 @@ urlpatterns = patterns('',
     # MONITORING
     url(r'^monitoring', monitorMe),
 
-
-    # API for parser
-    url(r'^', include(router.urls)),
-    url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),
 )
