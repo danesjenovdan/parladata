@@ -11,6 +11,7 @@ urlpatterns = patterns('',
 
     (r'^admin/', include(admin.site.urls)),
     (r'^v1/', include('parladata.urls')),
+    (r'^v1/tasks/', include('parlasearch.urls')),
     (r'^v1/sandbox/', include('sandbox.urls')),
 
 )
