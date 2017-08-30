@@ -35,9 +35,7 @@ def export_sessions(expoert_tasks, status_id):
     sendStatus(status_id, 'Running', '[]')
     try:
         for method in methods:
-            #method()
-            print('ivan')
-        print "naj se bi exportal"
+            method()
         sendStatus(status_id, 'Done', '[]')
     except:
         sendStatus(status_id, 'Fails', '[]')
