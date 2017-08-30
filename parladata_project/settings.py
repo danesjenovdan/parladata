@@ -45,6 +45,7 @@ INSTALLED_APPS = (
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'parladata',
+    'parlasearch',
     'django_extensions',
     'raven.contrib.django.raven_compat',
     'corsheaders',
