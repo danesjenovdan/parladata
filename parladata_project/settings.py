@@ -150,3 +150,5 @@ PARSER_ADMINS = [('Primoz Klemenske', 'klemensek@gmail.com')]
 
 PARLALIZE_API_KEY = 'vednoboljsi112358'
 SETTER_KEY = 'vednoboljsi112358'
+
+DASHBOARD_URL = 'https://dashboard.parlameter.si'
