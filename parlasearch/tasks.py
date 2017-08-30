@@ -3,7 +3,7 @@ from celery import shared_task
 from raven.contrib.django.raven_compat.models import client
 from datetime import datetime
 
-from django.conf import settings
+from parladata_project.settings import DASHBOARD_URL, API_DATE_FORMAT
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 
@@ -14,7 +14,7 @@ import requests
 
 exports = {'exportSessions': exportSessions}
 
-status_api = settings.DASHBOARD_URL + '/api/status/'
+status_api = DASHBOARD_URL + '/api/status/'
 
 @csrf_exempt
 def runAsyncExport(request):
@@ -47,6 +47,6 @@ def sendStatus(status_id, type_, data):
     requests.put(status_api + str(status_id) + '/',
                  data= {
                             "status_type": type_,
-                            "status_note": datetime.now().strftime(settings.API_DATE_FORMAT),
+                            "status_note": datetime.now().strftime(API_DATE_FORMAT),
                             "status_done": data
                         })
