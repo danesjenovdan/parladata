@@ -14,6 +14,7 @@ import requests
 
 exports = {'exportSessions': exportSessions}
 
+status_api = settings.DASHBOARD_URL + '/api/status/'
 
 @csrf_exempt
 def runAsyncExport(request):
@@ -43,7 +44,7 @@ def export_sessions(expoert_tasks, status_id):
         client.captureException()
 
 def sendStatus(status_id, type_, data):
-    requests.put('http://localhost:8888/api/status/'+str(status_id)+'/',
+    requests.put(status_api + str(status_id) + '/',
                  data= {
                             "status_type": type_,
                             "status_note": datetime.now().strftime(settings.API_DATE_FORMAT),
