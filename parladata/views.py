@@ -1046,9 +1046,13 @@ def getAllSpeechesOfMPs(request, date_=None):
     speeches_queryset = Speech.getValidSpeeches(fdate)
     speeches_queryset = speeches_queryset.filter(speaker__in=members,
                                                  start_time__lte=fdate)
+    speeches_queryset = speeches_queryset.order_by('start_time', 'order')
+    speeches_queryset, pager = parsePager(request, speeches_queryset)
     speeches = [model_to_dict(speech, fields=[field.name for field in speech._meta.fields], exclude=[]) for speech in speeches_queryset]
 
-    return JsonResponse(speeches, safe=False)
+    data = pager
+    data['data'] = speeches
+    return JsonResponse(data, safe=False)
 
 
 def getMPParty(request, person_id):
@@ -3089,16 +3093,19 @@ def getAllQuestions(request, date_=None):
     * @apiDescription This function returns all MP's questions that have been asked
       up to a specific date. If no date is supplied it is assumed the date is today.
 
-    * @apiSuccess {Object[]} / List of Question objects.
-    * @apiSuccess {String} /.recipient_text Recipient in text form as written on www.dz-rs.si.
-    * @apiSuccess {Integer} /.recipient_org_id Parladata id of the organization the recipient is a member of if applicable.
-    * @apiSuccess {Integer} /.recipien_id Parladata id of the recipient if applicable.
-    * @apiSuccess {String} /.link URL to the relevant question document.
-    * @apiSuccess {String} /.title Question title.
-    * @apiSuccess {date} /.date The date on which the question was asked.
-    * @apiSuccess {Integer} /.author_id The Parladata id of the MP who asked the question.
-    * @apiSuccess {Integer} /.id Parladata id of the question.
-    * @apiSuccess {Integer} /.session_id Parladata id of the session where this question was asked.
+    * @apiSuccess {Integer} /.per_page Maximum number of items to be returned in result set. Default: 500
+    * @apiSuccess {Integer} /.page Current page of the collection.
+    * @apiSuccess {Integer} /.pages Count of pages of the collection.
+    * @apiSuccess {Object[]} /.data List of Question objects.
+    * @apiSuccess {String} /data.recipient_text Recipient in text form as written on www.dz-rs.si.
+    * @apiSuccess {Integer} /data.recipient_org_id Parladata id of the organization the recipient is a member of if applicable.
+    * @apiSuccess {Integer} /data.recipien_id Parladata id of the recipient if applicable.
+    * @apiSuccess {String} /data.link URL to the relevant question document.
+    * @apiSuccess {String} /data.title Question title.
+    * @apiSuccess {date} /data.date The date on which the question was asked.
+    * @apiSuccess {Integer} /data.author_id The Parladata id of the MP who asked the question.
+    * @apiSuccess {Integer} /data.id Parladata id of the question.
+    * @apiSuccess {Integer} /data.session_id Parladata id of the session where this question was asked.
 
     * @apiExample {curl} Example:
         curl -i https://data.parlameter.si/v1/getAllQuestions/
@@ -3148,12 +3155,13 @@ def getAllQuestions(request, date_=None):
     else:
         fdate = datetime.now().date()
 
-    question_queryset = Question.objects.filter(date__lte=fdate)
+    question_queryset = Question.objects.filter(date__lte=fdate).order_by('date')
+    question_queryset, pager = parsePager(request, question_queryset, default_per_page=500)
 
     data = []
 
     for question in question_queryset:
-        link = question.links.filter(note__icontains="Besedilo")
+        link = question.links.filter(note__icontains='Besedilo')
         if link:
             link = link[0].url
         else:
@@ -3178,7 +3186,9 @@ def getAllQuestions(request, date_=None):
                  }
         data.append(q_obj)
 
-    return JsonResponse(data, safe=False)
+    out = pager
+    out['data'] = data
+    return JsonResponse(out, safe=False)
 
 
 def getBallotsCounter(voter_obj, date_=None):
@@ -3924,3 +3934,4 @@ def getAmendment(request):
             pass
 
     return JsonResponse(data, safe=False)
+
