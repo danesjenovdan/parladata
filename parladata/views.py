@@ -984,12 +984,14 @@ def getSpeechesOfMP(request, person_id, date_=None):
 
 def getAllSpeechesOfMPs(request, date_=None):
     """
-    * @api {get} getAllMPsSpeeches/{?date}/ All MPs' speeches
+    * @api {get} getAllMPsSpeeches/{?date}/?{?per_page}&{?page} All MPs' speeches
     * @apiName getAllMPsSpeeches
     * @apiGroup MPs
     * @apiDescription This function returns all MPs' speeches up until today (or an optional date)
       as an array of objects.
     * @apiParam {date} date Date up until which speeches should be returned.
+    * @apiParam {Integer} per_page Maximum number of items to be returned in result set.
+    * @apiParam {Integer} page Current page of the collection.
 
     * @apiSuccess {Integer} /.per_page Maximum number of items to be returned in result set. Default: 1000
     * @apiSuccess {Integer} /.page Current page of the collection.
@@ -1512,13 +1514,15 @@ def getAllOrganizations(request):
 def getAllSpeeches(request, date_=None):
     """Returns all speeches."""
     """
-    * @api {get} getAllSpeeches/{?date} Get all Speeches
+    * @api {get} getAllSpeeches/{?date}?{?per_page}&{?page} Get all Speeches
     * @apiName getAllSpeeches
     * @apiGroup Other
     * @apiDescription This function returns an object with all the organizations active on a given date.
       If no optional date parameter is given, it is assumed the date is today. It lists organizations in 
       an object with the organizations' Parladata ids as keys.
     * @apiParam {date} date Optional date.
+    * @apiParam {Integer} per_page Maximum number of items to be returned in result set.
+    * @apiParam {Integer} page Current page of the collection.
 
     * @apiSuccess {Object} id PG object with their id as key.
     * @apiSuccess {String} id.acronym The organization's acronym.
@@ -1580,11 +1584,13 @@ def getAllSpeeches(request, date_=None):
 def getVotes(request, date_=None):
     """Returns all votes."""
     """
-    * @api {get} getVotes/{date} Get all Votes up until a date
+    * @api {get} getVotes/{date}?{?per_page}&{?page} Get all Votes up until a date
     * @apiName getVotes
     * @apiGroup Votes
     * @apiDescription This function returns a list of all votes that
       took place until a given date.
+    * @apiParam {Integer} per_page Maximum number of items to be returned in result set.
+    * @apiParam {Integer} page Current page of the collection.
 
     * @apiSuccess {Integer} /.per_page Maximum number of items to be returned in result set. Default: 1000
     * @apiSuccess {Integer} /.page Current page of the collection.
@@ -1668,12 +1674,14 @@ def getVotes(request, date_=None):
 def getAllBallots(request, date_=None):
     """Returns all ballots."""
     """
-    * @api {get} getAllBallots/{?date} Get all Ballots
+    * @api {get} getAllBallots/{?date}?{?per_page}&{?page} Get all Ballots
     * @apiName getAllBallots
     * @apiGroup Votes
     * @apiDescription This function returns a list of all ballots
       submitted until a given date. If no date is supplied it is assumed
       the date is today.
+    * @apiParam {Integer} per_page Maximum number of items to be returned in result set.
+    * @apiParam {Integer} page Current page of the collection.
 
     * @apiSuccess {Integer} /.per_page Maximum number of items to be returned in result set. Default: 1000
     * @apiSuccess {Integer} /.page Current page of the collection.
@@ -1738,7 +1746,7 @@ def getAllBallots(request, date_=None):
 def getAllPeople(request):
     """Returns all people."""
     """
-    * @api {get} getAllPeople Get all People
+    * @api {get}?{?per_page}&{?page} getAllPeople Get all People
     * @apiName getAllPeople
     * @apiGroup Other
     * @apiDescription This function returns a list of all people in Parladata.
@@ -1746,6 +1754,8 @@ def getAllPeople(request):
       government members. The objects returned resemble those of getMPStatic,
       but keep in mind, that for people who only spoke in the parliament, no
       extra information is collected.
+    * @apiParam {Integer} per_page Maximum number of items to be returned in result set.
+    * @apiParam {Integer} page Current page of the collection.
 
     * @apiSuccess {Integer} /.per_page Maximum number of items to be returned in result set. Default: 1000
     * @apiSuccess {Integer} /.page Current page of the collection.
@@ -2026,11 +2036,13 @@ def motionOfSession(request, id_se):
 def getBallotsOfSession(request, id_se):
     """Returns all ballots of specific Session. TODO"""
     """
-    * @api {get} getBallotsOfSession/{id} Get all ballots from a specific Session
+    * @api {get} getBallotsOfSession/{id}?{?per_page}&{?page} Get all ballots from a specific Session
     * @apiName getBallotsOfSession
     * @apiGroup Sessions
     * @apiDescription This function returns a list of all ballots for all motions voted
       upon in this session.
+    * @apiParam {Integer} per_page Maximum number of items to be returned in result set.
+    * @apiParam {Integer} page Current page of the collection.
 
     * @apiSuccess {Integer} /.per_page Maximum number of items to be returned in result set. Default: 1000
     * @apiSuccess {Integer} /.page Current page of the collection.
@@ -3148,11 +3160,13 @@ def getAllQuestions(request, date_=None):
     Returns array of all questions. Objects have only link with note Besedilo.
     """
     """
-    * @api {get} getAllQuestions/{?date} Get all MP's questions
+    * @api {get} getAllQuestions/{?date}?{?per_page}&{?page} Get all MP's questions
     * @apiName getAllQuestions
     * @apiGroup Other
     * @apiDescription This function returns all MP's questions that have been asked
       up to a specific date. If no date is supplied it is assumed the date is today.
+    * @apiParam {Integer} per_page Maximum number of items to be returned in result set.
+    * @apiParam {Integer} page Current page of the collection.
 
     * @apiSuccess {Integer} /.per_page Maximum number of items to be returned in result set. Default: 500
     * @apiSuccess {Integer} /.page Current page of the collection.
