@@ -8,6 +8,12 @@ from parladata.admin import PersonAutocomplete, PostAutocomplete, MembershipAuto
 router = routers.DefaultRouter()
 router.register(r'person', PersonView)
 router.register(r'session', SessionView)
+router.register(r'motion', MotionView)
+router.register(r'link', LinkView)
+router.register(r'ballot', BallotView)
+router.register(r'vote', VoteView)
+router.register(r'speech', SpeechView)
+router.register(r'organization', OrganizationView)
 
 
 urlpatterns = patterns('',
