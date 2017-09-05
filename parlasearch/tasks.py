@@ -3,7 +3,7 @@ from celery import shared_task
 from raven.contrib.django.raven_compat.models import client
 from datetime import datetime
 
-from parladata_project.settings import DASHBOARD_URL, API_DATE_FORMAT
+from parladata_project.settings import API_DATE_FORMAT
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 
@@ -13,7 +13,8 @@ import json
 import requests
 
 exports = {'exportSessions': exportSessions}
-
+# move this to settings
+DASHBOARD_URL = 'https://dashboard.parlameter.si'
 status_api = DASHBOARD_URL + '/api/status/'
 
 @csrf_exempt
@@ -35,8 +36,8 @@ def export_sessions(expoert_tasks, status_id):
     sendStatus(status_id, 'Running', '[]')
     try:
         for method in methods:
-            #method()
-            print('ivan')
+            method()
+            #print('ivan')
         print "naj se bi exportal"
         sendStatus(status_id, 'Done', '[]')
     except:
