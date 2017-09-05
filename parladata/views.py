@@ -2238,14 +2238,14 @@ def getNumberOfPersonsSessions(request, person_id, date_=None):
 
     else:
         person = person[0]
-        sessions_with_vote = person.ballot_set.filter(vote__start_time__lte=fdate).exclude(option='ni').values_list("vote__session", flat=True).distinct().count()
-        sessions_with_speech = person.speech_set.filter(start_time__lte=fdate).values_list("session", flat=True).distinct().count()
+        sessions_with_vote = person.ballot_set.filter(vote__start_time__lte=fdate).exclude(option='ni').values_list("vote__session", flat=True).distinct()
+        sessions_with_speech = person.speech_set.filter(start_time__lte=fdate).values_list("session", flat=True).distinct()
 
-        sessions = set(sessions_with_vote + sessions_with_speech)
+        sessions = set(list(sessions_with_vote) + list(sessions_with_speech))
 
         result = {
-            'sessions_with_vote': len(sessions_with_vote),
-            'sessions_with_speech': len(sessions_with_speech),
+            'sessions_with_vote': sessions_with_vote.count(),
+            'sessions_with_speech': sessions_with_speech.count(),
             'all_sessions': len(sessions)
         }
 
