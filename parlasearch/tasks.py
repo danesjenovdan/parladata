@@ -3,9 +3,11 @@ from celery import shared_task
 from raven.contrib.django.raven_compat.models import client
 from datetime import datetime
 
-from parladata_project.settings import API_DATE_FORMAT
+from parladata_project.settings import API_DATE_FORMAT, PARLALIZE_API_KEY
+
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
+from django.core.exceptions import PermissionDenied
 
 from .export import exportSessions 
 
@@ -24,6 +26,11 @@ def runAsyncExport(request):
         data = json.loads(request.body)
         print data
         status_id = data.pop('status_id')
+        auth_key = request.META['HTTP_AUTHORIZATION']
+        if auth_key != PARLALIZE_API_KEY:
+            print("auth fail")
+            sendStatus(status_id, "Fail", "Authorization fails", ['buuu'])
+            raise PermissionDenied
         export_sessions.apply_async((data['setters'], status_id), queue='parladata_project')
         return JsonResponse({'status':'runned'})
     else:
@@ -37,8 +44,6 @@ def export_sessions(expoert_tasks, status_id):
     try:
         for method in methods:
             method()
-            #print('ivan')
-        print "naj se bi exportal"
         sendStatus(status_id, 'Done', '[]')
     except:
         sendStatus(status_id, 'Fails', '[]')
