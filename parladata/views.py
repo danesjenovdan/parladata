@@ -984,55 +984,68 @@ def getSpeechesOfMP(request, person_id, date_=None):
 
 def getAllSpeechesOfMPs(request, date_=None):
     """
-    * @api {get} getAllMPsSpeeches/{?date}/ All MPs' speeches
+    * @api {get} getAllMPsSpeeches/{?date}/?{?per_page}&{?page} All MPs' speeches
     * @apiName getAllMPsSpeeches
     * @apiGroup MPs
     * @apiDescription This function returns all MPs' speeches up until today (or an optional date)
       as an array of objects.
     * @apiParam {date} date Date up until which speeches should be returned.
+    * @apiParam {Integer} per_page Maximum number of items to be returned in result set.
+    * @apiParam {Integer} page Current page of the collection.
 
-    * @apiSuccess {Object} speech A speech.
-    * @apiSuccess {String} speech.valid_from Start time of the speech's validity.
-    * @apiSuccess {String} speech.start_time Start time of the speech's transcript.
-    * @apiSuccess {String} speech.valid_to End time of the speech's validity (expiration date).
-    * @apiSuccess {Integer} speech.order The speech's order in its transcript.
-    * @apiSuccess {String} speech.content The speech's content.
-    * @apiSuccess {Integer} speech.session The speech's session Parladata id.
-    * @apiSuccess {Integer} speech.speaker The speech's speaker Parladata id.
-    * @apiSuccess {String} speech.end_time Placeholder field for a piece of data we do not
+    * @apiSuccess {Integer} /.per_page Maximum number of items to be returned in result set. Default: 1000
+    * @apiSuccess {Integer} /.page Current page of the collection.
+    * @apiSuccess {Integer} /.pages Count of pages of the collection.
+    * @apiSuccess {Object[]} /.data List of speeches.
+    * @apiSuccess {String} data.valid_from Start time of the speech's validity.
+    * @apiSuccess {String} data.start_time Start time of the speech's transcript.
+    * @apiSuccess {String} data.valid_to End time of the speech's validity (expiration date).
+    * @apiSuccess {Integer} data.order The speech's order in its transcript.
+    * @apiSuccess {String} data.content The speech's content.
+    * @apiSuccess {Integer} data.session The speech's session Parladata id.
+    * @apiSuccess {Integer} data.speaker The speech's speaker Parladata id.
+    * @apiSuccess {String} data.end_time Placeholder field for a piece of data we do not
       possess yet. Returns null.
-    * @apiSuccess {Integer} speech.party The speech's speaker's party Parladata id.
-    * @apiSuccess {Integer} speech.id The speech's Parladata id.
+    * @apiSuccess {Integer} data.party The speech's speaker's party Parladata id.
+    * @apiSuccess {Integer} data.id The speech's Parladata id.
 
     * @apiExample {curl} Example:
         curl -i https://data.parlameter.si/v1/getAllMPsSpeeches
     * @apiExample {curl} Example with date:
         curl -i https://data.parlameter.si/v1/getAllMPsSpeeches/5.2.2017
 
-     * @apiSuccessExample {json} Example response:
-     [{
-        "valid_from": "2014-08-01T02:00:00",
-        "start_time": "2014-08-01T02:00:00",
-        "valid_to": "2017-02-06T01:59:52.624",
-        "order": 30,
-        "content": "Najlep\u0161a hvala.\nIzvolite.",
-        "session": 7610,
-        "speaker": 33,
-        "end_time": null,
-        "party": 1,
-        "id": 880492
-      }, {
-        "valid_from": "2014-08-01T02:00:00",
-        "start_time": "2014-08-01T02:00:00",
-        "valid_to": "9999-12-31T23:59:59.999",
-        "order": 180,
-        "content": "Hvala lepa, ponovno. \nPoglejte, gospa predsedujo\u010da, vi ste povedali, da ste na osnovi ustne obrazlo\u017eitve Zakonodajno-pravne slu\u017ebe napisali tisto, kar imate in kar berete. Nas ta va\u0161a interpretacija ne zadovolji, ker se mi zdi nekorektno, da sku\u0161a predsedujo\u010di skupaj z generalno sekretarko Dr\u017eavnega zbora tudi zdaj, ko za to ni potrebe, sku\u0161a stvari peljati na nek neposlovni\u0161ki na\u010din in nas peljati preko to\u010dk dnevnega reda v dvomu, da je zadeva pripravljena v skladu z zakonom. Mislim, da je to nekorektno. \nPrva naloga predsedujo\u010dega Dr\u017eavnega zbora in generalne sekretarke Dr\u017eavnega zbora je, da se postopki speljejo korektno, da na njih ni sence dvoma, da nih\u010de ne dvomi, da je karkoli v tem postopku narobe. In zato predlagamo oziroma zahtevamo, da dobimo pisno mnenje Zakonodajno-pravne slu\u017ebe. Zato zahtevamo. Tisto, kar so na\u0161e obveznosti, ne skrbite, jih bomo izpolnili , ko bo \u010das za to in ko bo soglasje v Dr\u017eavnem zboru za to. Ta trenutek ni. Zato predlagam, da, ne vem, namesto, da mu\u010dite dr\u017eavni zbor, da naredite to prekinitev, da naredite tisto, kar se pri\u010dakuje od predsedujo\u010dega, to se pravi, da zagotovi vse podlage, ki so potrebne za to, da se pri tej to\u010dki opravi odlo\u010danje, da se opravi odlo\u010danje tudi pri naslednjih dveh to\u010dkah dnevnega reda, to, da bomo imeli mandatno komisijo, ki bo sestavljena res v skladu z zakonom, in da bodo odlo\u010ditve skladne z zakonom o poslancih. To materijo ureja ve\u010d aktov, poslovnik je en od aktov, ampak neposredno dolo\u010dbo o tem, kako mora biti Mandatno-volilna komisija sestavljena, pa dolo\u010da zakon. Vi nam ne govoriti in razlagati pravic poslanske skupine in poslancev, mi zahtevamo interpretacijo oziroma mnenje Zakonodajno-pravne slu\u017ebe v zvezi z dolo\u010dbo 7. \u010dlena Zakona o poslancih. Mi ne \u017eelimo va\u0161e interpretacije, gospa, mi ne \u017eelimo interpretacije generalne sekretarke Dr\u017eavnega zbora, mi \u017eelimo interpretacijo, obrazlo\u017eitev, obrazlo\u017eeno mnenje Zakonodajno-pravne slu\u017ebe Dr\u017eavnega zbora. In ni\u010d drugega. Od tam naprej pa se bomo odlo\u010dili, kako bomo ravnali, ko bomo to mnenje dobili. Hvala lepa.",
-        "session": 6684,
-        "speaker": 78,
-        "end_time": null,
-        "party": 5,
-        "id": 597620
-      }]
+    * @apiSuccessExample {json} Example response:
+    {
+        per_page: 1000,
+        page: 1,
+        pages: 10,
+        data:
+        [   
+            {
+                "valid_from": "2014-08-01T02:00:00",
+                "start_time": "2014-08-01T02:00:00",
+                "valid_to": "2017-02-06T01:59:52.624",
+                "order": 30,
+                "content": "Najlep\u0161a hvala.\nIzvolite.",
+                "session": 7610,
+                "speaker": 33,
+                "end_time": null,
+                "party": 1,
+                "id": 880492
+            }, {
+                "valid_from": "2014-08-01T02:00:00",
+                "start_time": "2014-08-01T02:00:00",
+                "valid_to": "9999-12-31T23:59:59.999",
+                "order": 180,
+                "content": "Hvala lepa, ponovno. \nPoglejte, gospa predsedujo\u010da, vi ste povedali, da ste na osnovi ustne obrazlo\u017eitve Zakonodajno-pravne slu\u017ebe napisali tisto, kar imate in kar berete. Nas ta va\u0161a interpretacija ne zadovolji, ker se mi zdi nekorektno, da sku\u0161a predsedujo\u010di skupaj z generalno sekretarko Dr\u017eavnega zbora tudi zdaj, ko za to ni potrebe, sku\u0161a stvari peljati na nek neposlovni\u0161ki na\u010din in nas peljati preko to\u010dk dnevnega reda v dvomu, da je zadeva pripravljena v skladu z zakonom. Mislim, da je to nekorektno. \nPrva naloga predsedujo\u010dega Dr\u017eavnega zbora in generalne sekretarke Dr\u017eavnega zbora je, da se postopki speljejo korektno, da na njih ni sence dvoma, da nih\u010de ne dvomi, da je karkoli v tem postopku narobe. In zato predlagamo oziroma zahtevamo, da dobimo pisno mnenje Zakonodajno-pravne slu\u017ebe. Zato zahtevamo. Tisto, kar so na\u0161e obveznosti, ne skrbite, jih bomo izpolnili , ko bo \u010das za to in ko bo soglasje v Dr\u017eavnem zboru za to. Ta trenutek ni. Zato predlagam, da, ne vem, namesto, da mu\u010dite dr\u017eavni zbor, da naredite to prekinitev, da naredite tisto, kar se pri\u010dakuje od predsedujo\u010dega, to se pravi, da zagotovi vse podlage, ki so potrebne za to, da se pri tej to\u010dki opravi odlo\u010danje, da se opravi odlo\u010danje tudi pri naslednjih dveh to\u010dkah dnevnega reda, to, da bomo imeli mandatno komisijo, ki bo sestavljena res v skladu z zakonom, in da bodo odlo\u010ditve skladne z zakonom o poslancih. To materijo ureja ve\u010d aktov, poslovnik je en od aktov, ampak neposredno dolo\u010dbo o tem, kako mora biti Mandatno-volilna komisija sestavljena, pa dolo\u010da zakon. Vi nam ne govoriti in razlagati pravic poslanske skupine in poslancev, mi zahtevamo interpretacijo oziroma mnenje Zakonodajno-pravne slu\u017ebe v zvezi z dolo\u010dbo 7. \u010dlena Zakona o poslancih. Mi ne \u017eelimo va\u0161e interpretacije, gospa, mi ne \u017eelimo interpretacije generalne sekretarke Dr\u017eavnega zbora, mi \u017eelimo interpretacijo, obrazlo\u017eitev, obrazlo\u017eeno mnenje Zakonodajno-pravne slu\u017ebe Dr\u017eavnega zbora. In ni\u010d drugega. Od tam naprej pa se bomo odlo\u010dili, kako bomo ravnali, ko bomo to mnenje dobili. Hvala lepa.",
+                "session": 6684,
+                "speaker": 78,
+                "end_time": null,
+                "party": 5,
+                "id": 597620
+            }
+        ]
+    }
     """
 
     if date_:
@@ -1046,9 +1059,13 @@ def getAllSpeechesOfMPs(request, date_=None):
     speeches_queryset = Speech.getValidSpeeches(fdate)
     speeches_queryset = speeches_queryset.filter(speaker__in=members,
                                                  start_time__lte=fdate)
+    speeches_queryset = speeches_queryset.order_by('start_time', 'order')
+    speeches_queryset, pager = parsePager(request, speeches_queryset)
     speeches = [model_to_dict(speech, fields=[field.name for field in speech._meta.fields], exclude=[]) for speech in speeches_queryset]
 
-    return JsonResponse(speeches, safe=False)
+    data = pager
+    data['data'] = speeches
+    return JsonResponse(data, safe=False)
 
 
 def getMPParty(request, person_id):
@@ -1497,13 +1514,15 @@ def getAllOrganizations(request):
 def getAllSpeeches(request, date_=None):
     """Returns all speeches."""
     """
-    * @api {get} getAllSpeeches/{?date} Get all Speeches
+    * @api {get} getAllSpeeches/{?date}?{?per_page}&{?page} Get all Speeches
     * @apiName getAllSpeeches
     * @apiGroup Other
     * @apiDescription This function returns an object with all the organizations active on a given date.
       If no optional date parameter is given, it is assumed the date is today. It lists organizations in 
       an object with the organizations' Parladata ids as keys.
     * @apiParam {date} date Optional date.
+    * @apiParam {Integer} per_page Maximum number of items to be returned in result set.
+    * @apiParam {Integer} page Current page of the collection.
 
     * @apiSuccess {Object} id PG object with their id as key.
     * @apiSuccess {String} id.acronym The organization's acronym.
@@ -1550,72 +1569,86 @@ def getAllSpeeches(request, date_=None):
         fdate = datetime.now().date()
     data = []
     speeches_queryset = Speech.getValidSpeeches(fdate)
-    speeches = speeches_queryset.filter(start_time__lte=fdate)
+    speeches = speeches_queryset.filter(start_time__lte=fdate).order_by("start_time", "order")
+    speeches, pager = parsePager(request, speeches, default_per_page=1000)
     for speech in speeches:
         data.append(model_to_dict(speech,
                                   fields=[field.name for field in speech._meta.fields],
                                   exclude=[]))
 
-    return JsonResponse(data, safe=False)
+    out = pager
+    out['data'] = data
+    return JsonResponse(out, safe=False)
 
 
 def getVotes(request, date_=None):
     """Returns all votes."""
     """
-    * @api {get} getVotes/{date} Get all Votes up until a date
+    * @api {get} getVotes/{date}?{?per_page}&{?page} Get all Votes up until a date
     * @apiName getVotes
     * @apiGroup Votes
     * @apiDescription This function returns a list of all votes that
       took place until a given date.
+    * @apiParam {Integer} per_page Maximum number of items to be returned in result set.
+    * @apiParam {Integer} page Current page of the collection.
 
-    * @apiSuccess {Object[]} / List of vote objects
-    * @apiSuccess {date} /.start_time Vote's start time in UTF-8 datetime as string.
-    * @apiSuccess {String} /.motion Motion name - what is the vote about.
-    * @apiSuccess {Integer} /.session Session's at which the vote took place parladata id.
-    * @apiSuccess {date} /.start_time Vote's end time in UTF-8 datetime as string. Currently return null.
-    * @apiSuccess {Integer} /.organization_id Parladata id of the organization in which the vote took place.
-    * @apiSuccess {Integer} /.id Parladata id of the vote.
-    * @apiSuccess {String} /.result String with the result of the vote. Currently always returns "-".
+    * @apiSuccess {Integer} /.per_page Maximum number of items to be returned in result set. Default: 1000
+    * @apiSuccess {Integer} /.page Current page of the collection.
+    * @apiSuccess {Integer} /.pages Count of pages of the collection.
+    * @apiSuccess {Object[]} /.data List of vote objects.
+    * @apiSuccess {date} data.start_time Vote's start time in UTF-8 datetime as string.
+    * @apiSuccess {String} data.motion Motion name - what is the vote about.
+    * @apiSuccess {Integer} data.session Session's at which the vote took place parladata id.
+    * @apiSuccess {date} data.start_time Vote's end time in UTF-8 datetime as string. Currently return null.
+    * @apiSuccess {Integer} data.organization_id Parladata id of the organization in which the vote took place.
+    * @apiSuccess {Integer} data.id Parladata id of the vote.
+    * @apiSuccess {String} data.result String with the result of the vote. Currently always returns "-".
 
     * @apiExample {curl} Example:
         curl -i https://data.parlameter.si/v1/getVotes/12.12.2016
 
     * @apiSuccessExample {json} Example response:
-    [
-        {
-            "start_time": "2014-08-01T12:16:54",
-            "motion": "Dnevni red v celoti",
-            "session": 6684,
-            "end_time": null,
-            "party": 95,
-            "id": 6513,
-            "result": "-"
-        }, {
-            "start_time": "2014-08-01T12:43:48",
-            "motion": "Proceduralni predlog za prekinitev 1. to\u010dke dnevnega reda",
-            "session": 6684,
-            "end_time": null,
-            "party": 95,
-            "id": 6512,
-            "result": "-"
-        }, {
-            "start_time": "2014-08-01T12:49:10",
-            "motion": "Sklep o imenovanju predsednika in podpredsednika Mandatno-volilne komisije - Sklep",
-            "session": 6684,
-            "end_time": null,
-            "party": 95,
-            "id": 6511,
-            "result": "-"
-        }, {
-            "start_time": "2014-08-01T14:18:26",
-            "motion": "Poro\u010dilo o izidu pred\u010dasnih volitev v Dr\u017eavni zbor Republike Slovenije - Glasovanje o predlogu sklepa",
-            "session": 6684,
-            "end_time": null,
-            "party": 95,
-            "id": 6510,
-            "result": "-"
-        }
-    ]
+    {
+        per_page: 1000,
+        page: 1,
+        pages: 10,
+        data:
+        [   
+            {
+                "start_time": "2014-08-01T12:16:54",
+                "motion": "Dnevni red v celoti",
+                "session": 6684,
+                "end_time": null,
+                "party": 95,
+                "id": 6513,
+                "result": "-"
+            }, {
+                "start_time": "2014-08-01T12:43:48",
+                "motion": "Proceduralni predlog za prekinitev 1. to\u010dke dnevnega reda",
+                "session": 6684,
+                "end_time": null,
+                "party": 95,
+                "id": 6512,
+                "result": "-"
+            }, {
+                "start_time": "2014-08-01T12:49:10",
+                "motion": "Sklep o imenovanju predsednika in podpredsednika Mandatno-volilne komisije - Sklep",
+                "session": 6684,
+                "end_time": null,
+                "party": 95,
+                "id": 6511,
+                "result": "-"
+            }, {
+                "start_time": "2014-08-01T14:18:26",
+                "motion": "Poro\u010dilo o izidu pred\u010dasnih volitev v Dr\u017eavni zbor Republike Slovenije - Glasovanje o predlogu sklepa",
+                "session": 6684,
+                "end_time": null,
+                "party": 95,
+                "id": 6510,
+                "result": "-"
+            }
+        ]
+    }
     """
     if date_:
         fdate = datetime.strptime(date_, settings.API_DATE_FORMAT).date() + timedelta(days=1) - timedelta(minutes=1)
@@ -1624,6 +1657,7 @@ def getVotes(request, date_=None):
     data = []
 
     votes = Vote.objects.filter(start_time__lte=fdate).order_by("start_time")
+    votes, pager = parsePager(request, votes, default_per_page=1000)
     for vote in votes:
         data.append({'id': vote.id,
                      'motion': vote.motion.text,
@@ -1632,25 +1666,31 @@ def getVotes(request, date_=None):
                      'start_time': vote.start_time,
                      'end_time': vote.end_time,
                      'result': vote.result})
-
-    return JsonResponse(data, safe=False)
+    out = pager
+    out['data'] = data
+    return JsonResponse(out, safe=False)
 
 
 def getAllBallots(request, date_=None):
     """Returns all ballots."""
     """
-    * @api {get} getAllBallots/{?date} Get all Ballots
+    * @api {get} getAllBallots/{?date}?{?per_page}&{?page} Get all Ballots
     * @apiName getAllBallots
     * @apiGroup Votes
     * @apiDescription This function returns a list of all ballots
       submitted until a given date. If no date is supplied it is assumed
       the date is today.
+    * @apiParam {Integer} per_page Maximum number of items to be returned in result set.
+    * @apiParam {Integer} page Current page of the collection.
 
-    * @apiSuccess {Object[]} / List of vote objects
-    * @apiSuccess {Integer} /.vote Parladata ID of the vote.
-    * @apiSuccess {Integer} /.voter Parladata ID of the MP who submitted the ballot.
-    * @apiSuccess {Integer} /.id Parladata ID of the ballot.
-    * @apiSuccess {String} /.option The option of the ballot (za, proti, kvorum, ni).
+    * @apiSuccess {Integer} /.per_page Maximum number of items to be returned in result set. Default: 1000
+    * @apiSuccess {Integer} /.page Current page of the collection.
+    * @apiSuccess {Integer} /.pages Count of pages of the collection.
+    * @apiSuccess {Object[]} /.data List of vote objects.
+    * @apiSuccess {Integer} data.vote Parladata ID of the vote.
+    * @apiSuccess {Integer} data.voter Parladata ID of the MP who submitted the ballot.
+    * @apiSuccess {Integer} data.id Parladata ID of the ballot.
+    * @apiSuccess {String} data.option The option of the ballot (za, proti, kvorum, ni).
 
     * @apiExample {curl} Example:
         curl -i https://data.parlameter.si/v1/getAllBallots
@@ -1658,47 +1698,55 @@ def getAllBallots(request, date_=None):
         curl -i https://data.parlameter.si/v1/getAllBallots/12.12.2016
 
     * @apiSuccessExample {json} Example response:
-    [
-        {
-            "vote": 6601,
-            "voter": 95,
-            "id": 593806,
-            "option": "za"
-        }, {
-            "vote": 6601,
-            "voter": 2,
-            "id": 593807,
-            "option": "kvorum"
-        }, {
-            "vote": 6601,
-            "voter": 3,
-            "id": 593808,
-            "option": "za"
-        }, {
-            "vote": 6601,
-            "voter": 4,
-            "id": 593809,
-            "option": "ni"
-        }
-    ]
+    {
+        per_page: 1000,
+        page: 1,
+        pages: 10,
+        data:
+        [
+            {
+                "vote": 6601,
+                "voter": 95,
+                "id": 593806,
+                "option": "za"
+            }, {
+                "vote": 6601,
+                "voter": 2,
+                "id": 593807,
+                "option": "kvorum"
+            }, {
+                "vote": 6601,
+                "voter": 3,
+                "id": 593808,
+                "option": "za"
+            }, {
+                "vote": 6601,
+                "voter": 4,
+                "id": 593809,
+                "option": "ni"
+            }
+        ]
+    }
     """
 
     if date_:
         fdate = datetime.strptime(date_, settings.API_DATE_FORMAT).date()
     else:
         fdate = datetime.now().date()
-
+    ballots = Ballot.objects.filter(vote__start_time__lte=fdate).order_by('id')
+    ballots, pager = parsePager(request, ballots, default_per_page=1000)
     data = [model_to_dict(ballot,
                           fields=['id', 'vote', 'voter', 'option'], exclude=[])
-            for ballot in Ballot.objects.filter(vote__start_time__lte=fdate)]
-
-    return JsonResponse(data, safe=False)
+            for ballot in ballots]
+    out = pager
+    out['data'] = data
+    return JsonResponse(out, safe=False)
 
 
 def getAllPeople(request):
     """Returns all people."""
     """
-    * @api {get} getAllPeople Get all People
+    * @api {get}?{?per_page}&{?page} getAllPeople Get all People
     * @apiName getAllPeople
     * @apiGroup Other
     * @apiDescription This function returns a list of all people in Parladata.
@@ -1706,38 +1754,43 @@ def getAllPeople(request):
       government members. The objects returned resemble those of getMPStatic,
       but keep in mind, that for people who only spoke in the parliament, no
       extra information is collected.
+    * @apiParam {Integer} per_page Maximum number of items to be returned in result set.
+    * @apiParam {Integer} page Current page of the collection.
 
-    * @apiSuccess {Object[]} / List of person objects.
-    * @apiSuccess {String} /.gov_id MP's "government id". The ID this
+    * @apiSuccess {Integer} /.per_page Maximum number of items to be returned in result set. Default: 1000
+    * @apiSuccess {Integer} /.page Current page of the collection.
+    * @apiSuccess {Integer} /.pages Count of pages of the collection.
+    * @apiSuccess {Object[]} /.data List of person objects.
+    * @apiSuccess {String} /data.gov_id MP's "government id". The ID this
       particular MP is given on http://www.dz-rs.si
       If not returns null.
-    * @apiSuccess {Integer} /.voters The number of voters the MP was elected with.
+    * @apiSuccess {Integer} data.voters The number of voters the MP was elected with.
       Only MPs have voters.
-    * @apiSuccess {String} /.image URL to the person's image on http://www.dz-rs.si.
-    * @apiSuccess {String} /.patronymic_name The person's patronymic name if applicable.
+    * @apiSuccess {String} data.image URL to the person's image on http://www.dz-rs.si.
+    * @apiSuccess {String} data.patronymic_name The person's patronymic name if applicable.
       If not returns empty string.
-    * @apiSuccess {String} /.sort_name The person's sorting name if applicable.
+    * @apiSuccess {String} data.sort_name The person's sorting name if applicable.
       If not returns empty string.
-    * @apiSuccess {Integer} /.id The person's Parladata id.
-    * @apiSuccess {String} /.biography The person's biography if applicable.
-    * @apiSuccess {String} /.classification The person's classification if applicable.
+    * @apiSuccess {Integer} data.id The person's Parladata id.
+    * @apiSuccess {String} data.biography The person's biography if applicable.
+    * @apiSuccess {String} data.classification The person's classification if applicable.
       If not returns empty string. Sometimes used for internal sorting purposes.
-    * @apiSuccess {String} /.district Name of the district (or districts) the MP was elected in.
+    * @apiSuccess {String} data.district Name of the district (or districts) the MP was elected in.
       Only MP's have districts. Currently always returns empty string. TODO
-    * @apiSuccess {String} /.additional_name The person's additional name if applicable.
+    * @apiSuccess {String} data.additional_name The person's additional name if applicable.
       If not returns empty string.
-    * @apiSuccess {String} /.hovorific_suffix The person's honorific suffix, such as "PhD".
-    * @apiSuccess {String} /.honorific_prefix The person's honorific prefix name if applicable.
+    * @apiSuccess {String} data.hovorific_suffix The person's honorific suffix, such as "PhD".
+    * @apiSuccess {String} data.honorific_prefix The person's honorific prefix name if applicable.
       If not returns empty string.
-    * @apiSuccess {String} /.given_name The person's given name.
-    * @apiSuccess {String} /.email The person's email.
-    * @apiSuccess {String} /.membership The person's current party.
-    * @apiSuccess {Boolean} /.active The person's active state.
-    * @apiSuccess {String} /.family_name The person's family name.
-    * @apiSuccess {String} /.name The person's full/display name.
-    * @apiSuccess {String} /.gov_picture_url URL to Person's image on http://www.dz-rs.si if applicable.
-    * @apiSuccess {String} /.summary Person's summary if applicable. If not returns empty string.
-    * @apiSuccess {String} /.birth_date Person's date of birth. Returns time as well, so that all
+    * @apiSuccess {String} data.given_name The person's given name.
+    * @apiSuccess {String} data.email The person's email.
+    * @apiSuccess {String} data.membership The person's current party.
+    * @apiSuccess {Boolean} data.active The person's active state.
+    * @apiSuccess {String} data.family_name The person's family name.
+    * @apiSuccess {String} data.name The person's full/display name.
+    * @apiSuccess {String} data.gov_picture_url URL to Person's image on http://www.dz-rs.si if applicable.
+    * @apiSuccess {String} data.summary Person's summary if applicable. If not returns empty string.
+    * @apiSuccess {String} data.birth_date Person's date of birth. Returns time as well, so that all
       objects are datetime, but the time can be ignored.
     
 
@@ -1745,87 +1798,94 @@ def getAllPeople(request):
         curl -i https://data.parlameter.si/v1/getAllPeople/
 
     * @apiSuccessExample {json} Example response:
-    [
-        {
-            "gov_id": null,
-            "voters": null,
-            "image": null,
-            "patronymic_name": null,
-            "sort_name": null,
-            "id": 1329,
-            "biography": null,
-            "classification": null,
-            "district": "",
-            "additional_name": null,
-            "honorific_suffix": null,
-            "honorific_prefix": null,
-            "given_name": null,
-            "email": null,
-            "membership": "",
-            "active": true,
-            "family_name": null,
-            "name": "Mateja Ko\u017euh Novak",
-            "gov_picture_url": null,
-            "gender": null,
-            "death_date": "None",
-            "summary": null,
-            "birth_date": "None"
-        }, {
-            "gov_id": null,
-            "voters": null,
-            "image": null,
-            "patronymic_name": null,
-            "sort_name": null,
-            "id": 1331,
-            "biography": null,
-            "classification": null,
-            "district": "",
-            "additional_name": null,
-            "honorific_suffix": null,
-            "honorific_prefix": null,
-            "given_name": null,
-            "email": null,
-            "membership": null,
-            "active": true,
-            "family_name": null,
-            "name": "Vlasta Nussdorfer",
-            "gov_picture_url": null,
-            "gender": null,
-            "death_date": "None",
-            "summary": null,
-            "birth_date": "None"
-        }, {
-            "gov_id": "P225",
-            "voters": 2496,
-            "image": "http://www.dz-rs.si/wps/PA_DZ-LN-Osebe/CommonRes?idOseba=P225",
-            "patronymic_name": "",
-            "sort_name": "",
-            "id": 15,
-            "biography": "",
-            "classification": "",
-            "district": "",
-            "additional_name": "",
-            "honorific_suffix": "mag.",
-            "honorific_prefix": "",
-            "given_name": "Andrej",
-            "email": "andrej.cus@dz-rs.si",
-            "membership": "Nepovezani poslanec Andrej \u010cu\u0161",
-            "active": true,
-            "family_name": "\u010cu\u0161",
-            "name": "Andrej \u010cu\u0161",
-            "gov_picture_url": "http://www.dz-rs.si/wps/PA_DZ-LN-Osebe/CommonRes?idOseba=P225",
-            "gender": "male",
-            "death_date": "None",
-            "summary": "",
-            "birth_date": "1990-07-29 02:00:00"
-        }
-    ]
+    {
+        per_page: 1000,
+        page: 1,
+        pages: 10,
+        data:
+        [
+            {
+                "gov_id": null,
+                "voters": null,
+                "image": null,
+                "patronymic_name": null,
+                "sort_name": null,
+                "id": 1329,
+                "biography": null,
+                "classification": null,
+                "district": "",
+                "additional_name": null,
+                "honorific_suffix": null,
+                "honorific_prefix": null,
+                "given_name": null,
+                "email": null,
+                "membership": "",
+                "active": true,
+                "family_name": null,
+                "name": "Mateja Ko\u017euh Novak",
+                "gov_picture_url": null,
+                "gender": null,
+                "death_date": "None",
+                "summary": null,
+                "birth_date": "None"
+            }, {
+                "gov_id": null,
+                "voters": null,
+                "image": null,
+                "patronymic_name": null,
+                "sort_name": null,
+                "id": 1331,
+                "biography": null,
+                "classification": null,
+                "district": "",
+                "additional_name": null,
+                "honorific_suffix": null,
+                "honorific_prefix": null,
+                "given_name": null,
+                "email": null,
+                "membership": null,
+                "active": true,
+                "family_name": null,
+                "name": "Vlasta Nussdorfer",
+                "gov_picture_url": null,
+                "gender": null,
+                "death_date": "None",
+                "summary": null,
+                "birth_date": "None"
+            }, {
+                "gov_id": "P225",
+                "voters": 2496,
+                "image": "http://www.dz-rs.si/wps/PA_DZ-LN-Osebe/CommonRes?idOseba=P225",
+                "patronymic_name": "",
+                "sort_name": "",
+                "id": 15,
+                "biography": "",
+                "classification": "",
+                "district": "",
+                "additional_name": "",
+                "honorific_suffix": "mag.",
+                "honorific_prefix": "",
+                "given_name": "Andrej",
+                "email": "andrej.cus@dz-rs.si",
+                "membership": "Nepovezani poslanec Andrej \u010cu\u0161",
+                "active": true,
+                "family_name": "\u010cu\u0161",
+                "name": "Andrej \u010cu\u0161",
+                "gov_picture_url": "http://www.dz-rs.si/wps/PA_DZ-LN-Osebe/CommonRes?idOseba=P225",
+                "gender": "male",
+                "death_date": "None",
+                "summary": "",
+                "birth_date": "1990-07-29 02:00:00"
+            }
+        ]
+    }
     """
     parliamentary_group = Organization.objects.filter(classification__in=PS_NP)
     data = []
     pg = ''
-    person = Person.objects.all()
-    for i in person:
+    persons = Person.objects.all().order_by('id')
+    persons, pager = parsePager(request, persons, default_per_page=100)
+    for i in persons:
         membership = Membership.objects.filter(person=i.id,
                                                organization=parliamentary_group)
         for me in membership:
@@ -1855,7 +1915,10 @@ def getAllPeople(request):
                      'active': i.active})
         pg = None
 
-    return JsonResponse(data, safe=False)
+    out = pager
+    out['data'] = data
+
+    return JsonResponse(out, safe=False)
 
 
 def motionOfSession(request, id_se):
@@ -1973,68 +2036,80 @@ def motionOfSession(request, id_se):
 def getBallotsOfSession(request, id_se):
     """Returns all ballots of specific Session. TODO"""
     """
-    * @api {get} getBallotsOfSession/{id} Get all ballots from a specific Session
+    * @api {get} getBallotsOfSession/{id}?{?per_page}&{?page} Get all ballots from a specific Session
     * @apiName getBallotsOfSession
     * @apiGroup Sessions
     * @apiDescription This function returns a list of all ballots for all motions voted
       upon in this session.
+    * @apiParam {Integer} per_page Maximum number of items to be returned in result set.
+    * @apiParam {Integer} page Current page of the collection.
 
-    * @apiSuccess {Object[]} / List of Ballot objects.
-    * @apiSuccess {String} /.Acronym PG acronym for MP's PG.
-    * @apiSuccess {Integer} /.pg_id Parladata id of the PG the MP that submitted the ballot belongs to.
-    * @apiSuccess {Integer} /.mo_id Parladata id of the motion this ballot belongs to.
-    * @apiSuccess {String} /.option The option on the ballot. One of "za", "proti", "kvorum", "ni").
+    * @apiSuccess {Integer} /.per_page Maximum number of items to be returned in result set. Default: 1000
+    * @apiSuccess {Integer} /.page Current page of the collection.
+    * @apiSuccess {Integer} /.pages Count of pages of the collection.
+    * @apiSuccess {Object[]} /.data List of Ballot objects.
+    * @apiSuccess {String} data.Acronym PG acronym for MP's PG.
+    * @apiSuccess {Integer} data.pg_id Parladata id of the PG the MP that submitted the ballot belongs to.
+    * @apiSuccess {Integer} data.mo_id Parladata id of the motion this ballot belongs to.
+    * @apiSuccess {String} data.option The option on the ballot. One of "za", "proti", "kvorum", "ni").
       
 
     * @apiExample {curl} Example:
         curl -i https://data.parlameter.si/v1/getBallotsOfSession/9158
 
     * @apiSuccessExample {json} Example response:
-    [
-        {
-            "Acronym": "SDS",
-            "pg_id": 5,
-            "mp_id": 91,
-            "mo_id": 6650,
-            "option": "kvorum"
-        }, {
-            "Acronym": "SMC",
-            "pg_id": 1,
-            "mp_id": 89,
-            "mo_id": 6650,
-            "option": "za"
-        }, {
-            "Acronym": "SMC",
-            "pg_id": 1,
-            "mp_id": 88,
-            "mo_id": 6650,
-            "option": "za"
-        }, {
-            "Acronym": "SMC",
-            "pg_id": 1,
-            "mp_id": 87,
-            "mo_id": 6650,
-            "option": "za"
-        }, {
-            "Acronym": "NSI",
-            "pg_id": 6,
-            "mp_id": 86,
-            "mo_id": 6650,
-            "option": "kvorum"
-        }, {
-            "Acronym": "DeSUS",
-            "pg_id": 3,
-            "mp_id": 85,
-            "mo_id": 6650,
-            "option": "za"
-        }
-    ]
+    {
+        per_page: 1000,
+        page: 1,
+        pages: 10,
+        data:
+        [
+            {
+                "Acronym": "SDS",
+                "pg_id": 5,
+                "mp_id": 91,
+                "mo_id": 6650,
+                "option": "kvorum"
+            }, {
+                "Acronym": "SMC",
+                "pg_id": 1,
+                "mp_id": 89,
+                "mo_id": 6650,
+                "option": "za"
+            }, {
+                "Acronym": "SMC",
+                "pg_id": 1,
+                "mp_id": 88,
+                "mo_id": 6650,
+                "option": "za"
+            }, {
+                "Acronym": "SMC",
+                "pg_id": 1,
+                "mp_id": 87,
+                "mo_id": 6650,
+                "option": "za"
+            }, {
+                "Acronym": "NSI",
+                "pg_id": 6,
+                "mp_id": 86,
+                "mo_id": 6650,
+                "option": "kvorum"
+            }, {
+                "Acronym": "DeSUS",
+                "pg_id": 3,
+                "mp_id": 85,
+                "mo_id": 6650,
+                "option": "za"
+            }
+        ]
+    }
     """
 
     fdate = Session.objects.get(id=str(id_se)).start_time
     orgs = Organization.objects.filter(classification__in=PS_NP)
     org_acronym = {org.id: org.acronym for org in orgs}
     ballots = Ballot.objects.filter(vote__session__id=str(id_se))
+    ballots, pager = parsePager(request, ballots, default_per_page=1000).order_by("id")
     data = []
 
     for bal in ballots:
@@ -2045,7 +2120,9 @@ def getBallotsOfSession(request, id_se):
                      'Acronym': org_acronym[org_id],
                      'option': bal.option,
                      'pg_id': org_id})
-    return JsonResponse(data, safe=False)
+    out = pager
+    out['data'] = data
+    return JsonResponse(out, safe=False)
 
 
 def getBallotsOfMotion(request, motion_id):
@@ -2161,14 +2238,14 @@ def getNumberOfPersonsSessions(request, person_id, date_=None):
 
     else:
         person = person[0]
-        sessions_with_vote = list(set([ballot.vote.session for ballot in person.ballot_set.filter(vote__start_time__lte=fdate)]))
-        sessions_with_speech = list(set([speech.session for speech in person.speech_set.filter(start_time__lte=fdate)]))
+        sessions_with_vote = person.ballot_set.filter(vote__start_time__lte=fdate).exclude(option='ni').values_list("vote__session", flat=True).distinct()
+        sessions_with_speech = person.speech_set.filter(start_time__lte=fdate).values_list("session", flat=True).distinct()
 
-        sessions = set(sessions_with_vote + sessions_with_speech)
+        sessions = set(list(sessions_with_vote) + list(sessions_with_speech))
 
         result = {
-            'sessions_with_vote': len(sessions_with_vote),
-            'sessions_with_speech': len(sessions_with_speech),
+            'sessions_with_vote': sessions_with_vote.count(),
+            'sessions_with_speech': sessions_with_speech.count(),
             'all_sessions': len(sessions)
         }
 
@@ -3083,22 +3160,27 @@ def getAllQuestions(request, date_=None):
     Returns array of all questions. Objects have only link with note Besedilo.
     """
     """
-    * @api {get} getAllQuestions/{?date} Get all MP's questions
+    * @api {get} getAllQuestions/{?date}?{?per_page}&{?page} Get all MP's questions
     * @apiName getAllQuestions
     * @apiGroup Other
     * @apiDescription This function returns all MP's questions that have been asked
       up to a specific date. If no date is supplied it is assumed the date is today.
+    * @apiParam {Integer} per_page Maximum number of items to be returned in result set.
+    * @apiParam {Integer} page Current page of the collection.
 
-    * @apiSuccess {Object[]} / List of Question objects.
-    * @apiSuccess {String} /.recipient_text Recipient in text form as written on www.dz-rs.si.
-    * @apiSuccess {Integer} /.recipient_org_id Parladata id of the organization the recipient is a member of if applicable.
-    * @apiSuccess {Integer} /.recipien_id Parladata id of the recipient if applicable.
-    * @apiSuccess {String} /.link URL to the relevant question document.
-    * @apiSuccess {String} /.title Question title.
-    * @apiSuccess {date} /.date The date on which the question was asked.
-    * @apiSuccess {Integer} /.author_id The Parladata id of the MP who asked the question.
-    * @apiSuccess {Integer} /.id Parladata id of the question.
-    * @apiSuccess {Integer} /.session_id Parladata id of the session where this question was asked.
+    * @apiSuccess {Integer} /.per_page Maximum number of items to be returned in result set. Default: 500
+    * @apiSuccess {Integer} /.page Current page of the collection.
+    * @apiSuccess {Integer} /.pages Count of pages of the collection.
+    * @apiSuccess {Object[]} /.data List of Question objects.
+    * @apiSuccess {String} data.recipient_text Recipient in text form as written on www.dz-rs.si.
+    * @apiSuccess {Integer} data.recipient_org_id Parladata id of the organization the recipient is a member of if applicable.
+    * @apiSuccess {Integer} data.recipien_id Parladata id of the recipient if applicable.
+    * @apiSuccess {String} data.link URL to the relevant question document.
+    * @apiSuccess {String} data.title Question title.
+    * @apiSuccess {date} data.date The date on which the question was asked.
+    * @apiSuccess {Integer} data.author_id The Parladata id of the MP who asked the question.
+    * @apiSuccess {Integer} data.id Parladata id of the question.
+    * @apiSuccess {Integer} data.session_id Parladata id of the session where this question was asked.
 
     * @apiExample {curl} Example:
         curl -i https://data.parlameter.si/v1/getAllQuestions/
@@ -3106,54 +3188,61 @@ def getAllQuestions(request, date_=None):
         curl -i https://data.parlameter.si/v1/getAllQuestions/12.12.2014
     
     * @apiSuccessExample {json} Example response:
-    [
-        {
-            "recipient_text": "minister za infrastrukturo in prostor, ki opravlja teko\u010de posle",
-            "recipient_org_id": null,
-            "recipient_id": null,
-            "link": "http://imss.dz-rs.si/IMiS/ImisAdmin.nsf/ImisnetAgent?OpenAgent&2&DZ-MSS-01/ca20e0051c03fcabad65a8c60e1ab07b2f598715f9b4384afed907db7a549169",
-            "title": "v zvezi z spremenjenimi pravili za opravljanje vozni\u0161kih izpitov",
-            "date": "2014-08-27T00:00:00",
-            "author_id": 83,
-            "author_org_id": 7,
-            "id": 4973,
-            "session_id": null
-        }, {
-            "recipient_text": "generalna sekretarka Vlade",
-            "recipient_org_id": null,
-            "recipient_id": null,
-            "link": "http://imss.dz-rs.si/IMiS/ImisAdmin.nsf/ImisnetAgent?OpenAgent&2&DZ-MSS-01/ca20e005dd49e02aa5a4bdf82cd726ec231c5db754de339461cec5f929cc2f3c",
-            "title": "v zvezi z glasovanjem na sejah Vlade RS",
-            "date": "2014-09-10T00:00:00",
-            "author_id": 78,
-            "author_org_id": 5,
-            "id": 4974,
-            "session_id": 5618
-        }, {
-            "recipient_text": "ministrica za delo dru\u017eino socialne zadeve in enake mo\u017enosti",
-            "recipient_org_id": null,
-            "recipient_id": null,
-            "link": "http://imss.dz-rs.si/IMiS/ImisAdmin.nsf/ImisnetAgent?OpenAgent&2&DZ-MSS-01/ca20e00538fae5d9cbae4b468d3b346c4e28915089345234281182daa8b033fb",
-            "title": "v zvezi z oskrbo starej\u0161ih",
-            "date": "2014-09-26T00:00:00",
-            "author_id": 23,
-            "author_org_id": 5,
-            "id": 4975,
-            "session_id": null
-        }
-    ]
+    {
+        per_page: 500,
+        page: 1,
+        pages: 10,
+        data:
+        [
+            {
+                "recipient_text": "minister za infrastrukturo in prostor, ki opravlja teko\u010de posle",
+                "recipient_org_id": null,
+                "recipient_id": null,
+                "link": "http://imss.dz-rs.si/IMiS/ImisAdmin.nsf/ImisnetAgent?OpenAgent&2&DZ-MSS-01/ca20e0051c03fcabad65a8c60e1ab07b2f598715f9b4384afed907db7a549169",
+                "title": "v zvezi z spremenjenimi pravili za opravljanje vozni\u0161kih izpitov",
+                "date": "2014-08-27T00:00:00",
+                "author_id": 83,
+                "author_org_id": 7,
+                "id": 4973,
+                "session_id": null
+            }, {
+                "recipient_text": "generalna sekretarka Vlade",
+                "recipient_org_id": null,
+                "recipient_id": null,
+                "link": "http://imss.dz-rs.si/IMiS/ImisAdmin.nsf/ImisnetAgent?OpenAgent&2&DZ-MSS-01/ca20e005dd49e02aa5a4bdf82cd726ec231c5db754de339461cec5f929cc2f3c",
+                "title": "v zvezi z glasovanjem na sejah Vlade RS",
+                "date": "2014-09-10T00:00:00",
+                "author_id": 78,
+                "author_org_id": 5,
+                "id": 4974,
+                "session_id": 5618
+            }, {
+                "recipient_text": "ministrica za delo dru\u017eino socialne zadeve in enake mo\u017enosti",
+                "recipient_org_id": null,
+                "recipient_id": null,
+                "link": "http://imss.dz-rs.si/IMiS/ImisAdmin.nsf/ImisnetAgent?OpenAgent&2&DZ-MSS-01/ca20e00538fae5d9cbae4b468d3b346c4e28915089345234281182daa8b033fb",
+                "title": "v zvezi z oskrbo starej\u0161ih",
+                "date": "2014-09-26T00:00:00",
+                "author_id": 23,
+                "author_org_id": 5,
+                "id": 4975,
+                "session_id": null
+            }
+        ]
+    }
     """
     if date_:
         fdate = datetime.strptime(date_, settings.API_DATE_FORMAT).date()
     else:
         fdate = datetime.now().date()
 
-    question_queryset = Question.objects.filter(date__lte=fdate)
+    question_queryset = Question.objects.filter(date__lte=fdate).order_by('date')
+    question_queryset, pager = parsePager(request, question_queryset, default_per_page=500)
 
     data = []
 
     for question in question_queryset:
-        link = question.links.filter(note__icontains="Besedilo")
+        link = question.links.filter(note__icontains='Besedilo')
         if link:
             link = link[0].url
         else:
@@ -3178,7 +3267,9 @@ def getAllQuestions(request, date_=None):
                  }
         data.append(q_obj)
 
-    return JsonResponse(data, safe=False)
+    out = pager
+    out['data'] = data
+    return JsonResponse(out, safe=False)
 
 
 def getBallotsCounter(voter_obj, date_=None):
@@ -3644,7 +3735,9 @@ def getVotesTable(request, date_to=None):
     else:
         fdate = datetime.now().date()
     data = []
-    for session in Session.objects.all():
+    sessions = Session.objects.filter(vote__isnull=False).distinct().order_by("start_time")
+    sessions, pager = parsePager(request, sessions, default_per_page=10)
+    for session in sessions:
         votes = Vote.objects.filter(session=session,
                                     start_time__lte=fdate)
         for vote in votes:
@@ -3660,8 +3753,9 @@ def getVotesTable(request, date_to=None):
                              'date': vote.start_time,
                              'vote_id': vote.id,
                              'session_id': session.id})
-
-    return JsonResponse(data, safe=False)
+    out = pager
+    out['data'] = data
+    return JsonResponse(out, safe=False)
 
 
 def getVotesOfSessionTable(request, session_id, date_to=None):
@@ -3709,7 +3803,9 @@ def getVotesTableExtended(request, date_to=None):
     else:
         fdate = datetime.now().date()
     data = []
-    for session in Session.objects.all():
+    sessions = Session.objects.filter(vote__isnull=False).distinct().order_by("start_time")
+    sessions, pager = parsePager(request, sessions, default_per_page=10)
+    for session in sessions:
         votes = Vote.objects.filter(session=session,
                                     start_time__lte=fdate)
         for vote in votes:
@@ -3728,8 +3824,9 @@ def getVotesTableExtended(request, date_to=None):
                              'vote_id': vote.id,
                              'session_id': session.id,
                              'tags': ','.join(tags)})
-
-    return JsonResponse(data, safe=False)
+    out = pager
+    out['data'] = data
+    return JsonResponse(out, safe=False)
 
 
 def getAllAllSpeeches(request):
@@ -3737,14 +3834,16 @@ def getAllAllSpeeches(request):
     return non valid speeches too
     """
     data = []
-    speeches_queryset = Speech.objects.all()
-    speeches = speeches_queryset.filter()
+    speeches_queryset = Speech.objects.all().order_by("start_time", "order")
+    speeches, pager = parsePager(request, speeches_queryset, default_per_page=1000)
+
     for speech in speeches:
         data.append(model_to_dict(speech,
                                   fields=[field.name for field in speech._meta.fields],
                                   exclude=[]))
-
-    return JsonResponse(data, safe=False)
+    out = pager
+    out['data'] = data
+    return JsonResponse(out, safe=False)
 
 
 def getStrip(request):
@@ -3924,3 +4023,4 @@ def getAmendment(request):
             pass
 
     return JsonResponse(data, safe=False)
+
