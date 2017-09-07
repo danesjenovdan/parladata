@@ -24,11 +24,6 @@ class MotionSerializer(serializers.ModelSerializer):
 
 
 class VoteSerializer(serializers.ModelSerializer):
-    """unedit = serializers.SerializerMethodField('unedited')
-    def unedited(self):
-        gs = Vote.objects.filter(result=None, tags=None)
-        serializer = LikeSerializer(instance=gs, many=True)
-        return serializer.data"""
     class Meta:
         model = Vote
 
