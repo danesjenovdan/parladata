@@ -6,14 +6,15 @@ from rest_framework import routers
 from parladata.admin import PersonAutocomplete, PostAutocomplete, MembershipAutocomplete
 
 router = routers.DefaultRouter()
-router.register(r'person', PersonView)
-router.register(r'session', SessionView)
-router.register(r'motion', MotionView)
-router.register(r'link', LinkView)
-router.register(r'ballot', BallotView)
-router.register(r'vote', VoteView)
-router.register(r'speech', SpeechView)
-router.register(r'organization', OrganizationView)
+router.register(r'persons', PersonView)
+router.register(r'sessions', SessionView)
+router.register(r'motions', MotionView)
+router.register(r'links', LinkView)
+router.register(r'ballots', BallotView)
+router.register(r'votes', VoteView)
+router.register(r'unedited', VoteFilter)
+router.register(r'speechs', SpeechView)
+router.register(r'organizations', OrganizationView)
 
 
 urlpatterns = patterns('',

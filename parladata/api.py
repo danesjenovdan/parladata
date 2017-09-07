@@ -18,13 +18,17 @@ class SpeechSerializer(serializers.ModelSerializer):
     class Meta:
         model = Speech
 
-
 class MotionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Motion
 
 
 class VoteSerializer(serializers.ModelSerializer):
+    """unedit = serializers.SerializerMethodField('unedited')
+    def unedited(self):
+        gs = Vote.objects.filter(result=None, tags=None)
+        serializer = LikeSerializer(instance=gs, many=True)
+        return serializer.data"""
     class Meta:
         model = Vote
 
@@ -73,10 +77,16 @@ class MotionView(viewsets.ModelViewSet):
     fields = '__all__'
 
 
+class VoteFilter(viewsets.ModelViewSet):
+    queryset = Vote.objects.filter(result='-', tags=None)
+    serializer_class = VoteSerializer
+    fields = '__all__'
+
 class VoteView(viewsets.ModelViewSet):
     queryset = Vote.objects.all()
     serializer_class = VoteSerializer
     fields = '__all__'
+
 
 class BallotView(viewsets.ModelViewSet):
     queryset = Ballot.objects.all()
