@@ -45,11 +45,10 @@ INSTALLED_APPS = (
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'parladata',
+    'parlasearch',
     'django_extensions',
     'raven.contrib.django.raven_compat',
     'corsheaders',
-    'rest_framework',
-    'silk',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -62,7 +61,6 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django.middleware.security.SecurityMiddleware',
-    'silk.middleware.SilkyMiddleware',
 )
 
 ROOT_URLCONF = 'parladata_project.urls'
@@ -153,9 +151,4 @@ PARSER_ADMINS = [('Primoz Klemenske', 'klemensek@gmail.com')]
 PARLALIZE_API_KEY = 'vednoboljsi112358'
 SETTER_KEY = 'vednoboljsi112358'
 
-REST_FRAMEWORK = {
-    'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.IsAdminUser',
-    ],
-    'PAGE_SIZE': 10
-}
+DASHBOARD_URL = 'https://dashboard.parlameter.si'

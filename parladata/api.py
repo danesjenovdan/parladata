@@ -37,9 +37,6 @@ class LinkSerializer(serializers.ModelSerializer):
     class Meta:
         model = Link
 
-
-
-
 # ViewSets define the view behavior.
 class PersonView(viewsets.ModelViewSet):
     queryset = Person.objects.all()
