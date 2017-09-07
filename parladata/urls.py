@@ -3,6 +3,17 @@ from parladata.views import *
 from .utils import getMembershipDuplications, membersFlowInOrg, postMembersFixer, membersFlowInPGs, membersFlowInDZ
 from parladata.admin import PersonAutocomplete, PostAutocomplete, MembershipAutocomplete
 
+router = routers.DefaultRouter()
+router.register(r'persons', PersonView)
+router.register(r'sessions', SessionView)
+router.register(r'motions', MotionView)
+router.register(r'links', LinkView)
+router.register(r'ballots', BallotView)
+router.register(r'votes', VoteView)
+router.register(r'unedited', VoteFilter)
+router.register(r'speechs', SpeechView)
+router.register(r'organizations', OrganizationView)
+
 urlpatterns = patterns('',
 
     # autocomplete urls
