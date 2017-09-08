@@ -1,22 +1,31 @@
 # -*- coding: utf-8 -*-
 
-from django.http import JsonResponse, HttpResponse
 from datetime import date, datetime, timedelta
-from parladata.models import *
-from django.db.models import Q, Count
-from django.forms.models import model_to_dict
-import json
-from utils import *
-import requests
+from parladata.models import (Person, Organization, Post, Membership, Session,
+                              Speech, Ballot, Link, ContactDetail, Vote, Motion,
+                              Question, Area)
+
+from utils import (getMPObjects, determineSession, determinePerson,
+                   getIdSafe, replace_all, deleteMotionsWithoutText,
+                   sendMailForEditVotes, parseRecipient, lockSetter, parsePager)
+
+from taggit.models import Tag
 from raven.contrib.django.raven_compat.models import client
 from collections import OrderedDict
+
 from django.conf import settings
 from django.utils.encoding import smart_str
-from taggit.models import Tag
 from django.shortcuts import get_object_or_404
 from django.views.decorators.csrf import csrf_exempt
 from django.db.models.expressions import DateTime
+from django.db.models import Q, Count
+from django.forms.models import model_to_dict
+from django.http import JsonResponse, HttpResponse
+
+import re
 import operator
+import requests
+import json
 
 
 DZ_ID = 95
