@@ -2,6 +2,9 @@ from django.conf.urls import patterns, url, include
 from parladata.views import *
 from .utils import getMembershipDuplications, membersFlowInOrg, postMembersFixer, membersFlowInPGs, membersFlowInDZ
 from parladata.admin import PersonAutocomplete, PostAutocomplete, MembershipAutocomplete
+from parladata.api import *
+from rest_framework import routers
+
 
 router = routers.DefaultRouter()
 router.register(r'persons', PersonView)
@@ -154,5 +157,8 @@ urlpatterns = patterns('',
 
     # MONITORING
     url(r'^monitoring', monitorMe),
-
+    
+    # parser api
+    url(r'^', include(router.urls)),
+ 
 )
