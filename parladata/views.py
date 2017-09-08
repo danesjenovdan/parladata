@@ -7,7 +7,7 @@ from parladata.models import (Person, Organization, Post, Membership, Session,
 
 from utils import (getMPObjects, determineSession, determinePerson,
                    getIdSafe, replace_all, deleteMotionsWithoutText,
-                   sendMailForEditVotes, parseRecipient, lockSetter)
+                   sendMailForEditVotes, parseRecipient, lockSetter, parsePager)
 
 from taggit.models import Tag
 from raven.contrib.django.raven_compat.models import client
