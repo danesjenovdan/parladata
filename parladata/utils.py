@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from parladata.models import *
+from parladata.models import Organization, Vote, Motion, Session, Person, Speech, Membership, Ballot, Mandate
 from django.db.models import Q
 from datetime import datetime, timedelta
 import requests
