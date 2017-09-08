@@ -1,22 +1,24 @@
 from django.conf.urls import patterns, url, include
 from parladata.views import *
 from parladata.api import *
-from rest_framework import routers
 from .utils import getMembershipDuplications, membersFlowInOrg, postMembersFixer, membersFlowInPGs, membersFlowInDZ, checkSessions
 from rest_framework import routers
 from parladata.admin import PersonAutocomplete, PostAutocomplete, MembershipAutocomplete
+from parladata.api import *
+from rest_framework import routers
+
 
 router = routers.DefaultRouter()
-router.register(r'person', PersonView)
-router.register(r'session', SessionView)
-router.register(r'motion', MotionView)
-router.register(r'link', LinkView)
-router.register(r'ballot', BallotView)
-router.register(r'vote', VoteView)
-router.register(r'speech', SpeechView)
+router.register(r'persons', PersonView)
+router.register(r'sessions', SessionView)
+router.register(r'motions', MotionView)
+router.register(r'links', LinkView)
+router.register(r'ballots', BallotView)
+router.register(r'votes', VoteView)
+router.register(r'unedited', VoteFilter)
+router.register(r'speechs', SpeechView)
+router.register(r'organizations', OrganizationView)
 router.register(r'tags', TagsView)
-router.register(r'organization', OrganizationView)
-
 
 urlpatterns = patterns('',
 

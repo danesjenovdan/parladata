@@ -21,7 +21,6 @@ class SpeechSerializer(serializers.ModelSerializer):
     class Meta:
         model = Speech
 
-
 class MotionSerializer(serializers.ModelSerializer):
     vote = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
     class Meta:
@@ -81,10 +80,16 @@ class MotionView(viewsets.ModelViewSet):
     fields = '__all__'
 
 
+class VoteFilter(viewsets.ModelViewSet):
+    queryset = Vote.objects.filter(result='-', tags=None)
+    serializer_class = VoteSerializer
+    fields = '__all__'
+
 class VoteView(viewsets.ModelViewSet):
     queryset = Vote.objects.all()
     serializer_class = VoteSerializer
     fields = '__all__'
+
 
 class BallotView(viewsets.ModelViewSet):
     queryset = Ballot.objects.all()
