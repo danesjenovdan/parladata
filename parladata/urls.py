@@ -1,7 +1,24 @@
 from django.conf.urls import patterns, url, include
 from parladata.views import *
-from .utils import getMembershipDuplications, membersFlowInOrg, postMembersFixer, membersFlowInPGs, membersFlowInDZ
+from parladata.api import *
+from .utils import getMembershipDuplications, membersFlowInOrg, postMembersFixer, membersFlowInPGs, membersFlowInDZ, checkSessions
+from rest_framework import routers
 from parladata.admin import PersonAutocomplete, PostAutocomplete, MembershipAutocomplete
+from parladata.api import *
+from rest_framework import routers
+
+
+router = routers.DefaultRouter()
+router.register(r'persons', PersonView)
+router.register(r'sessions', SessionView)
+router.register(r'motions', MotionView)
+router.register(r'links', LinkView)
+router.register(r'ballots', BallotView)
+router.register(r'votes', VoteView)
+router.register(r'unedited_motions', MotionFilter)
+router.register(r'speechs', SpeechView)
+router.register(r'organizations', OrganizationView)
+router.register(r'tags', TagsView)
 
 urlpatterns = patterns('',
 
@@ -143,5 +160,7 @@ urlpatterns = patterns('',
 
     # MONITORING
     url(r'^monitoring', monitorMe),
+
+    url(r'^', include(router.urls)),
 
 )
