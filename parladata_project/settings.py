@@ -49,7 +49,7 @@ INSTALLED_APPS = (
     'raven.contrib.django.raven_compat',
     'corsheaders',
     'rest_framework',
-    'silk',
+    'taggit_serializer',
 )
 
 MIDDLEWARE_CLASSES = (

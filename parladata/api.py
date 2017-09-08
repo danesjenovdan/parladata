@@ -1,5 +1,8 @@
 from parladata.models import *
+from taggit.models import Tag
 from rest_framework import serializers, viewsets
+from taggit_serializer.serializers import (TagListSerializerField,
+                                           TaggitSerializer)
 
 # Serializers define the API representation.
 class PersonSerializer(serializers.ModelSerializer):
@@ -20,11 +23,13 @@ class SpeechSerializer(serializers.ModelSerializer):
 
 
 class MotionSerializer(serializers.ModelSerializer):
+    vote = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
     class Meta:
         model = Motion
 
 
-class VoteSerializer(serializers.ModelSerializer):
+class VoteSerializer(TaggitSerializer, serializers.ModelSerializer):
+    tags = TagListSerializerField()
     class Meta:
         model = Vote
 
@@ -39,6 +44,9 @@ class LinkSerializer(serializers.ModelSerializer):
         model = Link
 
 
+class TagsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Tag
 
 
 # ViewSets define the view behavior.
@@ -68,7 +76,7 @@ class SpeechView(viewsets.ModelViewSet):
 
 
 class MotionView(viewsets.ModelViewSet):
-    queryset = Motion.objects.all()
+    queryset = Motion.objects.all().order_by('id')
     serializer_class = MotionSerializer
     fields = '__all__'
 
@@ -88,3 +96,11 @@ class LinkView(viewsets.ModelViewSet):
     queryset = Link.objects.all()
     serializer_class = LinkSerializer
     fields = '__all__'
+
+
+class TagsView(viewsets.ModelViewSet):
+    queryset = Tag.objects.all()
+    serializer_class = TagsSerializer
+    fields = '__all__'
+
+
