@@ -3,6 +3,10 @@ from taggit.models import Tag
 from rest_framework import serializers, viewsets
 from taggit_serializer.serializers import (TagListSerializerField,
                                            TaggitSerializer)
+from django.db.models import Q
+from rest_framework.decorators import detail_route
+
+from rest_framework import filters
 
 # Serializers define the API representation.
 class PersonSerializer(serializers.ModelSerializer):
@@ -29,8 +33,11 @@ class MotionSerializer(serializers.ModelSerializer):
 
 class VoteSerializer(TaggitSerializer, serializers.ModelSerializer):
     tags = TagListSerializerField()
+    results = serializers.SerializerMethodField()
     class Meta:
         model = Vote
+    def get_results(self, obj):
+        return obj.getResult()
 
 
 class BallotSerializer(serializers.ModelSerializer):
@@ -78,12 +85,12 @@ class MotionView(viewsets.ModelViewSet):
     queryset = Motion.objects.all().order_by('id')
     serializer_class = MotionSerializer
     fields = '__all__'
+    filter_backends = (filters.SearchFilter,)
+    search_fields = ('text',)
 
 
-class VoteFilter(viewsets.ModelViewSet):
-    queryset = Vote.objects.filter(result='-', tags=None)
-    serializer_class = VoteSerializer
-    fields = '__all__'
+class MotionFilter(MotionView):
+    queryset = Motion.objects.filter(Q(result='-')|Q(vote__tags=None))
 
 class VoteView(viewsets.ModelViewSet):
     queryset = Vote.objects.all()
