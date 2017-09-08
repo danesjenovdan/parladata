@@ -154,3 +154,10 @@ PARLALIZE_API_KEY = 'vednoboljsi112358'
 SETTER_KEY = 'vednoboljsi112358'
 
 DASHBOARD_URL = 'https://dashboard.parlameter.si'
+
+REST_FRAMEWORK = { 
+    'DEFAULT_PERMISSION_CLASSES': [ 
+        'rest_framework.permissions.IsAdminUser', 
+    ],
+    'PAGE_SIZE': 10 
+}
