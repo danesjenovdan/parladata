@@ -161,3 +161,5 @@ REST_FRAMEWORK = {
     ],
     'PAGE_SIZE': 10 
 }
+
+DASHBOARD_URL = 'https://dashboard.parlameter.si'
