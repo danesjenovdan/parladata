@@ -2117,8 +2117,8 @@ def getBallotsOfSession(request, id_se):
     fdate = Session.objects.get(id=str(id_se)).start_time
     orgs = Organization.objects.filter(classification__in=PS_NP)
     org_acronym = {org.id: org.acronym for org in orgs}
-    ballots = Ballot.objects.filter(vote__session__id=str(id_se))
-    ballots, pager = parsePager(request, ballots, default_per_page=1000).order_by("id")
+    ballots = Ballot.objects.filter(vote__session__id=str(id_se)).order_by("id")
+    ballots, pager = parsePager(request, ballots, default_per_page=1000)
     data = []
 
     for bal in ballots:
