@@ -3750,7 +3750,7 @@ def getVotesTable(request, date_to=None):
     for session in sessions:
         votes = Vote.objects.filter(session=session,
                                     start_time__lte=fdate)
-        for vote in votes.prefetch_related('motion')::
+        for vote in votes.prefetch_related('motion'):
             for ballot in Ballot.objects.filter(vote=vote):
                 data.append({'id': ballot.id,
                              'voter': ballot.voter_id,
