@@ -11,6 +11,7 @@ from rest_framework import routers
 router = routers.DefaultRouter()
 router.register(r'persons', PersonView)
 router.register(r'sessions', SessionView)
+router.register(r'last_session', LastSessionWithVoteView)
 router.register(r'motions', MotionView)
 router.register(r'links', LinkView)
 router.register(r'ballots', BallotView)
