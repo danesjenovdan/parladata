@@ -87,7 +87,7 @@ class SpeechView(viewsets.ModelViewSet):
 
 
 class MotionView(viewsets.ModelViewSet):
-    queryset = Motion.objects.all().order_by('id')
+    queryset = Motion.objects.all().order_by('-id')
     serializer_class = MotionSerializer
     fields = '__all__'
     filter_backends = (filters.SearchFilter,)
@@ -95,7 +95,7 @@ class MotionView(viewsets.ModelViewSet):
 
 
 class MotionFilter(MotionView):
-    queryset = Motion.objects.filter(Q(result='-')|Q(vote__tags=None))
+    queryset = Motion.objects.filter(Q(result='-')|Q(vote__tags=None)).order_by('-id')
 
 class VoteView(viewsets.ModelViewSet):
     queryset = Vote.objects.all()
