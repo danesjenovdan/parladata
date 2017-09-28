@@ -3750,16 +3750,15 @@ def getVotesTable(request, date_to=None):
     for session in sessions:
         votes = Vote.objects.filter(session=session,
                                     start_time__lte=fdate)
-        for vote in votes:
-            motion = vote.motion
+        for vote in votes.prefetch_related('motion')::
             for ballot in Ballot.objects.filter(vote=vote):
                 data.append({'id': ballot.id,
                              'voter': ballot.voter_id,
                              'option': ballot.option,
                              'voterparty': ballot.voterparty_id,
                              'orgvoter': ballot.orgvoter_id,
-                             'result': False if motion.result == '0' else True,
-                             'text': motion.text,
+                             'result': False if vote.motion.result == '0' else True,
+                             'text': vote.motion.text,
                              'date': vote.start_time,
                              'vote_id': vote.id,
                              'session_id': session.id})
@@ -3818,17 +3817,16 @@ def getVotesTableExtended(request, date_to=None):
     for session in sessions:
         votes = Vote.objects.filter(session=session,
                                     start_time__lte=fdate)
-        for vote in votes:
+        for vote in votes.prefetch_related('tags', 'motion'):
             tags = [tag.name for tag in vote.tags.all()]
-            motion = vote.motion
             for ballot in Ballot.objects.filter(vote=vote):
                 data.append({'id': ballot.id,
                              'voter': ballot.voter_id,
                              'option': ballot.option,
                              'voterparty': ballot.voterparty_id,
                              'orgvoter': ballot.orgvoter_id,
-                             'result': False if motion.result == '0' else True,
-                             'text': motion.text,
+                             'result': False if vote.motion.result == '0' else True,
+                             'text': vote.motion.text,
                              'acronym': orgs[ballot.voterparty_id],
                              'date': vote.start_time,
                              'vote_id': vote.id,
