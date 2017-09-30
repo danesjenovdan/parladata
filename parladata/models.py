@@ -779,6 +779,7 @@ class Vote(Timestampable, Taggable, models.Model):
 
     motion = models.ForeignKey('Motion',
                                blank=True, null=True,
+                               related_name='vote',
                                help_text='The motion for which the vote took place')
 
     organization = models.ForeignKey('Organization',

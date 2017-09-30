@@ -1,22 +1,31 @@
 # -*- coding: utf-8 -*-
 
-from django.http import JsonResponse, HttpResponse
 from datetime import date, datetime, timedelta
-from parladata.models import *
-from django.db.models import Q, Count
-from django.forms.models import model_to_dict
-import json
-from utils import *
-import requests
+from parladata.models import (Person, Organization, Post, Membership, Session,
+                              Speech, Ballot, Link, ContactDetail, Vote, Motion,
+                              Question, Area)
+
+from utils import (getMPObjects, determineSession, determinePerson,
+                   getIdSafe, replace_all, deleteMotionsWithoutText,
+                   sendMailForEditVotes, parseRecipient, lockSetter, parsePager)
+
+from taggit.models import Tag
 from raven.contrib.django.raven_compat.models import client
 from collections import OrderedDict
+
 from django.conf import settings
 from django.utils.encoding import smart_str
-from taggit.models import Tag
 from django.shortcuts import get_object_or_404
 from django.views.decorators.csrf import csrf_exempt
 from django.db.models.expressions import DateTime
+from django.db.models import Q, Count
+from django.forms.models import model_to_dict
+from django.http import JsonResponse, HttpResponse
+
+import re
 import operator
+import requests
+import json
 
 
 DZ_ID = 95
@@ -1986,48 +1995,41 @@ def motionOfSession(request, id_se):
     """
 
     data = {}
-    tab = []
     data = []
-    allIDs = Session.objects.values('id')
-    for i in allIDs:
-        tab.append(i['id'])
-    if int(id_se) in tab:
-        votes = Vote.objects.filter(session__id=id_se)
-        if votes:
-            for vote in votes:
-                motion = vote.motion
-                if motion.result == '0':
-                    result = False
-                elif motion.result == '1':
-                    result = True
-                else:
-                    result = None
-                if 'Amandma' in motion.text:
-                    acronyms = re.findall('\; \s*(\w+)|\[\s*(\w+)', motion.text)
-                    acronyms = [pg[0] + ',' if pg[0] else pg[1] + ',' for pg in acronyms]
-                    query = reduce(operator.or_, (Q(name_parser__icontains=item) for item in acronyms))
-                    orgs = Organization.objects.filter(query)
-                    orgs = orgs.filter(Q(founding_date__lte=vote.start_time) |
-                                       Q(founding_date=None),
-                                       Q(dissolution_date__gte=vote.start_time) |
-                                       Q(dissolution_date=None))
-                    org_ids = list(orgs.values_list('id', flat=True))
-                else:
-                    org_ids = []
+    votes = Vote.objects.filter(session__id=id_se).prefetch_related('motion').prefetch_related('motion__links')
+    if votes:
+        for vote in votes:
+            motion = vote.motion
+            if motion.result == '0':
+                result = False
+            elif motion.result == '1':
+                result = True
+            else:
+                result = None
+            if 'Amandma' in motion.text:
+                acronyms = re.findall('\; \s*(\w+)|\[\s*(\w+)', motion.text)
+                acronyms = [pg[0] + ',' if pg[0] else pg[1] + ',' for pg in acronyms]
+                query = reduce(operator.or_, (Q(name_parser__icontains=item) for item in acronyms))
+                orgs = Organization.objects.filter(query)
+                orgs = orgs.filter(Q(founding_date__lte=vote.start_time) |
+                                   Q(founding_date=None),
+                                   Q(dissolution_date__gte=vote.start_time) |
+                                   Q(dissolution_date=None))
+                org_ids = list(orgs.values_list('id', flat=True))
+            else:
+                org_ids = []
 
-                links = motion.links.all()
-                links_list = [{'name': link.name, 'url': link.url}
-                              for link in links]
-                data.append({'id': motion.id,
-                             'vote_id': vote.id,
-                             'text': motion.text,
-                             'result': result,
-                             'tags': map(smart_str, vote.tags.names()),
-                             'doc_url': links_list,
-                             'start_time': vote.start_time,
-                             'amendment_of': org_ids})
-        else:
-            data = []
+            links = motion.links.all()
+            links_list = [{'name': link.name, 'url': link.url}
+                          for link in links]
+            data.append({'id': motion.id,
+                         'vote_id': vote.id,
+                         'text': motion.text,
+                         'result': result,
+                         'tags': map(smart_str, vote.tags.names()),
+                         'doc_url': links_list,
+                         'start_time': vote.start_time,
+                         'amendment_of': org_ids})
         return JsonResponse(data, safe=False)
     else:
         return JsonResponse([], safe=False)
@@ -2108,8 +2110,8 @@ def getBallotsOfSession(request, id_se):
     fdate = Session.objects.get(id=str(id_se)).start_time
     orgs = Organization.objects.filter(classification__in=PS_NP)
     org_acronym = {org.id: org.acronym for org in orgs}
-    ballots = Ballot.objects.filter(vote__session__id=str(id_se))
-    ballots, pager = parsePager(request, ballots, default_per_page=1000).order_by("id")
+    ballots = Ballot.objects.filter(vote__session__id=str(id_se)).order_by("id")
+    ballots, pager = parsePager(request, ballots, default_per_page=1000)
     data = []
 
     for bal in ballots:
@@ -2180,20 +2182,28 @@ def getBallotsOfMotion(request, motion_id):
     """
 
     data = []
-    vote = Vote.objects.get(id=motion_id)
-    motion = vote.motion
-    for bal in Ballot.objects.filter(vote=vote):
-        mem = Membership.objects.get(Q(end_time__gte=vote.start_time) |
+    vote = Vote.objects.filter(id=motion_id).prefetch_related('ballot_set')
+    vote = vote.prefetch_related('motion')
+    if vote:
+        vote = vote[0]
+    else:
+        return JsonResponse([], safe=False)
+
+    mems = Membership.objects.filter(Q(end_time__gte=vote.start_time) |
                                      Q(end_time=None),
                                      Q(start_time__lte=vote.start_time) |
                                      Q(start_time=None),
-                                     person__id=bal.voter_id,
                                      organization__classification__in=PS_NP)
-        data.append({'mo_id': motion.id,
+    mems = mems.prefetch_related('organization')
+    mems = {mem.person_id: mem for mem in mems}
+
+    for bal in vote.ballot_set.all():
+        mem = mems[bal.voter_id]
+        data.append({'mo_id': vote.motion_id,
                      "mp_id": bal.voter_id,
                      "Acronym": mem.organization.acronym,
                      "option": bal.option,
-                     "pg_id": mem.organization.id})
+                     "pg_id": mem.organization_id})
 
     return JsonResponse(data, safe=False)
 

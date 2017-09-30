@@ -45,7 +45,6 @@ def exportSpeeches():
                               data=output,
                               headers={'Content-Type': 'application/json'})
 
-            print r.text
 
         else:
             r = requests.post(SOLR_URL + '/update',
@@ -101,6 +100,34 @@ def exportSessions():
         i = i + 1
 
     return 1
+
+
+def exportSession(session_id):
+
+    session = Session.objects.filter(id=session_id)
+    if not session:
+        print("session with this id didn't exists")
+        return "session with this id didn't exists"
+    else:
+        session = session[0]
+
+    output = [{
+        'id': 's' + str(session.id),
+        'org_i': session.organization.id,
+        'datetime_dt': session.start_time.isoformat(),
+        'content_t': getSessionContent(session),
+        'sklic_t': 'VII',
+        'tip_t': 'seja'
+    }]
+
+    output = json.dumps(output)
+
+    url = SOLR_URL + '/update?commit=true'
+    r = requests.post(url,
+                      data=output,
+                      headers={'Content-Type': 'application/json'})
+
+    return 'session speeches was stored'
 
 
 def getPersonContent(person):
