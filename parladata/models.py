@@ -1025,3 +1025,64 @@ def copy_date_fields(sender, **kwargs):
 def validate_date_fields(sender, **kwargs):
     obj = kwargs['instance']
     obj.full_clean()
+
+
+class Law(Timestampable, Taggable, models.Model):
+    """Laws which taken place in parlament."""
+
+    motion = models.ForeignKey('Motion',
+                               blank=True, null=True,
+                               help_text='The motion for which the vote took place')
+
+    uid = models.CharField(max_length=64,
+                           blank=True, null=True,
+                           help_text='motions uid from DZ page')
+
+    organization = models.ForeignKey('Organization',
+                                     blank=True, null=True,
+                                     help_text='the organization in which the low is proposed',
+                                     related_name='low_org')
+
+    mdt = models.ForeignKey('Organization',
+                             blank=True, null=True,
+                             help_text='Working body',
+                             related_name='mdt_org')
+
+    gov_id = models.CharField(max_length=255,
+                              blank=True, null=True,
+                              help_text='Government website id')
+
+    date = PopoloDateTimeField(blank=True, null=True,
+                               help_text='The date when the motion was proposed')
+
+    session = models.ForeignKey('Session',
+                                blank=True, null=True,
+                                help_text='The legislative session in which the motion was proposed')
+
+    recap = models.TextField(blank=True, null=True,
+                             help_text='Motion summary')
+
+    text = models.TextField(blank=True, null=True,
+                            help_text='The text of the motion')
+
+    phase = models.CharField(max_length=128,
+                              blank=True, null=True,
+                              help_text='Motion classification')
+
+
+    result = models.CharField(max_length=128,
+                              blank=True, null=True,
+                              help_text='Did the motion pass?')
+
+    type_procedure = models.CharField(max_length=128,
+                              blank=True, null=True,
+                              help_text='Did the motion pass?')
+
+    epa = models.CharField(blank=True, null=True,
+                           max_length=255,
+                           help_text='EPA number')
+
+    gov_url = models.ForeignKey('Link',
+                                blank=True, null=True,
+                                help_text='URL to gov website profile',
+                                related_name='gov_url')
