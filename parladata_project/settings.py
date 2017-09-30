@@ -49,6 +49,8 @@ INSTALLED_APPS = (
     'django_extensions',
     'raven.contrib.django.raven_compat',
     'corsheaders',
+    'rest_framework',
+    'taggit_serializer',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -150,5 +152,14 @@ PARSER_ADMINS = [('Primoz Klemenske', 'klemensek@gmail.com')]
 
 PARLALIZE_API_KEY = 'vednoboljsi112358'
 SETTER_KEY = 'vednoboljsi112358'
+
+DASHBOARD_URL = 'https://dashboard.parlameter.si'
+
+REST_FRAMEWORK = { 
+    'DEFAULT_PERMISSION_CLASSES': [ 
+        'rest_framework.permissions.IsAdminUser', 
+    ],
+    'PAGE_SIZE': 10 
+}
 
 DASHBOARD_URL = 'https://dashboard.parlameter.si'

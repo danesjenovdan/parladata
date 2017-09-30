@@ -1,5 +1,12 @@
 from parladata.models import *
+from taggit.models import Tag
 from rest_framework import serializers, viewsets
+from taggit_serializer.serializers import (TagListSerializerField,
+                                           TaggitSerializer)
+from django.db.models import Q
+from rest_framework.decorators import detail_route
+
+from rest_framework import filters
 
 # Serializers define the API representation.
 class PersonSerializer(serializers.ModelSerializer):
@@ -19,13 +26,18 @@ class SpeechSerializer(serializers.ModelSerializer):
         model = Speech
 
 class MotionSerializer(serializers.ModelSerializer):
+    vote = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
     class Meta:
         model = Motion
 
 
-class VoteSerializer(serializers.ModelSerializer):
+class VoteSerializer(TaggitSerializer, serializers.ModelSerializer):
+    tags = TagListSerializerField()
+    results = serializers.SerializerMethodField()
     class Meta:
         model = Vote
+    def get_results(self, obj):
+        return obj.getResult()
 
 
 class BallotSerializer(serializers.ModelSerializer):
@@ -37,9 +49,14 @@ class LinkSerializer(serializers.ModelSerializer):
     class Meta:
         model = Link
 
-class LowSerializer(serializers.ModelSerializer):
+
+class LawSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Low
+        model = Law
+
+class TagsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Tag
 
 
 # ViewSets define the view behavior.
@@ -53,6 +70,11 @@ class SessionView(viewsets.ModelViewSet):
     queryset = Session.objects.all()
     serializer_class = SessionSerializer
     fields = '__all__'
+
+
+class LastSessionWithVoteView(SessionView):
+    s_id = Vote.objects.latest('start_time').session_id
+    queryset = Session.objects.filter(id=s_id)
 
 
 class OrganizationView(viewsets.ModelViewSet):
@@ -69,15 +91,15 @@ class SpeechView(viewsets.ModelViewSet):
 
 
 class MotionView(viewsets.ModelViewSet):
-    queryset = Motion.objects.all()
+    queryset = Motion.objects.all().order_by('-id')
     serializer_class = MotionSerializer
     fields = '__all__'
+    filter_backends = (filters.SearchFilter,)
+    search_fields = ('text',)
 
 
-class VoteFilter(viewsets.ModelViewSet):
-    queryset = Vote.objects.filter(result='-', tags=None)
-    serializer_class = VoteSerializer
-    fields = '__all__'
+class MotionFilter(MotionView):
+    queryset = Motion.objects.filter(Q(result='-')|Q(vote__tags=None)).order_by('-id')
 
 class VoteView(viewsets.ModelViewSet):
     queryset = Vote.objects.all()
@@ -96,8 +118,12 @@ class LinkView(viewsets.ModelViewSet):
     serializer_class = LinkSerializer
     fields = '__all__'
 
+class LawView(viewsets.ModelViewSet):
+    queryset = Law.objects.all()
+    serializer_class = LawSerializer
+    fields = '__all__'
 
-class LowView(viewsets.ModelViewSet):
-    queryset = Low.objects.all()
-    serializer_class = LowSerializer
+class TagsView(viewsets.ModelViewSet):
+    queryset = Tag.objects.all()
+    serializer_class = TagsSerializer
     fields = '__all__'
