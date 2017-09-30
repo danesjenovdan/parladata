@@ -73,9 +73,9 @@ class SessionView(viewsets.ModelViewSet):
 
 
 class LastSessionWithVoteView(SessionView):
-    s_id = Vote.objects.latest('start_time').session_id
-    queryset = Session.objects.filter(id=s_id)
-
+    #s_id = Vote.objects.latest('start_time').session_id
+    #queryset = Session.objects.filter(id=s_id)
+    print "ivan"
 
 class OrganizationView(viewsets.ModelViewSet):
     queryset = Organization.objects.all()
@@ -122,6 +122,8 @@ class LawView(viewsets.ModelViewSet):
     queryset = Law.objects.all()
     serializer_class = LawSerializer
     fields = '__all__'
+    lookup_field = 'epa'
+
 
 class TagsView(viewsets.ModelViewSet):
     queryset = Tag.objects.all()
