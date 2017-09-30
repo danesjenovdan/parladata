@@ -37,6 +37,11 @@ class LinkSerializer(serializers.ModelSerializer):
     class Meta:
         model = Link
 
+class LowSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Low
+
+
 # ViewSets define the view behavior.
 class PersonView(viewsets.ModelViewSet):
     queryset = Person.objects.all()
@@ -89,4 +94,10 @@ class BallotView(viewsets.ModelViewSet):
 class LinkView(viewsets.ModelViewSet):
     queryset = Link.objects.all()
     serializer_class = LinkSerializer
+    fields = '__all__'
+
+
+class LowView(viewsets.ModelViewSet):
+    queryset = Low.objects.all()
+    serializer_class = LowSerializer
     fields = '__all__'

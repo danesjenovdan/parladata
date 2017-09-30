@@ -16,6 +16,7 @@ router.register(r'votes', VoteView)
 router.register(r'unedited', VoteFilter)
 router.register(r'speechs', SpeechView)
 router.register(r'organizations', OrganizationView)
+router.register(r'low', LowView)
 
 urlpatterns = patterns('',
 
