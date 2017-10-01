@@ -3591,8 +3591,9 @@ def getAllChangesAfter(request, # TODO not documented because strange
     time_of_question = datetime.strptime(question_update_time,
                                          settings.API_DATE_FORMAT + "_%H:%M")
 
-    time_of_question = datetime.strptime(law_update_time,
-                                         settings.API_DATE_FORMAT + "_%H:%M")
+    time_of_law = datetime.strptime(law_update_time,
+                                    settings.API_DATE_FORMAT + "_%H:%M")
+
     # delete motions without text before each update of parlalize
     deleteMotionsWithoutText()
 
@@ -3622,8 +3623,8 @@ def getAllChangesAfter(request, # TODO not documented because strange
         data['laws'].append({'session': law.session.id,
                              'epa': law.epa,
                              'text': law.text, 
-                             'text': law.result,  
-                             'text': law.mdt  
+                             'result': law.result,  
+                             'mdt': law.mdt  
                              })
 
     print "persons"
