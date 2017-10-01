@@ -3621,6 +3621,7 @@ def getAllChangesAfter(request, # TODO not documented because strange
                                  'is_in_review': i.in_review})
 
     print "laws"
+    data['laws'] = []
     laws = Law.objects.filter(updated_at__gte=time_of_law)
     for law in laws:
         data['laws'].append({'session': law.session.id,
