@@ -757,6 +757,9 @@ class Motion(Timestampable, Taggable, models.Model):
                                       blank=True, null=True,
                                       help_text='Motion classification')
 
+    title = models.TextField(blank=True, null=True,
+                             help_text='Motion classification')
+
     requirement = models.CharField(max_length=128,
                                    blank=True, null=True,
                                    help_text='The requirement for the motion to pass')
@@ -1048,3 +1051,11 @@ class Law(Timestampable, Taggable, models.Model):
     epa = models.CharField(blank=True, null=True,
                            max_length=255,
                            help_text='EPA number')
+
+    mdt = models.CharField(blank=True, null=True,
+                           max_length=255,
+                           help_text='Working body')
+
+    result = models.CharField(blank=True, null=True,
+                               max_length=255,
+                               help_text='result of law')

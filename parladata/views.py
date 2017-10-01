@@ -2029,7 +2029,8 @@ def motionOfSession(request, id_se):
                          'tags': map(smart_str, vote.tags.names()),
                          'doc_url': links_list,
                          'start_time': vote.start_time,
-                         'amendment_of': org_ids})
+                         'amendment_of': org_ids,
+                         'epa': motion.epa})
         return JsonResponse(data, safe=False)
     else:
         return JsonResponse([], safe=False)
@@ -3568,7 +3569,8 @@ def getAllChangesAfter(request, # TODO not documented because strange
                        session_update_time,
                        speech_update_time,
                        ballots_update_time,
-                       question_update_time):
+                       question_update_time,
+                       law_update_time):
     """
     This is an api endpoint function that uses for fast update of parlalize.
     Returns all session, person, speeches, ballots and questions updated
@@ -3589,6 +3591,8 @@ def getAllChangesAfter(request, # TODO not documented because strange
     time_of_question = datetime.strptime(question_update_time,
                                          settings.API_DATE_FORMAT + "_%H:%M")
 
+    time_of_question = datetime.strptime(law_update_time,
+                                         settings.API_DATE_FORMAT + "_%H:%M")
     # delete motions without text before each update of parlalize
     deleteMotionsWithoutText()
 
@@ -3611,6 +3615,16 @@ def getAllChangesAfter(request, # TODO not documented because strange
                                  'classification': i.classification,
                                  'id': i.id,
                                  'is_in_review': i.in_review})
+
+    print "laws"
+    laws = Law.objects.filter(updated_at__gte=time_of_law)
+    for law in laws:
+        data['laws'].append({'session': law.session.id,
+                             'epa': law.epa,
+                             'text': law.text, 
+                             'text': law.result,  
+                             'text': law.mdt  
+                             })
 
     print "persons"
     data['persons'] = []
