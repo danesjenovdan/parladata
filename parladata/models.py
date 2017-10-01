@@ -758,7 +758,10 @@ class Motion(Timestampable, Taggable, models.Model):
                                       help_text='Motion classification')
 
     title = models.TextField(blank=True, null=True,
-                             help_text='Motion classification')
+                             help_text='Title motion')
+
+    doc_title = models.TextField(blank=True, null=True,
+                                 help_text='Title of document')
 
     requirement = models.CharField(max_length=128,
                                    blank=True, null=True,
