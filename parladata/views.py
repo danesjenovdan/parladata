@@ -3,7 +3,7 @@
 from datetime import date, datetime, timedelta
 from parladata.models import (Person, Organization, Post, Membership, Session,
                               Speech, Ballot, Link, ContactDetail, Vote, Motion,
-                              Question, Area)
+                              Question, Area, Law)
 
 from utils import (getMPObjects, determineSession, determinePerson,
                    getIdSafe, replace_all, deleteMotionsWithoutText,
