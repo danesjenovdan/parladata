@@ -123,6 +123,7 @@ class LawView(viewsets.ModelViewSet):
     fields = '__all__'
     lookup_field = 'epa'
 
+    filter_fields = ('session',)
 
 class TagsView(viewsets.ModelViewSet):
     queryset = Tag.objects.all()
