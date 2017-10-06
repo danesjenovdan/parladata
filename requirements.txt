@@ -24,3 +24,4 @@ simplejson==3.6.5
 six==1.10.0
 wheel==0.24.0
 djangorestframework==3.2.4
+django_taggit_serializer
