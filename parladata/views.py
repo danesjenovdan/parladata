@@ -32,6 +32,9 @@ DZ_ID = 95
 PS_NP = ['poslanska skupina', 'nepovezani poslanec']
 PS = 'poslanska skupina'
 
+def index(request):
+    return JsonResponse({"index": True})
+
 
 def getMPs(request, date_=None):
     """
