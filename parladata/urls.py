@@ -19,6 +19,7 @@ router.register(r'votes', VoteView)
 router.register(r'unedited_motions', MotionFilter)
 router.register(r'speechs', SpeechView)
 router.register(r'organizations', OrganizationView)
+router.register(r'law', LawView)
 router.register(r'tags', TagsView)
 
 urlpatterns = patterns('',
@@ -55,7 +56,7 @@ urlpatterns = patterns('',
 
     url(r'^getAllQuestions/(?P<date_>[\w].+)', getAllQuestions),
     url(r'^getAllQuestions/', getAllQuestions),
-    url(r'^getAllChangesAfter/(?P<person_update_time>[\w].+)/(?P<session_update_time>[\w].+)/(?P<speech_update_time>[\w].+)/(?P<ballots_update_time>[\w].+)/(?P<question_update_time>[\w].+)', getAllChangesAfter),
+    url(r'^getAllChangesAfter/(?P<person_update_time>[\w].+)/(?P<session_update_time>[\w].+)/(?P<speech_update_time>[\w].+)/(?P<ballots_update_time>[\w].+)/(?P<question_update_time>[\w].+)/(?P<law_update_time>[\w].+)', getAllChangesAfter),
 
     url(r'^getDistricts', getDistricts),
     url(r'^getAllTimeMemberships', getAllTimeMemberships),

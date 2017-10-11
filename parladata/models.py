@@ -757,6 +757,12 @@ class Motion(Timestampable, Taggable, models.Model):
                                       blank=True, null=True,
                                       help_text='Motion classification')
 
+    title = models.TextField(blank=True, null=True,
+                             help_text='Title motion')
+
+    doc_title = models.TextField(blank=True, null=True,
+                                 help_text='Title of document')
+
     requirement = models.CharField(max_length=128,
                                    blank=True, null=True,
                                    help_text='The requirement for the motion to pass')
@@ -1026,3 +1032,33 @@ def copy_date_fields(sender, **kwargs):
 def validate_date_fields(sender, **kwargs):
     obj = kwargs['instance']
     obj.full_clean()
+
+
+class Law(Timestampable, Taggable, models.Model):
+    """Laws which taken place in parlament."""
+
+    uid = models.CharField(max_length=64,
+                           blank=True, null=True,
+                           help_text='law uid from DZ page')
+
+
+    session = models.ForeignKey('Session',
+                                blank=True, null=True,
+                                help_text='The legislative session in which the law was proposed')
+
+
+    text = models.TextField(blank=True, null=True,
+                            help_text='The text of the law')
+
+
+    epa = models.CharField(blank=True, null=True,
+                           max_length=255,
+                           help_text='EPA number')
+
+    mdt = models.CharField(blank=True, null=True,
+                           max_length=255,
+                           help_text='Working body')
+
+    result = models.CharField(blank=True, null=True,
+                               max_length=255,
+                               help_text='result of law')

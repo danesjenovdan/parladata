@@ -7,6 +7,7 @@ from django.db.models import Q
 from rest_framework.decorators import detail_route
 
 from rest_framework import filters
+from django_filters.rest_framework import DjangoFilterBackend
 
 # Serializers define the API representation.
 class PersonSerializer(serializers.ModelSerializer):
@@ -50,6 +51,10 @@ class LinkSerializer(serializers.ModelSerializer):
         model = Link
 
 
+class LawSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Law
+
 class TagsSerializer(serializers.ModelSerializer):
     class Meta:
         model = Tag
@@ -71,7 +76,6 @@ class SessionView(viewsets.ModelViewSet):
 class LastSessionWithVoteView(SessionView):
     s_id = Vote.objects.latest('start_time').session_id
     queryset = Session.objects.filter(id=s_id)
-
 
 class OrganizationView(viewsets.ModelViewSet):
     queryset = Organization.objects.all()
@@ -114,10 +118,17 @@ class LinkView(viewsets.ModelViewSet):
     serializer_class = LinkSerializer
     fields = '__all__'
 
+class LawView(viewsets.ModelViewSet):
+    queryset = Law.objects.all()
+    serializer_class = LawSerializer
+    fields = '__all__'
+    lookup_field = 'epa'
+    filter_backends = (DjangoFilterBackend,)
+    filter_fields = ('session',)
+
+    filter_fields = ('session',)
 
 class TagsView(viewsets.ModelViewSet):
     queryset = Tag.objects.all()
     serializer_class = TagsSerializer
     fields = '__all__'
-
-
