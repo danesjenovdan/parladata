@@ -88,6 +88,8 @@ urlpatterns = patterns('',
     url(r'^getOrganizationRolesAndMembers/(?P<org_id>\d+)/(?P<date_>[\w].+)', getOrganizationRolesAndMembers),
     url(r'^getOrganizationRolesAndMembers/(?P<org_id>\d+)', getOrganizationRolesAndMembers),
 
+    url(r'^getNumberOfAllMPAttendedSessions/(?P<date_>[\w].+)', getNumberOfAllMPAttendedSessions), 
+
     url(r'^getPGsSpeechesIDs/(?P<org_id>\d+)/(?P<date_>[\w].+)', getPGsSpeechesIDs),
 
     # Votes and Motion URLs
