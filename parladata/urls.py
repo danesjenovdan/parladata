@@ -56,7 +56,7 @@ urlpatterns = patterns('',
 
     url(r'^getAllQuestions/(?P<date_>[\w].+)', getAllQuestions),
     url(r'^getAllQuestions/', getAllQuestions),
-    url(r'^getAllChangesAfter/(?P<person_update_time>[\w].+)/(?P<session_update_time>[\w].+)/(?P<speech_update_time>[\w].+)/(?P<ballots_update_time>[\w].+)/(?P<question_update_time>[\w].+)/(?P<law_update_time>[\w].+)', getAllChangesAfter),
+    url(r'^getAllChangesAfter/(?P<person_update_time>[\w].+)/(?P<session_update_time>[\w].+)/(?P<speech_update_time>[\w].+)/(?P<ballots_update_time>[\w].+)/(?P<question_update_time>[\w].+)/(?P<law_update_time>[\w].+)/', getAllChangesAfter),
 
     url(r'^getDistricts', getDistricts),
     url(r'^getAllTimeMemberships', getAllTimeMemberships),
@@ -87,6 +87,8 @@ urlpatterns = patterns('',
     url(r'^getOrganizatonsByClassification', getOrganizatonsByClassification),
     url(r'^getOrganizationRolesAndMembers/(?P<org_id>\d+)/(?P<date_>[\w].+)', getOrganizationRolesAndMembers),
     url(r'^getOrganizationRolesAndMembers/(?P<org_id>\d+)', getOrganizationRolesAndMembers),
+
+    url(r'^getNumberOfAllMPAttendedSessions/(?P<date_>[\w].+)', getNumberOfAllMPAttendedSessions), 
 
     url(r'^getPGsSpeechesIDs/(?P<org_id>\d+)/(?P<date_>[\w].+)', getPGsSpeechesIDs),
 
