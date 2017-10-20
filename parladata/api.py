@@ -71,6 +71,10 @@ class SessionView(viewsets.ModelViewSet):
     queryset = Session.objects.all()
     serializer_class = SessionSerializer
     fields = '__all__'
+    filter_backends = (DjangoFilterBackend, filters.OrderingFilter)
+    filter_fields = ('organization',)
+    ordering_fields = ('start_time',)
+
 
 
 class LastSessionWithVoteView(SessionView):
