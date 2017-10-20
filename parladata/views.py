@@ -3628,7 +3628,8 @@ def getAllChangesAfter(request, # TODO not documented because strange
                              'epa': law.epa,
                              'text': law.text, 
                              'result': law.result,  
-                             'mdt': law.mdt  
+                             'mdt': law.mdt,
+                             'id': law.id
                              })
 
     print "persons"
