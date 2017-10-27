@@ -12,7 +12,7 @@ from .behaviors.models import Timestampable, Taggable, Versionable
 from .querysets import PostQuerySet, OtherNameQuerySet, ContactDetailQuerySet, MembershipQuerySet, OrganizationQuerySet, PersonQuerySet
 from djgeojson.fields import PolygonField
 from django.db.models import Count as dCount
-
+from tinymce.models import HTMLField
 
 class PopoloDateTimeField(models.DateTimeField):
     """Converting datetime to popolo."""
@@ -1059,6 +1059,25 @@ class Law(Timestampable, Taggable, models.Model):
                            max_length=255,
                            help_text='Working body')
 
-    result = models.CharField(blank=True, null=True,
-                               max_length=255,
-                               help_text='result of law')
+    status = models.CharField(blank=True, null=True,
+                             max_length=255,
+                             help_text='result of law')
+
+    proposer_text = models.CharField(blank=True, null=True,
+                                     max_length=255,
+                                     help_text='Proposer of law')
+
+    procedure_phase = models.CharField(blank=True, null=True,
+                                       max_length=255,
+                                       help_text='Procedure phase of law')
+
+    procedure = models.CharField(blank=True, null=True,
+                                 max_length=255,
+                                 help_text='Procedure of law')
+
+    type_of_law = models.CharField(blank=True, null=True,
+                                   max_length=255,
+                                   help_text='Type of law')
+
+    note = HTMLField(blank=True,
+                     null=True)
