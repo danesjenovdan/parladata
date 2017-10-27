@@ -8,7 +8,7 @@ import tinymce.models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('parladata', '0029_auto_20171001_1655'),
+        ('parladata', '0029_auto_20171013_1109'),
     ]
 
     operations = [

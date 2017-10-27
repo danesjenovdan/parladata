@@ -1057,7 +1057,13 @@ class Law(Timestampable, Taggable, models.Model):
 
     mdt = models.CharField(blank=True, null=True,
                            max_length=255,
-                           help_text='Working body')
+                           help_text='Working body text')
+
+    mdt_fk = models.ForeignKey('Organization',
+                               related_name='laws',
+                               blank=True, null=True,
+                               max_length=255,
+                               help_text='Working body obj')
 
     status = models.CharField(blank=True, null=True,
                              max_length=255,
