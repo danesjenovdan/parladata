@@ -1087,3 +1087,7 @@ class Law(Timestampable, Taggable, models.Model):
 
     note = HTMLField(blank=True,
                      null=True)
+
+    date = PopoloDateTimeField(blank=True,
+                               null=True,
+                               help_text='Date of the question.')
