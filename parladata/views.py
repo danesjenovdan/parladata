@@ -3519,8 +3519,10 @@ def addQuestion(request): # TODO not documented because private refactor with se
                                                Q(start_time=None),
                                                Q(end_time__gte=date_of) |
                                                Q(end_time=None),
-                                               organization__classification__in=PS_NP)
-        author_org = membership[0].organization if membership.organization else None
+                                               organization__classification__in=PS_NP,
+                                               person=authorPerson)
+
+        author_org = membership[0].organization if membership else None
 
         print session, data['naslov'], datetime.strptime(data['datum'], '%d.%m.%Y'), person, data['naslovljenec']
         if Question.objects.filter(session=session,
