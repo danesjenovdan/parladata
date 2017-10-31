@@ -20,6 +20,7 @@ router.register(r'unedited_motions', MotionFilter)
 router.register(r'speechs', SpeechView)
 router.register(r'organizations', OrganizationView)
 router.register(r'law', LawView)
+router.register(r'AllEpas', AllEpas)
 router.register(r'tags', TagsView)
 
 urlpatterns = patterns('',
