@@ -128,7 +128,7 @@ class LinkView(viewsets.ModelViewSet):
     fields = '__all__'
 
 class LawView(viewsets.ModelViewSet):
-    queryset = Law.objects.all()
+    queryset = Law.objects.all().order_by('-date')
     serializer_class = LawSerializer
     fields = '__all__'
     filter_backends = (DjangoFilterBackend,)
