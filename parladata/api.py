@@ -55,6 +55,11 @@ class LawSerializer(serializers.ModelSerializer):
     class Meta:
         model = Law
 
+class EpaSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Law
+        fields = ('epa',)
+
 class TagsSerializer(serializers.ModelSerializer):
     class Meta:
         model = Tag
@@ -130,7 +135,7 @@ class LawView(viewsets.ModelViewSet):
     filter_fields = ('session', 'epa',)
 
 
-class AllEpas(viewsets.ModelViewSet):
+class AllUniqueEpas(viewsets.ModelViewSet):
     queryset = Law.objects.all().distinct('epa')
     serializer_class = LawSerializer
     fields = 'epa'
