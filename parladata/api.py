@@ -137,7 +137,7 @@ class LawView(viewsets.ModelViewSet):
 
 class AllUniqueEpas(viewsets.ModelViewSet):
     queryset = Law.objects.all().distinct('epa')
-    serializer_class = LawSerializer
+    serializer_class = EpaSerializer
     fields = 'epa'
     filter_backends = (DjangoFilterBackend,)
     filter_fields = ('session',)
