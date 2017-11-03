@@ -3631,7 +3631,13 @@ def getAllChangesAfter(request, # TODO not documented because strange
                              'text': law.text, 
                              'result': law.result,  
                              'mdt': law.mdt,
-                             'id': law.id
+                             'id': law.id,
+                             'status': law.status,
+                             'proposer_text'=law.proposer_text,
+                             'procedure_phase'=law.procedure_phase,
+                             'procedure'=law.procedure,
+                             'type_of_law'=law.type_of_law,
+                             'mdt_fk'=law.mdt_fk
                              })
 
     print "persons"
