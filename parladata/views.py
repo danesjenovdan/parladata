@@ -3628,16 +3628,18 @@ def getAllChangesAfter(request, # TODO not documented because strange
     for law in laws:
         data['laws'].append({'session': law.session.id,
                              'epa': law.epa,
-                             'text': law.text, 
+                             'text': law.text,
+                             'status': law.status,
                              'result': law.result,  
                              'mdt': law.mdt,
                              'id': law.id,
                              'status': law.status,
-                             'proposer_text'=law.proposer_text,
-                             'procedure_phase'=law.procedure_phase,
-                             'procedure'=law.procedure,
-                             'type_of_law'=law.type_of_law,
-                             'mdt_fk'=law.mdt_fk
+                             'proposer_text': law.proposer_text,
+                             'procedure_phase': law.procedure_phase,
+                             'procedure': law.procedure,
+                             'type_of_law': law.type_of_law,
+                             'mdt_fk': law.mdt_fk,
+                             "date": law.date,
                              })
 
     print "persons"

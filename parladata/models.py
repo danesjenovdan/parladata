@@ -1069,6 +1069,10 @@ class Law(Timestampable, Taggable, models.Model):
                              max_length=255,
                              help_text='result of law')
 
+    result = models.CharField(blank=True, null=True,
+                              max_length=255,
+                              help_text='result of law')
+
     proposer_text = models.CharField(blank=True, null=True,
                                      max_length=255,
                                      help_text='Proposer of law')
