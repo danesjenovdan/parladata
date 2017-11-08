@@ -1,3 +1,4 @@
+from __future__ import absolute_import, unicode_literals
 """
 WSGI config for parladata project.
 
@@ -12,6 +13,5 @@ import os
 
 from django.core.wsgi import get_wsgi_application
 
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "parladata_project.dev")
-
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "parladata_project.settings.stage")
 application = get_wsgi_application()
