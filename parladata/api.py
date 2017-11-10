@@ -108,7 +108,7 @@ class MotionView(viewsets.ModelViewSet):
 
 
 class MotionFilter(MotionView):
-    queryset = Motion.objects.filter(Q(result='-')|Q(vote__tags=None)).order_by('-id')
+    queryset = Motion.objects.filter(Q(result='-')|Q(result=None)|Q(vote__tags=None)).order_by('-id')
 
 class VoteView(viewsets.ModelViewSet):
     queryset = Vote.objects.all()
