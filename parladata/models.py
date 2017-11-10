@@ -1095,3 +1095,11 @@ class Law(Timestampable, Taggable, models.Model):
     date = PopoloDateTimeField(blank=True,
                                null=True,
                                help_text='Date of the question.')
+
+    classification = models.CharField(blank=True, null=True,
+                                      max_length=255,
+                                      help_text='Type of law')
+
+    procedure_ended = models.BooleanField(default=False,
+                                          max_length=255,
+                                          help_text='Procedure phase of law')
