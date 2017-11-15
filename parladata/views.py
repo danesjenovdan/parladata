@@ -1977,7 +1977,9 @@ def motionOfSession(request, id_se):
             "result": true,
             "vote_id": 6894,
             "id": 6650,
-            "amendment_of": [1]
+            "amendment_of": [1],
+            "epa": "343-VII",
+            "classification": "3"
         }, {
             "doc_url": [{
             "url": "http://imss.dz-rs.si/IMiS/ImisAdmin.nsf/ImisnetAgent?OpenAgent&2&DZ-MSS-01/ca20e005b2b645b53a0715714f6ae78cb5276f4b6144a93f432b13c76b532975",
@@ -1992,7 +1994,9 @@ def motionOfSession(request, id_se):
             "result": true,
             "vote_id": 6893,
             "id": 6649,
-            "amendment_of": [1]
+            "amendment_of": [1],
+            "epa": "342-VII",
+            "classification": "3"
         }
     ]
     """
@@ -2033,7 +2037,8 @@ def motionOfSession(request, id_se):
                          'doc_url': links_list,
                          'start_time': vote.start_time,
                          'amendment_of': org_ids,
-                         'epa': motion.epa})
+                         'epa': motion.epa,
+                         'classification': motion.classification})
         return JsonResponse(data, safe=False)
     else:
         return JsonResponse([], safe=False)
