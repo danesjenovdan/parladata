@@ -1111,5 +1111,5 @@ def set_mdt(sender, instance, **kwargs):
       mdt_str = instance.mdt
       mdt = Organization.objects.filter(_name__icontains=mdt_str)
       if mdt:
-        instance.mdt_fk = mdt
+        instance.mdt_fk = mdt[0]
         instance.save()
