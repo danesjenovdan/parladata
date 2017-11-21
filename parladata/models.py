@@ -1109,7 +1109,7 @@ def validate_date_fields(sender, **kwargs):
 def set_mdt(sender, instance, **kwargs):
     if not instance.mdt_fk:
       mdt_str = instance.mdt
-      mdt = Organization.objects.filter(name=mdt_str)
+      mdt = Organization.objects.filter(_name__icontains=mdt_str)
       if mdt:
         instance.mdt_fk = mdt
         instance.save()
