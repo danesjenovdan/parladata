@@ -29,6 +29,7 @@ def exportSpeeches():
             'speaker_i': speech.speaker.id,
             'session_i': speech.session.id,
             'org_i': speech.session.organization.id,
+            'party_i': speech.party_id,
             'datetime_dt': speech.start_time.isoformat(),
             'content_t': speech.content,
             'tip_t': 'govor'
@@ -297,41 +298,3 @@ def deleteNonValidSpeeches():
     print r.text
 
     return
-
-
-def exportLaws():
-    epas = Law.objects.all().distinct('epa').values_list('epa', flat=True)
-
-    i = 0
-    output = []
-    for epa in epas:
-        law = Law.objects.filter(epa=epa)
-        sessions = list(map(str, law.distinct('session_id').values_list('session_id', flat=True)))
-        last_law = law.latest('date')
-        output.append({
-            'id': last_law.epa,
-            'session_i': sessions,
-            'mdt': last_law.mdt,
-            'content_t': last_law.text,
-            'sklic_t': 'VII',
-            'tip_t': 'l'
-        })
-
-        
-
-        if i % 100 == 0:
-            data = json.dumps(output)
-            r = requests.post(SOLR_URL + '/update?commit=true',
-                              data=data,
-                              headers={'Content-Type': 'application/json'})
-            output = []
-
-            print r.text
-    data = json.dumps(output)
-    r = requests.post(SOLR_URL + '/update?commit=true',
-                              data=data,
-                              headers={'Content-Type': 'application/json'})
-
-    print r.text
-
-    return 1
