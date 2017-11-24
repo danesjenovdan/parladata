@@ -57,7 +57,7 @@ class LawSerializer(serializers.ModelSerializer):
 
 class EpaSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Law
+        model = Motion
         fields = ('epa',)
     def to_representation(self, data):
         res = super(EpaSerializer, self).to_representation(data)
@@ -141,7 +141,7 @@ class LawView(viewsets.ModelViewSet):
 class AllUniqueEpas(viewsets.ModelViewSet):
     end_laws = Law.objects.filter(procedure_ended=True).distinct('epa')
     end_epas = end_laws.values_list('epa', flat=True)
-    queryset = Law.objects.exclude(epa__in=end_epas).distinct('epa')
+    queryset = Motion.objects.exclude(epa__in=end_epas).distinct('epa')
     serializer_class = EpaSerializer
     pagination.PageNumberPagination.page_size = 100
     fields = 'epa'
