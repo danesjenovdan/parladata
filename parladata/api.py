@@ -1,6 +1,6 @@
 from parladata.models import *
 from taggit.models import Tag
-from rest_framework import serializers, viewsets
+from rest_framework import serializers, viewsets, pagination
 from taggit_serializer.serializers import (TagListSerializerField,
                                            TaggitSerializer)
 from django.db.models import Q
@@ -59,6 +59,9 @@ class EpaSerializer(serializers.ModelSerializer):
     class Meta:
         model = Law
         fields = ('epa',)
+    def to_representation(self, data):
+        res = super(EpaSerializer, self).to_representation(data)
+        return res['epa']
 
 class TagsSerializer(serializers.ModelSerializer):
     class Meta:
@@ -138,6 +141,7 @@ class LawView(viewsets.ModelViewSet):
 class AllUniqueEpas(viewsets.ModelViewSet):
     queryset = Law.objects.filter(procedure_ended=False).distinct('epa')
     serializer_class = EpaSerializer
+    pagination.PageNumberPagination.page_size = 100
     fields = 'epa'
     filter_backends = (DjangoFilterBackend,)
     filter_fields = ('session',)

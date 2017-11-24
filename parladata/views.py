@@ -3643,7 +3643,7 @@ def getAllChangesAfter(request, # TODO not documented because strange
                              'procedure_phase': law.procedure_phase,
                              'procedure': law.procedure,
                              'type_of_law': law.type_of_law,
-                             'mdt_fk': law.mdt_fk,
+                             'mdt_fk': law.mdt_fk.id if law.mdt_fk else None,
                              'date': law.date,
                              'procedure_ended': law.procedure_ended,
                              })
