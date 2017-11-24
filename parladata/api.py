@@ -139,7 +139,9 @@ class LawView(viewsets.ModelViewSet):
 
 
 class AllUniqueEpas(viewsets.ModelViewSet):
-    queryset = Law.objects.filter(procedure_ended=False).distinct('epa')
+    end_laws = Law.objects.filter(procedure_ended=True).distinct('epa')
+    end_epas = end_laws.values_list('epa', flat=True)
+    queryset = Law.objects.exclude(epa__in=end_epas).distinct('epa')
     serializer_class = EpaSerializer
     pagination.PageNumberPagination.page_size = 100
     fields = 'epa'
