@@ -12,7 +12,6 @@ from django.utils.encoding import smart_str
 from django.db.models import Count
 import re
 from django.core.mail import send_mail
-from parladata_project.settings import SETTER_KEY
 from django.core.exceptions import PermissionDenied
 
 
@@ -847,7 +846,7 @@ def lockSetter(function):
     def wrap(request, *args, **kwargs):
         if request:
             setterKey = request.GET.get('key')
-            if str(setterKey) == str(SETTER_KEY):
+            if str(setterKey) == str(settings.SETTER_KEY):
                 return function(request, *args, **kwargs)
             else:
                 raise PermissionDenied
@@ -873,3 +872,16 @@ def parsePager(request, objs, default_per_page=1000):
     except EmptyPage:
         out = paginator.page(paginator.num_pages)
     return out, {'page': page, 'per_page': per_page, 'pages': paginator.num_pages}
+
+
+def setMotionClassification(motion): 
+    classes = settings.VOTE_CLASSIFICATIONS 
+    text = motion.text.lower() 
+    for cl, words in classes.items(): 
+        for word in words: 
+            if word.lower() in text: 
+                motion.classification = cl 
+                motion.save() 
+                return
+    motion.classification = '14' # others
+    motion.save()

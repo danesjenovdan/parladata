@@ -3,7 +3,7 @@ from celery import shared_task
 from raven.contrib.django.raven_compat.models import client
 from datetime import datetime
 
-from parladata_project.settings import API_DATE_FORMAT, PARLALIZE_API_KEY, DASHBOARD_URL
+from django.conf import settings
 
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
@@ -17,7 +17,7 @@ import requests
 exports = {'exportSessions': exportSessions,
            'exportSession': exportSession}
 
-status_api = DASHBOARD_URL + '/api/status/'
+status_api = settings.DASHBOARD_URL + '/api/status/'
 
 @csrf_exempt
 def runAsyncExport(request):
@@ -26,7 +26,7 @@ def runAsyncExport(request):
         data = json.loads(request.body.decode("utf-8"))
         status_id = data.pop('status_id')
         auth_key = request.META['HTTP_AUTHORIZATION']
-        if auth_key != PARLALIZE_API_KEY:
+        if auth_key != settings.PARLALIZE_API_KEY:
             print("auth fail")
             sendStatus(status_id, "Fail", "Authorization fails")
             raise PermissionDenied
@@ -61,6 +61,6 @@ def sendStatus(status_id, type_, data):
     requests.put(status_api + str(status_id) + '/',
                  data= {
                             "status_type": type_,
-                            "status_note": datetime.now().strftime(API_DATE_FORMAT),
+                            "status_note": datetime.now().strftime(settings.API_DATE_FORMAT),
                             "status_done": data
                         })
