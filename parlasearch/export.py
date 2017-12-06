@@ -29,6 +29,7 @@ def exportSpeeches():
             'speaker_i': speech.speaker.id,
             'session_i': speech.session.id,
             'org_i': speech.session.organization.id,
+            'party_i': speech.party_id,
             'datetime_dt': speech.start_time.isoformat(),
             'content_t': speech.content,
             'tip_t': 'govor'

@@ -1,6 +1,6 @@
 from parladata.models import *
 from taggit.models import Tag
-from rest_framework import serializers, viewsets
+from rest_framework import serializers, viewsets, pagination
 from taggit_serializer.serializers import (TagListSerializerField,
                                            TaggitSerializer)
 from django.db.models import Q
@@ -54,6 +54,14 @@ class LinkSerializer(serializers.ModelSerializer):
 class LawSerializer(serializers.ModelSerializer):
     class Meta:
         model = Law
+
+class EpaSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Motion
+        fields = ('epa',)
+    def to_representation(self, data):
+        res = super(EpaSerializer, self).to_representation(data)
+        return res['epa']
 
 class TagsSerializer(serializers.ModelSerializer):
     class Meta:
@@ -123,13 +131,21 @@ class LinkView(viewsets.ModelViewSet):
     fields = '__all__'
 
 class LawView(viewsets.ModelViewSet):
-    queryset = Law.objects.all()
+    queryset = Law.objects.all().order_by('-date')
     serializer_class = LawSerializer
     fields = '__all__'
-    lookup_field = 'epa'
     filter_backends = (DjangoFilterBackend,)
-    filter_fields = ('session',)
+    filter_fields = ('session', 'epa',)
 
+
+class AllUniqueEpas(viewsets.ModelViewSet):
+    end_laws = Law.objects.filter(procedure_ended=True).distinct('epa')
+    end_epas = end_laws.values_list('epa', flat=True)
+    queryset = Motion.objects.exclude(epa__in=end_epas).distinct('epa')
+    serializer_class = EpaSerializer
+    pagination.PageNumberPagination.page_size = 100
+    fields = 'epa'
+    filter_backends = (DjangoFilterBackend,)
     filter_fields = ('session',)
 
 class TagsView(viewsets.ModelViewSet):
