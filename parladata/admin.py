@@ -216,7 +216,7 @@ class PostAdmin(admin.ModelAdmin):
         SourcePostInline,
     ]
     search_fields = ['membership__person__name',
-                     'membership__organization__name']
+                     'membership__organization___name']
 
 
 class MembershipAdmin(admin.ModelAdmin):
@@ -226,7 +226,7 @@ class MembershipAdmin(admin.ModelAdmin):
         LinkMembershipInline,
     ]
     list_filter = ['organization']
-    search_fields = ['person__name', 'organization__name']
+    search_fields = ['person__name', 'organization___name']
 
 
 class SessionAdmin(admin.ModelAdmin):
