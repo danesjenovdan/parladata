@@ -1,6 +1,4 @@
-import os
-import raven
-
+# -*- coding: utf-8 -*-
 from defaults import *
 
 # SECURITY WARNING: keep the secret key used in production secret!
