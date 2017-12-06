@@ -5,7 +5,7 @@ from model_utils import Choices
 from model_utils.managers import PassThroughManager
 from django.utils.encoding import python_2_unicode_compatible
 from django.utils.translation import ugettext_lazy as _
-from django.db.models.signals import pre_save
+from django.db.models.signals import pre_save, post_save
 from django.dispatch import receiver
 from datetime import datetime
 from .behaviors.models import Timestampable, Taggable, Versionable
@@ -1015,25 +1015,6 @@ class OrganizationName(Timestampable, models.Model):
                                    help_text='End time')
 
 
-@receiver(pre_save, sender=Organization)
-def copy_date_fields(sender, **kwargs):
-    obj = kwargs['instance']
-
-    if obj.founding_date:
-        obj.start_date = obj.founding_date
-    if obj.dissolution_date:
-        obj.end_date = obj.dissolution_date
-
-
-# all instances are validated before being saved
-@receiver(pre_save, sender=Person)
-@receiver(pre_save, sender=Organization)
-@receiver(pre_save, sender=Post)
-def validate_date_fields(sender, **kwargs):
-    obj = kwargs['instance']
-    obj.full_clean()
-
-
 class Law(Timestampable, Taggable, models.Model):
     """Laws which taken place in parlament."""
 
@@ -1069,6 +1050,10 @@ class Law(Timestampable, Taggable, models.Model):
                              max_length=255,
                              help_text='result of law')
 
+    result = models.CharField(blank=True, null=True,
+                              max_length=255,
+                              help_text='result of law')
+
     proposer_text = models.CharField(blank=True, null=True,
                                      max_length=255,
                                      help_text='Proposer of law')
@@ -1087,3 +1072,44 @@ class Law(Timestampable, Taggable, models.Model):
 
     note = HTMLField(blank=True,
                      null=True)
+
+    date = PopoloDateTimeField(blank=True,
+                               null=True,
+                               help_text='Date of the question.')
+
+    classification = models.CharField(blank=True, null=True,
+                                      max_length=255,
+                                      help_text='Type of law')
+
+    procedure_ended = models.BooleanField(default=False,
+                                          max_length=255,
+                                          help_text='Procedure phase of law')
+
+
+@receiver(pre_save, sender=Organization)
+def copy_date_fields(sender, **kwargs):
+    obj = kwargs['instance']
+
+    if obj.founding_date:
+        obj.start_date = obj.founding_date
+    if obj.dissolution_date:
+        obj.end_date = obj.dissolution_date
+
+
+# all instances are validated before being saved
+@receiver(pre_save, sender=Person)
+@receiver(pre_save, sender=Organization)
+@receiver(pre_save, sender=Post)
+def validate_date_fields(sender, **kwargs):
+    obj = kwargs['instance']
+    obj.full_clean()
+
+
+@receiver(post_save, sender=Law)
+def set_mdt(sender, instance, **kwargs):
+    if not instance.mdt_fk:
+      mdt_str = instance.mdt
+      mdt = Organization.objects.filter(_name__icontains=mdt_str)
+      if mdt:
+        instance.mdt_fk = mdt[0]
+        instance.save()

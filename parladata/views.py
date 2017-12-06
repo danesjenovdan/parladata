@@ -1977,7 +1977,9 @@ def motionOfSession(request, id_se):
             "result": true,
             "vote_id": 6894,
             "id": 6650,
-            "amendment_of": [1]
+            "amendment_of": [1],
+            "epa": "343-VII",
+            "classification": "3"
         }, {
             "doc_url": [{
             "url": "http://imss.dz-rs.si/IMiS/ImisAdmin.nsf/ImisnetAgent?OpenAgent&2&DZ-MSS-01/ca20e005b2b645b53a0715714f6ae78cb5276f4b6144a93f432b13c76b532975",
@@ -1992,7 +1994,9 @@ def motionOfSession(request, id_se):
             "result": true,
             "vote_id": 6893,
             "id": 6649,
-            "amendment_of": [1]
+            "amendment_of": [1],
+            "epa": "342-VII",
+            "classification": "3"
         }
     ]
     """
@@ -2033,7 +2037,8 @@ def motionOfSession(request, id_se):
                          'doc_url': links_list,
                          'start_time': vote.start_time,
                          'amendment_of': org_ids,
-                         'epa': motion.epa})
+                         'epa': motion.epa,
+                         'classification': motion.classification})
         return JsonResponse(data, safe=False)
     else:
         return JsonResponse([], safe=False)
@@ -3628,10 +3633,20 @@ def getAllChangesAfter(request, # TODO not documented because strange
     for law in laws:
         data['laws'].append({'session': law.session.id,
                              'epa': law.epa,
-                             'text': law.text, 
+                             'text': law.text,
+                             'status': law.status,
                              'result': law.result,  
                              'mdt': law.mdt,
-                             'id': law.id
+                             'id': law.id,
+                             'status': law.status,
+                             'proposer_text': law.proposer_text,
+                             'procedure_phase': law.procedure_phase,
+                             'procedure': law.procedure,
+                             'type_of_law': law.type_of_law,
+                             'mdt_fk': law.mdt_fk.id if law.mdt_fk else None,
+                             'date': law.date,
+                             'procedure_ended': law.procedure_ended,
+                             'classification': law.classification,
                              })
 
     print "persons"

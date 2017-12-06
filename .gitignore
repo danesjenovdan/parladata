@@ -59,3 +59,8 @@ docs/_build/
 target/
 
 .DS_Store
+
+# settings files
+parladata_project/settings/stage.py
+parladata_project/settings/prod.py
+parladata_project/settings/__init__.py
