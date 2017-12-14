@@ -1,1 +1,4 @@
-from stage import *
+try:
+	from production import *
+except:
+	from dev import *

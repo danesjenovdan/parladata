@@ -64,7 +64,7 @@ def getMPs(request, date_=None):
       If not returns empty string.
     * @apiSuccess {Integer} mp.voters The number of voters the MP was elected with.
     * @apiSuccess {String} mp.honorific_prefix MP's honorific prefix name if applicable.
-      If not returns empty string.
+      If not returns empty strigetng.
     * @apiSuccess {String} mp.given_name MP's given name.
     * @apiSuccess {String} mp.email MP's email.
     * @apiSuccess {String} mp.acronym MP's party acronym.
@@ -3631,7 +3631,7 @@ def getAllChangesAfter(request, # TODO not documented because strange
     data['laws'] = []
     laws = Law.objects.filter(updated_at__gte=time_of_law)
     for law in laws:
-        data['laws'].append({'session': law.session.id,
+        data['laws'].append({'session': law.session_id,
                              'epa': law.epa,
                              'text': law.text,
                              'status': law.status,

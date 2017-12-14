@@ -17,8 +17,14 @@ DATABASES = {
     }
 }
 
-STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+# static files for development
+#STATIC_URL = '/static/'
+#STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+
+# static files for production
+STATIC_URL ='/parlastatic/parlalize/'
+STATIC_ROOT = '/home/parlauser/parlastatic/parlalize/'
+
 
 RAVEN_CONFIG = {
     #'dsn': 'http://123sdfsd123:123gdfsg123@sentry.url.si/40',
@@ -46,4 +52,6 @@ PARLALIZE_API_KEY = 'parlalize_api_key'
 SETTER_KEY = 'setter_api_key'
 
 DASHBOARD_URL = 'http://localhost:8881'
+
+FORCE_SCRIPT_NAME = '/data'
 

@@ -86,7 +86,13 @@ class SessionView(viewsets.ModelViewSet):
 
 
 class LastSessionWithVoteView(SessionView):
-    s_id = Vote.objects.all().order_by('-start_time')[0].session_id
+    session_qs = Vote.objects.all().order_by('-start_time')
+
+    if session_qs.count() > 0:
+        s_id = Vote.objects.all().order_by('-start_time')[0].session_id
+    else:
+        s_id = 0
+
     queryset = Session.objects.filter(id=s_id)
 
 class OrganizationView(viewsets.ModelViewSet):
