@@ -2037,8 +2037,7 @@ def motionOfSession(request, id_se):
                          'doc_url': links_list,
                          'start_time': vote.start_time,
                          'amendment_of': org_ids,
-                         'epa': motion.epa,
-                         'classification': motion.classification})
+                         'epa': motion.epa})
         return JsonResponse(data, safe=False)
     else:
         return JsonResponse([], safe=False)
