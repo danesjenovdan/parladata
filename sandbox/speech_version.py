@@ -277,9 +277,7 @@ def count_versions():
 def is_equal_content(i, j):
     max_len = max([len(i), len(j)])
     dist = editdistance.eval(i, j)
-    print dist, max_len
     diff = float(dist) / max_len
-    print diff
     if diff > 0.25:
         return False
     else:
@@ -290,5 +288,4 @@ def exclude_non_equal_speeches(versions, orginal):
     for version in versions:
         if not is_equal_content(version.content, orginal.content):
             versions = versions.exclude(id=version.id)
-            print "exclude"
     return versions
