@@ -80,18 +80,15 @@ def get_version_of_speech(speech):
 
 
 def get_version_of_speech_distinct_count(speech):
-    versions = Speech.objects.filter(order=speech.order,
+    versions = Speech.objects.filter(#order=speech.order,
                                      start_time=speech.start_time,
                                      speaker_id=speech.speaker_id,
-                                     session_id=speech.session_id).distinct('content').count()
-
+                                     session_id=speech.session_id)
+    versions = exclude_non_equal_speeches(versions, speech).distinct('content').count()
     return versions
 
 def get_diffs_of_speech(speech):
-    versions = Speech.objects.filter(order=speech.order,
-                                     start_time=speech.start_time,
-                                     speaker_id=speech.speaker_id,
-                                     session_id=speech.session_id).distinct('content').distinct('created_at').order_by('created_at')
+    versions = get_version_of_speech(speech).distinct('content').distinct('created_at').order_by('created_at')
     for i in range(len(versions) - 1):
         for i in unified_diff(tokeniser.only_tokens(tokeniser.tokenise(versions[i].content)), tokeniser.only_tokens(tokeniser.tokenise(versions[i+1].content))):
             if ('+' or '-') in i:
@@ -102,10 +99,7 @@ def get_diffs_of_speech(speech):
 
 def get_word_count_in_diffs_of_speech(speech, word, blacklist=[]):
     count = 0
-    versions = Speech.objects.filter(order=speech.order,
-                                     start_time=speech.start_time,
-                                     speaker_id=speech.speaker_id,
-                                     session_id=speech.session_id).distinct('content').distinct('created_at').order_by('created_at')
+    versions = get_version_of_speech(speech).distinct('content').distinct('created_at').order_by('created_at')
     for i in range(len(versions) - 1):
         for i in unified_diff(tokeniser.only_tokens(tokeniser.tokenise(versions[i].content)), tokeniser.only_tokens(tokeniser.tokenise(versions[i+1].content))):
             if len(i)>0:
@@ -123,10 +117,7 @@ def get_word_count_in_diffs_of_speech(speech, word, blacklist=[]):
 
 def get_count_of_added_removed_words_speech(speech, word, start_with='+', blacklist=[]):
     count = 0
-    versions = Speech.objects.filter(order=speech.order,
-                                     start_time=speech.start_time,
-                                     speaker_id=speech.speaker_id,
-                                     session_id=speech.session_id).distinct('content').distinct('created_at').order_by('created_at')
+    versions = get_version_of_speech(speech).distinct('content').distinct('created_at').order_by('created_at')
     for i in range(len(versions) - 1):
         for i in unified_diff(tokeniser.only_tokens(tokeniser.tokenise(versions[i].content)), tokeniser.only_tokens(tokeniser.tokenise(versions[i+1].content))):
             if len(i)>0:
@@ -148,10 +139,7 @@ def get_count_of_changes_longer_then(speech, length, count='words', blacklist=[]
         else:
             return len(word)
     output = []
-    versions = Speech.objects.filter(order=speech.order,
-                                     start_time=speech.start_time,
-                                     speaker_id=speech.speaker_id,
-                                     session_id=speech.session_id).distinct('content').distinct('created_at').order_by('created_at')
+    versions = get_version_of_speech(speech).distinct('content').distinct('created_at').order_by('created_at')
 
     current_length = 0
     current_words = []
@@ -187,10 +175,7 @@ def get_words_which_is_longer_than(speech, length, blacklist=[]):
         else:
             return len(word)
     output = []
-    versions = Speech.objects.filter(order=speech.order,
-                                     start_time=speech.start_time,
-                                     speaker_id=speech.speaker_id,
-                                     session_id=speech.session_id).distinct('content').distinct('created_at').order_by('created_at')
+    versions = get_version_of_speech(speech).distinct('content').distinct('created_at').order_by('created_at')
 
     for i in range(len(versions) - 1):
         for i in unified_diff(tokeniser.only_tokens(tokeniser.tokenise(versions[i].content)), tokeniser.only_tokens(tokeniser.tokenise(versions[i+1].content))):
