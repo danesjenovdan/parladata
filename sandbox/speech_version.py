@@ -69,10 +69,11 @@ def count_versions():
 
 
 def get_version_of_speech(speech):
-    versions = Speech.objects.filter(order=speech.order,
+    versions = Speech.objects.filter(#order__in=range(speech.order - 2, speech.order + 3),
                                      start_time=speech.start_time,
                                      speaker_id=speech.speaker_id,
                                      session_id=speech.session_id)
+    versions = exclude_non_equal_speeches(versions, speech)
     return versions
 
 
@@ -231,7 +232,7 @@ def printProgressBar(iteration,
 """
 usage
 speechez=Speech.getValidSpeeches(datetime.now()).order_by("-created_at")[:500]
-data=run_speeches_on_method(speechez, get_count_of_changes_longer_then, length=1, count='words', blacklist=[','])
+data=run_speeches_on_method(speechez, get_count_of_changes_longer_then, length=6, count='words')
 """
 def run_speeches_on_method(speeches, method, **kwargs):
     output = {}
@@ -277,10 +278,30 @@ def count_versions():
         visited += 1
         versions = get_version_of_speech(speech)
         if versions.count() > 1:
-            dates.append(versions.earliest('created_at').created_at)
+            dates.append(versions.earliest('updated_at').updated_at)
 
         if visited % 100 == 0:
             print 'trenutno je povprecno: ' + str(float(sum(counts.values()))/visited) + ' verzij na govor'
             printProgressBar(iteration=visited, total=items)
     print min(dates), max(dates)
     return counts
+
+
+def is_equal_content(i, j):
+    max_len = max([len(i), len(j)])
+    dist = editdistance.eval(i, j)
+    print dist, max_len
+    diff = float(dist) / max_len
+    print diff
+    if diff > 0.25:
+        return False
+    else:
+        return True
+
+
+def exclude_non_equal_speeches(versions, orginal):
+    for version in versions:
+        if not is_equal_content(version.content, orginal.content):
+            versions = versions.exclude(id=version.id)
+            print "exclude"
+    return versions
