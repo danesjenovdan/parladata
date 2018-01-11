@@ -6,6 +6,8 @@ from difflib import unified_diff
 
 from sandbox.tokeniser.tokeniser import generate_tokenizer, process
 
+import editdistance
+
 PS_NP = ['poslanska skupina', 'nepovezani poslanec']
 
 
