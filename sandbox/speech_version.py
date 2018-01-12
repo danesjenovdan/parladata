@@ -283,6 +283,8 @@ def is_equal_content(i, j):
     max_len = max([len(i), len(j)])
     dist = editdistance.eval(i, j)
     diff = float(dist) / max_len
+    if max_len == 0:
+        return True
     if diff > 0.25:
         return False
     else:
