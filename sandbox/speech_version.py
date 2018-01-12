@@ -300,17 +300,17 @@ def exclude_non_equal_speeches(versions, orginal):
 def fix_session_version_con(session_id):
     i=0
     session = Session.objects.get(id=session_id)
-memberships = session.organization.memberships.all()
-val_speeches = Speech.getValidSpeeches(datetime.now()).filter(session_id=session_id)
-all_speeches = Speech.objects.filter(session_id=session_id)
+    memberships = session.organization.memberships.all()
+    val_speeches = Speech.getValidSpeeches(datetime.now()).filter(session_id=session_id)
+    all_speeches = Speech.objects.filter(session_id=session_id)
 
-posts = Post.objects.filter(membership__in=memberships, role__in=roles)
-fdate = session.start_time
-posts = posts.filter(Q(start_time__lte=fdate) |
-                     Q(start_time=None),
-                     Q(end_time__gte=fdate) |
-                     Q(end_time=None))
-leaders = posts.values_list('membership__person_id', flat=True)
+    posts = Post.objects.filter(membership__in=memberships, role__in=roles)
+    fdate = session.start_time
+    posts = posts.filter(Q(start_time__lte=fdate) |
+                         Q(start_time=None),
+                         Q(end_time__gte=fdate) |
+                         Q(end_time=None))
+    leaders = posts.values_list('membership__person_id', flat=True)
 
     if val_speeches.count() == all_speeches.count():
         print 'Session ' + str(session_id) + 'has no version'
