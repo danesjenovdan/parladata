@@ -709,6 +709,9 @@ class Speech(Versionable, Timestampable, Taggable, models.Model):
     end_time = PopoloDateTimeField(blank=True, null=True,
                                    help_text='End time')
 
+    version_con = models.IntegerField(blank=True, null=True,
+                                      help_text='Order of speech')
+
     @staticmethod
     def getValidSpeeches(date_):
         return Speech.objects.filter(valid_from__lt=date_, valid_to__gt=date_)

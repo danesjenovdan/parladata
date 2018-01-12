@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 import csv
-from parladata.models import Speech, Person, Membership, Organization
+from parladata.models import Speech, Person, Membership, Organization, Post, Session
 from datetime import datetime
 from difflib import unified_diff
+from django.db.models import Q
 
 from sandbox.tokeniser.tokeniser import generate_tokenizer, process
 
@@ -10,6 +11,10 @@ import editdistance
 
 PS_NP = ['poslanska skupina', 'nepovezani poslanec']
 
+roles = ['predsednik',
+         'predsednica',
+         'podpredsednica',
+         'podpredsednik']
 
 class Tokeniser:
     """
@@ -289,3 +294,33 @@ def exclude_non_equal_speeches(versions, orginal):
         if not is_equal_content(version.content, orginal.content):
             versions = versions.exclude(id=version.id)
     return versions
+
+
+# set version_con to speeches
+def fix_session_version_con(session_id):
+    i=0
+    session = Session.objects.get(id=session_id)
+memberships = session.organization.memberships.all()
+val_speeches = Speech.getValidSpeeches(datetime.now()).filter(session_id=session_id)
+all_speeches = Speech.objects.filter(session_id=session_id)
+
+posts = Post.objects.filter(membership__in=memberships, role__in=roles)
+fdate = session.start_time
+posts = posts.filter(Q(start_time__lte=fdate) |
+                     Q(start_time=None),
+                     Q(end_time__gte=fdate) |
+                     Q(end_time=None))
+leaders = posts.values_list('membership__person_id', flat=True)
+
+    if val_speeches.count() == all_speeches.count():
+        print 'Session ' + str(session_id) + 'has no version'
+        return
+    for speech in val_speeches:
+        print i
+        if speech.speaker_id in leaders:
+            continue
+        versions = get_version_of_speech(speech)
+        versions.update(version_con=i)
+        i += 1
+
+
