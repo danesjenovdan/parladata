@@ -183,7 +183,7 @@ def getMPs(request, date_=None):
                      'biography': i.biography,
                      'image': i.image,
                      'district': districts,
-                     'gov_url': i.gov_url.url,
+                     'gov_url': i.gov_url.url if i.gov_url else '',
                      'gov_id': i.gov_id,
                      'gov_picture_url': i.gov_picture_url,
                      'voters': i.voters,
