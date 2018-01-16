@@ -3863,7 +3863,7 @@ def getVotesTableExtended(request, date_to=None):
                              'orgvoter': ballot.orgvoter_id,
                              'result': False if vote.motion.result == '0' else True,
                              'text': vote.motion.text,
-                             'acronym': orgs[ballot.voterparty_id],
+                             'acronym': orgs[ballot.voterparty_id] if ballot.voterparty_id in orgs.keys() else '',
                              'date': vote.start_time,
                              'vote_id': vote.id,
                              'session_id': session.id,
