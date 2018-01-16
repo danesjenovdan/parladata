@@ -2127,7 +2127,7 @@ def getBallotsOfSession(request, id_se):
 
         data.append({'mo_id': bal.vote.motion_id,
                      'mp_id': bal.voter_id,
-                     'Acronym': org_acronym[org_id],
+                     'Acronym': org_acronym[org_id] if org_id in org_acronym.keys() else '',
                      'option': bal.option,
                      'pg_id': org_id})
     out = pager
