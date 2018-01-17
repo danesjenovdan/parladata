@@ -2016,13 +2016,16 @@ def motionOfSession(request, id_se):
             if 'Amandma' in motion.text:
                 acronyms = re.findall('\; \s*(\w+)|\[\s*(\w+)', motion.text)
                 acronyms = [pg[0] + ',' if pg[0] else pg[1] + ',' for pg in acronyms]
-                query = reduce(operator.or_, (Q(name_parser__icontains=item) for item in acronyms))
-                orgs = Organization.objects.filter(query)
-                orgs = orgs.filter(Q(founding_date__lte=vote.start_time) |
-                                   Q(founding_date=None),
-                                   Q(dissolution_date__gte=vote.start_time) |
-                                   Q(dissolution_date=None))
-                org_ids = list(orgs.values_list('id', flat=True))
+                if acronyms:
+                    query = reduce(operator.or_, (Q(name_parser__icontains=item) for item in acronyms))
+                    orgs = Organization.objects.filter(query)
+                    orgs = orgs.filter(Q(founding_date__lte=vote.start_time) |
+                                       Q(founding_date=None),
+                                       Q(dissolution_date__gte=vote.start_time) |
+                                       Q(dissolution_date=None))
+                    org_ids = list(orgs.values_list('id', flat=True))
+                else:
+                    org_ids = []
             else:
                 org_ids = []
 
