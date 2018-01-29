@@ -1,6 +1,6 @@
-from django.conf.urls import patterns, url
+from django.conf.urls import url
 from .counters import getPresence
 
-urlpatterns = patterns('',
-                       url(r'^getPresence', getPresence),
-                       )
+urlpatterns = [
+	url(r'^getPresence', getPresence),
+	]

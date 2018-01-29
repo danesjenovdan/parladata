@@ -1,4 +1,4 @@
-from django.conf.urls import patterns, url, include
+from django.conf.urls import url, include
 from parladata.views import *
 from parladata.api import *
 from .utils import getMembershipDuplications, membersFlowInOrg, postMembersFixer, membersFlowInPGs, membersFlowInDZ, checkSessions
@@ -7,7 +7,7 @@ from parladata.admin import PersonAutocomplete, PostAutocomplete, MembershipAuto
 from parladata.api import *
 from rest_framework import routers
 
-
+from rest_framework.documentation import include_docs_urls
 router = routers.DefaultRouter()
 router.register(r'persons', PersonView)
 router.register(r'sessions', SessionView)
@@ -23,8 +23,7 @@ router.register(r'law', LawView)
 router.register(r'allActiveEpas', AllUniqueEpas)
 router.register(r'tags', TagsView)
 
-urlpatterns = patterns('',
-
+urlpatterns = [    
     # autocomplete urls
     url(r'^person-autocomplete/$', PersonAutocomplete.as_view(), name='person-autocomplete'),
     url(r'^membership-autocomplete/$', MembershipAutocomplete.as_view(), name='membership-autocomplete'),
@@ -165,7 +164,6 @@ urlpatterns = patterns('',
 
     # MONITORING
     url(r'^monitoring', monitorMe),
-
+    #url(r'^docs/', include_docs_urls(title='Test Suite API')),
     url(r'^', include(router.urls)),
-
-)
+]

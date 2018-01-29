@@ -17,7 +17,7 @@ from django.conf import settings
 from django.utils.encoding import smart_str
 from django.shortcuts import get_object_or_404
 from django.views.decorators.csrf import csrf_exempt
-from django.db.models.expressions import DateTime
+from django.db.models.functions import TruncMonth
 from django.db.models import Q, Count
 from django.forms.models import model_to_dict
 from django.http import JsonResponse, HttpResponse
@@ -3313,16 +3313,15 @@ def getBallotsCounter(voter_obj, date_=None):
         ballots = Ballot.objects.filter(voterparty=voter_obj,
                                         vote__start_time__lt=fdate)
 
-    ballots = ballots.annotate(month=DateTime("vote__start_time",
-                                              "month",
-                               tzinfo=None)).values("month").values('option',
-                                                                    'month')
+    ballots = ballots.annotate(month=TruncMonth('vote__start_time')).values('month', 'option')
+
     ballots = ballots.annotate(ballot_count=Count('option')).order_by('month')
 
     votes = Vote.objects.filter(start_time__lt=fdate)
-    votes = votes.annotate(month=DateTime("start_time",
-                                          "month",
-                           tzinfo=None)).values("month")
+    #votes = votes.annotate(month=DateTime("start_time",
+    #                                      "month",
+    #                       tzinfo=None)).values("month")
+    votes = votes.annotate(month=TruncMonth('start_time')).values('month')
     votes = votes.annotate(total_votes=Count('id')).order_by("month")
 
     for month in votes:

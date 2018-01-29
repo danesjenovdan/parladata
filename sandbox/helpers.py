@@ -115,3 +115,42 @@ def addAuthorOrgToQuestion():
                                     date__lte=end_time,
                                     author_id=author).update(author_org=membership.organization)
 
+
+def fixSpeakerParty(person_id):
+    """
+    set voter party for each ballot of person
+    """
+
+    party = Membership.objects.filter(person_id=person_id,
+                                      organization__classification__in=PS_NP)
+
+    ministry = Membership.objects.filter(person_id=person_id,
+                                         organization__classification='ministrstvo',
+                                         role__in=['minister', 'ministrica'])
+    mems = list(party) + list(ministry)
+    mems = sorted(mems, key=lambda x: x.start_time)
+    print mems
+    prev_end = None
+    for mem in mems:
+        start_time, end_time = getStartEndTime(mem)
+
+        speeches = Speech.objects.filter(speaker_id=person_id,
+                                         start_time__gte=start_time,
+                                         start_time__lte=end_time)
+        speeches.update(party=mem.organization)
+
+
+def test_ministers_memberships(person_id):
+    party = Membership.objects.filter(person_id=person_id,
+                                      organization__classification__in=PS_NP)
+
+    ministry = Membership.objects.filter(person_id=person_id,
+                                         organization__classification='ministrstvo',
+                                         role='minister')
+    mems = list(party) + list(ministry)
+    mems = sorted(mems, key=lambda x: x.start_time)
+    for i, mem in enumerate(mems):
+        if i+1 < len(mems):
+            if mem.end_time > mems[i+1].start_time:
+                print mem, mems[i+1], "membershipa se prekrivata"
+

@@ -12,10 +12,12 @@ sklici = {'6':{'start_time': datetime(day=21, month=12, year=2011),
 
 parser_vars = {'6': {'member_class': ' width: 216px;',
                      'pg_class': ' width: 652px;',
-                     'table_search': {'dir':"ltr"}},
+                     'table_search': {'dir':"ltr"},
+                     'imns': ['ITAL. NAR. SK.', 'MAD. NAR. SK.']},
                '5': {'member_class': ' width: 140px;',
                      'pg_class': ' width: 653px;',
-                     'table_search': {'style':" width: 796px;"}}}
+                     'table_search': {'style':" width: 796px;"},
+                     'imns': ['MADŽARSKA NS', 'ITALIJANSKA NS']}}
 
 
 
@@ -24,9 +26,10 @@ def add_membership(name, parties, sklic=6):
     for i in parties:
         print "input: ", name, i
         #organization = Organization.objects.filter(name_parser__icontains=i)
-        organization = find_org(i, name)
-        print person, name, organization
-        """
+        organization = find_org(i, name, sklic)
+        if not organization:
+            continue
+        print person, organization
         if organization.classification == 'nepovezani poslanec' or organization._acronym == 'NP':
             Membership(person = person[0],
                        organization=organization,
@@ -41,7 +44,6 @@ def add_membership(name, parties, sklic=6):
                        end_time=sklici[str(sklic)]['end_time'],
                        role='član',
                        label='cl').save()
-        """
 
 
 def parse_memberships(url, sklic):
@@ -49,7 +51,7 @@ def parse_memberships(url, sklic):
     soup = BeautifulSoup(html_doc.content, 'html.parser')
 
     i=0
-
+    """
     poslanci = []
     stranke = []
     for i, mp in enumerate(soup.find_all('table', **parser_vars[str(sklic)]['table_search'])[0].find_all(style=parser_vars[str(sklic)]['member_class'])):
@@ -59,24 +61,47 @@ def parse_memberships(url, sklic):
 
     for pg in soup.find_all('table', **parser_vars[str(sklic)]['table_search'])[0].find_all(style=parser_vars[str(sklic)]['pg_class']):
         # preprocessing here
-        stranke.append(pg.string.split(', prej '))
+        if str(sklic) == '6':
+            stranke.append(pg.string.split(', prej '))
+        elif str(sklic) == '5':
+            if 'na listi' in pg.string:
+                spl = pg.string.split(' ')
+                stranke.append([spl[0], spl[-1]])
+            else:
+                stranke.append([pg.string])
 
     data = zip(poslanci, stranke)
-
+    """
+    data = []
+    table = soup.find('table', **parser_vars[str(sklic)]['table_search'])
+    for i, tr in enumerate(table.find_all('tr')):
+        if i > 0:
+          tds = tr.find_all('td')
+          if len(tds) == 3:
+              if str(sklic) == '6':
+                  orgs = tds[2].string.split(', prej ')
+              elif str(sklic) == '5':
+                  if 'na listi' in tds[2].string:
+                      spl = tds[2].string.split(' ')
+                      orgs = [spl[0], spl[-1][:-1]]
+                  else:
+                      orgs = [tds[2].string]
+              data.append((tds[1].string, orgs))
     for line in data:
         add_membership(*line, sklic=sklic)
 
-def find_org(name_parser, person_name):
-    if 'dr. ' in person_name:
+def find_org(name_parser, person_name, sklic):
+    if 'dr. ' in person_name.lower():
         person_name = person_name[4:]
-    elif 'mag. ' in person_name:
+    elif 'mag. ' in person_name.lower():
         person_name = person_name[5:]
     if name_parser == 'PNeP':
         name_parser = 'NP'
     elif name_parser == 'NeP':
         name_parser = 'NeP - ' + ''.join(reversed([name[0] for name in person_name.split(' ')]))
         print 'NEP ', name_parser
-    elif name_parser in ['ITAL. NAR. SK.', 'MAD. NAR. SK.']:
+    elif name_parser in parser_vars[str(sklic)]['imns']:
+        print name_parser
         name_parser = 'NS'
     organizations = Organization.objects.filter(name_parser__icontains=name_parser)
     for organization in organizations:
@@ -87,9 +112,9 @@ def find_org(name_parser, person_name):
 
 
 def find_person(name_parser):
-    if 'dr. ' in name_parser:
+    if 'dr. ' in name_parser.lower():
         name_parser = name_parser[4:]
-    elif 'mag. ' in name_parser:
+    elif 'mag. ' in name_parser.lower():
         name_parser = name_parser[5:]
     person = Person.objects.filter(name_parser__icontains=name_parser.strip())
     if len(person)>1:

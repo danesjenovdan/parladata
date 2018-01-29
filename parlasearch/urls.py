@@ -1,6 +1,6 @@
-from django.conf.urls import patterns, include, url
+from django.conf.urls import include, url
 from .tasks import runAsyncExport
 
-urlpatterns = patterns('',
+urlpatterns = [
 	url(r'^export', runAsyncExport),
-)
+]

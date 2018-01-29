@@ -121,8 +121,29 @@ def get_word_count_in_diffs_of_speech(speech, word, blacklist=[]):
                         count += 1
                         print i
 
-
     return count
+
+
+def get_plus_minus_of_speech_diff(speech, blacklist=[]):
+    versions = get_version_of_speech(speech)
+    out = []
+    for i in range(len(versions) - 1):
+        count = 0
+        for j in unified_diff(tokeniser.only_tokens(tokeniser.tokenise(versions[i].content)), tokeniser.only_tokens(tokeniser.tokenise(versions[i+1].content))):
+            if len(j)>0:
+                if j[1:].lower() in blacklist:
+                    continue
+                if (j[1:3] == '++') or (j[1:3] == '--'):
+                    continue
+                if j[0] == '+':
+                    print "plus", j
+                    count += 1
+                elif j[0] == '-':
+                    print "minust", j
+                    count -= 1
+        out.append({'cmp_speeches': str(versions[i].id) + ' : ' + str(versions[i+1].id),
+                    'plus-minus': count})
+    return out
 
 
 def get_count_of_added_removed_words_speech(speech, word, start_with='+', blacklist=[]):

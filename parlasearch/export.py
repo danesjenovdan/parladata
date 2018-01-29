@@ -298,3 +298,44 @@ def deleteNonValidSpeeches():
     print r.text
 
     return
+
+
+def exportAllSpeechesOfPerson(person_id):
+
+    # get all valid speeches
+    speeches = Speech.getValidSpeeches(datetime.now()).filter(speaker_id=person_id)
+
+    i = 0
+
+    for speech in speeches:
+        output = [{
+            'id': 'g' + str(speech.id),
+            'speaker_i': speech.speaker.id,
+            'session_i': speech.session.id,
+            'org_i': speech.session.organization.id,
+            'party_i': speech.party_id,
+            'datetime_dt': speech.start_time.isoformat(),
+            'content_t': speech.content,
+            'tip_t': 'govor'
+        }]
+
+        if speech.party.classification in [u'poslanska skupina', u'ministrstvo']:
+            output[0]['party_i'] = speech.party.id
+
+        output = json.dumps(output)
+
+        if i % 100 == 0:
+            url = SOLR_URL + '/update?commit=true'
+            r = requests.post(url,
+                              data=output,
+                              headers={'Content-Type': 'application/json'})
+
+
+        else:
+            r = requests.post(SOLR_URL + '/update',
+                              data=output,
+                              headers={'Content-Type': 'application/json'})
+
+        i = i + 1
+
+    return 1
