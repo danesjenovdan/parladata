@@ -734,6 +734,7 @@ def sendMailForEditVotes(votes):
     pageGraph = 'https://parlameter.si/seja/glasovanje/'
     reNavigatePage = 'https://parlameter.si/fetch/sps?t=vkSzv8Nu4eDkLBk7kUw4BBhyLjysJm'
     reLastSession = 'https://analize.parlameter.si/v1/utils/recacheLastSession' + api_key
+    dashboard = 'https://dashboard.parlameter.si/'
 
     updated_votes = Vote.objects.filter(id__in=votes.keys())
     motionUrls = []
@@ -750,19 +751,20 @@ def sendMailForEditVotes(votes):
         graphUpdateUrls.append(url)
 
     pre = 'Na naslednji povezavi najdes glasovanja, ki jih je potrebno poupdejtat: \n'
-    content = pre + "\n " + motionAdmin
-    content += '\n \n nato jih potagaj: \n' + tagsUrl
-    content += "\n \n Ko vse to uredis poklikaj naslednje linke, da vse to spravis na parlalize: \n"
-    content += "\n".join(updateUrls)
-    content += "\n Pozen se to: \n"
-    content += reNavigatePage
-    content += "\n \n Zdj spremembe dodaj na sezname glasovanj od sej: \n"
-    content += "\n".join(sesUpdateUrls)
-    content += "\n \n Pa se grafe glasovanj: \n"
-    content += "\n".join(graphUpdateUrls)
-    content += "\n \n Dj se refreshi zadno sejo ;): \n"
-    content += reLastSession
-    content += "\n \n Lep dan ti zelim ;)"
+    content = dashboard + '\n'
+    #content = pre + "\n " + motionAdmin
+    #content += '\n \n nato jih potagaj: \n' + tagsUrl
+    #content += "\n \n Ko vse to uredis poklikaj naslednje linke, da vse to spravis na parlalize: \n"
+    #content += "\n".join(updateUrls)
+    #content += "\n Pozen se to: \n"
+    #content += reNavigatePage
+    #content += "\n \n Zdj spremembe dodaj na sezname glasovanj od sej: \n"
+    #content += "\n".join(sesUpdateUrls)
+    #content += "\n \n Pa se grafe glasovanj: \n"
+    #content += "\n".join(graphUpdateUrls)
+    #content += "\n \n Dj se refreshi zadno sejo ;): \n"
+    #content += reLastSession
+    #content += "\n \n Lep dan ti zelim ;)"
     send_mail('Nekaj novih glasovanj je za pottagat :)',
               content,
               'test@parlameter.si',
