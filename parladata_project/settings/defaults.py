@@ -4,7 +4,6 @@ import raven
 from datetime import datetime
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-SECRET_KEY = '123123123123!'
 ALLOWED_HOSTS = ['*']
 
 # Application definition
