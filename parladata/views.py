@@ -28,7 +28,7 @@ import requests
 import json
 
 
-DZ_ID = 95
+DZ_ID = settings.DZ_ID
 PS_NP = ['poslanska skupina', 'nepovezani poslanec']
 PS = 'poslanska skupina'
 

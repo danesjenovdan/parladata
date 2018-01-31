@@ -4,6 +4,7 @@ from rest_framework import serializers, viewsets, pagination, permissions, mixin
 from taggit_serializer.serializers import (TagListSerializerField,
                                            TaggitSerializer)
 from django.db.models import Q
+from django.conf import settings
 from rest_framework.decorators import detail_route
 
 from rest_framework import filters
@@ -96,14 +97,7 @@ class SessionView(viewsets.ModelViewSet):
 
 
 class LastSessionWithVoteView(SessionView):
-    session_qs = Vote.objects.all().order_by('-start_time')
-
-    if session_qs.count() > 0:
-        s_id = Vote.objects.all().order_by('-start_time')[0].session_id
-    else:
-        s_id = 0
-
-    queryset = Session.objects.filter(id=s_id)
+    queryset = Session.objects.filter(organization_id=settings.DZ_ID).latest('start_time')
 
 class OrganizationView(viewsets.ModelViewSet):
     queryset = Organization.objects.all()

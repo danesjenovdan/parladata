@@ -19,7 +19,7 @@ from django.core.cache import cache
 from django.core.paginator import Paginator
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
-DZ_ID = 95
+DZ_ID = settings.DZ_ID
 PS_NP = ['poslanska skupina', 'nepovezani poslanec']
 PS = 'poslanska skupina'
 
