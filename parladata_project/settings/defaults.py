@@ -26,6 +26,7 @@ INSTALLED_APPS = (
     'corsheaders',
     'rest_framework',
     'taggit_serializer',
+    'django_filters'
 )
 
 """MIDDLEWARE = (

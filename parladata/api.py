@@ -97,7 +97,8 @@ class SessionView(viewsets.ModelViewSet):
 
 
 class LastSessionWithVoteView(SessionView):
-    queryset = Session.objects.filter(organization_id=settings.DZ_ID).latest('start_time')
+    queryset = Session.objects.filter(organization_id=settings.DZ_ID)
+
 
 class OrganizationView(viewsets.ModelViewSet):
     queryset = Organization.objects.all()

@@ -55,3 +55,5 @@ DASHBOARD_URL = 'http://localhost:8881'
 
 FORCE_SCRIPT_NAME = '/data'
 
+#National Assembly id in database
+DZ_ID = 95
