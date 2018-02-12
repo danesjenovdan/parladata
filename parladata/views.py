@@ -3654,7 +3654,7 @@ def getAllChangesAfter(request, # TODO not documented because strange
     data['persons'] = []
     persons = Person.objects.filter(updated_at__gte=time_of_person)
     for i in persons:
-        pg = i.memberships.filter(organization=par_group)
+        pg = i.memberships.filter(organization__in=par_group)
         data["persons"].append({'id': i.id,
                                 'name': i.name,
                                 'membership': pg[0].organization.name if pg else None,
