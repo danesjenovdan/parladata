@@ -59,6 +59,15 @@ class LinkSerializer(serializers.ModelSerializer):
         model = Link
         fields = '__all__'
 
+class AreaSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Area
+        fields = '__all__'
+
+class MembershipSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Membership
+        fields = '__all__'
 
 class LawSerializer(serializers.ModelSerializer):
     class Meta:
@@ -135,6 +144,14 @@ class BallotView(viewsets.ModelViewSet):
 class LinkView(viewsets.ModelViewSet):
     queryset = Link.objects.all()
     serializer_class = LinkSerializer
+
+class MembershipView(viewsets.ModelViewSet):
+    queryset = Membership.objects.all()
+    serializer_class = MembershipSerializer
+
+class AreaView(viewsets.ModelViewSet):
+    queryset = Area.objects.all()
+    serializer_class = AreaSerializer
 
 class LawView(viewsets.ModelViewSet):
     queryset = Law.objects.all().order_by('-date')

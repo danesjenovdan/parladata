@@ -22,6 +22,8 @@ router.register(r'organizations', OrganizationView)
 router.register(r'law', LawView)
 router.register(r'allActiveEpas', AllUniqueEpas)
 router.register(r'tags', TagsView)
+router.register(r'memberships', MembershipView)
+router.register(r'areas', AreaView)
 
 urlpatterns = [    
     # autocomplete urls
