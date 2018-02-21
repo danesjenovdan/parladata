@@ -1899,7 +1899,7 @@ def getAllPeople(request):
     persons, pager = parsePager(request, persons, default_per_page=100)
     for i in persons:
         membership = Membership.objects.filter(person=i.id,
-                                               organization=parliamentary_group)
+                                               organization__in=parliamentary_group)
         for me in membership:
             pg = me.organization.name
         data.append({'id': i.id,
