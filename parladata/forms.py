@@ -10,14 +10,14 @@ class MembershipForm(forms.ModelForm):
 
     post = forms.ModelChoiceField(
         queryset=Post.objects.all(),
-        widget=autocomplete.ModelSelect2Multiple(url='post-autocomplete')
+        widget=autocomplete.ModelSelect2Multiple(url='API:post-autocomplete')
     )
 
     class Meta:
         model = Membership
         fields = ('__all__')
         widgets = {
-            'person': autocomplete.ModelSelect2(url='person-autocomplete'),
+            'person': autocomplete.ModelSelect2(url='API:person-autocomplete'),
         }
 
     def __init__(self, *args, **kwargs):
@@ -43,7 +43,7 @@ class PostForm(forms.ModelForm):
         model = Post
         fields = ('__all__')
         widgets = {
-            'membership': autocomplete.ModelSelect2(url='membership-autocomplete'),
+            'membership': autocomplete.ModelSelect2(url='API:membership-autocomplete'),
         }
 
     def __init__(self, *args, **kwargs):
@@ -62,7 +62,7 @@ class SpeechForm(forms.ModelForm):
         model = Speech
         fields = ('__all__')
         widgets = {
-            'speaker': autocomplete.ModelSelect2(url='person-autocomplete'),
+            'speaker': autocomplete.ModelSelect2(url='API:person-autocomplete'),
         }
 
     def __init__(self, *args, **kwargs):
