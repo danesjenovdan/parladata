@@ -1116,16 +1116,3 @@ def set_mdt(sender, instance, **kwargs):
       if mdt:
         instance.mdt_fk = mdt[0]
         instance.save()
-
-
-
-@python_2_unicode_compatible
-class Speech_version_diff(Timestampable, models.Model):
-    session = models.ForeignKey('Session')
-    speech1 = models.ForeignKey('Speech', related_name='version1')
-    speech2 = models.ForeignKey('Speech', related_name='version2')
-    version_con = models.IntegerField()
-    plus = models.IntegerField()
-    minus = models.IntegerField()
-    def __str__(self):
-        return speech1.speaker
