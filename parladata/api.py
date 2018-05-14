@@ -37,6 +37,11 @@ class MotionSerializer(serializers.ModelSerializer):
         model = Motion
         fields = '__all__'
 
+class AgendaItemSerializer(TaggitSerializer, serializers.ModelSerializer):
+    tags = TagListSerializerField()
+    class Meta:
+        model = AgendaItem
+        fields = '__all__'
 
 class VoteSerializer(TaggitSerializer, serializers.ModelSerializer):
     tags = TagListSerializerField()
@@ -92,6 +97,12 @@ class TagsSerializer(serializers.ModelSerializer):
 class PersonView(viewsets.ModelViewSet):
     queryset = Person.objects.all()
     serializer_class = PersonSerializer
+
+
+# ViewSets define the view behavior.
+class AgendaItemView(viewsets.ModelViewSet):
+    queryset = AgendaItem.objects.all()
+    serializer_class = AgendaItemSerializer
 
 
 class SessionView(viewsets.ModelViewSet):

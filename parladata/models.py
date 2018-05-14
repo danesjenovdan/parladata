@@ -712,6 +712,9 @@ class Speech(Versionable, Timestampable, Taggable, models.Model):
     version_con = models.IntegerField(blank=True, null=True,
                                       help_text='Order of speech')
 
+    agenda_item = models.ForeignKey('AgendaItem', blank=True, null=True,
+                                    help_text='Agenda item', related_name='speeches')
+
     @staticmethod
     def getValidSpeeches(date_):
         return Speech.objects.filter(valid_from__lt=date_, valid_to__gt=date_)
@@ -1087,6 +1090,17 @@ class Law(Timestampable, Taggable, models.Model):
     procedure_ended = models.BooleanField(default=False,
                                           max_length=255,
                                           help_text='Procedure phase of law')
+
+
+class AgendaItem(Timestampable, Taggable, models.Model):
+    name = models.TextField(blank=True, null=True,
+                            help_text='The name of agenda')
+
+    date = PopoloDateTimeField(blank=True,
+                               null=True,
+                               help_text='Date of the item.')
+
+    session = models.ForeignKey('Session', blank=True, null=True)
 
 
 @receiver(pre_save, sender=Organization)

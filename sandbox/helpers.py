@@ -154,3 +154,36 @@ def test_ministers_memberships(person_id):
             if mem.end_time > mems[i+1].start_time:
                 print mem, mems[i+1], "membershipa se prekrivata"
 
+
+def uk_motion_result():
+    from collections import *
+    for motion in Motion.objects.all():
+        vote = motion.vote.all()[0]
+        options = vote.ballot_set.all().values_list("option", flat=True)
+        max_opt = Counter(options).most_common(1)[0][0]
+        if max_opt == "aye":
+            motion.result=1
+            motion.save()
+        else:
+            motion.result=0
+            motion.save()
+
+
+def set_kvorums():
+    for vote in Vote.objects.all():
+        # get all MPs
+        voters = vote.ballot_set.all().values_list('voter', flat=True)
+        print(voters.count())
+        people = Person.objects.all().exclude(id__in=voters)
+        print(people.count(), "people")
+        for person in people:
+            Ballot(vote=vote, voter=person, option='kvorum').save()
+
+def check_person_parser_data():
+    fields = ['birth_date', 'gender', 'districts', 'education', 'education_level']
+    data = []
+    for p in pp:
+        missing_data = [i for i in fields if not getattr(p, i)]
+        if missing_data:
+            data.append({'missing': missing_data, 'person': p.name, 'id': p.id, 'url': 'http://51.15.135.53/data/admin/parladata/person/' + str(p.id) + '/'})
+    return data
