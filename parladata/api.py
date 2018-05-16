@@ -44,12 +44,11 @@ class AgendaItemSerializer(TaggitSerializer, serializers.ModelSerializer):
         fields = '__all__'
 
 class VoteSerializer(TaggitSerializer, serializers.ModelSerializer):
-    tags = TagListSerializerField()
+    tags = TagListSerializerField(required=False)
     results = serializers.SerializerMethodField()
     class Meta:
         model = Vote
         fields = '__all__'
-        extra_kwargs = {'tags': {'required': False}} 
     def get_results(self, obj):
         return obj.getResult()
 
