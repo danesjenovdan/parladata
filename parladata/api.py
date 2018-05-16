@@ -49,6 +49,7 @@ class VoteSerializer(TaggitSerializer, serializers.ModelSerializer):
     class Meta:
         model = Vote
         fields = '__all__'
+        extra_kwargs = {'tags': {'required': False}} 
     def get_results(self, obj):
         return obj.getResult()
 
