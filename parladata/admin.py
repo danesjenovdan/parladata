@@ -363,7 +363,7 @@ class OrganizationAutocomplete(autocomplete.Select2QuerySetView):
         qs = Organization.objects.all()
 
         if self.q:
-            qs = qs.filter(name__icontains=self.q)
+            qs = qs.filter(_name__icontains=self.q)
 
         return qs
 
