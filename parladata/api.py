@@ -10,6 +10,12 @@ from rest_framework.decorators import detail_route
 from rest_framework import filters
 from django_filters.rest_framework import DjangoFilterBackend
 
+from rest_framework_bulk import (
+    BulkListSerializer,
+    BulkSerializerMixin,
+    ListBulkCreateUpdateDestroyAPIView,
+)
+
 # Serializers define the API representation.
 class PersonSerializer(serializers.ModelSerializer):
     class Meta:
@@ -53,10 +59,11 @@ class VoteSerializer(TaggitSerializer, serializers.ModelSerializer):
         return obj.getResult()
 
 
-class BallotSerializer(serializers.ModelSerializer):
+class BallotSerializer(BulkSerializerMixin, serializers.ModelSerializer):
     class Meta:
         model = Ballot
         fields = '__all__'
+        list_serializer_class = BulkListSerializer
 
 
 class LinkSerializer(serializers.ModelSerializer):
@@ -148,7 +155,7 @@ class VoteView(viewsets.ModelViewSet):
 
 
 
-class BallotView(viewsets.ModelViewSet):
+class BallotView(ListBulkCreateUpdateDestroyAPIView):
     queryset = Ballot.objects.all()
     serializer_class = BallotSerializer
 
