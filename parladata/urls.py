@@ -3,7 +3,7 @@ from parladata.views import *
 from parladata.api import *
 from .utils import getMembershipDuplications, membersFlowInOrg, postMembersFixer, membersFlowInPGs, membersFlowInDZ, checkSessions
 from rest_framework import routers
-from parladata.admin import PersonAutocomplete, PostAutocomplete, MembershipAutocomplete, OrganizationAutocomplete
+from parladata import admin
 from parladata.api import *
 from rest_framework import routers
 
@@ -28,10 +28,10 @@ router.register(r'agenda-items', AgendaItemView)
 
 urlpatterns = [    
     # autocomplete urls
-    url(r'^person-autocomplete/$', PersonAutocomplete.as_view(), name='person-autocomplete'),
-    url(r'^membership-autocomplete/$', MembershipAutocomplete.as_view(), name='membership-autocomplete'),
-    url(r'^post-autocomplete/$', PostAutocomplete.as_view(), name='post-autocomplete'),
-    url(r'^organization-autocomplete/$', OrganizationAutocomplete.as_view(), name='organization-autocomplete'),
+    url(r'^person-autocomplete/$', admin.PersonAutocomplete.as_view(), name='person-autocomplete'),
+    url(r'^membership-autocomplete/$', admin.MembershipAutocomplete.as_view(), name='membership-autocomplete'),
+    url(r'^post-autocomplete/$', admin.PostAutocomplete.as_view(), name='post-autocomplete'),
+    url(r'^organization-autocomplete/$', admin.OrganizationAutocomplete.as_view(), name='organization-autocomplete'),
 
     # MPs URLs with and without dates
     url(r'^getMPs/(?P<date_>[\w].+)', getMPs),

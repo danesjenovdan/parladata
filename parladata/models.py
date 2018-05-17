@@ -681,7 +681,10 @@ class Session(Timestampable, Taggable, models.Model):
                                     help_text='Is session in review?')
 
     def __str__(self):
-        return unicode(self.name) + ",  " + unicode(self.organization.name)
+        if self and self.organization:
+          return unicode(self.name) + ",  " + unicode(self.organization.name)
+        else:
+          return "Session"
 
 @python_2_unicode_compatible
 class Speech(Versionable, Timestampable, Taggable, models.Model):
