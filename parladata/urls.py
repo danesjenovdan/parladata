@@ -3,7 +3,7 @@ from parladata.views import *
 from parladata.api import *
 from .utils import getMembershipDuplications, membersFlowInOrg, postMembersFixer, membersFlowInPGs, membersFlowInDZ, checkSessions
 from rest_framework import routers
-from parladata.admin import PersonAutocomplete, PostAutocomplete, MembershipAutocomplete
+from parladata.admin import PersonAutocomplete, PostAutocomplete, MembershipAutocomplete, OrganizationAutocomplete
 from parladata.api import *
 from rest_framework import routers
 
@@ -31,6 +31,7 @@ urlpatterns = [
     url(r'^person-autocomplete/$', PersonAutocomplete.as_view(), name='person-autocomplete'),
     url(r'^membership-autocomplete/$', MembershipAutocomplete.as_view(), name='membership-autocomplete'),
     url(r'^post-autocomplete/$', PostAutocomplete.as_view(), name='post-autocomplete'),
+    url(r'^organization-autocomplete/$', OrganizationAutocomplete.as_view(), name='organization-autocomplete'),
 
     # MPs URLs with and without dates
     url(r'^getMPs/(?P<date_>[\w].+)', getMPs),

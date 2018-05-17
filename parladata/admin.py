@@ -354,6 +354,20 @@ class MembershipAutocomplete(autocomplete.Select2QuerySetView):
         return qs
 
 
+class OrganizationAutocomplete(autocomplete.Select2QuerySetView):
+    def get_queryset(self):
+        # Don't forget to filter out results depending on the visitor !
+        if not self.request.user.is_authenticated():
+            return Organization.objects.none()
+
+        qs = Organization.objects.all()
+
+        if self.q:
+            qs = qs.filter(name__icontains=self.q)
+
+        return qs
+
+
 class PersonEducation(Person):
     class Meta:
         proxy = True
