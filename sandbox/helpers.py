@@ -3,7 +3,7 @@ from django.db.models import Count
 from parladata.models import Speech, Question, Vote, Membership, Organization, Ballot
 from parladata.utils import parseRecipient
 from django.db.models import Q
-from django.cong import settings
+from django.conf import settings
 
 from datetime import datetime
 PS_NP = ['poslanska skupina', 'nepovezani poslanec']
