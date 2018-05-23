@@ -165,7 +165,7 @@ urlpatterns = [
     url(r'^getMembershipNetwork', getMembershipNetwork),
     url(r'^getAmendments', getAmendment),
 
-    url(r'^getNumberOfSppeches', getNumberOfSppeches),
+    url(r'^getNumberOfSpeaches', getNumberOfSpeaches),
 
     # MONITORING
     url(r'^monitoring', monitorMe),
