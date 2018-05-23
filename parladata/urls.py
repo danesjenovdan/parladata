@@ -165,6 +165,8 @@ urlpatterns = [
     url(r'^getMembershipNetwork', getMembershipNetwork),
     url(r'^getAmendments', getAmendment),
 
+    url(r'^getNumberOfSppeches', getNumberOfSppeches),
+
     # MONITORING
     url(r'^monitoring', monitorMe),
     #url(r'^docs/', include_docs_urls(title='Test Suite API')),
