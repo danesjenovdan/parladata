@@ -4071,7 +4071,7 @@ def getAmendment(request):
     return JsonResponse(data, safe=False)
 
 
-def getNumberOfSpeaches(request):
+def getNumberOfSpeeches(request):
     people = {person['speaker']: person['total']
               for person
               in Speech.getValidSpeeches(datetime.now()).all().values('speaker').annotate(total=Count('speaker')).order_by('total')}
