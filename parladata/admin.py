@@ -7,6 +7,8 @@ from .models import *
 from forms import MembershipForm, PostForm, SpeechForm
 
 
+PS_NP = ['poslanska skupina', 'nepovezani poslanec']
+
 class OtherNamePersonInline(admin.TabularInline):
     model = OtherName
     fk_name = 'person'
@@ -379,8 +381,25 @@ class PersonEducationAdmin(admin.ModelAdmin):
     fields = ('name', 'education', 'education_level')
 
 
+class ParliamentMember(Person):
+    class Meta:
+        proxy = True
+
+
+class MPAdmin(admin.ModelAdmin):
+    list_display = ('name', 'gov_image')
+    list_filter = ('name',)
+
+    def get_queryset(self, request):
+        MPs_ids = Membership.objects.filter(organization__classification__in=PS_NP).values_list('person', flat=True)
+        qs = Person.objects.filter(id__in=MPs_ids)
+        if request.user.is_superuser:
+            return qs
+
+
 admin.site.register(Person, PersonAdmin)
 admin.site.register(PersonEducation, PersonEducationAdmin)
+admin.site.register(ParliamentMember, MPAdmin)
 admin.site.register(Organization, OrganizationAdmin)
 admin.site.register(Post, PostAdmin)
 admin.site.register(Membership, MembershipAdmin)
