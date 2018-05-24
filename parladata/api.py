@@ -41,7 +41,7 @@ class MotionSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class AgendaItemSerializer(TaggitSerializer, serializers.ModelSerializer):
-    tags = TagListSerializerField()
+    tags = TagListSerializerField(required=False)
     class Meta:
         model = AgendaItem
         fields = '__all__'
