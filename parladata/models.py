@@ -1105,6 +1105,9 @@ class AgendaItem(Timestampable, Taggable, models.Model):
 
     session = models.ForeignKey('Session', blank=True, null=True)
 
+    order = models.IntegerField(blank=True, null=True,
+                                help_text='Order of agenda item')
+
 
 @receiver(pre_save, sender=Organization)
 def copy_date_fields(sender, **kwargs):
