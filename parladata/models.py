@@ -935,6 +935,10 @@ class Question(Timestampable, models.Model):
                                  blank=True, null=True,
                                  help_text=_('Debug data'))
 
+    signature = models.TextField(_('Unique signature'),
+                                 blank=True, null=True,
+                                 help_text=_('Unique signature'))
+
     def __str__(self):
         return self.author.name
 

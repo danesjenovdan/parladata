@@ -25,6 +25,7 @@ router.register(r'tags', TagsView)
 router.register(r'memberships', MembershipView)
 router.register(r'areas', AreaView)
 router.register(r'agenda-items', AgendaItemView)
+router.register(r'questions', QuestionView)
 
 urlpatterns = [    
     # autocomplete urls
