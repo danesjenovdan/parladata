@@ -827,6 +827,9 @@ class Vote(Timestampable, Taggable, models.Model):
                                     max_length=515,
                                     help_text='"document" url for this vote')
 
+    counter = models.TextField(_('json'),
+                               blank=True, null=True,
+                               help_text=_('Counter of ballot option'))
     def getResult(self):
         opts = self.ballot_set.all().values_list("option")
         opt_counts = opts.annotate(dCount('option'))
