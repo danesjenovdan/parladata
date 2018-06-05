@@ -3,6 +3,7 @@ from django.db.models import Count
 from parladata.models import Speech, Question, Vote, Membership, Organization, Ballot
 from parladata.utils import parseRecipient
 from django.db.models import Q
+from django.conf import settings
 
 from datetime import datetime
 PS_NP = ['poslanska skupina', 'nepovezani poslanec']
@@ -169,15 +170,25 @@ def uk_motion_result():
             motion.save()
 
 
-def set_kvorums():
+def set_ballot(option):
+    dz_org = Organization.objects.filter(id=DZ_ID)
     for vote in Vote.objects.all():
         # get all MPs
         voters = vote.ballot_set.all().values_list('voter', flat=True)
         print(voters.count())
-        people = Person.objects.all().exclude(id__in=voters)
+        mems = Membership.objects.filter(organization__classification__in=PS_NP)
+
+        fdate = vote.start_time
+        mems = mems.filter(
+            Q(start_time__lte=fdate) |
+            Q(start_time=None),
+            Q(end_time__gte=fdate) |
+            Q(end_time=None)
+        )
+        people = Person.objects.filter(id__in=mems.values_list('person_id', flat=True)).exclude(id__in=voters)
         print(people.count(), "people")
         for person in people:
-            Ballot(vote=vote, voter=person, option='kvorum').save()
+            Ballot(vote=vote, voter=person, option=option, voterparty=dz_org).save()
 
 def check_person_parser_data():
     fields = ['birth_date', 'gender', 'districts', 'education', 'education_level']
@@ -187,3 +198,4 @@ def check_person_parser_data():
         if missing_data:
             data.append({'missing': missing_data, 'person': p.name, 'id': p.id, 'url': 'http://51.15.135.53/data/admin/parladata/person/' + str(p.id) + '/'})
     return data
+

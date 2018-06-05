@@ -681,7 +681,10 @@ class Session(Timestampable, Taggable, models.Model):
                                     help_text='Is session in review?')
 
     def __str__(self):
-        return unicode(self.name) + ",  " + unicode(self.organization.name)
+        if self and self.organization:
+          return unicode(self.name) + ",  " + unicode(self.organization.name)
+        else:
+          return "Session"
 
 @python_2_unicode_compatible
 class Speech(Versionable, Timestampable, Taggable, models.Model):
@@ -824,6 +827,9 @@ class Vote(Timestampable, Taggable, models.Model):
                                     max_length=515,
                                     help_text='"document" url for this vote')
 
+    counter = models.TextField(_('json'),
+                               blank=True, null=True,
+                               help_text=_('Counter of ballot option'))
     def getResult(self):
         opts = self.ballot_set.all().values_list("option")
         opt_counts = opts.annotate(dCount('option'))
@@ -931,6 +937,10 @@ class Question(Timestampable, models.Model):
     json_data = models.TextField(_('json'),
                                  blank=True, null=True,
                                  help_text=_('Debug data'))
+
+    signature = models.TextField(_('Unique signature'),
+                                 blank=True, null=True,
+                                 help_text=_('Unique signature'))
 
     def __str__(self):
         return self.author.name
@@ -1101,6 +1111,12 @@ class AgendaItem(Timestampable, Taggable, models.Model):
                                help_text='Date of the item.')
 
     session = models.ForeignKey('Session', blank=True, null=True)
+
+    order = models.IntegerField(blank=True, null=True,
+                                help_text='Order of agenda item')
+
+    def __str__(self):
+        return self.name
 
 
 @receiver(pre_save, sender=Organization)

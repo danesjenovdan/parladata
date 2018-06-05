@@ -1,34 +1,26 @@
 from dal import autocomplete
 from django import forms
-from .models import Membership, Post, Speech
+from .models import Membership, Post, Speech, Person
 from django.contrib.admin.widgets import RelatedFieldWidgetWrapper
 import admin
 
 
 class MembershipForm(forms.ModelForm):
     """Form for debuging memberships."""
-
-    post = forms.ModelChoiceField(
-        queryset=Post.objects.all(),
-        widget=autocomplete.ModelSelect2Multiple(url='API:post-autocomplete')
-    )
-
     class Meta:
         model = Membership
         fields = ('__all__')
         widgets = {
             'person': autocomplete.ModelSelect2(url='API:person-autocomplete'),
+            'organization': autocomplete.ModelSelect2(url='API:organization-autocomplete'), 
         }
 
     def __init__(self, *args, **kwargs):
         super(MembershipForm, self).__init__(*args, **kwargs)
-        # add_related_field_wrapper(self, 'post')
-        self.fields["post"].required = False
 
     def save(self, *args, **kwargs):
         instance = super(MembershipForm, self).save(commit=False)
         return instance
-
 
 def add_related_field_wrapper(form, col_name):
     rel_model = form.Meta.model
@@ -70,4 +62,21 @@ class SpeechForm(forms.ModelForm):
 
     def save(self, *args, **kwargs):
         instance = super(SpeechForm, self).save(commit=False)
+        return instance
+
+
+class PersonForm(forms.ModelForm):
+    """Form for person."""
+    class Meta:
+        model = Person
+        fields = ('__all__')
+        widgets = {
+            'gov_url': autocomplete.ModelSelect2(url='API:link-autocomplete'),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super(PersonForm, self).__init__(*args, **kwargs)
+
+    def save(self, *args, **kwargs):
+        instance = super(PersonForm, self).save(commit=False)
         return instance

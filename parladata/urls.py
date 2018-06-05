@@ -3,7 +3,7 @@ from parladata.views import *
 from parladata.api import *
 from .utils import getMembershipDuplications, membersFlowInOrg, postMembersFixer, membersFlowInPGs, membersFlowInDZ, checkSessions
 from rest_framework import routers
-from parladata.admin import PersonAutocomplete, PostAutocomplete, MembershipAutocomplete
+from parladata import admin
 from parladata.api import *
 from rest_framework import routers
 
@@ -25,12 +25,15 @@ router.register(r'tags', TagsView)
 router.register(r'memberships', MembershipView)
 router.register(r'areas', AreaView)
 router.register(r'agenda-items', AgendaItemView)
+router.register(r'questions', QuestionView)
 
 urlpatterns = [    
     # autocomplete urls
-    url(r'^person-autocomplete/$', PersonAutocomplete.as_view(), name='person-autocomplete'),
-    url(r'^membership-autocomplete/$', MembershipAutocomplete.as_view(), name='membership-autocomplete'),
-    url(r'^post-autocomplete/$', PostAutocomplete.as_view(), name='post-autocomplete'),
+    url(r'^person-autocomplete/$', admin.PersonAutocomplete.as_view(), name='person-autocomplete'),
+    url(r'^membership-autocomplete/$', admin.MembershipAutocomplete.as_view(), name='membership-autocomplete'),
+    url(r'^post-autocomplete/$', admin.PostAutocomplete.as_view(), name='post-autocomplete'),
+    url(r'^organization-autocomplete/$', admin.OrganizationAutocomplete.as_view(), name='organization-autocomplete'),
+    url(r'^link-autocomplete/$', admin.LinkAutocomplete.as_view(), name='link-autocomplete'),
 
     # MPs URLs with and without dates
     url(r'^getMPs/(?P<date_>[\w].+)', getMPs),

@@ -41,7 +41,7 @@ class MotionSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class AgendaItemSerializer(TaggitSerializer, serializers.ModelSerializer):
-    tags = TagListSerializerField()
+    tags = TagListSerializerField(required=False)
     class Meta:
         model = AgendaItem
         fields = '__all__'
@@ -80,6 +80,11 @@ class MembershipSerializer(serializers.ModelSerializer):
 class LawSerializer(serializers.ModelSerializer):
     class Meta:
         model = Law
+        fields = '__all__'
+
+class QuestionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Question
         fields = '__all__'
 
 class EpaSerializer(serializers.ModelSerializer):
@@ -133,7 +138,6 @@ class SpeechView(viewsets.ModelViewSet):
     serializer_class = SpeechSerializer
 
 
-
 class MotionView(viewsets.ModelViewSet):
     queryset = Motion.objects.all().order_by('-id')
     serializer_class = MotionSerializer
@@ -145,10 +149,10 @@ class MotionView(viewsets.ModelViewSet):
 class MotionFilter(MotionView):
     queryset = Motion.objects.filter(Q(result='-')|Q(result=None)|Q(vote__tags=None)).order_by('-id')
 
+
 class VoteView(viewsets.ModelViewSet):
     queryset = Vote.objects.all()
     serializer_class = VoteSerializer
-
 
 
 class BallotView(viewsets.ModelViewSet):
@@ -167,13 +171,16 @@ class LinkView(viewsets.ModelViewSet):
     queryset = Link.objects.all()
     serializer_class = LinkSerializer
 
+
 class MembershipView(viewsets.ModelViewSet):
     queryset = Membership.objects.all()
     serializer_class = MembershipSerializer
 
+
 class AreaView(viewsets.ModelViewSet):
     queryset = Area.objects.all()
     serializer_class = AreaSerializer
+
 
 class LawView(viewsets.ModelViewSet):
     queryset = Law.objects.all().order_by('-date')
@@ -193,6 +200,12 @@ class AllUniqueEpas(viewsets.ModelViewSet):
     filter_backends = (DjangoFilterBackend,)
     filter_fields = ('session',)
 
+
 class TagsView(viewsets.ModelViewSet):
     queryset = Tag.objects.all()
     serializer_class = TagsSerializer
+
+
+class QuestionView(viewsets.ModelViewSet):
+    queryset = Question.objects.all()
+    serializer_class = QuestionSerializer
