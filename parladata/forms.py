@@ -1,6 +1,6 @@
 from dal import autocomplete
 from django import forms
-from .models import Membership, Post, Speech, Person
+from .models import Membership, Post, Speech, Person, Organization
 from django.contrib.admin.widgets import RelatedFieldWidgetWrapper
 import admin
 
@@ -81,3 +81,23 @@ class PersonForm(forms.ModelForm):
     def save(self, *args, **kwargs):
         instance = super(PersonForm, self).save(commit=False)
         return instance
+
+
+class OrganizationForm(forms.ModelForm):
+    """Form for organization."""
+
+    class Meta:
+        model = Organization
+        fields = ('__all__')
+        widgets = {
+            'parent': autocomplete.ModelSelect2(url='API:organization-autocomplete'),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super(OrganizationForm, self).__init__(*args, **kwargs)
+        # add_related_field_wrapper(self, 'post')
+
+    def save(self, *args, **kwargs):
+        instance = super(OrganizationForm, self).save(commit=False)
+        return instance
+

@@ -4,7 +4,7 @@ from dal import autocomplete
 from collections import Counter
 from django.core.urlresolvers import reverse
 from .models import *
-from forms import MembershipForm, PostForm, SpeechForm, PersonForm
+from forms import MembershipForm, PostForm, SpeechForm, PersonForm, OrganizationForm
 
 
 PS_NP = ['poslanska skupina', 'nepovezani poslanec']
@@ -33,7 +33,7 @@ class LinkPersonInline(admin.TabularInline):
 class LinkOrganizationInline(admin.TabularInline):
     model = Link
     fk_name = 'organization'
-    exclude = ['person', 'membership', 'motion']
+    exclude = ['person', 'membership', 'motion', 'question', 'session']
     extra = 0
 
 
@@ -203,6 +203,7 @@ class PersonAdmin(admin.ModelAdmin):
 
 
 class OrganizationAdmin(admin.ModelAdmin):
+    form = OrganizationForm
     inlines = [
         OtherNameOrganizationInline,
         ContactDetailsOrganizationInline,
