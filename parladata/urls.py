@@ -33,6 +33,7 @@ urlpatterns = [
     url(r'^membership-autocomplete/$', admin.MembershipAutocomplete.as_view(), name='membership-autocomplete'),
     url(r'^post-autocomplete/$', admin.PostAutocomplete.as_view(), name='post-autocomplete'),
     url(r'^organization-autocomplete/$', admin.OrganizationAutocomplete.as_view(), name='organization-autocomplete'),
+    url(r'^link-autocomplete/$', admin.LinkAutocomplete.as_view(), name='link-autocomplete'),
 
     # MPs URLs with and without dates
     url(r'^getMPs/(?P<date_>[\w].+)', getMPs),

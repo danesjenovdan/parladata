@@ -4,7 +4,7 @@ from dal import autocomplete
 from collections import Counter
 from django.core.urlresolvers import reverse
 from .models import *
-from forms import MembershipForm, PostForm, SpeechForm
+from forms import MembershipForm, PostForm, SpeechForm, PersonForm
 
 
 PS_NP = ['poslanska skupina', 'nepovezani poslanec']
@@ -189,6 +189,7 @@ class MotionSessionInline(admin.TabularInline):
 
 
 class PersonAdmin(admin.ModelAdmin):
+    form = PersonForm
     inlines = [
         OtherNamePersonInline,
         ContactDetailsPersonInline,
@@ -370,11 +371,27 @@ class OrganizationAutocomplete(autocomplete.Select2QuerySetView):
         return qs
 
 
+class LinkAutocomplete(autocomplete.Select2QuerySetView):
+    def get_queryset(self):
+        # Don't forget to filter out results depending on the visitor !
+        if not self.request.user.is_authenticated():
+            return Link.objects.none()
+
+        qs = Link.objects.all()
+
+        if self.q:
+            qs = qs.filter(url__icontains=self.q)
+
+        return qs
+
+
+
 class PersonEducation(Person):
     class Meta:
         proxy = True
 
 class PersonEducationAdmin(admin.ModelAdmin):
+    form = PersonForm
     list_display = ['name', 'education', 'mandates', 'education_level']
     search_fields = ['name', 'mandates']
     list_filter = ['education', 'mandates']
@@ -387,6 +404,7 @@ class ParliamentMember(Person):
 
 
 class MPAdmin(admin.ModelAdmin):
+    form = PersonForm
     list_display = ('name', 'gov_image')
     list_filter = ('name',)
 

@@ -1,6 +1,6 @@
 from dal import autocomplete
 from django import forms
-from .models import Membership, Post, Speech
+from .models import Membership, Post, Speech, Person
 from django.contrib.admin.widgets import RelatedFieldWidgetWrapper
 import admin
 
@@ -62,4 +62,21 @@ class SpeechForm(forms.ModelForm):
 
     def save(self, *args, **kwargs):
         instance = super(SpeechForm, self).save(commit=False)
+        return instance
+
+
+class PersonForm(forms.ModelForm):
+    """Form for person."""
+    class Meta:
+        model = Person
+        fields = ('__all__')
+        widgets = {
+            'gov_url': autocomplete.ModelSelect2(url='API:link-autocomplete'),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super(PersonForm, self).__init__(*args, **kwargs)
+
+    def save(self, *args, **kwargs):
+        instance = super(PersonForm, self).save(commit=False)
         return instance
