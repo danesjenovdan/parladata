@@ -12,7 +12,8 @@ class MembershipForm(forms.ModelForm):
         fields = ('__all__')
         widgets = {
             'person': autocomplete.ModelSelect2(url='API:person-autocomplete'),
-            'organization': autocomplete.ModelSelect2(url='API:organization-autocomplete'), 
+            'organization': autocomplete.ModelSelect2(url='API:organization-autocomplete'),
+            'on_behalf_of': autocomplete.ModelSelect2(url='API:organization-autocomplete'),
         }
 
     def __init__(self, *args, **kwargs):

@@ -40,7 +40,7 @@ class LinkOrganizationInline(admin.TabularInline):
 class LinkMembershipInline(admin.TabularInline):
     model = Link
     fk_name = 'membership'
-    exclude = ['person', 'organization', 'motion']
+    exclude = ['person', 'organization', 'motion', 'question', 'session']
     extra = 0
 
 
