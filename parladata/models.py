@@ -784,6 +784,9 @@ class Motion(Timestampable, Taggable, models.Model):
                            max_length=255,
                            help_text='EPA number')
 
+    def __str__(self):
+        return self.text[:100] + ' --> ' + self.session.name if self.session else ''
+
 
 class Vote(Timestampable, Taggable, models.Model):
     """Votings which taken place in parlament."""
