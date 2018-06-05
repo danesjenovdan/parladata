@@ -4,7 +4,7 @@ from dal import autocomplete
 from collections import Counter
 from django.core.urlresolvers import reverse
 from .models import *
-from forms import MembershipForm, PostForm, SpeechForm, PersonForm, OrganizationForm
+from forms import MembershipForm, PostForm, SpeechForm, PersonForm, OrganizationForm, MotionForm
 
 
 PS_NP = ['poslanska skupina', 'nepovezani poslanec']
@@ -26,7 +26,7 @@ class OtherNameOrganizationInline(admin.TabularInline):
 class LinkPersonInline(admin.TabularInline):
     model = Link
     fk_name = 'person'
-    exclude = ['organization', 'membership', 'motion']
+    exclude = ['organization', 'membership', 'motion', 'session', 'question']
     extra = 0
 
 
@@ -47,14 +47,14 @@ class LinkMembershipInline(admin.TabularInline):
 class LinkMotionInline(admin.TabularInline):
     model = Link
     fk_name = 'motion'
-    exclude = ['person', 'membership', 'organization']
+    exclude = ['person', 'membership', 'organization', 'session', 'question']
     extra = 0
 
 
 class LinkQuestionInline(admin.TabularInline):
     model = Link
     fk_name = 'question'
-    exclude = []
+    exclude = ['person', 'organization', 'motion', 'session', 'membership']
     extra = 0
 
 
@@ -256,6 +256,7 @@ class QuestionAdmin(admin.ModelAdmin):
 
 
 class MotionAdmin(admin.ModelAdmin):
+    form = MotionForm
     list_display = ('id',
                     'text',
                     'date',
@@ -393,6 +394,20 @@ class AreaAutocomplete(autocomplete.Select2QuerySetView):
             return Area.objects.none()
 
         qs = Area.objects.all()
+
+        if self.q:
+            qs = qs.filter(name__icontains=self.q)
+
+        return qs
+
+
+class SessionAutocomplete(autocomplete.Select2QuerySetView):
+    def get_queryset(self):
+        # Don't forget to filter out results depending on the visitor !
+        if not self.request.user.is_authenticated():
+            return Session.objects.none()
+
+        qs = Session.objects.all()
 
         if self.q:
             qs = qs.filter(name__icontains=self.q)
