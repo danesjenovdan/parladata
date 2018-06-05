@@ -1,6 +1,6 @@
 from dal import autocomplete
 from django import forms
-from .models import Membership, Post, Speech, Person, Organization, Motion
+from .models import Membership, Post, Speech, Person, Organization, Motion, Vote
 from django.contrib.admin.widgets import RelatedFieldWidgetWrapper
 import admin
 
@@ -124,4 +124,24 @@ class MotionForm(forms.ModelForm):
         instance = super(MotionForm, self).save(commit=False)
         return instance
 
+
+class VoteForm(forms.ModelForm):
+    """Form for organization."""
+
+    class Meta:
+        model = Vote
+        fields = ('__all__')
+        widgets = {
+            'organization': autocomplete.ModelSelect2(url='API:organization-autocomplete'),
+            'session': autocomplete.ModelSelect2(url='API:session-autocomplete'),
+            'motion': autocomplete.ModelSelect2(url='API:motion-autocomplete'),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super(VoteForm, self).__init__(*args, **kwargs)
+        # add_related_field_wrapper(self, 'post')
+
+    def save(self, *args, **kwargs):
+        instance = super(VoteForm, self).save(commit=False)
+        return instance
 

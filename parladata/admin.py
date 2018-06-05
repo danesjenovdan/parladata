@@ -4,7 +4,7 @@ from dal import autocomplete
 from collections import Counter
 from django.core.urlresolvers import reverse
 from .models import *
-from forms import MembershipForm, PostForm, SpeechForm, PersonForm, OrganizationForm, MotionForm
+from forms import MembershipForm, PostForm, SpeechForm, PersonForm, OrganizationForm, MotionForm, VoteForm
 
 
 PS_NP = ['poslanska skupina', 'nepovezani poslanec']
@@ -304,6 +304,7 @@ class MotionAdmin(admin.ModelAdmin):
 
 
 class VoteAdmin(admin.ModelAdmin):
+    form = VoteForm
     list_display = ('id', 'name', 'the_tags', )
 
     list_filter = ('tags',)
@@ -414,6 +415,19 @@ class SessionAutocomplete(autocomplete.Select2QuerySetView):
 
         return qs
 
+
+class MotionAutocomplete(autocomplete.Select2QuerySetView):
+    def get_queryset(self):
+        # Don't forget to filter out results depending on the visitor !
+        if not self.request.user.is_authenticated():
+            return Motion.objects.none()
+
+        qs = Motion.objects.all()
+
+        if self.q:
+            qs = qs.filter(text__icontains=self.q)
+
+        return qs
 
 
 class PersonEducation(Person):
