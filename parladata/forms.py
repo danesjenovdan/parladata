@@ -72,6 +72,7 @@ class PersonForm(forms.ModelForm):
         fields = ('__all__')
         widgets = {
             'gov_url': autocomplete.ModelSelect2(url='API:link-autocomplete'),
+            'districts': autocomplete.ModelSelect2Multiple(url='API:area-autocomplete'),
         }
 
     def __init__(self, *args, **kwargs):
