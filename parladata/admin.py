@@ -4,7 +4,7 @@ from dal import autocomplete
 from collections import Counter
 from django.core.urlresolvers import reverse
 from .models import *
-from forms import MembershipForm, PostForm, SpeechForm, PersonForm
+from forms import MembershipForm, PostForm, SpeechForm, PersonForm, OrganizationForm, MotionForm, VoteForm
 
 
 PS_NP = ['poslanska skupina', 'nepovezani poslanec']
@@ -26,35 +26,35 @@ class OtherNameOrganizationInline(admin.TabularInline):
 class LinkPersonInline(admin.TabularInline):
     model = Link
     fk_name = 'person'
-    exclude = ['organization', 'membership', 'motion']
+    exclude = ['organization', 'membership', 'motion', 'session', 'question']
     extra = 0
 
 
 class LinkOrganizationInline(admin.TabularInline):
     model = Link
     fk_name = 'organization'
-    exclude = ['person', 'membership', 'motion']
+    exclude = ['person', 'membership', 'motion', 'question', 'session']
     extra = 0
 
 
 class LinkMembershipInline(admin.TabularInline):
     model = Link
     fk_name = 'membership'
-    exclude = ['person', 'organization', 'motion']
+    exclude = ['person', 'organization', 'motion', 'question', 'session']
     extra = 0
 
 
 class LinkMotionInline(admin.TabularInline):
     model = Link
     fk_name = 'motion'
-    exclude = ['person', 'membership', 'organization']
+    exclude = ['person', 'membership', 'organization', 'session', 'question']
     extra = 0
 
 
 class LinkQuestionInline(admin.TabularInline):
     model = Link
     fk_name = 'question'
-    exclude = []
+    exclude = ['person', 'organization', 'motion', 'session', 'membership']
     extra = 0
 
 
@@ -203,6 +203,7 @@ class PersonAdmin(admin.ModelAdmin):
 
 
 class OrganizationAdmin(admin.ModelAdmin):
+    form = OrganizationForm
     inlines = [
         OtherNameOrganizationInline,
         ContactDetailsOrganizationInline,
@@ -255,6 +256,7 @@ class QuestionAdmin(admin.ModelAdmin):
 
 
 class MotionAdmin(admin.ModelAdmin):
+    form = MotionForm
     list_display = ('id',
                     'text',
                     'date',
@@ -302,6 +304,7 @@ class MotionAdmin(admin.ModelAdmin):
 
 
 class VoteAdmin(admin.ModelAdmin):
+    form = VoteForm
     list_display = ('id', 'name', 'the_tags', )
 
     list_filter = ('tags',)
@@ -384,6 +387,47 @@ class LinkAutocomplete(autocomplete.Select2QuerySetView):
 
         return qs
 
+
+class AreaAutocomplete(autocomplete.Select2QuerySetView):
+    def get_queryset(self):
+        # Don't forget to filter out results depending on the visitor !
+        if not self.request.user.is_authenticated():
+            return Area.objects.none()
+
+        qs = Area.objects.all()
+
+        if self.q:
+            qs = qs.filter(name__icontains=self.q)
+
+        return qs
+
+
+class SessionAutocomplete(autocomplete.Select2QuerySetView):
+    def get_queryset(self):
+        # Don't forget to filter out results depending on the visitor !
+        if not self.request.user.is_authenticated():
+            return Session.objects.none()
+
+        qs = Session.objects.all()
+
+        if self.q:
+            qs = qs.filter(name__icontains=self.q)
+
+        return qs
+
+
+class MotionAutocomplete(autocomplete.Select2QuerySetView):
+    def get_queryset(self):
+        # Don't forget to filter out results depending on the visitor !
+        if not self.request.user.is_authenticated():
+            return Motion.objects.none()
+
+        qs = Motion.objects.all()
+
+        if self.q:
+            qs = qs.filter(text__icontains=self.q)
+
+        return qs
 
 
 class PersonEducation(Person):

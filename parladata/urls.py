@@ -34,6 +34,9 @@ urlpatterns = [
     url(r'^post-autocomplete/$', admin.PostAutocomplete.as_view(), name='post-autocomplete'),
     url(r'^organization-autocomplete/$', admin.OrganizationAutocomplete.as_view(), name='organization-autocomplete'),
     url(r'^link-autocomplete/$', admin.LinkAutocomplete.as_view(), name='link-autocomplete'),
+    url(r'^area-autocomplete/$', admin.AreaAutocomplete.as_view(), name='area-autocomplete'),
+    url(r'^session-autocomplete/$', admin.SessionAutocomplete.as_view(), name='session-autocomplete'),
+    url(r'^motion-autocomplete/$', admin.MotionAutocomplete.as_view(), name='motion-autocomplete'),
 
     # MPs URLs with and without dates
     url(r'^getMPs/(?P<date_>[\w].+)', getMPs),
