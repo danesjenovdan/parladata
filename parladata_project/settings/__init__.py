@@ -1,4 +1,4 @@
 try:
-	from production import *
+	from .production import *
 except:
-	from dev import *
+	from .dev import *
