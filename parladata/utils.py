@@ -19,6 +19,7 @@ from django.core.cache import cache
 from django.core.paginator import Paginator
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
+
 DZ_ID = settings.DZ_ID
 PS_NP = ['poslanska skupina', 'nepovezani poslanec']
 PS = 'poslanska skupina'
@@ -58,7 +59,8 @@ def getMPObjects(date_=None):
     members = members.filter(Q(start_time__lte=date_) |
                              Q(start_time=None),
                              Q(end_time__gte=date_) |
-                             Q(end_time=None))
+                             Q(end_time=None)).prefetch_related('person')
+
     return [i.person for i in members]
 
 
