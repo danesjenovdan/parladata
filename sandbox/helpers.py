@@ -1,6 +1,6 @@
 from django.db.models import Count
 
-from parladata.models import Speech, Question, Vote, Membership, Organization, Ballot
+from parladata.models import Speech, Question, Vote, Membership, Organization, Ballot, Person
 from parladata.utils import parseRecipient
 from django.db.models import Q
 from django.conf import settings

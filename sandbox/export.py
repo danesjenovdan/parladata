@@ -55,3 +55,48 @@ def getAmendment():
         for amandma in pg_amandmas:
             data.append([acronym, amandma[2], 'https://parlameter.si/seja/glasovanje/' + '/'.join(amandma[:2])])
     listToCSV(data, 'amandmaji.csv')
+
+
+def num_speeches_and_ballots_opts():
+    for p in pp:
+        person_data = []
+        person_data.append(p)
+        person_data.append(Speech.getValidSpeeches(datetime.now()).filter(speaker=p).count())
+        options = Counter(Ballot.objects.filter(voter=p).values_list("option", flat=True))
+        person_data.append(options["za"])
+        person_data.append(options["proti"])
+        person_data.append(options["kvorum"])
+        person_data.append(options["ni"])
+        data.append(person_data)
+
+
+def get_whole_mandate_members():
+
+    membership = Membership.objects.filter(organization__classification__in=PS_NP)
+    people = list(set(list(membership.values_list('person', flat=True))))
+    const_mems = membership.filter(start_time=min(membership.values_list("start_time", flat=True)), end_time=None)
+
+    start_mems = membership.filter(start_time=min(membership.values_list("start_time", flat=True)))
+
+    jumpers = start_mems.exclude(id__in=const_mems)
+
+    jump_persons = jumpers.values_list("person", flat=True).distinct("person")
+
+    data = []
+    for p in jump_persons:
+        is_valid = True
+        mems = Membership.objects.filter(person_id=p, organization__classification__in=PS_NP).order_by("start_time")
+        if mems.filter(end_time=None):
+            print(p, "je zacel")
+            # This members is stil member
+            end_time = mems[0].start_time
+            print(end_time)
+            for m in mems:
+                if (m.start_time - end_time).days > 1:
+                    is_valid = False
+                end_time = m.end_time
+            if is_valid:
+                data.append(p)
+        else:
+          print([mem.end_time for mem in mems])
+    return data
