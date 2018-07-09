@@ -141,7 +141,10 @@ def getMPs(request, date_=None):
     }]
     """
     if date_:
-        fdate = datetime.strptime(date_, settings.API_DATE_FORMAT).date()
+        if 'T' in date_:
+            fdate = datetime.strptime(date_, settings.API_DATE_FORMAT+'T%H:%M')
+        else:
+            fdate = datetime.strptime(date_, settings.API_DATE_FORMAT).date()
     else:
         fdate = datetime.now().today()
     data = []
