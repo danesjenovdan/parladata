@@ -7,7 +7,8 @@ from parladata.models import (Person, Organization, Post, Membership, Session,
 
 from utils import (getMPObjects, determineSession, determinePerson,
                    getIdSafe, replace_all, deleteMotionsWithoutText,
-                   sendMailForEditVotes, parseRecipient, lockSetter, parsePager)
+                   sendMailForEditVotes, parseRecipient, lockSetter,
+                   parsePager, getOwnersOfAmendment)
 
 from taggit.models import Tag
 from raven.contrib.django.raven_compat.models import client
@@ -381,6 +382,7 @@ def getMPStatic(request, person_id, date_=None):
         'district': district,
         'voters': member.voters,
         'age': age,
+        'birth_date': member.birth_date.isoformat(),
         'groups': groups,
         'name': member.name,
         'social': social_output,
@@ -2016,21 +2018,9 @@ def motionOfSession(request, id_se):
                 result = True
             else:
                 result = None
-            if 'Amandma' in motion.text:
-                acronyms = re.findall('\; \s*(\w+)|\[\s*(\w+)', motion.text)
-                acronyms = [pg[0] + ',' if pg[0] else pg[1] + ',' for pg in acronyms]
-                if acronyms:
-                    query = reduce(operator.or_, (Q(name_parser__icontains=item) for item in acronyms))
-                    orgs = Organization.objects.filter(query)
-                    orgs = orgs.filter(Q(founding_date__lte=vote.start_time) |
-                                       Q(founding_date=None),
-                                       Q(dissolution_date__gte=vote.start_time) |
-                                       Q(dissolution_date=None))
-                    org_ids = list(orgs.values_list('id', flat=True))
-                else:
-                    org_ids = []
-            else:
-                org_ids = []
+            proposers = getOwnersOfAmendment(motion)
+            org_ids = proposers['orgs']
+            people_ids = proposers['people']
 
             links = motion.links.all()
             links_list = [{'name': link.name, 'url': link.url}
@@ -2043,6 +2033,7 @@ def motionOfSession(request, id_se):
                          'doc_url': links_list,
                          'start_time': vote.start_time,
                          'amendment_of': org_ids,
+                         'amendment_of_people': people_ids,
                          'epa': motion.epa})
         return JsonResponse(data, safe=False)
     else:
