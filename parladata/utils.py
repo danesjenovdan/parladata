@@ -882,7 +882,7 @@ def parsePager(request, objs, default_per_page=1000):
 def getOwnersOfAmendment(motion):
     orgs_ids = []
     people_ids = []
-    if settings.country == 'SI':
+    if settings.COUNTRY == 'SI':
         if 'Amandma' in motion.text:
             acronyms = re.findall('\; \s*(\w+)|\[\s*(\w+)', motion.text)
             acronyms = [pg[0] + ',' if pg[0] else pg[1] + ',' for pg in acronyms]
@@ -899,7 +899,7 @@ def getOwnersOfAmendment(motion):
         else:
             org_ids = []
         return {'orgs': org_ids, 'people': []}
-    elif settings.country == 'HR':
+    elif settings.COUNTRY == 'HR':
         links = motion.links.all()
         amendment_words = ['AMANDMANI', 'AMANDMAN']
         end_words = ['PZE', 'PZ', 'P.Z.E.']
@@ -922,9 +922,9 @@ def getOwnersOfAmendment(motion):
                 print('tokens', tokens)
                 orgs = Organization.objects.filter(classification__in=PS_NP)
                 # find proposers
-                if tokens[0].lower() == 'vlada':
+                if tokens[0].lower() == 'vlada' or tokens[0].lower() == 'vladarh':
                     # vlada
-                    orgs_ids = [Organization.objects.get(name='Vlada').id]
+                    orgs_ids = [Organization.objects.get(_name='Vlada').id]
                 elif tokens[0].lower() == 'klub':
                     for token in tokens[1:]:
                         org = Organization.objects.filter(name_parser__icontains=token)
