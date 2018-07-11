@@ -11,6 +11,7 @@ import csv
 from django.utils.encoding import smart_str
 from django.db.models import Count
 import re
+import operator
 from django.core.mail import send_mail
 from django.core.exceptions import PermissionDenied
 
@@ -876,3 +877,87 @@ def parsePager(request, objs, default_per_page=1000):
     except EmptyPage:
         out = paginator.page(paginator.num_pages)
     return out, {'page': page, 'per_page': per_page, 'pages': paginator.num_pages}
+
+
+def getOwnersOfAmendment(motion):
+    orgs_ids = []
+    people_ids = []
+    if settings.country == 'SI':
+        if 'Amandma' in motion.text:
+            acronyms = re.findall('\; \s*(\w+)|\[\s*(\w+)', motion.text)
+            acronyms = [pg[0] + ',' if pg[0] else pg[1] + ',' for pg in acronyms]
+            if acronyms:
+                query = reduce(operator.or_, (Q(name_parser__icontains=item) for item in acronyms))
+                orgs = Organization.objects.filter(query)
+                orgs = orgs.filter(Q(founding_date__lte=vote.start_time) |
+                                   Q(founding_date=None),
+                                   Q(dissolution_date__gte=vote.start_time) |
+                                   Q(dissolution_date=None))
+                org_ids = list(orgs.values_list('id', flat=True))
+            else:
+                org_ids = []
+        else:
+            org_ids = []
+        return {'orgs': org_ids, 'people': []}
+    elif settings.country == 'HR':
+        links = motion.links.all()
+        amendment_words = ['AMANDMANI', 'AMANDMAN']
+        end_words = ['PZE', 'PZ', 'P.Z.E.']
+        for link in links:
+            tokens = link.name.replace(" ", '_').replace("-", '_').split('_')
+            print(tokens)
+            is_amendment = False
+            for word in amendment_words:
+                if word in tokens:
+                    is_amendment = True
+                    break
+            if is_amendment:
+                num_ids = [hasNumbersOrPdfOrEndWord(token) for token in tokens]
+                if True in num_ids:
+                    tokens = tokens [:num_ids.index(True)]
+                has_amendment = [token in amendment_words for token in tokens]
+                if True in has_amendment:
+                    print(has_amendment.index(True))
+                    tokens = tokens[has_amendment.index(True)+1:]
+                print('tokens', tokens)
+                orgs = Organization.objects.filter(classification__in=PS_NP)
+                # find proposers
+                if tokens[0].lower() == 'vlada':
+                    # vlada
+                    orgs_ids = [Organization.objects.get(name='Vlada').id]
+                elif tokens[0].lower() == 'klub':
+                    for token in tokens[1:]:
+                        org = Organization.objects.filter(name_parser__icontains=token)
+                        if org.count() == 1:
+                            orgs_ids.append(org[0].id)
+
+                elif tokens[0].lower() == 'odbor':
+                    pass
+                else:
+                    print("PERSON")
+                    d_token = []
+                    # for token1, token2 in zip(tokens[:-1], tokens[1:]):
+                    n_tokens = len(tokens)
+                    for i in range(n_tokens):
+                        d_tokens = [[tokens[i]]]
+                        if i + 1 < n_tokens:
+                            d_token.append([[tokens[i]], [tokens[i+1]]])
+                        for d_token in d_tokens:
+                            print(d_token)
+                            person = Person.objects.filter(name_parser__icontains=' '.join(d_token))
+                            print(person)
+                            if person.count() == 1:
+                                people_ids.append(person[0].id)
+                                d_token = []
+                        print("____")
+                # a bi blo smiselno delovna telesa nardit kot PS analize kot so vloženi mandmaji ipd, pr nas bi bledu pr zakonih dokumente neki neki
+
+    return {'orgs': orgs_ids, 'people': people_ids}
+
+
+def hasNumbersOrPdfOrEndWord(inputString):
+    end_words = ['PZE', 'PZ', 'P.Z.E.']
+    has_number = any(char.isdigit() for char in inputString)
+    has_pdf = 'pdf' in inputString
+    is_end_word = inputString in end_words
+    return has_number or has_pdf or is_end_word
