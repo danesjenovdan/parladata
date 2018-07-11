@@ -917,15 +917,14 @@ def getOwnersOfAmendment(motion):
                     tokens = tokens [:num_ids.index(True)]
                 has_amendment = [token in amendment_words for token in tokens]
                 if True in has_amendment:
-                    print(has_amendment.index(True))
                     tokens = tokens[has_amendment.index(True)+1:]
-                print('tokens', tokens)
                 orgs = Organization.objects.filter(classification__in=PS_NP)
                 # find proposers
                 if tokens[0].lower() == 'vlada' or tokens[0].lower() == 'vladarh':
                     # vlada
                     orgs_ids = [Organization.objects.get(_name='Vlada').id]
                 elif tokens[0].lower() == 'klub':
+                    print("ORG")
                     for token in tokens[1:]:
                         org = Organization.objects.filter(name_parser__icontains=token)
                         if org.count() == 1:
@@ -943,13 +942,10 @@ def getOwnersOfAmendment(motion):
                         if i + 1 < n_tokens:
                             d_token.append([[tokens[i]], [tokens[i+1]]])
                         for d_token in d_tokens:
-                            print(d_token)
                             person = Person.objects.filter(name_parser__icontains=' '.join(d_token))
-                            print(person)
                             if person.count() == 1:
                                 people_ids.append(person[0].id)
                                 d_token = []
-                        print("____")
                 # a bi blo smiselno delovna telesa nardit kot PS analize kot so vloženi mandmaji ipd, pr nas bi bledu pr zakonih dokumente neki neki
 
     return {'orgs': orgs_ids, 'people': people_ids}
