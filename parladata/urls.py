@@ -82,6 +82,7 @@ urlpatterns = [
     url(r'^getAllPGs/', getAllPGs),
 
     url(r'^getAllPGsExt/', getAllPGsExt),
+    url(r'^getAllORGsExt/', getAllORGsExt),
     url(r'^getAllOrganizations/', getAllOrganizations),
 
     url(r'^getMembersOfPGsOnDate/(?P<date_>[\w].+)', getMembersOfPGsOnDate),

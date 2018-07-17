@@ -4085,3 +4085,71 @@ def getNumberOfSpeeches(request):
     return JsonResponse({'people': people,
                          'orgs': orgs,
                          'all_speeches': all_speeches})
+
+
+def getAllORGsExt(request):
+    """Reutrns all PGs, parliament and sides with founded and disbanded dates."""
+    """
+    * @api {get} getAllORGsExtPlus/{?date} Get all PGs with founded and disbanded dates
+    * @apiName getAllPGsExt
+    * @apiGroup PGs
+    * @apiDescription This function returns an object with all the PG's active on a given date.
+      If no optional date parameter is given, it is assumed the date is today. It lists PGs in 
+      an object with the PGs' Parladata ids as keys.
+    * @apiParam {date} date Optional date.
+
+    * @apiSuccess {Object} id PG object with their id as key.
+    * @apiSuccess {String} id.acronym The PG's acronym.
+    * @apiSuccess {date} id.founded Date when the PG was founded.
+    * @apiSuccess {String} name The name of the PG.
+    * @apiSuccess {date} id.disbanded Date when the PG was disbanded.
+
+    * @apiExample {curl} Example:
+        curl -i https://data.parlameter.si/v1/getAllPGsExt/
+    * @apiExample {curl} Example with date:
+        curl -i https://data.parlameter.si/v1/getAllPGsExt/12.12.2016
+
+    * @apiSuccessExample {json} Example response:
+    {
+        "1": {
+            "acronym": "SMC",
+            "founded": null,
+            "name": "PS Stranka modernega centra",
+            "disbanded": null
+        },
+        "2": {
+            "acronym": "IMNS",
+            "founded": null,
+            "name": "PS italijanske in mad\u017earske narodne skupnosti",
+            "disbanded": null
+        },
+        "3": {
+            "acronym": "DeSUS",
+            "founded": null,
+            "name": "PS Demokratska Stranka Upokojencev Slovenije",
+            "disbanded": null
+        }...
+    }
+    """
+
+    parliamentary_group = Organization.objects.filter(classification=PS)
+    data = {pg.id: {'name': pg.name,
+                    'acronym': pg.acronym,
+                    'founded': pg.founding_date,
+                    'type': 'party',
+                    'disbanded': pg.dissolution_date} for pg in parliamentary_group}
+
+    parliament_sides = Organization.objects.filter(id_parladata__in=[settings.COALITION_ID, settings.OPPOSITION_ID])
+    for pg in parliament_sides:
+        data[pg.id] = {'name': pg.name,
+                       'acronym': pg.acronym,
+                       'founded': pg.founding_date,
+                       'type': 'coalition' if pg.is_coalition == 1 else 'oposition'
+                       'disbanded': pg.dissolution_date}
+    parliament = Organization.objects.get(id=settings.DZ_ID)
+    data[parliament.id] = {'name': parliament.name,
+                           'acronym': parliament.acronym,
+                           'founded': parliament.founding_date,
+                           'type': 'parliament'
+                           'disbanded': pg.dissolution_date}
+    return JsonResponse(data, safe=False)
