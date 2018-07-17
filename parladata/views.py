@@ -4135,12 +4135,12 @@ def getAllORGsExt(request):
         data[pg.id] = {'name': pg.name,
                        'acronym': pg.acronym,
                        'founded': pg.founding_date,
-                       'type': 'coalition' if pg.is_coalition == 1 else 'oposition'
+                       'type': 'coalition' if pg.is_coalition == 1 else 'oposition',
                        'disbanded': pg.dissolution_date}
     parliament = Organization.objects.get(id=settings.DZ_ID)
     data[parliament.id] = {'name': parliament.name,
                            'acronym': parliament.acronym,
                            'founded': parliament.founding_date,
-                           'type': 'parliament'
+                           'type': 'parliament',
                            'disbanded': pg.dissolution_date}
     return JsonResponse(data, safe=False)
