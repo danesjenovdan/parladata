@@ -4130,7 +4130,7 @@ def getAllORGsExt(request):
                     'type': 'party',
                     'disbanded': pg.dissolution_date} for pg in parliamentary_group}
 
-    parliament_sides = Organization.objects.filter(id_parladata__in=[settings.COALITION_ID, settings.OPPOSITION_ID])
+    parliament_sides = Organization.objects.filter(id__in=[settings.COALITION_ID, settings.OPPOSITION_ID])
     for pg in parliament_sides:
         data[pg.id] = {'name': pg.name,
                        'acronym': pg.acronym,
