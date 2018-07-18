@@ -905,7 +905,6 @@ def getOwnersOfAmendment(motion):
         end_words = ['PZE', 'PZ', 'P.Z.E.']
         for link in links:
             tokens = link.name.replace(" ", '_').replace("-", '_').split('_')
-            print(tokens)
             is_amendment = False
             for word in amendment_words:
                 if word in tokens:
@@ -924,29 +923,39 @@ def getOwnersOfAmendment(motion):
                     # vlada
                     orgs_ids = [Organization.objects.get(_name='Vlada').id]
                 elif tokens[0].lower() == 'klub':
-                    print("ORG")
-                    for token in tokens[1:]:
-                        org = Organization.objects.filter(name_parser__icontains=token)
-                        if org.count() == 1:
-                            orgs_ids.append(org[0].id)
-
-                elif tokens[0].lower() == 'odbor':
-                    pass
-                else:
-                    print("PERSON")
-                    d_token = []
-                    # for token1, token2 in zip(tokens[:-1], tokens[1:]):
+                    tokens = tokens[1:]
                     n_tokens = len(tokens)
                     for i in range(n_tokens):
                         d_tokens = [[tokens[i]]]
                         if i + 1 < n_tokens:
-                            d_token.append([[tokens[i]], [tokens[i+1]]])
+                            d_tokens.append([tokens[i], tokens[i+1]])
+                        for d_token in d_tokens:
+                            filtred_orgs = orgs.filter(name_parser__icontains=' '.join(d_token))
+                            if filtred_orgs.count() > 0:
+                                names = filtred_orgs.values('id', 'name_parser')
+                                for name in names:
+                                    if re.search("\\b" + ' '.join(d_token) + "\\b", name['name_parser']):
+                                        orgs_ids.append(name['id'])
+                                        break
+                elif tokens[0].lower() == 'odbor':
+                    pass
+                else:
+                    n_tokens = len(tokens)
+                    for i in range(n_tokens):
+                        d_tokens = [[tokens[i]]]
+                        if i + 1 < n_tokens:
+                            d_tokens.append([tokens[i], tokens[i+1]])
                         for d_token in d_tokens:
                             person = Person.objects.filter(name_parser__icontains=' '.join(d_token))
-                            if person.count() == 1:
+                            if person.count() == 1: 
                                 people_ids.append(person[0].id)
-                                d_token = []
-                # a bi blo smiselno delovna telesa nardit kot PS analize kot so vloženi mandmaji ipd, pr nas bi bledu pr zakonih dokumente neki neki
+                                break
+                            if person.count() > 0:
+                                names = person.values('id', 'name_parser')
+                                for name in names:
+                                    if re.search("\\b" + ' '.join(d_token) + "\\b", name['name_parser']):
+                                        people_ids.append(name['id'])
+                                        break
 
     return {'orgs': orgs_ids, 'people': people_ids}
 
