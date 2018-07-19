@@ -725,10 +725,6 @@ class Speech(Versionable, Timestampable, Taggable, models.Model):
     def __str__(self):
         return self.speaker.name
 
-    @property
-    def agenda_item_order(self):
-        return self.agenda_item.order if self.agenda_item else None
-
 
 class Motion(Timestampable, Taggable, models.Model):
     """Votings which taken place in parlament."""

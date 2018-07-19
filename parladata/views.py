@@ -3675,12 +3675,16 @@ def getAllChangesAfter(request, # TODO not documented because strange
 
     print "speeches"
     speeches = Speech.objects.filter(Q(updated_at__gte=time_of_speech) |
-                                     Q(created_at__gte=time_of_speech))
+                                     Q(created_at__gte=time_of_speech)).prefetch_related('agenda_item')
     print speeches.count()
-    data['speeches'] = [model_to_dict(speech, fields=[field.name
-                                                      for field
-                                                      in speech._meta.fields])
-                        for speech in speeches]
+    speech_data = []
+    for speech in speeches:
+        temp_speech = model_to_dict(speech, fields=[field.name
+                                                    for field
+                                                    in speech._meta.fields])
+        temp_speech['agenda_item_order'] = speech.agenda_item.order
+        speech_data.append(temp_speech)
+    data['speeches'] = speech_data
 
     print "ballots"
     ballots = Ballot.objects.filter(updated_at__gte=time_of_ballot)
@@ -3874,13 +3878,15 @@ def getAllAllSpeeches(request):
     return non valid speeches too
     """
     data = []
-    speeches_queryset = Speech.objects.all().order_by("start_time", "order")
+    speeches_queryset = Speech.objects.all().prefetch_related('agenda_item').order_by("start_time", "order")
     speeches, pager = parsePager(request, speeches_queryset, default_per_page=1000)
 
     for speech in speeches:
-        data.append(model_to_dict(speech,
-                                  fields=[field.name for field in speech._meta.fields],
-                                  exclude=[]))
+        speech_dict = model_to_dict(speech,
+                                    fields=[field.name for field in speech._meta.fields],
+                                    exclude=[])
+        speech_dict['agenda_item_order'] = speech.agenda_item.oder
+        data.append(speech_dict)
     out = pager
     out['data'] = data
     return JsonResponse(out, safe=False)
