@@ -3885,7 +3885,10 @@ def getAllAllSpeeches(request):
         speech_dict = model_to_dict(speech,
                                     fields=[field.name for field in speech._meta.fields],
                                     exclude=[])
-        speech_dict['agenda_item_order'] = speech.agenda_item.order
+        if speech.agenda_item:
+            speech_dict['agenda_item_order'] = speech.agenda_item.order
+        else:
+            speech_dict['agenda_item_order'] = 0
         data.append(speech_dict)
     out = pager
     out['data'] = data
