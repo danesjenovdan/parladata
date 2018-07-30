@@ -379,7 +379,7 @@ def getMPStatic(request, person_id, date_=None):
         'district': district,
         'voters': member.voters,
         'age': age,
-        'birth_date': member.birth_date.isoformat(),
+        'birth_date': member.birth_date.isoformat() if member.birth_date else None,
         'groups': groups,
         'name': member.name,
         'social': social_output,
