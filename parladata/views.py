@@ -1462,7 +1462,9 @@ def getAllPGsExt(request):
     parliamentary_group = Organization.objects.filter(classification=PS)
     data = {pg.id: {'name': pg.name,
                     'acronym': pg.acronym,
+                    'id': pg.id,
                     'founded': pg.founding_date,
+                    'is_coalition': True if pg.is_coalition == 1 else False,
                     'disbanded': pg.dissolution_date} for pg in parliamentary_group}
 
     return JsonResponse(data, safe=False)
@@ -4137,22 +4139,28 @@ def getAllORGsExt(request):
 
     parliamentary_group = Organization.objects.filter(classification=PS)
     data = {pg.id: {'name': pg.name,
+                    'id': pg.id,
                     'acronym': pg.acronym,
                     'founded': pg.founding_date,
                     'type': 'party',
+                    'is_coalition': True if pg.is_coalition == 1 else False,
                     'disbanded': pg.dissolution_date} for pg in parliamentary_group}
 
     parliament_sides = Organization.objects.filter(id__in=[settings.COALITION_ID, settings.OPPOSITION_ID])
     for pg in parliament_sides:
         data[pg.id] = {'name': pg.name,
+                       'id': pg.id,
                        'acronym': pg.acronym,
                        'founded': pg.founding_date,
                        'type': 'coalition' if pg.is_coalition == 1 else 'oposition',
+                       'is_coalition': True if pg.is_coalition == 1 else False,
                        'disbanded': pg.dissolution_date}
     parliament = Organization.objects.get(id=settings.DZ_ID)
     data[parliament.id] = {'name': parliament.name,
+                           'id': pg.id,
                            'acronym': parliament.acronym,
                            'founded': parliament.founding_date,
                            'type': 'parliament',
+                           'is_coalition': True if pg.is_coalition == 1 else False,
                            'disbanded': pg.dissolution_date}
     return JsonResponse(data, safe=False)
