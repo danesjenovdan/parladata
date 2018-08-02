@@ -4157,7 +4157,7 @@ def getAllORGsExt(request):
                        'disbanded': pg.dissolution_date}
     parliament = Organization.objects.get(id=settings.DZ_ID)
     data[parliament.id] = {'name': parliament.name,
-                           'id': pg.id,
+                           'id': parliament.id,
                            'acronym': parliament.acronym,
                            'founded': parliament.founding_date,
                            'type': 'parliament',
