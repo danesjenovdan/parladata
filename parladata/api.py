@@ -214,5 +214,10 @@ class TagsView(viewsets.ModelViewSet):
 
 
 class QuestionView(viewsets.ModelViewSet):
+    permission_classes = [permissions.IsAuthenticated]
     queryset = Question.objects.all()
     serializer_class = QuestionSerializer
+    fields = '__all__'
+    filter_backends = (DjangoFilterBackend, filters.OrderingFilter)
+    filter_fields = ('author',)
+    ordering_fields = ('date',)
