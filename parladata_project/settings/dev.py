@@ -3,7 +3,6 @@ from defaults import *
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'hashhashhashhashashwkopaskfpjoij3rijfdsf2332fdw!!'
-
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
@@ -22,8 +21,8 @@ DATABASES = {
 #STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
 # static files for production
-STATIC_URL ='/parlastatic/parlalize/'
-STATIC_ROOT = '/home/parlauser/parlastatic/parlalize/'
+STATIC_URL ='/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, "../static")
 
 
 RAVEN_CONFIG = {
@@ -53,7 +52,7 @@ SETTER_KEY = 'setter_api_key'
 
 DASHBOARD_URL = 'http://localhost:8881'
 
-FORCE_SCRIPT_NAME = '/data'
+#FORCE_SCRIPT_NAME = '/data'
 
 #National Assembly id in database
 DZ_ID = 95
