@@ -30,7 +30,6 @@ import json
 
 
 DZ_ID = settings.DZ_ID
-PS_NP = ['poslanska skupina', 'nepovezani poslanec']
 PS = 'poslanska skupina'
 
 def index(request):
@@ -161,7 +160,7 @@ def getMPs(request, date_=None):
                                                 Q(start_time=None),
                                                 Q(end_time__gte=fdate) |
                                                 Q(end_time=None))
-        membership = membership.filter(organization__classification__in=PS_NP)
+        membership = membership.filter(organization__classification__in=settings.PS_NP)
         ps = membership[0] if membership else None
 
         data.append({'id': i.id,
@@ -295,7 +294,7 @@ def getMPStatic(request, person_id, date_=None):
                                             Q(end_time__gte=fdate) |
                                             Q(end_time=None))
 
-    party = memberships.filter(organization__classification__in=PS_NP)
+    party = memberships.filter(organization__classification__in=settings.PS_NP)
     if party:
         party = {'name': party[0].organization.name,
                  'id': party[0].organization.id,
@@ -307,7 +306,7 @@ def getMPStatic(request, person_id, date_=None):
     groups = [{'name': membership.organization.name,
                'id': membership.organization.id}
                     for membership
-                    in memberships.exclude(organization__classification__in=PS_NP)]
+                    in memberships.exclude(organization__classification__in=settings.PS_NP)]
 
 
 
@@ -346,10 +345,6 @@ def getMPStatic(request, person_id, date_=None):
         district = None
 
     # get functions in working bodies
-    wbs = ['odbor',
-           'komisija',
-           'preiskovalna komisija']
-
     roles = ['predsednik',
              'predsednica',
              'podpredsednica',
@@ -360,7 +355,7 @@ def getMPStatic(request, person_id, date_=None):
                  'podpredsednica': 'vice_president',
                  'podpredsednik': 'vice_president'}
 
-    wb = Organization.objects.filter(Q(classification__in=wbs) |
+    wb = Organization.objects.filter(Q(classification__in=settings.WBS) |
                                      Q(id=95))
     posts = Post.objects.filter(membership__person__id=person_id)
     mp = posts.filter(organization__in=wb, role__in=roles)
@@ -436,7 +431,7 @@ def getMinistrStatic(request, person_id, date_=None):
                          'id': ministr.organization.id,
                          'acronym': ministr.organization.acronym}
 
-        party = memberships.filter(organization__classification__in=PS_NP)
+        party = memberships.filter(organization__classification__in=settings.PS_NP)
         if party:
             party_data = {'name': party[0].organization.name,
                           'id': party[0].organization.id,
@@ -444,7 +439,7 @@ def getMinistrStatic(request, person_id, date_=None):
         else:
             party_data = {}
 
-        PS_NP_VLADA = ['ministrstvo', 'vlada'] + PS_NP
+        settings.PS_NP_VLADA = ['ministrstvo', 'vlada'] + settings.PS_NP
         groups = memberships.exclude(organization__classification__in=PS_NP_VLADA)
 
         groups_data = [{'name': membership.organization.name,
@@ -809,7 +804,7 @@ def getMembersOfPGs(request):
     }
     """
 
-    parliamentary_group = Organization.objects.filter(classification__in=PS_NP)
+    parliamentary_group = Organization.objects.filter(classification__in=settings.PS_NP)
     members = Membership.objects.filter(Q(end_time=None) |
                                         Q(end_time__gt=datetime.now()),
                                         organization__in=parliamentary_group
@@ -865,7 +860,7 @@ def getMembersOfPGsOnDate(request, date_=None):
         fdate = datetime.strptime(date_, settings.API_DATE_FORMAT).date()
     else:
         fdate = datetime.now().date()
-    parliamentary_group = Organization.objects.filter(classification__in=PS_NP)
+    parliamentary_group = Organization.objects.filter(classification__in=settings.PS_NP)
     members = Membership.objects.filter(Q(end_time__gte=fdate) |
                                         Q(end_time=None),
                                         Q(start_time__lte=fdate) |
@@ -1896,7 +1891,7 @@ def getAllPeople(request):
         ]
     }
     """
-    parliamentary_group = Organization.objects.filter(classification__in=PS_NP)
+    parliamentary_group = Organization.objects.filter(classification__in=settings.PS_NP)
     data = []
     pg = ''
     persons = Person.objects.all().order_by('id')
@@ -2112,7 +2107,7 @@ def getBallotsOfSession(request, id_se):
     """
 
     fdate = Session.objects.get(id=str(id_se)).start_time
-    orgs = Organization.objects.filter(classification__in=PS_NP)
+    orgs = Organization.objects.filter(classification__in=settings.PS_NP)
     org_acronym = {org.id: org.acronym for org in orgs}
     ballots = Ballot.objects.filter(vote__session__id=str(id_se)).order_by("id")
     ballots, pager = parsePager(request, ballots, default_per_page=1000)
@@ -2197,7 +2192,7 @@ def getBallotsOfMotion(request, motion_id):
                                      Q(end_time=None),
                                      Q(start_time__lte=vote.start_time) |
                                      Q(start_time=None),
-                                     organization__classification__in=PS_NP)
+                                     organization__classification__in=settings.PS_NP)
     mems = mems.prefetch_related('organization')
     mems = {mem.person_id: mem for mem in mems}
 
@@ -2372,7 +2367,7 @@ def getMembersOfPGsRanges(request, date_=None):
     else:
         fdate = datetime.now().date()
     tempDate = settings.MANDATE_START_TIME.date()
-    parliamentary_group = Organization.objects.filter(classification__in=PS_NP)
+    parliamentary_group = Organization.objects.filter(classification__in=settings.PS_NP)
     members = Membership.objects.filter(organization__in=parliamentary_group)
 
     pgs_ids = parliamentary_group.values_list("id", flat=True)
@@ -2681,7 +2676,7 @@ def getAllTimeMemberships(request):
     ]
     """
 
-    parliamentary_group = Organization.objects.filter(classification__in=PS_NP)
+    parliamentary_group = Organization.objects.filter(classification__in=settings.PS_NP)
     members = Membership.objects.filter(organization__in=parliamentary_group)
     return JsonResponse([{"start_time": member.start_time,
                           "end_time": member.end_time,
@@ -2754,7 +2749,7 @@ def getOrganizatonsByClassification(request):
     """
 
     workingBodies = Organization.objects.filter(classification__in=["odbor", "komisija", "preiskovalna komisija"])
-    parliamentaryGroups = Organization.objects.filter(classification__in=PS_NP)
+    parliamentaryGroups = Organization.objects.filter(classification__in=settings.PS_NP)
     council = Organization.objects.filter(classification="kolegij")
 
     return JsonResponse({"working_bodies": [{"id": wb.id,
@@ -3518,7 +3513,7 @@ def addQuestion(request): # TODO not documented because private refactor with se
                                                Q(start_time=None),
                                                Q(end_time__gte=date_of) |
                                                Q(end_time=None),
-                                               organization__classification__in=PS_NP,
+                                               organization__classification__in=settings.PS_NP,
                                                person=authorPerson)
 
         author_org = membership[0].organization if membership else None
@@ -3602,7 +3597,7 @@ def getAllChangesAfter(request, # TODO not documented because strange
     deleteMotionsWithoutText()
 
     par_group = Organization.objects.all()
-    par_group = par_group.filter(classification__in=PS_NP)
+    par_group = par_group.filter(classification__in=settings.PS_NP)
     data = {}
 
     print "sessions"
@@ -3834,7 +3829,7 @@ def getVotesTableExtended(request, date_to=None):
     Pandas table
     """
     orgs = {}
-    for org in Organization.objects.filter(classification__in=PS_NP):
+    for org in Organization.objects.filter(classification__in=settings.PS_NP):
         orgs[org.id] = org.acronym
 
     if date_to:
@@ -3888,7 +3883,7 @@ def getAllAllSpeeches(request):
 def getStrip(request):
     tempDate = settings.MANDATE_START_TIME.date()
     fdate = datetime.now().date()
-    parliamentary_group = Organization.objects.filter(classification__in=PS_NP)
+    parliamentary_group = Organization.objects.filter(classification__in=settings.PS_NP)
     members = Membership.objects.filter(organization__in=parliamentary_group)
 
     pgs_ids = parliamentary_group.values_list("id", flat=True)
@@ -3938,7 +3933,7 @@ def getStrip(request):
 
 
 def getMembershipNetwork(request):
-    parliamentary_group = Organization.objects.filter(classification__in=PS_NP)
+    parliamentary_group = Organization.objects.filter(classification__in=settings.PS_NP)
     members = Membership.objects.filter(organization__in=parliamentary_group)
 
     staticData = requests.get('https://analize.parlameter.si/v1/utils/getAllStaticData/').json()
