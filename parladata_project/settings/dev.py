@@ -21,8 +21,8 @@ DATABASES = {
 #STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
 # static files for production
-STATIC_URL ='/static/'
-STATIC_ROOT = os.path.join(BASE_DIR, "../static")
+#STATIC_URL ='/static/'
+#STATIC_ROOT = os.path.join(BASE_DIR, "../static")
 
 
 RAVEN_CONFIG = {
@@ -52,7 +52,7 @@ SETTER_KEY = 'setter_api_key'
 
 DASHBOARD_URL = 'http://localhost:8881'
 
-#FORCE_SCRIPT_NAME = '/data'
+FORCE_SCRIPT_NAME = '/data'
 
 #National Assembly id in database
 DZ_ID = 95
