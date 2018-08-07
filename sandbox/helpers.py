@@ -171,7 +171,7 @@ def uk_motion_result():
 
 
 def set_ballot(option):
-    dz_org = Organization.objects.filter(id=DZ_ID)
+    dz_org = Organization.objects.filter(id=settings.DZ_ID)[0]
     for vote in Vote.objects.all():
         # get all MPs
         voters = vote.ballot_set.all().values_list('voter', flat=True)
