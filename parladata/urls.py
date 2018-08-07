@@ -9,7 +9,7 @@ from rest_framework import routers
 
 from rest_framework.documentation import include_docs_urls
 router = routers.DefaultRouter()
-router.register(r'persons', PersonView)
+router.register(r'persons', PersonView, 'person-detail')
 router.register(r'sessions', SessionView)
 router.register(r'last_session', LastSessionWithVoteView)
 router.register(r'motions', MotionView)
@@ -18,7 +18,7 @@ router.register(r'ballots', BallotView)
 router.register(r'votes', VoteView)
 router.register(r'unedited_motions', MotionFilter)
 router.register(r'speechs', SpeechView)
-router.register(r'organizations', OrganizationView)
+router.register(r'organizations', OrganizationView, 'organization-detail')
 router.register(r'law', LawView)
 router.register(r'allActiveEpas', AllUniqueEpas)
 router.register(r'tags', TagsView)

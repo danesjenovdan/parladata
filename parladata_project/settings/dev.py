@@ -61,3 +61,11 @@ COALITION_ID = 95
 OPPOSITION_ID = 95
 
 country = 'SI'
+
+PS_NP = ['poslanska skupina', 'nepovezani poslanec']
+
+WBS = ['odbor',
+       'komisija',
+       'preiskovalna komisija']
+
+FRIENDSHIP_GROUP = ['skupina prijateljstva']
