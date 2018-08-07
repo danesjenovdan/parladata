@@ -36,3 +36,4 @@ django-tinymce==2.6.0
 Lemmagen==1.2.0
 editdistance==0.4
 coreapi==2.3.3
+django-celery-monitor==1.1.2
