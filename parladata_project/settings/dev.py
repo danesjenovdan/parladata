@@ -21,8 +21,8 @@ DATABASES = {
 #STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
 # static files for production
-#STATIC_URL ='/static/'
-#STATIC_ROOT = os.path.join(BASE_DIR, "../static")
+STATIC_URL ='/parlastatic/parlalize/' 
+STATIC_ROOT = '/home/parlauser/parlastatic/parlalize/' 
 
 
 RAVEN_CONFIG = {
