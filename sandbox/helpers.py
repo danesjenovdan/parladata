@@ -6,6 +6,10 @@ from django.db.models import Q
 from django.conf import settings
 
 from datetime import datetime
+
+import requests
+from requests.auth import HTTPBasicAuth
+
 PS_NP = ['poslanska skupina', 'nepovezani poslanec']
 
 
@@ -199,3 +203,91 @@ def check_person_parser_data():
             data.append({'missing': missing_data, 'person': p.name, 'id': p.id, 'url': 'http://51.15.135.53/data/admin/parladata/person/' + str(p.id) + '/'})
     return data
 
+
+def getPersonsFromOldParlameter():
+    import sys
+    reload(sys)
+    sys.setdefaultencoding('utf8')
+    count = 0
+    url = 'https://data.parlameter.si/v1/persons'
+    old_people = getDataFromPagerApiDRF(url)
+    for person in Person.objects.all():
+        old = get_person_by_parser_name(old_people, person.name_parser)
+        if old:
+            count += 1
+            print 'update ', person.name.encode('utf-8'), old['name'].encode('utf-8')
+            person.name = old['name']
+            #person.family_name = old['family_name']
+            #person.given_name = old['given_name']
+            #person.additional_name = old['additional_name']
+            #person.honorific_prefix = old['honorific_prefix']
+            #person.honorific_suffix = old['honorific_suffix']
+            #person.previous_occupation = 'poslanec'
+            #person.education = old['education']
+            #person.education_level = old['education_level']
+            #try:
+            #    person.mandates = int(old['mandates']) + 1 
+            #except:
+            #    person.mandates = 1
+            #person.email = old['email']
+            #person.gender = old['gender']
+            #person.birth_date = old['birth_date']
+            person.save()
+        else:
+            print 'skipp ', person.name.encode('utf-8')
+
+    print count
+
+
+def get_person_by_parser_name(old_people, name_parser):
+    names = name_parser.split(',')
+    for p in old_people:
+        for p_name in p['name_parser'].split(','):
+            if p_name in names:
+                return p
+    
+    return None
+
+
+def getDataFromPagerApiDRF(url):
+    print(url)
+    data = []
+    end = False
+    page = 1
+    while url:
+        response = requests.get(url, auth=HTTPBasicAuth('djnd', 'necakajpomladi')).json()
+        data += response['results']
+        url = response['next']
+    return data
+
+
+def getDuplicatedPersons():
+    visited = []
+    for p in Person.objects.all():
+        d = Person.objects.filter(name_parser__icontains=p.name).exclude(id__in=visited)
+        if d.count() > 1:
+            for i in d:
+                visited.append(i.id)
+            merge_people(d)
+            print d
+
+
+def merge_people(q_s):
+    base_person = q_s.first()
+    others = q_s.exclude(id=base_person.id)
+    for other in others:
+        other.speech_set.all().update(speaker=base_person)
+        other.ballot_set.all().update(voter=base_person)
+        other.delete()
+
+
+def find_non_membershiš_votes(others_id):
+    out = ['id', 'name', 'first_vote', 'last_vote']
+    mps = {i:[] for i in  list(set(list(Ballot.objects.filter(voterparty=344, option__in=["za", "proti", "kvorum"]).values_list("voter__id", flat=True))))}
+    for v in Ballot.objects.filter(voterparty=344, option__in=["za", "proti", "kvorum"]):
+        mps[v.voter.id].append(v.vote.start_time)
+
+    for i, m in mps.items():
+        out.append([i, Person.objects.get(id=i).name, min(m), max(m)])
+
+    return out

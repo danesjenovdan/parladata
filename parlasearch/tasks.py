@@ -1,5 +1,6 @@
 from __future__ import absolute_import, unicode_literals
-from celery import shared_task
+from django_celery_monitor.models import TaskState
+from celery import states, shared_task
 from raven.contrib.django.raven_compat.models import client
 from datetime import datetime
 
@@ -8,6 +9,7 @@ from django.conf import settings
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.core.exceptions import PermissionDenied
+from django.forms.models import model_to_dict
 
 from .export import exportSessions, exportSession
 
@@ -64,3 +66,9 @@ def sendStatus(status_id, type_, data):
                             "status_note": datetime.now().strftime(settings.API_DATE_FORMAT),
                             "status_done": data
                         })
+
+
+def get_celery_status(request):
+    tasks = TaskState.objects.all().order_by('-tstamp')
+    objs = [model_to_dict(task) for task in tasks]
+    return JsonResponse(objs, safe=False)
