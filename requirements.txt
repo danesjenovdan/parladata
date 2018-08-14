@@ -37,3 +37,4 @@ Lemmagen==1.2.0
 editdistance==0.4
 coreapi==2.3.3
 django-celery-monitor==1.1.2
+django-oauth-toolkit==1.1.2
