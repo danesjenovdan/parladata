@@ -5,7 +5,7 @@ from parladata.models import (Person, Organization, Post, Membership, Session,
                               Speech, Ballot, Link, ContactDetail, Vote, Motion,
                               Question, Area, Law)
 
-from utils import (getMPObjects, determineSession, determinePerson,
+from utils import (getMPObjects, getMPVoteObjects, determineSession, determinePerson,
                    getIdSafe, replace_all, deleteMotionsWithoutText,
                    sendMailForEditVotes, parseRecipient, lockSetter,
                    parsePager, getOwnersOfAmendment)
@@ -149,48 +149,49 @@ def getMPs(request, date_=None):
         fdate = datetime.now().today()
     data = []
 
-    for i in getMPObjects(fdate):
+    for i in getMPVoteObjects(fdate):
+        person = i.person
         districts = ''
 
-        if i.districts:
-            districts = i.districts.all().values_list("name", flat=True)
+        if person.districts:
+            districts = person.districts.all().values_list("name", flat=True)
             districts = [smart_str(dist) for dist in districts]
             if not districts:
                 districts = None
         else:
             districts = None
-        membership = i.memberships.all().filter(Q(start_time__lte=fdate) |
+        membership = person.memberships.all().filter(Q(start_time__lte=fdate) |
                                                 Q(start_time=None),
                                                 Q(end_time__gte=fdate) |
                                                 Q(end_time=None))
         membership = membership.filter(organization__classification__in=settings.PS_NP)
         ps = membership[0] if membership else None
 
-        data.append({'id': i.id,
-                     'name': i.name,
+        data.append({'id': person.id,
+                     'name': person.name,
                      'membership': ps.organization.name if ps else None,
                      'acronym': ps.organization.acronym if ps else None,
-                     'classification': i.classification,
-                     'family_name': i.family_name,
-                     'given_name': i.given_name,
-                     'additional_name': i.additional_name,
-                     'honorific_prefix': i.honorific_prefix,
-                     'honorific_suffix': i.honorific_suffix,
-                     'patronymic_name': i.patronymic_name,
-                     'sort_name': i.sort_name,
+                     'classification': person.classification,
+                     'family_name': person.family_name,
+                     'given_name': person.given_name,
+                     'additional_name': person.additional_name,
+                     'honorific_prefix': person.honorific_prefix,
+                     'honorific_suffix': person.honorific_suffix,
+                     'patronymic_name': person.patronymic_name,
+                     'sort_name': person.sort_name,
                      'email': '',
-                     'gender': i.gender,
-                     'birth_date': str(i.birth_date),
-                     'death_date': str(i.death_date),
-                     'summary': i.summary,
-                     'biography': i.biography,
-                     'image': i.image,
+                     'gender': person.gender,
+                     'birth_date': str(person.birth_date),
+                     'death_date': str(person.death_date),
+                     'summary': person.summary,
+                     'biography': person.biography,
+                     'image': person.image,
                      'district': districts,
-                     'gov_url': i.gov_url.url if i.gov_url else '',
-                     'gov_id': i.gov_id,
-                     'gov_picture_url': i.gov_picture_url,
-                     'voters': i.voters,
-                     'active': i.active,
+                     'gov_url': person.gov_url.url if person.gov_url else '',
+                     'gov_id': person.gov_id,
+                     'gov_picture_url': person.gov_picture_url,
+                     'voters': person.voters,
+                     'active': person.active,
                      'party_id': ps.organization.id if ps else None})
 
     return JsonResponse(data, safe=False)
@@ -928,7 +929,8 @@ def getNumberOfAllMPAttendedSessions(request, date_):
 
     fdate = datetime.strptime(date_, settings.API_DATE_FORMAT).date() + timedelta(days=1) - timedelta(minutes=1)
     data = {"sessions": {}, "votes": {}}
-    for member in getMPObjects(fdate):
+    for membership in getMPVoteObjects(fdate):
+        member = membership.person
         # list of all sessions of MP
         allOfHimS = list(set(Ballot.objects.filter(voter__id=member.id,
                                                    vote__start_time__lte=fdate).values_list("vote__session", flat=True)))
@@ -1904,9 +1906,11 @@ def getAllPeople(request):
                                                organization__in=parliamentary_group)
         for me in membership:
             pg = me.organization.name
+            pgs.append(me.organization.name)
         data.append({'id': i.id,
                      'name': i.name,
                      'membership': pg,
+                     'memberships': pgs,
                      'classification': i.classification,
                      'family_name': i.family_name,
                      'given_name': i.given_name,
@@ -2191,11 +2195,8 @@ def getBallotsOfMotion(request, motion_id):
     else:
         return JsonResponse([], safe=False)
 
-    mems = Membership.objects.filter(Q(end_time__gte=vote.start_time) |
-                                     Q(end_time=None),
-                                     Q(start_time__lte=vote.start_time) |
-                                     Q(start_time=None),
-                                     organization__classification__in=settings.PS_NP)
+    mems = getMPVoteObjects(date_=vote.start_time)
+
     mems = mems.prefetch_related('organization')
     mems = {mem.person_id: mem for mem in mems}
 

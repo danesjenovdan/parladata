@@ -65,8 +65,13 @@ def fixBallotsVoterParty(person_id):
     """
     set voter party for each ballot of person
     """
+    #mems = Membership.objects.filter(person_id=person_id,
+    #                                 organization__classification__in=PS_NP)
+
     mems = Membership.objects.filter(person_id=person_id,
-                                     organization__classification__in=PS_NP)
+                                     organization=settings.DZ_ID,
+                                     role='voter').exclude(on_behalf_of=None)
+
     print mems
     for mem in mems:
         start_time, end_time = getStartEndTime(mem)
@@ -74,7 +79,7 @@ def fixBallotsVoterParty(person_id):
                                         vote__start_time__gte=start_time,
                                         vote__start_time__lte=end_time)
         print list(set(list(ballots.values_list("voterparty", flat=True))))
-        ballots.update(voterparty=mem.organization)
+        ballots.update(voterparty=mem.on_behalf_of)
 
 
 def getStartEndTime(membership):
@@ -127,7 +132,8 @@ def fixSpeakerParty(person_id):
     """
 
     party = Membership.objects.filter(person_id=person_id,
-                                      organization__classification__in=PS_NP)
+                                      organization=settings.DZ_ID,
+                                      role='voter').exclude(on_behalf_of=None)
 
     ministry = Membership.objects.filter(person_id=person_id,
                                          organization__classification='ministrstvo',
@@ -147,7 +153,8 @@ def fixSpeakerParty(person_id):
 
 def test_ministers_memberships(person_id):
     party = Membership.objects.filter(person_id=person_id,
-                                      organization__classification__in=PS_NP)
+                                      organization=settings.DZ_ID,
+                                      role='voter').exclude(on_behalf_of=None)
 
     ministry = Membership.objects.filter(person_id=person_id,
                                          organization__classification='ministrstvo',
@@ -281,7 +288,7 @@ def merge_people(q_s):
         other.delete()
 
 
-def find_non_membershiš_votes(others_id):
+def find_non_membershis_votes(others_id):
     out = ['id', 'name', 'first_vote', 'last_vote']
     mps = {i:[] for i in  list(set(list(Ballot.objects.filter(voterparty=344, option__in=["za", "proti", "kvorum"]).values_list("voter__id", flat=True))))}
     for v in Ballot.objects.filter(voterparty=344, option__in=["za", "proti", "kvorum"]):
@@ -291,3 +298,67 @@ def find_non_membershiš_votes(others_id):
         out.append([i, Person.objects.get(id=i).name, min(m), max(m)])
 
     return out
+
+
+"""
+data = {
+    310: [261],
+    319: [291, 258],
+    322: [315],
+    324: [308, 329],
+    330: [275],
+    333: [282, 341, 326],
+    334: [266, 303],
+    335: [263, 316],
+    337: [300],
+    339: [268],
+    340: [289],
+    343: [295, 274],
+}
+"""
+def move_memberships(source_org, dest_org):
+    s_pss = Membership.objects.filter(organization__id=source_org)
+    d_pss = Membership.objects.filter(organization__id=dest_org)
+    print('source', s_pss, 'dest_org', d_pss)
+
+    dest_org_obj = Organization.objects.get(id=dest_org)
+
+    for ps_m in s_pss:
+        print ps_m.person
+        person = ps_m.person
+        dest_membership = d_pss.filter(person=person)
+        if dest_membership:
+            if ps_m.end_time == None:
+                # check start time and fix it
+                if dest_membership[0].end_time == None:
+                    print 'Fixing start time', dest_membership[0].start_time, ps_m.start_time
+                    dest_membership = dest_membership[0]
+                    dest_membership.start_time = ps_m.start_time
+                    dest_membership.save()
+
+                else:
+                    print('This shit does not work')
+            else:
+                # add new membership
+                print 'copying memberhsip 2'
+                ps_m.pk = None
+                ps_m.organization = dest_org_obj
+                ps_m.save()
+
+        else:
+            # add new membership
+            print 'copying memberhsip 1', ps_m.start_time, ps_m.end_time
+            ps_m.pk = None
+            ps_m.organization = dest_org_obj
+            ps_m.save()
+
+
+def create_parliament_memberships(orgs_for_exclude=[]):
+    parliament = Organization.objects.get(id=settings.DZ_ID)
+    mm = Membership.objects.filter(organization__classification__in=settings.PS_NP).exclude(organization__id__in=orgs_for_exclude)
+    for m in mm:
+        m.pk = None
+        m.on_behalf_of = m.organization
+        m.organization = parliament
+        m.role = 'voter'
+        m.save()

@@ -64,6 +64,22 @@ def getMPObjects(date_=None):
 
     return [i.person for i in members]
 
+def getMPVoteObjects(date_=None):
+    """Return objects of all parlament memberships with voting ability.
+       Function: git config
+    """
+
+    if not date_:
+        date_ = datetime.now()
+    parliamentary_group = Organization.objects.filter(id=settings.DZ_ID)
+    members = Membership.objects.filter(organization=parliamentary_group, role='voter').exclude(on_behalf_of=None)
+    members = members.filter(Q(start_time__lte=date_) |
+                             Q(start_time=None),
+                             Q(end_time__gte=date_) |
+                             Q(end_time=None)).prefetch_related('person')
+
+    return members
+
 
 def getCurrentMandate():
     """Returns current mandate."""
@@ -74,9 +90,9 @@ def getCurrentMandate():
 def getVotesDict(date=None):
     """Returns all voters in a dictionary."""
 
-    parliamentary_group = Organization.objects.filter(Q(classification="poslanska skupina") |
-                                                      Q(classification="nepovezani poslanec"))
-    members = Membership.objects.filter(organization__in=parliamentary_group)
+    parliamentary_group = Organization.objects.filter(id=settings.DZ_ID)
+    members = Membership.objects.filter(organization=parliamentary_group, role='voter').exclude(on_behalf_of=None)
+
     votes = dict()
     for m in list(set(members.values_list("person", flat=True))):
         if date:
@@ -108,10 +124,9 @@ def voteToLogical(vote):
 def getFails():
     """Function for finding MPs membersihp date issues."""
 
-    parliamentary_group = Organization.objects.filter(Q(classification="poslanska skupina") |
-                                                      Q(classification="nepovezani poslanec"))
-    members = Membership.objects.filter(organization__in=parliamentary_group)
-    members = members.filter()
+    parliamentary_group = Organization.objects.filter(id=settings.DZ_ID)
+    members = Membership.objects.filter(organization=parliamentary_group, role='voter').exclude(on_behalf_of=None)
+
     start = Vote.objects.all().order_by("start_time")[0].start_time
     out = {}
     for member in members:
@@ -309,10 +324,8 @@ def getBlindVotes():
 def getPersonWithoutVotes():
     """Returns all MPs without votes."""
 
-    parliamentary_groups = Organization.objects.filter(Q(classification="poslanska skupina") |
-                                                       Q(classification="nepovezani poslanec"))
-
-    members = Membership.objects.filter(organization__in=parliamentary_groups)
+    parliamentary_group = Organization.objects.filter(id=settings.DZ_ID)
+    members = Membership.objects.filter(organization=parliamentary_group, role='voter').exclude(on_behalf_of=None)
 
     with open('poor_voters.csv', 'wb') as csvfile:
         csvwriter = csv.writer(csvfile, delimiter=',',
