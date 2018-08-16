@@ -875,7 +875,7 @@ def getMembersOfPGsOnDate(request, date_=None):
 
     members = getMPVoteObjects(fdate)
 
-    data = {pg.id: [member.person.id for member in members.filter(organization=pg)] for pg in parliamentary_group}
+    data = {pg.id: [member.person.id for member in members.filter(on_behalf_of=pg)] for pg in parliamentary_group}
 
     return JsonResponse(data)
 
