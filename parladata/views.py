@@ -864,8 +864,9 @@ def getMembersOfPGsOnDate(request, date_=None):
         fdate = datetime.strptime(date_, settings.API_DATE_FORMAT).date()
     else:
         fdate = datetime.now().date()
-    """parliamentary_group = Organization.objects.filter(classification__in=settings.PS_NP)
-    members = Membership.objects.filter(Q(end_time__gte=fdate) |
+    parliamentary_group = Organization.objects.filter(classification__in=settings.PS_NP)
+    
+    """members = Membership.objects.filter(Q(end_time__gte=fdate) |
                                         Q(end_time=None),
                                         Q(start_time__lte=fdate) |
                                         Q(start_time=None),
@@ -2383,7 +2384,7 @@ def getMembersOfPGsRanges(request, date_=None):
     parliament= Organization.objects.filter(id=settings.DZ_ID)
     members = Membership.objects.filter(organization=parliament, role='voter').exclude(on_behalf_of=None)
 
-    pgs_ids = parliamentary_group.values_list("id", flat=True)
+    pgs_ids = parliament.values_list("id", flat=True)
     out = {(tempDate + timedelta(days=days)): {grup: []
                                                for grup
                                                in pgs_ids}
