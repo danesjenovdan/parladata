@@ -30,7 +30,7 @@ nltk==3.0.3
 slugify==0.0.1
 celery==4.1.0
 https://github.com/aljosa/django-tinymce/archive/master.zip
-django-filter==1.0.4
+django-filter==1.1.0
 django-filters==0.2.1
 django-tinymce==2.6.0
 Lemmagen==1.2.0

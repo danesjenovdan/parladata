@@ -5,7 +5,7 @@ from parladata.models import (Person, Organization, Post, Membership, Session,
                               Speech, Ballot, Link, ContactDetail, Vote, Motion,
                               Question, Area, Law)
 
-from utils import (getMPObjects, determineSession, determinePerson,
+from utils import (getMPObjects, getMPVoteObjects, determineSession, determinePerson,
                    getIdSafe, replace_all, deleteMotionsWithoutText,
                    sendMailForEditVotes, parseRecipient, lockSetter,
                    parsePager, getOwnersOfAmendment)
@@ -141,53 +141,57 @@ def getMPs(request, date_=None):
     }]
     """
     if date_:
-        fdate = datetime.strptime(date_, settings.API_DATE_FORMAT).date()
+        if 'T' in date_:
+            fdate = datetime.strptime(date_, settings.API_DATE_FORMAT+'T%H:%M')
+        else:
+            fdate = datetime.strptime(date_, settings.API_DATE_FORMAT).date()
     else:
         fdate = datetime.now().today()
     data = []
 
-    for i in getMPObjects(fdate):
+    for i in getMPVoteObjects(fdate):
+        person = i.person
         districts = ''
 
-        if i.districts:
-            districts = i.districts.all().values_list("name", flat=True)
+        if person.districts:
+            districts = person.districts.all().values_list("name", flat=True)
             districts = [smart_str(dist) for dist in districts]
             if not districts:
                 districts = None
         else:
             districts = None
-        membership = i.memberships.all().filter(Q(start_time__lte=fdate) |
+        membership = person.memberships.all().filter(Q(start_time__lte=fdate) |
                                                 Q(start_time=None),
                                                 Q(end_time__gte=fdate) |
                                                 Q(end_time=None))
         membership = membership.filter(organization__classification__in=settings.PS_NP)
         ps = membership[0] if membership else None
 
-        data.append({'id': i.id,
-                     'name': i.name,
+        data.append({'id': person.id,
+                     'name': person.name,
                      'membership': ps.organization.name if ps else None,
                      'acronym': ps.organization.acronym if ps else None,
-                     'classification': i.classification,
-                     'family_name': i.family_name,
-                     'given_name': i.given_name,
-                     'additional_name': i.additional_name,
-                     'honorific_prefix': i.honorific_prefix,
-                     'honorific_suffix': i.honorific_suffix,
-                     'patronymic_name': i.patronymic_name,
-                     'sort_name': i.sort_name,
+                     'classification': person.classification,
+                     'family_name': person.family_name,
+                     'given_name': person.given_name,
+                     'additional_name': person.additional_name,
+                     'honorific_prefix': person.honorific_prefix,
+                     'honorific_suffix': person.honorific_suffix,
+                     'patronymic_name': person.patronymic_name,
+                     'sort_name': person.sort_name,
                      'email': '',
-                     'gender': i.gender,
-                     'birth_date': str(i.birth_date),
-                     'death_date': str(i.death_date),
-                     'summary': i.summary,
-                     'biography': i.biography,
-                     'image': i.image,
+                     'gender': person.gender,
+                     'birth_date': str(person.birth_date),
+                     'death_date': str(person.death_date),
+                     'summary': person.summary,
+                     'biography': person.biography,
+                     'image': person.image,
                      'district': districts,
-                     'gov_url': i.gov_url.url if i.gov_url else '',
-                     'gov_id': i.gov_id,
-                     'gov_picture_url': i.gov_picture_url,
-                     'voters': i.voters,
-                     'active': i.active,
+                     'gov_url': person.gov_url.url if person.gov_url else '',
+                     'gov_id': person.gov_id,
+                     'gov_picture_url': person.gov_picture_url,
+                     'voters': person.voters,
+                     'active': person.active,
                      'party_id': ps.organization.id if ps else None})
 
     return JsonResponse(data, safe=False)
@@ -861,13 +865,17 @@ def getMembersOfPGsOnDate(request, date_=None):
     else:
         fdate = datetime.now().date()
     parliamentary_group = Organization.objects.filter(classification__in=settings.PS_NP)
-    members = Membership.objects.filter(Q(end_time__gte=fdate) |
+    
+    """members = Membership.objects.filter(Q(end_time__gte=fdate) |
                                         Q(end_time=None),
                                         Q(start_time__lte=fdate) |
                                         Q(start_time=None),
                                         organization__in=parliamentary_group
-                                        )
-    data = {pg.id: [member.person.id for member in members.filter(organization=pg)] for pg in parliamentary_group}
+                                        )"""
+
+    members = getMPVoteObjects(fdate)
+
+    data = {pg.id: [member.person.id for member in members.filter(on_behalf_of=pg)] for pg in parliamentary_group}
 
     return JsonResponse(data)
 
@@ -925,7 +933,8 @@ def getNumberOfAllMPAttendedSessions(request, date_):
 
     fdate = datetime.strptime(date_, settings.API_DATE_FORMAT).date() + timedelta(days=1) - timedelta(minutes=1)
     data = {"sessions": {}, "votes": {}}
-    for member in getMPObjects(fdate):
+    for membership in getMPVoteObjects(fdate):
+        member = membership.person
         # list of all sessions of MP
         allOfHimS = list(set(Ballot.objects.filter(voter__id=member.id,
                                                    vote__start_time__lte=fdate).values_list("vote__session", flat=True)))
@@ -1901,9 +1910,11 @@ def getAllPeople(request):
                                                organization__in=parliamentary_group)
         for me in membership:
             pg = me.organization.name
+            pgs.append(me.organization.name)
         data.append({'id': i.id,
                      'name': i.name,
                      'membership': pg,
+                     'memberships': pgs,
                      'classification': i.classification,
                      'family_name': i.family_name,
                      'given_name': i.given_name,
@@ -2188,11 +2199,8 @@ def getBallotsOfMotion(request, motion_id):
     else:
         return JsonResponse([], safe=False)
 
-    mems = Membership.objects.filter(Q(end_time__gte=vote.start_time) |
-                                     Q(end_time=None),
-                                     Q(start_time__lte=vote.start_time) |
-                                     Q(start_time=None),
-                                     organization__classification__in=settings.PS_NP)
+    mems = getMPVoteObjects(date_=vote.start_time)
+
     mems = mems.prefetch_related('organization')
     mems = {mem.person_id: mem for mem in mems}
 
@@ -2367,8 +2375,15 @@ def getMembersOfPGsRanges(request, date_=None):
     else:
         fdate = datetime.now().date()
     tempDate = settings.MANDATE_START_TIME.date()
+
+    """
     parliamentary_group = Organization.objects.filter(classification__in=settings.PS_NP)
     members = Membership.objects.filter(organization__in=parliamentary_group)
+    """
+
+    parliament= Organization.objects.filter(id=settings.DZ_ID)
+    parliamentary_group = Organization.objects.filter(classification__in=settings.PS_NP)
+    members = Membership.objects.filter(organization=parliament, role='voter').exclude(on_behalf_of=None)
 
     pgs_ids = parliamentary_group.values_list("id", flat=True)
     out = {(tempDate + timedelta(days=days)): {grup: []
@@ -2394,7 +2409,7 @@ def getMembersOfPGsRanges(request, date_=None):
                 end_time = fdate
         for days in range((end_time - start_time).days + 1):
             day = out[(start_time + timedelta(days=days))]
-            day[member.organization.id].append(member.person.id)
+            day[member.on_behalf_of.id].append(member.person.id)
 
     keys = out.keys()
     keys.sort()
@@ -3669,12 +3684,16 @@ def getAllChangesAfter(request, # TODO not documented because strange
 
     print "speeches"
     speeches = Speech.objects.filter(Q(updated_at__gte=time_of_speech) |
-                                     Q(created_at__gte=time_of_speech))
+                                     Q(created_at__gte=time_of_speech)).prefetch_related('agenda_item')
     print speeches.count()
-    data['speeches'] = [model_to_dict(speech, fields=[field.name
-                                                      for field
-                                                      in speech._meta.fields])
-                        for speech in speeches]
+    speech_data = []
+    for speech in speeches:
+        temp_speech = model_to_dict(speech, fields=[field.name
+                                                    for field
+                                                    in speech._meta.fields])
+        temp_speech['agenda_item_order'] = speech.agenda_item.order
+        speech_data.append(temp_speech)
+    data['speeches'] = speech_data
 
     print "ballots"
     ballots = Ballot.objects.filter(updated_at__gte=time_of_ballot)
@@ -3868,13 +3887,18 @@ def getAllAllSpeeches(request):
     return non valid speeches too
     """
     data = []
-    speeches_queryset = Speech.objects.all().order_by("start_time", "order")
+    speeches_queryset = Speech.objects.all().prefetch_related('agenda_item').order_by("start_time", "order")
     speeches, pager = parsePager(request, speeches_queryset, default_per_page=1000)
 
     for speech in speeches:
-        data.append(model_to_dict(speech,
-                                  fields=[field.name for field in speech._meta.fields],
-                                  exclude=[]))
+        speech_dict = model_to_dict(speech,
+                                    fields=[field.name for field in speech._meta.fields],
+                                    exclude=[])
+        if speech.agenda_item:
+            speech_dict['agenda_item_order'] = speech.agenda_item.order
+        else:
+            speech_dict['agenda_item_order'] = 0
+        data.append(speech_dict)
     out = pager
     out['data'] = data
     return JsonResponse(out, safe=False)

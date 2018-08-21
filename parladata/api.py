@@ -1,14 +1,13 @@
 from parladata.models import *
 from taggit.models import Tag
-from rest_framework import serializers, viewsets, pagination, permissions, mixins
+from rest_framework import (serializers, viewsets, pagination, permissions,
+                            mixins, filters, generics)
 from taggit_serializer.serializers import (TagListSerializerField,
                                            TaggitSerializer)
 from django.db.models import Q
 from django.conf import settings
 from rest_framework.decorators import detail_route
 
-from rest_framework import filters
-from rest_framework import generics
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.response import Response
 from rest_framework import status
@@ -135,7 +134,6 @@ class SessionView(viewsets.ModelViewSet):
     filter_fields = ('organization',)
     ordering_fields = ('-start_time',)
 
-
 class LastSessionWithVoteView(SessionView):
     queryset = Session.objects.filter(organization_id=settings.DZ_ID)
 
@@ -164,6 +162,13 @@ class OrganizationView(viewsets.ModelViewSet):
 class SpeechView(viewsets.ModelViewSet):
     queryset = Speech.objects.all()
     serializer_class = SpeechSerializer
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data, many=isinstance(request.data,list))
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
 
 class MotionView(viewsets.ModelViewSet):
@@ -242,5 +247,10 @@ class TagsView(viewsets.ModelViewSet):
 
 
 class QuestionView(viewsets.ModelViewSet):
+    permission_classes = [permissions.IsAuthenticated]
     queryset = Question.objects.all()
     serializer_class = QuestionSerializer
+    fields = '__all__'
+    filter_backends = (DjangoFilterBackend, filters.OrderingFilter)
+    filter_fields = ('author',)
+    ordering_fields = ('date',)
