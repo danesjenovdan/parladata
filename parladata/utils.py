@@ -113,9 +113,9 @@ def getVotesDict(date=None):
 def voteToLogical(vote):
     """Returns 1 instead of 'za' and 0 of 'proti'."""
 
-    if vote == "za":
+    if vote == "for":
         return 1
-    elif vote == "proti":
+    elif vote == "against":
         return 0
     else:
         return -1
@@ -568,10 +568,10 @@ def updateMotins():
     """Updates motion."""
 
     for motion in Motion.objects.all():
-        yes = dict(Counter(Ballot.objects.filter(vote__motion=motion).values_list("option", flat=True))).get("za", 0)
-        against = dict(Counter(Ballot.objects.filter(vote__motion=motion).values_list("option", flat=True))).get("proti", 0)
-        kvorum = dict(Counter(Ballot.objects.filter(vote__motion=motion).values_list("option", flat=True))).get("kvorum", 0)
-        no = dict(Counter(Ballot.objects.filter(vote__motion=motion).values_list("option", flat=True))).get("ni", 0)
+        yes = dict(Counter(Ballot.objects.filter(vote__motion=motion).values_list("option", flat=True))).get("for", 0)
+        against = dict(Counter(Ballot.objects.filter(vote__motion=motion).values_list("option", flat=True))).get("against", 0)
+        kvorum = dict(Counter(Ballot.objects.filter(vote__motion=motion).values_list("option", flat=True))).get("abstain", 0)
+        no = dict(Counter(Ballot.objects.filter(vote__motion=motion).values_list("option", flat=True))).get("absent", 0)
         if motion.text == "Dnevni red v celoti" or motion.text == "Širitev dnevnega reda".decode('utf8'):
             if yes > (yes + against + kvorum + no) / 2:
                 motion.result = 1

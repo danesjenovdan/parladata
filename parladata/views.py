@@ -939,18 +939,18 @@ def getNumberOfAllMPAttendedSessions(request, date_):
         allOfHimS = list(set(Ballot.objects.filter(voter__id=member.id,
                                                    vote__start_time__lte=fdate).values_list("vote__session", flat=True)))
         # list of all session that the opiton of Ballot was: kvorum, proti, za
-        votesOnS = list(set(Ballot.objects.filter(Q(option="kvorum") |
-                                                  Q(option="proti") |
-                                                  Q(option="za"),
+        votesOnS = list(set(Ballot.objects.filter(Q(option="abstain") |
+                                                  Q(option="against") |
+                                                  Q(option="for"),
                                                   voter__id=member.id,
                                                   vote__start_time__lte=fdate).values_list("vote__session", flat=True)))
         # list of all votes of MP
         allOfHimV = list(set(Ballot.objects.filter(voter__id=member.id,
                                                    vote__start_time__lte=fdate).values_list("vote", flat=True)))
         # list of all votes that the opiton of ballot was: kvorum, proti, za
-        votesOnV = list(set(Ballot.objects.filter(Q(option="kvorum") |
-                                                  Q(option="proti") |
-                                                  Q(option="za"),
+        votesOnV = list(set(Ballot.objects.filter(Q(option="abstain") |
+                                                  Q(option="against") |
+                                                  Q(option="for"),
                                                   voter__id=member.id,
                                                   vote__start_time__lte=fdate).values_list("vote", flat=True)))
         try:
@@ -1710,7 +1710,7 @@ def getAllBallots(request, date_=None):
     * @apiSuccess {Integer} data.vote Parladata ID of the vote.
     * @apiSuccess {Integer} data.voter Parladata ID of the MP who submitted the ballot.
     * @apiSuccess {Integer} data.id Parladata ID of the ballot.
-    * @apiSuccess {String} data.option The option of the ballot (za, proti, kvorum, ni).
+    * @apiSuccess {String} data.option The option of the ballot (for, against, abtain, absent).
 
     * @apiExample {curl} Example:
         curl -i https://data.parlameter.si/v1/getAllBallots
@@ -1728,22 +1728,22 @@ def getAllBallots(request, date_=None):
                 "vote": 6601,
                 "voter": 95,
                 "id": 593806,
-                "option": "za"
+                "option": "for"
             }, {
                 "vote": 6601,
                 "voter": 2,
                 "id": 593807,
-                "option": "kvorum"
+                "option": "abstain"
             }, {
                 "vote": 6601,
                 "voter": 3,
                 "id": 593808,
-                "option": "za"
+                "option": "for"
             }, {
                 "vote": 6601,
                 "voter": 4,
                 "id": 593809,
-                "option": "ni"
+                "option": "absent"
             }
         ]
     }
@@ -2063,7 +2063,7 @@ def getBallotsOfSession(request, id_se):
     * @apiSuccess {String} data.Acronym PG acronym for MP's PG.
     * @apiSuccess {Integer} data.pg_id Parladata id of the PG the MP that submitted the ballot belongs to.
     * @apiSuccess {Integer} data.mo_id Parladata id of the motion this ballot belongs to.
-    * @apiSuccess {String} data.option The option on the ballot. One of "za", "proti", "kvorum", "ni").
+    * @apiSuccess {String} data.option The option on the ballot. One of "for", "against", "abstain", "absent").
       
 
     * @apiExample {curl} Example:
@@ -2081,37 +2081,37 @@ def getBallotsOfSession(request, id_se):
                 "pg_id": 5,
                 "mp_id": 91,
                 "mo_id": 6650,
-                "option": "kvorum"
+                "option": "abstain"
             }, {
                 "Acronym": "SMC",
                 "pg_id": 1,
                 "mp_id": 89,
                 "mo_id": 6650,
-                "option": "za"
+                "option": "for"
             }, {
                 "Acronym": "SMC",
                 "pg_id": 1,
                 "mp_id": 88,
                 "mo_id": 6650,
-                "option": "za"
+                "option": "for"
             }, {
                 "Acronym": "SMC",
                 "pg_id": 1,
                 "mp_id": 87,
                 "mo_id": 6650,
-                "option": "za"
+                "option": "for"
             }, {
                 "Acronym": "NSI",
                 "pg_id": 6,
                 "mp_id": 86,
                 "mo_id": 6650,
-                "option": "kvorum"
+                "option": "abstain"
             }, {
                 "Acronym": "DeSUS",
                 "pg_id": 3,
                 "mp_id": 85,
                 "mo_id": 6650,
-                "option": "za"
+                "option": "for"
             }
         ]
     }
@@ -2149,7 +2149,7 @@ def getBallotsOfMotion(request, motion_id):
     * @apiSuccess {String} /.Acronym PG acronym for MP's PG.
     * @apiSuccess {Integer} /.pg_id Parladata id of the PG the MP that submitted the ballot belongs to.
     * @apiSuccess {Integer} /.mo_id Parladata id of the motion this ballot belongs to.
-    * @apiSuccess {String} /.option The option on the ballot. One of "za", "proti", "kvorum", "ni").
+    * @apiSuccess {String} /.option The option on the ballot. One of "for", "against", "abstain", "absent").
       
 
     * @apiExample {curl} Example:
@@ -2162,31 +2162,31 @@ def getBallotsOfMotion(request, motion_id):
             "pg_id": 7,
             "mp_id": 95,
             "mo_id": 6406,
-            "option": "za"
+            "option": "for"
         }, {
             "Acronym": "SDS",
             "pg_id": 5,
             "mp_id": 2,
             "mo_id": 6406,
-            "option": "za"
+            "option": "for"
         }, {
             "Acronym": "SMC",
             "pg_id": 1,
             "mp_id": 3,
             "mo_id": 6406,
-            "option": "za"
+            "option": "for"
         }, {
             "Acronym": "IMNS",
             "pg_id": 2,
             "mp_id": 4,
             "mo_id": 6406,
-            "option": "ni"
+            "option": "absent"
         }, {
             "Acronym": "DeSUS",
             "pg_id": 3,
             "mp_id": 5,
             "mo_id": 6406,
-            "option": "za"
+            "option": "for"
         }
     ]
     """
@@ -3379,27 +3379,27 @@ def getBallotsCounterOfPerson(request, person_id, date_=None):
     * @apiSuccessExample {json} Example response:
     [
         {
-            "ni": 2,
-            "proti": 3,
+            "absent": 2,
+            "against": 3,
             "date_ts": "2014-08-01T00:00:00",
-            "za": 7,
-            "kvorum": 5,
+            "for": 7,
+            "abstain": 5,
             "date": "01.08.2014",
             "total": 17
         }, {
-            "ni": 2,
-            "proti": 8,
+            "absent": 2,
+            "against": 8,
             "date_ts": "2014-09-01T00:00:00",
-            "za": 2,
-            "kvorum": 3,
+            "for": 2,
+            "abstain": 3,
             "date": "01.09.2014",
             "total": 15
         }, {
-            "ni": 1,
-            "proti": 1,
+            "absent": 1,
+            "against": 1,
             "date_ts": "2014-10-01T00:00:00",
-            "za": 2,
-            "kvorum": 0,
+            "for": 2,
+            "abstain": 0,
             "date": "01.10.2014",
             "total": 4
         }
@@ -3440,27 +3440,27 @@ def getBallotsCounterOfParty(request, party_id, date_=None):
     * @apiSuccessExample {json} Example response:
     [
         {
-            "ni": 0,
-            "proti": 3,
+            "absent": 0,
+            "against": 3,
             "date_ts": "2014-08-01T00:00:00",
-            "za": 28,
-            "kvorum": 3,
+            "for": 28,
+            "abstain": 3,
             "date": "01.08.2014",
             "total": 17
         }, {
-            "ni": 9,
-            "proti": 1,
+            "absent": 9,
+            "against": 1,
             "date_ts": "2014-09-01T00:00:00",
-            "za": 20,
-            "kvorum": 0,
+            "for": 20,
+            "abstain": 0,
             "date": "01.09.2014",
             "total": 15
         }, {
-            "ni": 0,
-            "proti": 0,
+            "absent": 0,
+            "against": 0,
             "date_ts": "2014-10-01T00:00:00",
-            "za": 6,
-            "kvorum": 2,
+            "for": 6,
+            "abstain": 2,
             "date": "01.10.2014",
             "total": 4
         }

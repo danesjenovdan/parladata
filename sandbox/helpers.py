@@ -290,8 +290,8 @@ def merge_people(q_s):
 
 def find_non_membershis_votes(others_id):
     out = ['id', 'name', 'first_vote', 'last_vote']
-    mps = {i:[] for i in  list(set(list(Ballot.objects.filter(voterparty=344, option__in=["za", "proti", "kvorum"]).values_list("voter__id", flat=True))))}
-    for v in Ballot.objects.filter(voterparty=344, option__in=["za", "proti", "kvorum"]):
+    mps = {i:[] for i in  list(set(list(Ballot.objects.filter(voterparty=344, option__in=["for", "against", "abstain"]).values_list("voter__id", flat=True))))}
+    for v in Ballot.objects.filter(voterparty=344, option__in=["for", "against", "abstain"]):
         mps[v.voter.id].append(v.vote.start_time)
 
     for i, m in mps.items():

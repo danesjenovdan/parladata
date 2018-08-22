@@ -63,10 +63,10 @@ def num_speeches_and_ballots_opts():
         person_data.append(p)
         person_data.append(Speech.getValidSpeeches(datetime.now()).filter(speaker=p).count())
         options = Counter(Ballot.objects.filter(voter=p).values_list("option", flat=True))
-        person_data.append(options["za"])
-        person_data.append(options["proti"])
-        person_data.append(options["kvorum"])
-        person_data.append(options["ni"])
+        person_data.append(options["for"])
+        person_data.append(options["against"])
+        person_data.append(options["abstain"])
+        person_data.append(options["absent"])
         data.append(person_data)
 
 

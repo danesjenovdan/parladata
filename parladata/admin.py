@@ -274,19 +274,19 @@ class MotionAdmin(admin.ModelAdmin):
     ]
 
     def get_for(self, obj):
-        results = dict(Counter(Ballot.objects.filter(vote__motion=obj).values_list("option", flat=True))).get("za", 0)
+        results = dict(Counter(Ballot.objects.filter(vote__motion=obj).values_list("option", flat=True))).get("for", 0)
         return results
 
     def get_against(self, obj):
-        results = dict(Counter(Ballot.objects.filter(vote__motion=obj).values_list("option", flat=True))).get("proti", 0)
+        results = dict(Counter(Ballot.objects.filter(vote__motion=obj).values_list("option", flat=True))).get("against", 0)
         return results
 
     def get_abstain(self, obj):
-        results = dict(Counter(Ballot.objects.filter(vote__motion=obj).values_list("option", flat=True))).get("kvorum", 0)
+        results = dict(Counter(Ballot.objects.filter(vote__motion=obj).values_list("option", flat=True))).get("abstain", 0)
         return results
 
     def get_not(self, obj):
-        results = dict(Counter(Ballot.objects.filter(vote__motion=obj).values_list("option", flat=True))).get("ni", 0)
+        results = dict(Counter(Ballot.objects.filter(vote__motion=obj).values_list("option", flat=True))).get("absent", 0)
         return results
 
     def link_to_vote(self, obj):
@@ -295,10 +295,10 @@ class MotionAdmin(admin.ModelAdmin):
 
     link_to_vote.allow_tags = True
 
-    get_for.short_description = 'Za'
-    get_against.short_description = 'Proti'
-    get_abstain.short_description = 'Vzdrazan'
-    get_not.short_description = 'Ni'
+    get_for.short_description = 'for'
+    get_against.short_description = 'against'
+    get_abstain.short_description = 'abstain'
+    get_not.short_description = 'absent'
 
 
 class VoteAdmin(admin.ModelAdmin):
