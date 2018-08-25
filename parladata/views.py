@@ -2040,7 +2040,7 @@ def motionOfSession(request, id_se):
                          'amendment_of': org_ids,
                          'amendment_of_people': people_ids,
                          'epa': motion.epa,
-                         'counter': vote.counter})
+                         'counter': json.loads(vote.counter) if vote.counter else None})
         return JsonResponse(data, safe=False)
     else:
         return JsonResponse([], safe=False)
