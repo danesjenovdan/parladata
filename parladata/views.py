@@ -3321,7 +3321,7 @@ def getBallotsCounter(voter_obj, date_=None):
 
     ballots = ballots.annotate(ballot_count=Count('option')).order_by('month')
 
-    votes = Vote.objects.filter(start_time__lt=fdate)
+    votes = Vote.objects.filter(start_time__lt=fdate, counter=None)
     #votes = votes.annotate(month=DateTime("start_time",
     #                                      "month",
     #                       tzinfo=None)).values("month")
