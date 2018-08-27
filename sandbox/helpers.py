@@ -148,7 +148,7 @@ def fixSpeakerParty(person_id):
         speeches = Speech.objects.filter(speaker_id=person_id,
                                          start_time__gte=start_time,
                                          start_time__lte=end_time)
-        speeches.update(party=mem.organization)
+        speeches.update(party=mem.on_behalf_of)
 
 
 def test_ministers_memberships(person_id):
