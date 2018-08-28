@@ -4172,3 +4172,18 @@ def getAllORGsExt(request):
                            'is_coalition': True if pg.is_coalition == 1 else False,
                            'disbanded': pg.dissolution_date}
     return JsonResponse(data, safe=False)
+
+
+def getParliamentMembershipsOfMembers(request):
+    out_data = {}
+    mems = Membership.objects.filter(organization=settings.DZ_ID,
+                                     role='voter')
+    mems = mems.distinct().values("start_time", "end_time", "on_behalf_of_id", "person_id").order_by('person_id')
+
+    for mem in mems:
+        if mem['person_id'] in out_data.keys():
+            out_data[mem['person_id']].append(mem)
+        else:
+            out_data[mem['person_id']] = [mem]
+
+        return out_data

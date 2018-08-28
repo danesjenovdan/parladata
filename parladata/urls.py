@@ -70,6 +70,8 @@ urlpatterns = [
     url(r'^getDistricts', getDistricts),
     url(r'^getAllTimeMemberships', getAllTimeMemberships),
 
+    url(r'^getParliamentMembershipsOfMembers', getParliamentMembershipsOfMembers),
+
     # PGs URLs with and without dates
     url(r'^getMembersOfPGs/', getMembersOfPGs),
     url(r'^getCoalitionPGs/', getCoalitionPGs),
