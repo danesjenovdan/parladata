@@ -11,6 +11,7 @@ from rest_framework.decorators import detail_route
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.authentication import SessionAuthentication, BasicAuthentication
 
 from raven.contrib.django.raven_compat.models import client
 
@@ -163,6 +164,7 @@ class OrganizationView(viewsets.ModelViewSet):
 class SpeechView(viewsets.ModelViewSet):
     queryset = Speech.objects.all()
     serializer_class = SpeechSerializer
+    authentication_classes = (SessionAuthentication, BasicAuthentication)
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data, many=isinstance(request.data,list))
@@ -197,6 +199,7 @@ class VoteView(viewsets.ModelViewSet):
 class BallotView(viewsets.ModelViewSet):
     queryset = Ballot.objects.all()
     serializer_class = BallotSerializer
+    authentication_classes = (SessionAuthentication, BasicAuthentication)
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data, many=isinstance(request.data,list))
