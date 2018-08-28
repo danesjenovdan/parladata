@@ -218,7 +218,7 @@ class MembershipView(viewsets.ModelViewSet):
     queryset = Membership.objects.all()
     serializer_class = MembershipSerializer
     filter_backends = (DjangoFilterBackend,)
-    filter_fields = ('person',)
+    filter_fields = ('person', 'organization')
 
 
 class AreaView(viewsets.ModelViewSet):
