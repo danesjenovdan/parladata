@@ -4186,4 +4186,4 @@ def getParliamentMembershipsOfMembers(request):
         else:
             out_data[mem['person_id']] = [mem]
 
-        return out_data
+    return JsonResponse(out_data)
