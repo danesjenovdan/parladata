@@ -907,16 +907,6 @@ class Question(Timestampable, models.Model):
                              null=True,
                              help_text='Title name as written on dz-rs.si')
 
-    author = models.ForeignKey('Person',
-                               blank=True,
-                               null=True,
-                               help_text='The person (MP) who asked the question.',
-                               related_name='asked')
-    author_org = models.ForeignKey('Organization',
-                                   blank=True,
-                                   null=True,
-                                   help_text='The organization of person (MP) who asked the question.',
-                                   related_name='asked')
     authors = models.ManyToManyField('Person',
                                      blank=True,
                                      help_text='The persons (MP) who asked the question.')
