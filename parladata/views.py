@@ -3276,9 +3276,9 @@ def getAllQuestions(request, date_=None):
                                                                        flat=True)
         recipient_org = question.recipient_organization.all().values_list('id',
                                                                           flat=True)
-        author_persons = question.author.all().values_list('id',
+        author_persons = question.authors.all().values_list('id',
                                                            flat=True)
-        author_orgs = question.author_org.all().values_list('id',
+        author_orgs = question.author_orgs.all().values_list('id',
                                                             flat=True)
 
         recipient_posts = question.recipient_post.all().values('organization_id',
@@ -3558,8 +3558,8 @@ def addQuestion(request): # TODO not documented because private refactor with se
         question.recipient_person.add(*recipient_persons)
         question.recipient_organization.add(*recipient_organizations)
         question.recipient_post.add(*recipient_posts)
-        question.author.add(authorPerson)
-        question.author_org.add(author_org)
+        question.authors.add(authorPerson)
+        question.author_orgs.add(author_org)
 
         print 'save question'
 
@@ -3730,9 +3730,9 @@ def getAllChangesAfter(request, # TODO not documented because strange
                                                                        flat=True)
         recipient_org = question.recipient_organization.all().values_list('id',
                                                                           flat=True)
-        author_persons = question.author.all().values_list('id',
+        author_persons = question.authors.all().values_list('id',
                                                            flat=True)
-        author_orgs = question.author_org.all().values_list('id',
+        author_orgs = question.author_orgs.all().values_list('id',
                                                             flat=True)
         recipient_posts = question.recipient_post.all().values('organization_id',
                                                                 'membership__person_id')
