@@ -190,7 +190,7 @@ class VoteView(viewsets.ModelViewSet):
     serializer_class = VoteSerializer
     filter_backends = (DjangoFilterBackend, filters.SearchFilter,)
     filter_fields = ('session',)
-    ordering_fields = ('-start_time',)
+    ordering_fields = ('start_time',)
     search_fields = ('name',)
 
 
