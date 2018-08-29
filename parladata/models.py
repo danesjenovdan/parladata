@@ -943,7 +943,7 @@ class Question(Timestampable, models.Model):
                                  help_text=_('Unique signature'))
 
     def __str__(self):
-        return self.author.name
+        return ' '.join(self.authors.all().values_list('name' flat=True))
 
 
 # Parser "buffer" storage models
