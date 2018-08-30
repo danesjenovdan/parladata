@@ -64,7 +64,8 @@ class BallotSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class LinkSerializer(serializers.ModelSerializer):
+class LinkSerializer(TaggitSerializer, serializers.ModelSerializer):
+    tags = TagListSerializerField(required=False)
     class Meta:
         model = Link
         fields = '__all__'
@@ -212,6 +213,8 @@ class BallotView(viewsets.ModelViewSet):
 class LinkView(viewsets.ModelViewSet):
     queryset = Link.objects.all()
     serializer_class = LinkSerializer
+    filter_backends = (DjangoFilterBackend,)
+    filter_fields = ('person', 'tags__name')
 
 
 class MembershipView(viewsets.ModelViewSet):
@@ -256,5 +259,5 @@ class QuestionView(viewsets.ModelViewSet):
     serializer_class = QuestionSerializer
     fields = '__all__'
     filter_backends = (DjangoFilterBackend, filters.OrderingFilter)
-    filter_fields = ('author',)
+    filter_fields = ('authors',)
     ordering_fields = ('date',)
