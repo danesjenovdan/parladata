@@ -349,15 +349,19 @@ def getMPStatic(request, person_id, date_=None):
         district = None
 
     # get functions in working bodies
-    roles = ['predsednik',
-             'predsednica',
+    roles = ['president',
+             'deputy',
              'podpredsednica',
-             'podpredsednik']
+             'podpredsednik',
+             'president',
+             'deputy']
 
     trans_map = {'predsednik': 'president',
                  'predsednica': 'president',
                  'podpredsednica': 'vice_president',
-                 'podpredsednik': 'vice_president'}
+                 'podpredsednik': 'vice_president',
+                 'president': 'president',
+                 'deputy': 'vice_president'}
 
     wb = Organization.objects.filter(Q(classification__in=settings.WBS) |
                                      Q(id=95))
@@ -2788,13 +2792,16 @@ def getOrganizationRolesAndMembers(request, org_id, date_=None):
     out = {}
     trans_map = {"debug": "debug",
                  "predsednik": "president",
+                 "president": "president",
                  "predsednica": "president",
                  smart_str("član"): "members",
                  smart_str("namestnica člana"): "viceMember",
                  smart_str("namestnik člana"): "viceMember",
                  smart_str("članica"): "members",
+                 "member": "members",
                  "podpredsednica": "vice_president",
-                 "podpredsednik": "vice_president"}
+                 "podpredsednik": "vice_president",
+                 "deputy": "vice_president"}
     if org:
         out = {"debug": [],
                "members": [],
