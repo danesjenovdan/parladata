@@ -837,10 +837,10 @@ class Vote(Timestampable, Taggable, models.Model):
         opts = self.ballot_set.all().values_list("option")
         opt_counts = opts.annotate(dCount('option'))
 
-        out = {'ni': 0,
-               'proti': 0,
-               'za': 0,
-               'kvorum': 0
+        out = {'for': 0,
+               'against': 0,
+               'abstain': 0,
+               'absent': 0
                }
         for opt in opt_counts:
             out[opt[0]] = opt[1]
