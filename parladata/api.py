@@ -160,6 +160,11 @@ class OrganizationView(viewsets.ModelViewSet):
                 client.captureException()
         return queryset
 
+    def list(self, request, *args, **kwargs):
+        response = super(OrganizationView, self).list(request, args, kwargs)
+        response.data['classifications'] = settings.PS_NP + settings.WBS + settings.FRIENDSHIP_GROUP + settings.DELEGATION + settings.COUNCIL + settings.MINISTRY_GOV + settings.GOV_STAFF + ['']
+        return response
+
 
 
 class SpeechView(viewsets.ModelViewSet):

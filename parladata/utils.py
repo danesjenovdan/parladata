@@ -54,8 +54,7 @@ def getMPObjects(date_=None):
 
     if not date_:
         date_ = datetime.now()
-    parliamentary_group = Organization.objects.filter(Q(classification="poslanska skupina") |
-                                                      Q(classification="nepovezani poslanec"))
+    parliamentary_group = Organization.objects.filter(classification__in=settings.PS_NP)
     members = Membership.objects.filter(organization__in=parliamentary_group)
     members = members.filter(Q(start_time__lte=date_) |
                              Q(start_time=None),
@@ -165,7 +164,7 @@ def getMembershipDuplications(request):
     context = {}
     start_time = datetime(day=1, month=8, year=2014)
     end_time = datetime.now()
-    parliamentary_groups = Organization.objects.filter(classification__in=PS_NP)
+    parliamentary_groups = Organization.objects.filter(classification__in=settings.PS_NP)
 
     members = Membership.objects.filter(organization__in=parliamentary_groups)
 
@@ -304,8 +303,7 @@ def getBlindVotes():
     """Checks if memberships of PGs are ok."""
 
     context = {}
-    parliamentary_groups = Organization.objects.filter(Q(classification="poslanska skupina") |
-                                                       Q(classification="nepovezani poslanec"))
+    parliamentary_groups = Organization.objects.filter(classification__in=settings.PS_NP)
     context["vote_without_membership"] = []
     with open('zombie_votes.csv', 'wb') as csvfile:
         csvwriter = csv.writer(csvfile, delimiter=',',
@@ -470,7 +468,7 @@ def membersFlowInDZ(request):
     """
     Debug method which shows when members joins and leave DZ.
     """
-    parliamentary_groups = Organization.objects.filter(Q(classification="poslanska skupina") | Q(classification="nepovezani poslanec"))
+    parliamentary_groups = Organization.objects.filter(classification__in=settings.PS_NP)
 
     context = {}
     context["orgs"]=[]
@@ -494,33 +492,19 @@ def getMPsOrganizationsByClassification():
     """
     CSV export memberships of all DZ members grouped by classification
     """
-    classes = ["skupina prijateljstva",
-               "delegacija",
-               "komisija",
-               "poslanska skupina",
-               "odbor", "kolegij",
-               "preiskovalna komisija",
-               "",
-               "nepovezani poslanec"]
+
+    classes = settings.PS_NP + settings.WBS + settings.FRIENDSHIP_GROUP + settings.DELEGATION + ['']
     with open('members_orgs.csv', 'w') as csvfile:
         csvwriter = csv.writer(csvfile,
                                delimiter=';',
                                quotechar='|',
                                quoting=csv.QUOTE_MINIMAL)
         csvwriter.writerow(["Person"]+[clas for clas in classes])
-        parliamentary_group = Organization.objects.filter(classification__in=PS_NP)
+        parliamentary_group = Organization.objects.filter(classification__in=settings.PS_NP)
         pgs = Membership.objects.filter(organization__in=parliamentary_group)
         for person_mps in pgs:
             memberships = person_mps.person.memberships.all()
-            counter = {"skupina prijateljstva": [],
-                       "delegacija": [],
-                       "komisija": [],
-                       "poslanska skupina": [],
-                       "odbor": [],
-                       "kolegij": [],
-                       "preiskovalna komisija": [],
-                       "": [],
-                       "nepovezani poslanec": []}
+            counter = {cl: [] for cl in classes}
             for mem in memberships:
                 c_obj = counter[mem.organization.classification]
                 c_obj.append(smart_str(mem.organization.name))
@@ -547,8 +531,7 @@ def updateSpeechOrg():
 def getNonPGSpeekers():
     """Return speakers that are not in PG."""
 
-    parliamentary_group = Organization.objects.filter(Q(classification="poslanska skupina") |
-                                                      Q(classification="nepovezani poslanec"))
+    parliamentary_group = Organization.objects.filter(classification__in=settings.PS_NP)
     memberships = Membership.objects.filter(organization=parliamentary_group).values_list("person__id", flat=True)
     ids = list(memberships)
     Speech.objects.all().exclude(speaker__id__in=ids)
@@ -930,7 +913,7 @@ def getOwnersOfAmendment(motion):
                 has_amendment = [token in amendment_words for token in tokens]
                 if True in has_amendment:
                     tokens = tokens[has_amendment.index(True)+1:]
-                orgs = Organization.objects.filter(classification__in=PS_NP)
+                orgs = Organization.objects.filter(classification__in=settings.PS_NP)
                 # find proposers
                 if tokens[0].lower() == 'vlada' or tokens[0].lower() == 'vladarh':
                     # vlada
