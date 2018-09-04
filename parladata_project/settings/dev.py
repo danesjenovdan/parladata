@@ -61,9 +61,9 @@ OPPOSITION_ID = 95
 
 country = 'SI'
 
-PS = 'party'
+PS = 'pg'
 
-PS_NP = ['party', 'unaligned MP']
+PS_NP = ['pg', 'unaligned MP']
 
 WBS = ['committee',
        'comission',
