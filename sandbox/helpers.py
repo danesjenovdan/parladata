@@ -385,7 +385,7 @@ def add_posts_from_membership():
 def change_international_classes():
 
     org_map = {
-        'poslanska skupina': 'party',
+        'poslanska skupina': 'pg',
         'nepovezani poslanec': 'unaligned MP',
         'odbor': 'committee',
         'komisija': 'comission',
