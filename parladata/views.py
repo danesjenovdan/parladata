@@ -3265,7 +3265,7 @@ def getAllQuestions(request, date_=None):
     data = []
 
     for question in question_queryset:
-        link = question.links.filter(note__icontains='Besedilo')
+        link = question.links.filter()#note__icontains='Besedilo')
         if link:
             link = link[0].url
         else:
