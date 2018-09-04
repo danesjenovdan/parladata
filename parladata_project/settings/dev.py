@@ -61,10 +61,21 @@ OPPOSITION_ID = 95
 
 country = 'SI'
 
-PS_NP = ['poslanska skupina', 'nepovezani poslanec']
+PS = 'party'
 
-WBS = ['odbor',
-       'komisija',
-       'preiskovalna komisija']
+PS_NP = ['party', 'unaligned MP']
 
-FRIENDSHIP_GROUP = ['skupina prijateljstva']
+WBS = ['committee',
+       'comission',
+       'investigative comission']
+
+FRIENDSHIP_GROUP = ['friendship group']
+
+DELEGATION = ['delegation']
+
+COUNCIL = ['council']
+
+#['ministrstvo', 'vlada']
+MINISTRY_GOV = ['ministry', 'gov']
+
+GOV_STAFF = ['gov_service', 'gov_office']

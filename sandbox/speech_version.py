@@ -4,17 +4,15 @@ from parladata.models import Speech, Person, Membership, Organization, Post, Ses
 from datetime import datetime
 from difflib import unified_diff
 from django.db.models import Q
+from django.conf import settings
 
 from sandbox.tokeniser.tokeniser import generate_tokenizer, process
 
 import editdistance
 
-PS_NP = ['poslanska skupina', 'nepovezani poslanec']
 
-roles = ['predsednik',
-         'predsednica',
-         'podpredsednica',
-         'podpredsednik']
+roles = ['president',
+         'deputy']
 
 class Tokeniser:
     """
@@ -54,7 +52,7 @@ class Tokeniser:
 tokeniser = Tokeniser()
 
 def count_versions():
-    parties = Organization.objects.filter(classification__in=PS_NP)
+    parties = Organization.objects.filter(classification__in=settings.settings.PS_NP)
     mems = Membership.objects.filter(organization__in=parties)
     people = [mem.person_id for mem in mems.distinct('person')]
     speeches = Speech.getValidSpeeches(datetime.now())
@@ -287,7 +285,7 @@ def get_():
 
 
 def count_versions():
-    parties = Organization.objects.filter(classification__in=PS_NP)
+    parties = Organization.objects.filter(classification__in=settings.PS_NP)
     mems = Membership.objects.filter(organization__in=parties)
     people = [mem.person_id for mem in mems.distinct('person')]
     speeches = Speech.getValidSpeeches(datetime.now())

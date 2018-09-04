@@ -29,9 +29,6 @@ import requests
 import json
 
 
-DZ_ID = settings.DZ_ID
-PS = 'poslanska skupina'
-
 def index(request):
     return JsonResponse({"index": True})
 
@@ -402,10 +399,7 @@ def getIDsOfAllMinisters(request, date_=None):
         fdate = datetime.strptime(date_, settings.API_DATE_FORMAT).date()
     else:
         fdate = datetime.now().date()
-    ministry = Organization.objects.filter(classification__in=['ministrstvo',
-                                                               'vlada',
-                                                               'sluzba vlade',
-                                                               'urad vlade'])
+    ministry = Organization.objects.filter(classification__in=settings.MINISTRY_GOV + settings.GOV_STAFF)
     memberships = Membership.objects.filter(organization__in=ministry)
     ids = list(set(list(memberships.values_list('person_id', flat=True))))
 
@@ -430,10 +424,7 @@ def getMinistrStatic(request, person_id, date_=None):
                                             Q(end_time=None))"""
     memberships = person.memberships.all()
 
-    ministry = memberships.filter(organization__classification__in=['ministrstvo',
-                                                                    'vlada',
-                                                                    'sluzba vlade',
-                                                                    'urad vlade'])
+    ministry = memberships.filter(organization__classification__in=settings.MINISTRY_GOV + settings.GOV_STAFF)
     for ministr in ministry:
         ministry_data = {'name': ministr.organization.name,
                          'id': ministr.organization.id,
@@ -447,7 +438,7 @@ def getMinistrStatic(request, person_id, date_=None):
         else:
             party_data = {}
 
-        settings.PS_NP_VLADA = ['ministrstvo', 'vlada'] + settings.PS_NP
+        PS_NP_VLADA = settings.MINISTRY_GOV + settings.PS_NP
         groups = memberships.exclude(organization__classification__in=PS_NP_VLADA)
 
         groups_data = [{'name': membership.organization.name,
@@ -887,9 +878,9 @@ def getMembersOfPGsOnDate(request, date_=None):
 def getCoalitionPGs(request):
     """Returns coalitions PGs."""
 
-    coalition = Organization.objects.filter(classification=PS,
+    coalition = Organization.objects.filter(classification=settings.PS,
                                             is_coalition="1").values_list("id", flat=True)
-    oppo = Organization.objects.filter(classification=PS)
+    oppo = Organization.objects.filter(classification=settings.PS)
     oppo = oppo.exclude(is_coalition="1").values_list("id", flat=True)
 
     return JsonResponse({'coalition': list(coalition), 'opposition': list(oppo)})
@@ -1075,7 +1066,7 @@ def getAllSpeechesOfMPs(request, date_=None):
     else:
         fdate = datetime.now().date()
 
-    parliamentary_group = Organization.objects.filter(classification=PS)
+    parliamentary_group = Organization.objects.filter(classification=settings.PS)
     members = list(set(Membership.objects.filter(organization__in=parliamentary_group).values_list("person__id", flat=True)))
 
     speeches_queryset = Speech.getValidSpeeches(fdate)
@@ -1120,7 +1111,7 @@ def getMPParty(request, person_id):
               'acronym': membership.organization.acronym}
              for membership
              in person.memberships.all()
-             if membership.organization.classification == PS]
+             if membership.organization.classification == settings.PS]
 
     out = {'name': party[0]['name'],
            'id': party[0]['id'],
@@ -1151,7 +1142,7 @@ def getNumberOfSeatsOfPG(request, pg_id):
     """
 
     value = dict()
-    parliamentary_group = Organization.objects.filter(classification=PS,
+    parliamentary_group = Organization.objects.filter(classification=settings.PS,
                                                       id=int(pg_id))
     members = Membership.objects.filter(organization__in=parliamentary_group)
     data = {pg.id: len([member.person.id for member in members.filter(organization=pg)]) for pg in parliamentary_group}
@@ -1203,7 +1194,7 @@ def getBasicInfOfPG(request, pg_id, date_=None):
     viceOfPG = []
     data = dict()
     listOfVotes = []
-    parliamentary_group = Organization.objects.filter(classification=PS,
+    parliamentary_group = Organization.objects.filter(classification=settings.PS,
                                                       id=pg_id)
 
     members = Membership.objects.filter(Q(start_time__lte=fdate) |
@@ -1364,7 +1355,7 @@ def getAllPGs(request, date_=None):
         fdate = datetime.strptime(date_, settings.API_DATE_FORMAT)
     else:
         fdate = datetime.now()
-    parliamentary_group = Organization.objects.filter(classification=PS)
+    parliamentary_group = Organization.objects.filter(classification=settings.PS)
     parliamentary_group = parliamentary_group.filter(Q(founding_date__lte=fdate) |
                                                      Q(founding_date=None),
                                                      Q(dissolution_date__gte=fdate) |
@@ -1464,7 +1455,7 @@ def getAllPGsExt(request):
     }
     """
 
-    parliamentary_group = Organization.objects.filter(classification=PS)
+    parliamentary_group = Organization.objects.filter(classification=settings.PS)
     data = {pg.id: {'name': pg.name,
                     'acronym': pg.acronym,
                     'id': pg.id,
@@ -2768,9 +2759,9 @@ def getOrganizatonsByClassification(request):
     }
     """
 
-    workingBodies = Organization.objects.filter(classification__in=["odbor", "komisija", "preiskovalna komisija"])
+    workingBodies = Organization.objects.filter(classification__in=settings.WBS)
     parliamentaryGroups = Organization.objects.filter(classification__in=settings.PS_NP)
-    council = Organization.objects.filter(classification="kolegij")
+    council = Organization.objects.filter(classification__in=settings.COUNCIL)
 
     return JsonResponse({"working_bodies": [{"id": wb.id,
                                              "name": wb.name} for wb in workingBodies],
@@ -2904,7 +2895,7 @@ def getDistricts(request):
     """
 
     out = [{"id": area.id,
-            "name": area.name} for area in Area.objects.filter(calssification="okraj")]
+            "name": area.name} for area in Area.objects.filter(calssification="district")]
 
     return JsonResponse(out, safe=False)
 
@@ -3172,7 +3163,7 @@ def getMembersWithFunction(request):
     
     fdate = datetime.today()
     data = []
-    dz = Organization.objects.filter(id=DZ_ID)
+    dz = Organization.objects.filter(id=settings.DZ_ID)
     members = Membership.objects.filter(Q(start_time__lte=fdate) |
                                         Q(start_time=None),
                                         Q(end_time__gte=fdate) |
@@ -3522,7 +3513,7 @@ def addQuestion(request): # TODO not documented because private refactor with se
         session = determineSession(data['datum'])
         name = replace_all(data['vlagatelj'], rep)
         authorPerson = determinePerson(name)
-        dz = Organization.objects.get(id=DZ_ID)
+        dz = Organization.objects.get(id=settings.DZ_ID)
         date_of = datetime.strptime(data['datum'], '%d.%m.%Y')
         recipients = parseRecipient(data['naslovljenec'], date_of)
         recipient_persons = [person['recipient']
@@ -4061,7 +4052,7 @@ def setDateIfNone(date, type_='start'):
 
 
 def getAmendment(request):
-    parliamentaryGroups = Organization.objects.filter(classification__in=PS)
+    parliamentaryGroups = Organization.objects.filter(classification__in=settings.PS)
     acronyms = list(set(list(parliamentaryGroups.values_list('_acronym', flat=True))))
     amandmas = Vote.objects.filter(name__icontains='amandma')
     staticData = requests.get('https://analize.parlameter.si/v1/utils/getAllStaticData/').json()
@@ -4161,7 +4152,7 @@ def getAllORGsExt(request):
     }
     """
 
-    parliamentary_group = Organization.objects.filter(classification=PS)
+    parliamentary_group = Organization.objects.filter(classification=settings.PS)
     data = {pg.id: {'name': pg.name,
                     'id': pg.id,
                     'acronym': pg.acronym,
