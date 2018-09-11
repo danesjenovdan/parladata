@@ -1245,10 +1245,11 @@ def getBasicInfOfPG(request, pg_id, date_=None):
             listOfVotes.append(0)
 
     allVoters = sum(listOfVotes)
-    if len(Link.objects.filter(organization=parliamentary_group,
-                               note='FB')) > 0:
-        FB = Link.objects.filter(organization=parliamentary_group,
-                                 note='FB')[0].url
+
+    fb_links = Link.objects.filter(organization=parliamentary_group,
+                                   tags__name__in=['fb', 'FB'])
+    if len(fb_links) > 0:
+        FB = list(fb_links.values_list('url', flat=True))
     else:
         FB = None
     if len(ContactDetail.objects.filter(organization=parliamentary_group,
@@ -1257,10 +1258,10 @@ def getBasicInfOfPG(request, pg_id, date_=None):
                                             label='Mail')[0].value
     else:
         mail = None
-    if len(Link.objects.filter(organization=parliamentary_group,
-                               note='TW')) > 0:
-        twitter = Link.objects.filter(organization=parliamentary_group,
-                                      note='TW')[0].url
+    tw_links = Link.objects.filter(organization=parliamentary_group,
+                                   tags__name__in=['tw', 'TW'])
+    if len(tw_links) > 0:
+        twitter = list(tw_links.values_list('url', flat=True))
 
     else:
         twitter = None
