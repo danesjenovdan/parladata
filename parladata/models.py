@@ -234,7 +234,7 @@ class Organization(Timestampable, Taggable, models.Model):
     objects = PassThroughManager.for_queryset_class(OrganizationQuerySet)()
 
     def __str__(self):
-        return self.name + " " + unicode(self.id)
+        return self.name + " " + unicode(self.id) + " " + (self._acronym if self._acronym else '')
 
     def name_on(self, fdate=datetime.now()):
         name_obj = self.names.filter(models.Q(start_time__lte=fdate) |

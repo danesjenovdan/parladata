@@ -6,6 +6,7 @@ from django.core.urlresolvers import reverse
 from .models import *
 from forms import MembershipForm, PostForm, SpeechForm, PersonForm, OrganizationForm, MotionForm, VoteForm, ContactForm
 from django.conf import settings
+from django.db.models import Q
 
 class OtherNamePersonInline(admin.TabularInline):
     model = OtherName
@@ -374,7 +375,7 @@ class OrganizationAutocomplete(autocomplete.Select2QuerySetView):
         qs = Organization.objects.all()
 
         if self.q:
-            qs = qs.filter(_name__icontains=self.q)
+            qs = qs.filter(Q(_name__icontains=self.q) | Q(_acronym__icontains=self.q))
 
         return qs
 
