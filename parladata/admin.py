@@ -4,7 +4,7 @@ from dal import autocomplete
 from collections import Counter
 from django.core.urlresolvers import reverse
 from .models import *
-from forms import MembershipForm, PostForm, SpeechForm, PersonForm, OrganizationForm, MotionForm, VoteForm
+from forms import MembershipForm, PostForm, SpeechForm, PersonForm, OrganizationForm, MotionForm, VoteForm, ContactForm
 from django.conf import settings
 
 class OtherNamePersonInline(admin.TabularInline):
@@ -316,6 +316,13 @@ class VoteAdmin(admin.ModelAdmin):
     the_tags.short_description = 'tags'
 
 
+class ContactAdmin(admin.ModelAdmin):
+    form = ContactForm
+    list_display = ('id', 'value')
+
+    search_fields = ['value']
+
+
 class PersonAutocomplete(autocomplete.Select2QuerySetView):
     def get_queryset(self):
         # Don't forget to filter out results depending on the visitor !
@@ -474,4 +481,4 @@ admin.site.register(Question, QuestionAdmin)
 admin.site.register(OrganizationName)
 admin.site.register(AgendaItem)
 admin.site.register(Law)
-admin.site.register(ContactDetail)
+admin.site.register(ContactDetail, ContactAdmin)
