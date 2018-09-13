@@ -1904,6 +1904,7 @@ def getAllPeople(request):
     for i in persons:
         membership = Membership.objects.filter(person=i.id,
                                                organization__in=parliamentary_group)
+        pgs = []
         for me in membership:
             pg = me.organization.name
             pgs.append(me.organization.name)
@@ -3260,7 +3261,7 @@ def getAllQuestions(request, date_=None):
     else:
         fdate = datetime.now().date()
 
-    question_queryset = Question.objects.filter(date__lte=fdate).order_by('date')
+    question_queryset = Question.objects.filter(date__lte=fdate).order_by('id')
     question_queryset, pager = parsePager(request, question_queryset, default_per_page=500)
 
     data = []
