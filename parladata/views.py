@@ -2689,11 +2689,36 @@ def getAllTimeMemberships(request):
     ]
     """
 
-    parliamentary_group = Organization.objects.filter(classification__in=settings.PS_NP)
-    members = Membership.objects.filter(organization__in=parliamentary_group)
-    return JsonResponse([{"start_time": member.start_time,
-                          "end_time": member.end_time,
-                          "id": member.person.id} for member in members],
+    parliamentary_group = Organization.objects.filter(id=settings.DZ_ID)
+    members = Membership.objects.filter(organization=parliamentary_group, role='voter').exclude(on_behalf_of=None)
+    members = members.prefetch_related('person')
+    return JsonResponse([{'start_time': member.start_time,
+                          'end_time': member.end_time,
+                          "id": member.person.id,
+                          'name': member.person.name,
+                          'membership': member.on_behalf_of.name,
+                          'acronym': member.on_behalf_of.acronym,
+                          'family_name': member.person.family_name,
+                          'given_name': member.person.given_name,
+                          'additional_name': member.person.additional_name,
+                          'honorific_prefix': member.person.honorific_prefix,
+                          'honorific_suffix': member.person.honorific_suffix,
+                          'patronymic_name': member.person.patronymic_name,
+                          'sort_name': member.person.sort_name,
+                          'email': '',
+                          'gender': member.person.gender,
+                          'birth_date': str(member.person.birth_date),
+                          'death_date': str(member.person.death_date),
+                          'summary': member.person.summary,
+                          'biography': member.person.biography,
+                          'image': member.person.image,
+                          #     'district': districts,
+                          'gov_url': member.person.gov_url.url if member.person.gov_url else '',
+                          'gov_id': member.person.gov_id,
+                          'gov_picture_url': member.person.gov_picture_url,
+                          'voters': member.person.voters,
+                          'active': member.person.active,
+                          'party_id': member.on_behalf_of_id} for member in members],
                         safe=False)
 
 
