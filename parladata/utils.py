@@ -878,6 +878,7 @@ def parsePager(request, objs, default_per_page=1000):
 def getOwnersOfAmendment(motion):
     orgs_ids = []
     people_ids = []
+    amendment_words = ['AMANDMANI', 'AMANDMAN']
     if settings.COUNTRY == 'SI':
         if 'Amandma' in motion.text:
             acronyms = re.findall('\; \s*(\w+)|\[\s*(\w+)', motion.text)
