@@ -897,63 +897,58 @@ def getOwnersOfAmendment(motion):
         return {'orgs': org_ids, 'people': []}
     elif settings.COUNTRY == 'HR':
         links = motion.links.all()
-        amendment_words = ['AMANDMANI', 'AMANDMAN']
-        end_words = ['PZE', 'PZ', 'P.Z.E.']
+        orgs = Organization.objects.filter(classification__in=settings.PS_NP)
+        acronyms = {}
+        for org in orgs:
+            acronyms[' '.join(org.acronym.split(', '))]= org.id
+        vlada_id = Organization.objects.get(_name='Vlada').id
+        acronyms['Vlada VladaRH']= vlada_id
         for link in links:
             tokens = link.name.replace(" ", '_').replace("-", '_').split('_')
-            is_amendment = False
-            for word in amendment_words:
-                if word in tokens:
-                    is_amendment = True
-                    break
-            if is_amendment:
+            print(link.name)
+            if 'AMANDMAN' in link.name:
+                for acronym, i in acronyms.items():
+                    # find orgs
+                    for splited_acr in acronym.split(' '):
+                        if splited_acr in link.name:
+                            orgs_ids.append(i)
+                            break
                 num_ids = [hasNumbersOrPdfOrEndWord(token) for token in tokens]
                 if True in num_ids:
-                    tokens = tokens [:num_ids.index(True)]
+                    tokens = tokens[:num_ids.index(True)]
                 has_amendment = [token in amendment_words for token in tokens]
                 if True in has_amendment:
                     tokens = tokens[has_amendment.index(True)+1:]
-                orgs = Organization.objects.filter(classification__in=settings.PS_NP)
                 # find proposers
-                if tokens[0].lower() == 'vlada' or tokens[0].lower() == 'vladarh':
+                #if tokens[0].lower() == 'vlada' or tokens[0].lower() == 'vladarh':
                     # vlada
-                    orgs_ids = [Organization.objects.get(_name='Vlada').id]
                 elif tokens[0].lower() == 'klub':
                     tokens = tokens[1:]
-                    n_tokens = len(tokens)
-                    for i in range(n_tokens):
-                        d_tokens = [[tokens[i]]]
-                        if i + 1 < n_tokens:
-                            d_tokens.append([tokens[i], tokens[i+1]])
-                        for d_token in d_tokens:
-                            filtred_orgs = orgs.filter(name_parser__icontains=' '.join(d_token))
-                            if filtred_orgs.count() > 0:
-                                names = filtred_orgs.values('id', 'name_parser')
-                                for name in names:
-                                    if re.search("\\b" + ' '.join(d_token) + "\\b", name['name_parser']):
-                                        orgs_ids.append(name['id'])
-                                        break
-                elif tokens[0].lower() == 'odbor':
-                    pass
-                else:
-                    n_tokens = len(tokens)
-                    for i in range(n_tokens):
-                        d_tokens = [[tokens[i]]]
-                        if i + 1 < n_tokens:
-                            d_tokens.append([tokens[i], tokens[i+1]])
-                        for d_token in d_tokens:
-                            person = Person.objects.filter(name_parser__icontains=' '.join(d_token))
-                            if person.count() == 1: 
-                                people_ids.append(person[0].id)
-                                break
-                            if person.count() > 0:
-                                names = person.values('id', 'name_parser')
-                                for name in names:
-                                    if re.search("\\b" + ' '.join(d_token) + "\\b", name['name_parser']):
-                                        people_ids.append(name['id'])
-                                        break
 
-    return {'orgs': orgs_ids, 'people': people_ids}
+                n_tokens = len(tokens)
+                for i in range(n_tokens):
+                    d_tokens = [[tokens[i]]]
+                    if i + 1 < n_tokens:
+                        d_tokens.append([tokens[i], tokens[i+1]])
+                    for d_token in d_tokens:
+                        n_tokens = len(tokens)
+                        for i in range(n_tokens):
+                            d_tokens = [[tokens[i]]]
+                            if i + 1 < n_tokens:
+                                d_tokens.append([tokens[i], tokens[i+1]])
+                            for d_token in d_tokens:
+                                person = Person.objects.filter(name_parser__icontains=' '.join(d_token))
+                                if person.count() == 1: 
+                                    people_ids.append(person[0].id)
+                                    break
+                                if person.count() > 0:
+                                    names = person.values('id', 'name_parser')
+                                    for name in names:
+                                        if re.search("\\b" + ' '.join(d_token) + "\\b", name['name_parser']):
+                                            people_ids.append(name['id'])
+                                            break
+        print acronyms
+    return {'orgs': orgs_ids, 'people': list(set(people_ids))}
 
 
 def hasNumbersOrPdfOrEndWord(inputString):
