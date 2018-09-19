@@ -2690,9 +2690,18 @@ def getAllTimeMemberships(request):
     """
 
     parliamentary_group = Organization.objects.filter(id=settings.DZ_ID)
-    members = Membership.objects.filter(organization=parliamentary_group, role='voter').exclude(on_behalf_of=None)
+    members = Membership.objects.filter(organization=parliamentary_group,
+        role='voter').exclude(on_behalf_of=None)
     members = members.prefetch_related('person')
-    return JsonResponse([{'start_time': member.start_time,
+    data = []
+
+    for member in members:
+        if member.end_time != None:
+            if members.filter(Q(end_time=None) |
+                              Q(start_time__gte=member.start_time),
+                              person_id=member.person_id).exclude(id=member.id):
+                continue
+        data.append({'start_time': member.start_time,
                           'end_time': member.end_time,
                           "id": member.person.id,
                           'name': member.person.name,
@@ -2707,8 +2716,8 @@ def getAllTimeMemberships(request):
                           'sort_name': member.person.sort_name,
                           'email': '',
                           'gender': member.person.gender,
-                          'birth_date': str(member.person.birth_date),
-                          'death_date': str(member.person.death_date),
+                          'birth_date': member.person.birth_date,
+                          'death_date': member.person.death_date,
                           'summary': member.person.summary,
                           'biography': member.person.biography,
                           'image': member.person.image,
@@ -2718,8 +2727,8 @@ def getAllTimeMemberships(request):
                           'gov_picture_url': member.person.gov_picture_url,
                           'voters': member.person.voters,
                           'active': member.person.active,
-                          'party_id': member.on_behalf_of_id} for member in members],
-                        safe=False)
+                          'party_id': member.on_behalf_of_id})
+    return JsonResponse(data, safe=False)
 
 
 def getOrganizatonsByClassification(request):
