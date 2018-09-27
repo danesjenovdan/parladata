@@ -33,18 +33,18 @@ def import_mps():
                     mandates=mandates,
                     )
                 person.save()
-                person.districts.add(district)
+                person.districts.add(district.id)
 
 
-                if mp['sejm_mps.date_oath']:
-                    start_time = parse_date(mp['sejm_mps.date_oath'])
-                elif mp['sejm_mps.date_elected']:
-                    start_time = parse_date(mp['sejm_mps.date_elected'])
+                if mp['data']['sejm_mps.date_oath']:
+                    start_time = parse_date(mp['data']['sejm_mps.date_oath'])
+                elif mp['data']['sejm_mps.date_elected']:
+                    start_time = parse_date(mp['data']['sejm_mps.date_elected'])
                 else:
                     start_time = parse_date(mandate_start_time)
 
-                if mp['sejm_mps.date_expiry']:
-                    end_time = parse_date(mp['sejm_mps.date_expiry'])
+                if mp['data']['sejm_mps.date_expiry']:
+                    end_time = parse_date(mp['data']['sejm_mps.date_expiry'])
                 else:
                     end_time = None
 
@@ -56,12 +56,15 @@ def import_mps():
 
 
 def add_or_get_party(obj):
-    org = Organization.objects.filter(gov_id=obj['data']['sejm_clubs.id'])
+    if obj['data']['sejm_mps.club_id']:
+        org = Organization.objects.filter(gov_id=obj['data']['sejm_clubs.id'])
+    else:
+        org = Organization.objects.filter(gov_id=-1)
     if not org:
         org = Organization(
             _name=obj['data']['sejm_clubs.name'],
             name_parser='',
-            _acronym=obj['data']['sejm_clubs.id'],
+            _acronym=obj['data']['sejm_clubs.name_short'],
             gov_id=obj['data']['sejm_clubs.id'],
             classification='pg',
             )
@@ -82,16 +85,15 @@ def add_membership(person, organization, on_behalf_of, role, start_time, end_tim
         ).save()
     pass
 
-def add_or_get_area(obj):
-    area = Area.objects.filter(name=obj['data']['sejm_mps.constituency_name'])
-    if not area:
-        org = Area(
+def add_or_get_district(obj):
+    try:
+        area = Area.objects.get(name=obj['data']['sejm_mps.constituency_name'])
+    except:
+        area = Area(
             name=obj['data']['sejm_mps.constituency_name'],
-            classification='district',
+            calssification='district',
             )
-        org.save()
-    else:
-        area = area[0]
+        area.save()
     return area
 
 
@@ -99,13 +101,10 @@ def add_or_get_area(obj):
 def read_data_from_api(url, per_page = None):
     end = False
     page = 1
-    print(url)
     while not end:
-        print(page)
         response = requests.get(url).json()
         yield response['Dataobject']
         if 'next' not in response['Links'].keys():
-            print('generator end')
             break
         url = response['Links']['next']
 
