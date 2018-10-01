@@ -569,7 +569,7 @@ def getSessions(request, date_=None):
     else:
         fdate = datetime.now().date()
     data = []
-    sessions = Session.objects.filter(start_time__lte=fdate).order_by('-start_time')
+    sessions = Session.objects.filter(Q(start_time__lte=fdate)|Q(start_time=None)).order_by('-start_time')
 
     for i in sessions:
         organizations = i.organizations.all().values_list('id', flat=True)
