@@ -10,7 +10,7 @@ mandate_start_time = '2015-10-25'
 
 # MEMBERS
 
-members = {p.gov_id: p for p in  Person.objects.all().exclude(gov_id=None)}
+members = {p.name_parser: p for p in  Person.objects.all()}
 options = {
     '1' : 'for',
     '2': 'against',
@@ -126,12 +126,12 @@ def parse_date(date_str):
 
 
 def parse_datetime(time_str):
-    return datetime.strptime(date_str, '%Y-%m-%d %X')
+    return datetime.strptime(time_str, '%Y-%m-%d %X')
 
 
 def get_or_add_speaker(data):
     try:
-        person = members[data['sejm_speakers.id']]
+        person = members[data['data']['sejm_speakers.id']]
     except:
         print('adding visitor ', data['data']['sejm_speakers.name'])
         person = Person(
@@ -139,6 +139,7 @@ def get_or_add_speaker(data):
             name_parser=data['data']['sejm_speakers.id']
             )
         person.save()
+        members[data['data']['sejm_speakers.id']] = person
     return person
 
 
@@ -148,13 +149,18 @@ def import_sessions():
     sejm = Organization.objects.get(_name='Sejm')
     for page in read_data_from_api('https://api-v3.mojepanstwo.pl/dane/sejm_sittings/'):
         for item in page:
-            session = Session(
-                name=item['data']['sejm_sittings.number'],
-                gov_id=item['data']['sejm_sittings.id'],
-                organization=sejm,
-                )
-            session.save()
-            session.organizations.add(sejm)
+            print('adding session', item['data']['sejm_sittings.number'])
+            session = Session.objects.filter(gov_id=item['data']['sejm_sittings.id'])
+            if session:
+                session = session[0]
+            else:
+                session = Session(
+                    name=item['data']['sejm_sittings.number'],
+                    gov_id=item['data']['sejm_sittings.id'],
+                    organization=sejm,
+                    )
+                session.save()
+                session.organizations.add(sejm)
 
             for page in read_data_from_api('https://api-v3.mojepanstwo.pl/dane/sejm_agenda_items?conditions[sejm_agenda_items.sitting_id]=' + item['data']['sejm_sittings.id']):
                 for item in page:
@@ -171,6 +177,7 @@ def import_agenda_item(data, session):
         session=session,
     )
     agenda_item.save()
+    print('adding agneda item', data['data']['sejm_agenda_items.title'])
 
     for debate in data['data']['sejm_agenda_items.debate_id']:
         debate_data = requests.get('https://api-v3.mojepanstwo.pl/dane/sejm_debates/' + debate).json()
@@ -180,15 +187,19 @@ def import_agenda_item(data, session):
         motion_data = requests.get('https://api-v3.mojepanstwo.pl/dane/sejm_votings/' + motion_id + '.json?layers[]=votes').json()
         motion = Motion(
             text=motion_data['data']['sejm_votings.title'],
+            session=session,
             result=get_result(motion_data['data']['sejm_votings.result']),
+            gov_id=motion_data['id'],
+            agenda_item=agenda_item,
         )
         motion.save()
 
         vote = Vote(
             motion=motion,
+            session=session,
             name=motion_data['data']['sejm_votings.title'],
             result=get_result(motion_data['data']['sejm_votings.result']),
-            start_time=parse_datetime(motion_data['sejm_votings.time']),
+            start_time=parse_datetime(motion_data['data']['sejm_votings.time']),
         )
         vote.save()
         for ballot_ in motion_data['layers']['votes']:
@@ -212,10 +223,10 @@ def import_debate(data, session, agenda_item):
         for speech in page:
             content = strip_tags(requests.get('https://s3.eu-central-1.amazonaws.com/cdn.epf.sejm.speeches/processed/'+data['id']+'.html').content)
             Speech(
-                speaker_id=get_or_add_speaker(speech),
+                speaker=get_or_add_speaker(speech),
                 #party=,
                 content=content,
-                order=data['data']['sejm_speeches.ord'],
+                order=speech['data']['sejm_speeches.ord'],
                 session=session,
                 start_time=debate.date,
                 agenda_item=agenda_item,

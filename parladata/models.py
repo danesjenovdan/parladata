@@ -789,6 +789,9 @@ class Motion(Timestampable, Taggable, models.Model):
     agenda_item = models.ForeignKey('AgendaItem', blank=True, null=True,
                                     help_text='Agenda item', related_name='motions')
 
+    debate = models.ForeignKey('Debate', blank=True, null=True,
+                                help_text='Debates', related_name='motions')
+
     def __str__(self):
         return self.text[:100] + ' --> ' + self.session.name if self.session else ''
 
