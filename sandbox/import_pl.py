@@ -153,7 +153,7 @@ def import_sessions():
                 organization=sejm,
                 )
             session.save()
-            session.add(sejm)
+            session.organizations.add(sejm)
 
             for page in read_data_from_api('https://api-v3.mojepanstwo.pl/dane/sejm_agenda_items?conditions[sejm_agenda_items.sitting_id]=' + item['data']['sejm_sittings.id']):
                 for item in page:
@@ -165,18 +165,18 @@ def import_sessions():
 
 def import_agenda_item(data, session):
     agenda_item = AgendaItem(
-        identifier=data['id'],
+        gov_id=data['id'],
         name=data['data']['sejm_agenda_items.title'],
         session=session,
     )
     agenda_item.save()
 
-    for debate in data['date']['sejm_agenda_items.debate_id']:
+    for debate in data['data']['sejm_agenda_items.debate_id']:
         debate_data = requests.get('https://api-v3.mojepanstwo.pl/dane/sejm_debates/' + debate).json()
         import_debate(debate_data, session, agenda_item)
 
-    for motion_id in data['date']['sejm_agenda_items.voting_id']:
-        motion_data = requests.get('https://api-v3.mojepanstwo.pl/dane/sejm_votings/'motion_id'.json?layers[]=votes').json()
+    for motion_id in data['data']['sejm_agenda_items.voting_id']:
+        motion_data = requests.get('https://api-v3.mojepanstwo.pl/dane/sejm_votings/' + motion_id + '.json?layers[]=votes').json()
         motion = Motion(
             text=motion_data['data']['sejm_votings.title'],
             result=get_result(motion_data['data']['sejm_votings.result']),
@@ -198,7 +198,7 @@ def import_agenda_item(data, session):
             ).save()
 
 
-def import_debate(data, session, agenda_item)
+def import_debate(data, session, agenda_item):
     debate = Debate(
         order=data['data']['sejm_debates.ord'],
         date=parse_date(data['data']['sejm_days_speeches.date']),

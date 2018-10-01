@@ -1120,7 +1120,7 @@ class AgendaItem(Timestampable, Taggable, models.Model):
     order = models.IntegerField(blank=True, null=True,
                                 help_text='Order of agenda item')
 
-    gov_id = models.CharField(blank=True, null=True, help_text='gov_id of agenda item')
+    gov_id = models.CharField(blank=True, max_length=255, null=True, help_text='gov_id of agenda item')
 
     def __str__(self):
         return self.name
@@ -1137,7 +1137,7 @@ class Debate(Timestampable, Taggable, models.Model):
     agenda_item = models.ForeignKey('AgendaItem', blank=True, null=True,
                                     help_text='Agenda item', related_name='debates')
 
-    gov_id = models.CharField(blank=True, null=True, help_text='gov_id of debate')
+    gov_id = models.CharField(blank=True, max_length=255, null=True, help_text='gov_id of debate')
 
     session = models.ForeignKey('Session', blank=True, null=True)
 
