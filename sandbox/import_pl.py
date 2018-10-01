@@ -1,10 +1,23 @@
 # -*- coding: utf-8 -*-
+from django.utils.html import strip_tags
+
 from parladata.models import *
 
 from datetime import datetime
 
 import requests
 mandate_start_time = '2015-10-25'
+
+# MEMBERS
+
+members = {p.gov_id: p for p in  Person.objects.all().exclude(gov_id=None)}
+options = {
+    '1' : 'for',
+    '2': 'against',
+    '3': 'abstain',
+    '4': 'absent'
+    }
+
 def import_mps():
     sejm = Organization.objects.get(_name='Sejm')
     for page in read_data_from_api('https://api-v3.mojepanstwo.pl/dane/sejm_mps'):
@@ -18,7 +31,7 @@ def import_mps():
                 mandates = len([1 for i in mp['data']['sejm_mps.history'].split(' ') if i == 'poseł']) + 1
                 person = Person(
                     name=mp['data']['sejm_mps.name'],
-                    name_parser=mp['data']['sejm_mps.name'],
+                    name_parser=mp['data']['sejm_mps.id'],
                     previous_occupation=mp['data']['sejm_mps.history'],
                     family_name=mp['data']['sejm_mps.last_name'],
                     given_name=mp['data']['sejm_mps.first_name'],
@@ -110,3 +123,112 @@ def read_data_from_api(url, per_page = None):
 
 def parse_date(date_str):
     return datetime.strptime(date_str, '%Y-%m-%d')
+
+
+def parse_datetime(time_str):
+    return datetime.strptime(date_str, '%Y-%m-%d %X')
+
+
+def get_or_add_speaker(data):
+    try:
+        person = members[data['sejm_speakers.id']]
+    except:
+        person = Person(
+            name=data['sejm_speakers.name'],
+            name_parser=data['sejm_speakers.id']
+            )
+        person.save()
+    return person
+
+
+# SESSIONS
+
+def import_sessions():
+    sejm = Organization.objects.get(_name='Sejm')
+    for page in read_data_from_api('https://api-v3.mojepanstwo.pl/dane/sejm_sittings/'):
+        for item in page:
+            session = Session(
+                name=item['data']['sejm_sittings.number'],
+                gov_id=item['data']['sejm_sittings.id'],
+                organization=sejm,
+                )
+            session.save()
+            session.add(sejm)
+
+            for page in read_data_from_api('https://api-v3.mojepanstwo.pl/dane/sejm_agenda_items?conditions[sejm_agenda_items.sitting_id]=' + item['data']['sejm_sittings.id']):
+                for item in page:
+                    import_agenda_item(item, session)
+
+
+
+
+
+def import_agenda_item(data, session):
+    agenda_item = AgendaItem(
+        identifier=data['id'],
+        name=data['data']['sejm_agenda_items.title'],
+        session=session,
+    )
+    agenda_item.save()
+
+    for debate in data['date']['sejm_agenda_items.debate_id']:
+        debate_data = requests.get('https://api-v3.mojepanstwo.pl/dane/sejm_debates/' + debate).json()
+        import_debate(debate_data, session, agenda_item)
+
+    for motion_id in data['date']['sejm_agenda_items.voting_id']:
+        motion_data = requests.get('https://api-v3.mojepanstwo.pl/dane/sejm_votings/'motion_id'.json?layers[]=votes').json()
+        motion = Motion(
+            text=motion_data['data']['sejm_votings.title'],
+            result=get_result(motion_data['data']['sejm_votings.result']),
+        )
+        motion.save()
+
+        vote = Vote(
+            motion=motion,
+            name=motion_data['data']['sejm_votings.title'],
+            result=get_result(motion_data['data']['sejm_votings.result']),
+            start_time=parse_datetime(motion_data['sejm_votings.time']),
+        )
+        vote.save()
+        for ballot_ in motion_data['layers']['votes']:
+            Ballot(
+                vote=vote,
+                voter=members[ballot_['mp_id']],
+                option=options[ballot_['vote_id']]
+            ).save()
+
+
+def import_debate(data, session, agenda_item)
+    debate = Debate(
+        order=data['data']['sejm_debates.ord'],
+        date=parse_date(data['data']['sejm_days_speeches.date']),
+        agenda_item=agenda_item,
+        session=session,
+        gov_id=data['id']
+        )
+    debate.save()
+    for page in read_data_from_api('https://api-v3.mojepanstwo.pl/dane/sejm_speeches?conditions[sejm_speeches.debate_id]='+data['id']):
+        for speech in page:
+            content = strip_tags(requests.get('https://s3.eu-central-1.amazonaws.com/cdn.epf.sejm.speeches/processed/'+data['id']+'.html').content)
+            Speech(
+                speaker_id=get_or_add_speaker(speech),
+                #party=,
+                content=content,
+                order=data['data']['sejm_speeches.ord'],
+                session=session,
+                start_time=debate.date,
+                agenda_item=agenda_item,
+                valid_from=debate.date,
+                valid_to=datetime.max,
+                debate=debate
+            ).save()
+
+
+
+def get_result(text):
+    if text == 'against':
+        return 0
+    elif text == 'for':
+        return 1
+    else:
+        return -1
