@@ -133,9 +133,10 @@ def get_or_add_speaker(data):
     try:
         person = members[data['sejm_speakers.id']]
     except:
+        print('adding visitor ', data['data']['sejm_speakers.name'])
         person = Person(
-            name=data['sejm_speakers.name'],
-            name_parser=data['sejm_speakers.id']
+            name=data['data']['sejm_speakers.name'],
+            name_parser=data['data']['sejm_speakers.id']
             )
         person.save()
     return person
