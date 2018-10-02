@@ -3834,7 +3834,7 @@ def getVotesTable(request, date_to=None):
     else:
         fdate = datetime.now().date()
     data = []
-    sessions = Session.objects.filter(vote__isnull=False).distinct()('id')
+    sessions = Session.objects.filter(vote__isnull=False).distinct().order_by('id')
     sessions, pager = parsePager(request, sessions, default_per_page=10)
     for session in sessions:
         votes = Vote.objects.filter(session=session,
