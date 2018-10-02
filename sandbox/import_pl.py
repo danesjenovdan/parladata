@@ -171,13 +171,17 @@ def import_sessions():
 
 
 def import_agenda_item(data, session):
-    agenda_item = AgendaItem(
-        gov_id=data['id'],
-        name=data['data']['sejm_agenda_items.title'],
-        session=session,
-    )
-    agenda_item.save()
-    print('adding agneda item', data['data']['sejm_agenda_items.title'])
+    agenda_item = AgendaItem.objects.filter(gov_id=data['id'])
+    if agenda_item:
+        agenda_item = agenda_item[0]
+    else:
+        agenda_item = AgendaItem(
+            gov_id=data['id'],
+            name=data['data']['sejm_agenda_items.title'],
+            session=session,
+        )
+        agenda_item.save()
+        print('adding agneda item', data['data']['sejm_agenda_items.title'])
 
     for debate in data['data']['sejm_agenda_items.debate_id']:
         debate_data = requests.get('https://api-v3.mojepanstwo.pl/dane/sejm_debates/' + debate).json()
@@ -211,14 +215,19 @@ def import_agenda_item(data, session):
 
 
 def import_debate(data, session, agenda_item):
-    debate = Debate(
-        order=data['data']['sejm_debates.ord'],
-        date=parse_date(data['data']['sejm_days_speeches.date']),
-        agenda_item=agenda_item,
-        session=session,
-        gov_id=data['id']
-        )
-    debate.save()
+    debate = Debate.objects.filter(gov_id=data['id'])
+    if debate:
+        debate = debate[0]
+        return
+    else:
+        debate = Debate(
+            order=data['data']['sejm_debates.ord'],
+            date=parse_date(data['data']['sejm_days_speeches.date']),
+            agenda_item=agenda_item,
+            session=session,
+            gov_id=data['id']
+            )
+        debate.save()
     for page in read_data_from_api('https://api-v3.mojepanstwo.pl/dane/sejm_speeches?conditions[sejm_speeches.debate_id]='+data['id']):
         for speech in page:
             content = strip_tags(requests.get('https://s3.eu-central-1.amazonaws.com/cdn.epf.sejm.speeches/processed/'+data['id']+'.html').content)

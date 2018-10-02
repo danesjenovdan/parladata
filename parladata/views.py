@@ -3834,11 +3834,11 @@ def getVotesTable(request, date_to=None):
     else:
         fdate = datetime.now().date()
     data = []
-    sessions = Session.objects.filter(vote__isnull=False).distinct().order_by("start_time")
+    sessions = Session.objects.filter(vote__isnull=False).distinct()('id')
     sessions, pager = parsePager(request, sessions, default_per_page=10)
     for session in sessions:
         votes = Vote.objects.filter(session=session,
-                                    start_time__lte=fdate)
+                                    start_time__lte=fdate).order_by('id')
         for vote in votes.prefetch_related('motion'):
             for ballot in Ballot.objects.filter(vote=vote):
                 data.append({'id': ballot.id,
