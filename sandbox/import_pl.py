@@ -28,7 +28,7 @@ def import_mps():
             else:
                 org = add_or_get_party(mp)
                 district = add_or_get_district(mp)
-                mandates = len([1 for i in mp['data']['sejm_mps.history'].split(' ') if i == 'poseł']) + 1
+                mandates = len([1 for i in mp['data']['sejm_mps.history'].encode("utf8").split(' ') if i == 'poseł']) + 1
                 person = Person(
                     name=mp['data']['sejm_mps.name'],
                     name_parser=mp['data']['sejm_mps.id'],
@@ -230,7 +230,7 @@ def import_debate(data, session, agenda_item):
         debate.save()
     for page in read_data_from_api('https://api-v3.mojepanstwo.pl/dane/sejm_speeches?conditions[sejm_speeches.debate_id]='+data['id']):
         for speech in page:
-            content = strip_tags(requests.get('https://s3.eu-central-1.amazonaws.com/cdn.epf.sejm.speeches/processed/'+data['id']+'.html').content)
+            content = strip_tags(requests.get('https://s3.eu-central-1.amazonaws.com/cdn.epf.sejm.speeches/processed/'+speech['id']+'.html').content)
             Speech(
                 speaker=get_or_add_speaker(speech),
                 #party=,
