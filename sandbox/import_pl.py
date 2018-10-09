@@ -230,7 +230,7 @@ def import_debate(data, session, agenda_item):
         debate.save()
     for page in read_data_from_api('https://api-v3.mojepanstwo.pl/dane/sejm_speeches?conditions[sejm_speeches.debate_id]='+data['id']):
         for speech in page:
-            content = strip_tags(requests.get('https://s3.eu-central-1.amazonaws.com/cdn.epf.sejm.speeches/processed/'+speech['id']+'.html').content)
+            content = strip_tags(requests.get('https://sejmometr.pl/api/wystapienia/'+speech['id']+'.html').content)
             Speech(
                 speaker=get_or_add_speaker(speech),
                 #party=,
