@@ -6,6 +6,8 @@ from parladata.models import *
 from datetime import datetime
 
 import requests
+import time
+
 mandate_start_time = '2015-10-25'
 
 # MEMBERS
@@ -115,7 +117,7 @@ def read_data_from_api(url, per_page = None):
     end = False
     page = 1
     while not end:
-        response = requests.get(url).json()
+        response = tryHard(url).json()
         yield response['Dataobject']
         if 'next' not in response['Links'].keys():
             break
@@ -184,11 +186,11 @@ def import_agenda_item(data, session):
         print('adding agneda item', data['data']['sejm_agenda_items.title'])
 
     for debate in data['data']['sejm_agenda_items.debate_id']:
-        debate_data = requests.get('https://api-v3.mojepanstwo.pl/dane/sejm_debates/' + debate).json()
+        debate_data = tryHard('https://api-v3.mojepanstwo.pl/dane/sejm_debates/' + debate).json()
         import_debate(debate_data, session, agenda_item)
 
     for motion_id in data['data']['sejm_agenda_items.voting_id']:
-        motion_data = requests.get('https://api-v3.mojepanstwo.pl/dane/sejm_votings/' + motion_id + '.json?layers[]=votes').json()
+        motion_data = tryHard('https://api-v3.mojepanstwo.pl/dane/sejm_votings/' + motion_id + '.json?layers[]=votes').json()
         motion = Motion(
             text=motion_data['data']['sejm_votings.title'],
             session=session,
@@ -230,7 +232,7 @@ def import_debate(data, session, agenda_item):
         debate.save()
     for page in read_data_from_api('https://api-v3.mojepanstwo.pl/dane/sejm_speeches?conditions[sejm_speeches.debate_id]='+data['id']):
         for speech in page:
-            content = strip_tags(requests.get('https://sejmometr.pl/api/wystapienia/'+speech['id']+'.html').content)
+            content = strip_tags(tryHard('https://sejmometr.pl/api/wystapienia/'+speech['id']+'.html').content)
             Speech(
                 speaker=get_or_add_speaker(speech),
                 #party=,
@@ -253,3 +255,26 @@ def get_result(text):
         return 1
     else:
         return -1
+
+
+def tryHard(url):
+    data = None
+    counter = 0
+    while not data:
+        try:
+            data = requests.get(url)
+        except:
+            print(data.status_code, counterm, url)
+            #counter += 1
+            time.sleep(5)
+            pass
+        if not data:
+            print(data.status_code, counterm, url)
+            time.sleep(5)
+            counter += 1
+        
+        if counter > 5:
+            print 'SHITT'
+            return None
+    return data
+
