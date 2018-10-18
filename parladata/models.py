@@ -1137,8 +1137,8 @@ class Debate(Timestampable, Taggable, models.Model):
                                null=True,
                                help_text='Date of the item.')
 
-    agenda_item = models.ForeignKey('AgendaItem', blank=True, null=True,
-                                    help_text='Agenda item', related_name='debates')
+    agenda_item = models.ManyToManyField('AgendaItem', blank=True,
+                                         help_text='Agenda item', related_name='debates')
 
     gov_id = models.CharField(blank=True, max_length=255, null=True, help_text='gov_id of debate')
 

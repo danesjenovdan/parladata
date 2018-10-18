@@ -220,16 +220,18 @@ def import_debate(data, session, agenda_item):
     debate = Debate.objects.filter(gov_id=data['id'])
     if debate:
         debate = debate[0]
+        if agenda_item not in debate.agenda_item.all():
+            debate.agenda_item.add(agenda_item)
         return
     else:
         debate = Debate(
             order=data['data']['sejm_debates.ord'],
             date=parse_date(data['data']['sejm_days_speeches.date']),
-            agenda_item=agenda_item,
             session=session,
             gov_id=data['id']
             )
         debate.save()
+        debate.agenda_item.add(agenda_item)
     for page in read_data_from_api('https://api-v3.mojepanstwo.pl/dane/sejm_speeches?conditions[sejm_speeches.debate_id]='+data['id']):
         for speech in page:
             content = strip_tags(tryHard('https://sejmometr.pl/api/wystapienia/'+speech['id']+'.html').content)
@@ -239,7 +241,7 @@ def import_debate(data, session, agenda_item):
                 content=content,
                 order=speech['data']['sejm_speeches.ord'],
                 session=session,
-                start_time=debate.date,
+                start_time=parse_date(speech['data']['sejm_sittings_days.date']),
                 agenda_item=agenda_item,
                 valid_from=debate.date,
                 valid_to=datetime.max,
