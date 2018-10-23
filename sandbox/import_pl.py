@@ -343,5 +343,4 @@ def parse_speech_content(data):
         out.append({'text': ' '.join(c_str), 'person': person, 'order': get_and_increase_order(order)})
 
     return out
-parse_speech_content(data)
 
