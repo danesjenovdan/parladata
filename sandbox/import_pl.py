@@ -4,15 +4,18 @@ from django.utils.html import strip_tags
 from parladata.models import *
 
 from datetime import datetime
+from pyquery import PyQuery as pq
 
 import requests
 import time
+import unicodedata
+
 
 mandate_start_time = '2015-10-25'
 
 # MEMBERS
 
-members = {p.name_parser: p for p in  Person.objects.all()}
+members = {p.name_parser: p for p in  Person.objects.all() if p.name_parser}
 options = {
     '1' : 'for',
     '2': 'against',
@@ -65,7 +68,6 @@ def import_mps():
 
                 add_membership(person, sejm, org, 'voter', start_time, end_time)
                 add_membership(person, org, None, 'member', start_time, end_time)
-
 
 
 
@@ -145,6 +147,19 @@ def get_or_add_speaker(data):
     return person
 
 
+def get_od_add_speaker_by_name(name_str):
+    person = Person.objects.filter(name__icontains=name_str)
+    if person:
+        return person[0]
+    else:
+        print "ADDING PERSON " + name_str
+        person = Person(
+            name=name_str,
+            )
+        person.save()
+        return person
+
+
 # SESSIONS
 
 def import_sessions():
@@ -169,9 +184,6 @@ def import_sessions():
                     import_agenda_item(item, session)
 
 
-
-
-
 def import_agenda_item(data, session):
     agenda_item = AgendaItem.objects.filter(gov_id=data['id'])
     if agenda_item:
@@ -190,30 +202,31 @@ def import_agenda_item(data, session):
         import_debate(debate_data, session, agenda_item)
 
     for motion_id in data['data']['sejm_agenda_items.voting_id']:
-        motion_data = tryHard('https://api-v3.mojepanstwo.pl/dane/sejm_votings/' + motion_id + '.json?layers[]=votes').json()
-        motion = Motion(
-            text=motion_data['data']['sejm_votings.title'],
-            session=session,
-            result=get_result(motion_data['data']['sejm_votings.result']),
-            gov_id=motion_data['id'],
-            agenda_item=agenda_item,
-        )
-        motion.save()
+        if not Motion.objects.filter(gov_id=motion_id):
+            motion_data = tryHard('https://api-v3.mojepanstwo.pl/dane/sejm_votings/' + motion_id + '.json?layers[]=votes').json()
+            motion = Motion(
+                text=motion_data['data']['sejm_votings.title'],
+                session=session,
+                result=get_result(motion_data['data']['sejm_votings.result']),
+                gov_id=motion_data['id'],
+                agenda_item=agenda_item,
+            )
+            motion.save()
 
-        vote = Vote(
-            motion=motion,
-            session=session,
-            name=motion_data['data']['sejm_votings.title'],
-            result=get_result(motion_data['data']['sejm_votings.result']),
-            start_time=parse_datetime(motion_data['data']['sejm_votings.time']),
-        )
-        vote.save()
-        for ballot_ in motion_data['layers']['votes']:
-            Ballot(
-                vote=vote,
-                voter=members[ballot_['mp_id']],
-                option=options[ballot_['vote_id']]
-            ).save()
+            vote = Vote(
+                motion=motion,
+                session=session,
+                name=motion_data['data']['sejm_votings.title'],
+                result=get_result(motion_data['data']['sejm_votings.result']),
+                start_time=parse_datetime(motion_data['data']['sejm_votings.time']),
+            )
+            vote.save()
+            for ballot_ in motion_data['layers']['votes']:
+                Ballot(
+                    vote=vote,
+                    voter=members[ballot_['mp_id']],
+                    option=options[ballot_['vote_id']]
+                ).save()
 
 
 def import_debate(data, session, agenda_item):
@@ -234,19 +247,22 @@ def import_debate(data, session, agenda_item):
         debate.agenda_item.add(agenda_item)
     for page in read_data_from_api('https://api-v3.mojepanstwo.pl/dane/sejm_speeches?conditions[sejm_speeches.debate_id]='+data['id']):
         for speech in page:
-            content = strip_tags(tryHard('https://sejmometr.pl/api/wystapienia/'+speech['id']+'.html').content)
-            Speech(
-                speaker=get_or_add_speaker(speech),
-                #party=,
-                content=content,
-                order=speech['data']['sejm_speeches.ord'],
-                session=session,
-                start_time=parse_date(speech['data']['sejm_sittings_days.date']),
-                agenda_item=agenda_item,
-                valid_from=debate.date,
-                valid_to=datetime.max,
-                debate=debate
-            ).save()
+            content = tryHard('https://sejmometr.pl/api/wystapienia/'+speech['id']+'.html').content
+
+            splited_contents = parse_speech_content(speech)
+            for splited in splited_contents:
+                Speech(
+                    speaker=splited['person'],
+                    #party=,
+                    content=splited['text'],
+                    order=splited['order'],
+                    session=session,
+                    start_time=parse_date(speech['data']['sejm_sittings_days.date']),
+                    agenda_item=agenda_item,
+                    valid_from=debate.date,
+                    valid_to=datetime.max,
+                    debate=debate
+                ).save()
 
 
 
@@ -279,4 +295,53 @@ def tryHard(url):
             print 'SHITT'
             return None
     return data
+
+
+def parse_speech_content(data):
+    def get_and_increase_order(order):
+        prev = order['value']
+        order['value']+=1
+        return prev
+    # this dont work yet
+    #content = data['data']['sejm_speeches.html']
+    content = tryHard('https://sejmometr.pl/api/wystapienia/'+data['id']+'.html').text
+    print content
+    d = pq(content)
+
+    order = {'value': int(data['data']['sejm_speeches.ord']) * 100}
+
+    person = get_or_add_speaker(data)
+    out = []
+    c_str = []
+
+    for i in d("p"):
+        p = pq(i)
+        
+        text = p.text()
+        # text = unicodedata.normalize('NFC', unicode(p.text()))
+        print text
+        if p.hasClass("opis") or text.startswith('(Poseł'.decode("utf-8")) or text.startswith('(Głos z sali'.decode("utf-8")):
+
+            # if injected speech
+            if c_str:
+                out.append({'text': ' '.join(c_str), 'person': person, 'order': get_and_increase_order(order)})
+
+                c_str = []
+            text = text.strip("()").split(':')
+            if len(text) == 2:
+                print 'Poseł'.decode("utf-8"), text[0]
+                if 'Poseł'.decode("utf-8") in text[0]:
+                    op_person = get_od_add_speaker_by_name(text[0][7:].strip())
+                    out.append({'text': text[1].strip(), 'person': op_person, 'order': get_and_increase_order(order)})
+                else:
+                    op_person = get_od_add_speaker_by_name(text[0].strip())
+                    out.append({'text': text[1].strip(), 'person': op_person, 'order': get_and_increase_order(order)})
+        else:
+            c_str.append(text)
+
+    if c_str:
+        out.append({'text': ' '.join(c_str), 'person': person, 'order': get_and_increase_order(order)})
+
+    return out
+parse_speech_content(data)
 
