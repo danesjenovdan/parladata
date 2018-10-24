@@ -786,8 +786,8 @@ class Motion(Timestampable, Taggable, models.Model):
                            max_length=255,
                            help_text='EPA number')
 
-    agenda_item = models.ForeignKey('AgendaItem', blank=True, null=True,
-                                    help_text='Agenda item', related_name='motions')
+    agenda_item = models.ManyToManyField('AgendaItem', blank=True,
+                                         help_text='Agenda item', related_name='motions')
 
     debate = models.ForeignKey('Debate', blank=True, null=True,
                                 help_text='Debates', related_name='motions')

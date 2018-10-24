@@ -204,14 +204,15 @@ def import_agenda_item(data, session):
     for motion_id in data['data']['sejm_agenda_items.voting_id']:
         if not Motion.objects.filter(gov_id=motion_id):
             motion_data = tryHard('https://api-v3.mojepanstwo.pl/dane/sejm_votings/' + motion_id + '.json?layers[]=votes').json()
+            agenda_items = list(AgendaItem.objects.filter(gov_id__in=motion_data['data']['sejm_votings.agenda_item_id']))
             motion = Motion(
                 text=motion_data['data']['sejm_votings.title'],
                 session=session,
                 result=get_result(motion_data['data']['sejm_votings.result']),
                 gov_id=motion_data['id'],
-                agenda_item=agenda_item,
             )
             motion.save()
+            motion.agenda_item.add(agenda_items)
 
             vote = Vote(
                 motion=motion,
@@ -344,3 +345,112 @@ def parse_speech_content(data):
 
     return out
 
+
+# parse motions manual and without agenda_items
+def parse_motions_manual():
+    for page in read_data_from_api('https://api-v3.mojepanstwo.pl/dane/sejm_votings/'):
+        for motion_data in page:
+            if not Motion.objects.filter(gov_id=motion_data['id']):
+                if motion_data['id'] == '5941':
+                    continue
+                session = Session.objects.filter(gov_id=motion_data['data']['sejm_sittings.id'])
+                if len(motion_data['data']['sejm_votings.agenda_item_id']) == 0:
+                    agenda_item = None
+                else:
+                    # TODO replace 0 index when M2M comes
+                    agenda_items = list(AgendaItem.objects.filter(gov_id__in=motion_data['data']['sejm_votings.agenda_item_id']))
+                    if agenda_items:
+                        pass
+                    else:
+                        # dont parse agneda items here because then speeches will not be parsed
+                        print('WTF this agenda_item isnt parsed')
+                        continue
+                        #agenda_item = AgendaItem(
+                        #    gov_id=data['id'],
+                        #    name=data['data']['sejm_agenda_items.title'],
+                        #    session=session,
+                        #)
+                        #agenda_item.save()
+
+                if session:
+                    session = session[0]
+                else:
+                    print 'theres no session for motion'
+                    print motion_data['id']
+                    continue
+
+                projects = []
+                for proj_id in motion_data['data']['sejm_votings.project_id']:
+                    proj_data = requests.get('https://api-v3.mojepanstwo.pl/dane/sejm_projects/'+str(proj_id)+'/').json()
+                    projects.append(proj_data['data']['sejm_projects.title_full'])
+
+                projects_str = ' #+# '.join(projects)
+                if projects_str:
+                    vote_str = projects_str + ' #=# ' + motion_data['data']['sejm_votings.title']
+                else:
+                    vote_str = motion_data['data']['sejm_votings.title']
+
+                print 'adding', session.name, agenda_items
+                motion_data = tryHard('https://api-v3.mojepanstwo.pl/dane/sejm_votings/' + motion_data['id'] + '.json?layers[]=votes').json()
+                motion = Motion(
+                    text=vote_str,
+                    session=session,
+                    result=get_result(motion_data['data']['sejm_votings.result']),
+                    gov_id=motion_data['id'],
+                )
+                motion.save()
+                motion.agenda_item.add(*agenda_items)
+
+                vote = Vote(
+                    motion=motion,
+                    session=session,
+                    name=motion_data['data']['sejm_votings.title'],
+                    result=get_result(motion_data['data']['sejm_votings.result']),
+                    start_time=parse_datetime(motion_data['data']['sejm_votings.time']),
+                )
+                vote.save()
+                for ballot_ in motion_data['layers']['votes']:
+                    Ballot(
+                        vote=vote,
+                        voter=members[ballot_['mp_id']],
+                        option=options[ballot_['vote_id']]
+                    ).save()
+
+
+def get_vote_and_projects():
+    data = []
+    for page in read_data_from_api('https://api-v3.mojepanstwo.pl/dane/sejm_votings/'):
+        for motion_data in page:
+            motion = Motion.objects.filter(gov_id=motion_data['id'])
+            if motion:
+                motion = motion[0]
+            else:
+                print "tega movsna nimamo shranjenga"
+                continue
+
+            print motion_data['id']
+            projects = []
+            for proj_id in motion_data['data']['sejm_votings.project_id']:
+                proj_data = requests.get('https://api-v3.mojepanstwo.pl/dane/sejm_projects/'+str(proj_id)+'/').json()
+                projects.append(proj_data['data']['sejm_projects.title_full'])
+
+            projects_str = ' #+# '.join(projects)
+            if projects_str:
+                vote_str = projects_str + ' #=# ' + motion_data['data']['sejm_votings.title']
+            else:
+                vote_str = motion_data['data']['sejm_votings.title']
+            #print motion.text, motion_data['data']['sejm_votings.title']
+            #data.append(vote_str)
+            motion.text = vote_str
+            motion.save()
+    return data
+
+def fix_agenda_items():
+    for ai in AgendaItem.objects.all():
+        for page in read_data_from_api('https://api-v3.mojepanstwo.pl/dane/sejm_votings/?conditions[sejm_votings.agenda_item_id]='+ai.gov_id)
+            for motion_data in page:
+                try:
+                    motion = Motion.objects.get(gov_id=motion_data['id'])
+                except:
+                    print("This motion doesnt exists" + motion_data['id'])
+                motion.agenda_item.append(ai)
