@@ -3329,6 +3329,7 @@ def getAllQuestions(request, date_=None):
                  'recipient_posts': list(recipient_posts),
                  'recipient_text': question.recipient_text,
                  'link': link,
+                 'type_of_question': question.type_of_question
                  }
         data.append(q_obj)
 
