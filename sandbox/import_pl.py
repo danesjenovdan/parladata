@@ -479,8 +479,9 @@ def get_vote_and_projects():
 
 def fix_agenda_items():
     for ai in AgendaItem.objects.all():
-        for page in read_data_from_api('https://api-v3.mojepanstwo.pl/dane/sejm_votings/?conditions[sejm_votings.agenda_item_id]='+ai.gov_id)
+        for page in read_data_from_api('https://api-v3.mojepanstwo.pl/dane/sejm_votings/?conditions[sejm_votings.agenda_item_id]='+ai.gov_id):
             for motion_data in page:
+                print motion_data['id']
                 try:
                     motion = Motion.objects.get(gov_id=motion_data['id'])
                 except:
