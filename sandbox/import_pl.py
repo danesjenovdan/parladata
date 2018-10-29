@@ -2,6 +2,7 @@
 from django.utils.html import strip_tags
 
 from parladata.models import *
+from parladata.views import *
 
 from datetime import datetime
 from pyquery import PyQuery as pq
@@ -16,6 +17,7 @@ mandate_start_time = '2015-10-25'
 # MEMBERS
 
 members = {p.name_parser: p for p in  Person.objects.all() if p.name_parser}
+memberships = json.loads(getParliamentMembershipsOfMembers(None).content)
 options = {
     '1' : 'for',
     '2': 'against',
@@ -276,6 +278,36 @@ def get_result(text):
         return -1
 
 
+def import_questions():
+    types = []
+    for page in read_data_from_api('https://api-v3.mojepanstwo.pl/dane/sejm_interpellations'):
+        for q_data in page:
+            print('https://api-v3.mojepanstwo.pl/dane/sejm_interpellations/2409.json?layers[]=letters')
+            data = requests.get('https://api-v3.mojepanstwo.pl/dane/sejm_interpellations/2409.json?layers[]=letters').json()
+            authors = []
+            authors_orgs = []
+            if 'layers' in data.keys():
+                date=datetime.strptime(data['data']['sejm_interpellations.date_registered_min'], '%Y-%m-%d')
+                recipient_text = ', '.join([content['to_str_a'] for content in data['layers']['letters'][0]['contents']])
+                if data['layers']['letters']:
+                    authors = list(Person.objects.filter(gov_id__in=[mp['id'] for mp in data['layers']['letters'][0]['mps']]))
+                    for mp in data['layers']['letters'][0]['mps']:
+                        authors_orgs.append(get_membership_of_member_on_date(mp, date))
+                
+                question = Question(
+                    signature=data['id'],
+                    title=data['data']['sejm_interpellations.title'],
+                    recipient_text=recipient_text,
+                    date=date,
+                    type_of_question=data['data']['sejm_interpellations.type']
+                )
+                question.save()
+                question.authors.add(*authors)
+                question.author_orgs.add(*authors_orgs)
+            else:
+                print('NIMA LAYERJA')
+
+
 def tryHard(url):
     data = None
     counter = 0
@@ -453,4 +485,22 @@ def fix_agenda_items():
                     motion = Motion.objects.get(gov_id=motion_data['id'])
                 except:
                     print("This motion doesnt exists" + motion_data['id'])
-                motion.agenda_item.append(ai)
+                motion.agenda_item.add(ai)
+
+
+def get_membership_of_member_on_date(person_id, search_date):
+    if person_id in memberships.keys():
+        # person in member of parliamnet
+        mems = memberships[person_id]
+        for mem in mems:
+            start_time = datetime.strptime(mem['start_time'], "%Y-%m-%dT%H:%M:%S")
+            if start_time <= search_date:
+                if mem['end_time']:
+                    end_time = datetime.strptime(mem['end_time'], "%Y-%m-%dT%H:%M:%S")
+                    if end_time >= search_date:
+                        return mem['on_behalf_of_id']
+                else:
+                    return mem['on_behalf_of_id']
+    return None
+
+
