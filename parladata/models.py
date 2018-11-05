@@ -693,7 +693,7 @@ class Speech(Versionable, Timestampable, Taggable, models.Model):
     speaker = models.ForeignKey('Person',
                                 help_text='Person making the speech')
 
-    party = models.ForeignKey('Organization',
+    party = models.ForeignKey('Organization', null=True, blank=True,
                               help_text='The party of the person making the speech',
                               default=2)
 
