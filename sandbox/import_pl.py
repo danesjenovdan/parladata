@@ -215,20 +215,21 @@ def import_agenda_item(data, session):
             )
             motion.save()
             motion.agenda_item.add(agenda_items)
-
+            st_date = arse_datetime(motion_data['data']['sejm_votings.time'])
             vote = Vote(
                 motion=motion,
                 session=session,
                 name=motion_data['data']['sejm_votings.title'],
                 result=get_result(motion_data['data']['sejm_votings.result']),
-                start_time=parse_datetime(motion_data['data']['sejm_votings.time']),
+                start_time=st_date,
             )
             vote.save()
             for ballot_ in motion_data['layers']['votes']:
                 Ballot(
                     vote=vote,
                     voter=members[ballot_['mp_id']],
-                    option=options[ballot_['vote_id']]
+                    option=options[ballot_['vote_id']],
+                    voterparty=get_membership_of_member_on_date(members[ballot_['mp_id']].id, st_date)
                 ).save()
 
 
@@ -254,13 +255,14 @@ def import_debate(data, session, agenda_item):
 
             splited_contents = parse_speech_content(speech)
             for splited in splited_contents:
+                st_date = parse_date(speech['data']['sejm_sittings_days.date'])
                 Speech(
                     speaker=splited['person'],
-                    #party=,
+                    party=get_membership_of_member_on_date(splited['person'].id, st_date),
                     content=splited['text'],
                     order=splited['order'],
                     session=session,
-                    start_time=parse_date(speech['data']['sejm_sittings_days.date']),
+                    start_time=st_date,
                     agenda_item=agenda_item,
                     valid_from=debate.date,
                     valid_to=datetime.max,
@@ -280,10 +282,12 @@ def get_result(text):
 
 def import_questions():
     types = []
+    ex_questions = list(Question.objects.all().values_list("signature", flat=True))
     for page in read_data_from_api('https://api-v3.mojepanstwo.pl/dane/sejm_interpellations'):
         for q_data in page:
-            print('https://api-v3.mojepanstwo.pl/dane/sejm_interpellations/2409.json?layers[]=letters')
-            data = requests.get('https://api-v3.mojepanstwo.pl/dane/sejm_interpellations/2409.json?layers[]=letters').json()
+            if q_data['id'] in ex_questions:
+                continue
+            data = requests.get('https://api-v3.mojepanstwo.pl/dane/sejm_interpellations/' + q_data['id'] + '.json?layers[]=letters').json()
             authors = []
             authors_orgs = []
             if 'layers' in data.keys():
@@ -291,8 +295,12 @@ def import_questions():
                 recipient_text = ', '.join([content['to_str_a'] for content in data['layers']['letters'][0]['contents']])
                 if data['layers']['letters']:
                     authors = list(Person.objects.filter(gov_id__in=[mp['id'] for mp in data['layers']['letters'][0]['mps']]))
+                    if not authors:
+                        continue
                     for mp in data['layers']['letters'][0]['mps']:
-                        authors_orgs.append(get_membership_of_member_on_date(mp, date))
+                        org = get_membership_of_member_on_date(mp['id'], date)
+                        if org:
+                            authors_orgs.append(org)
                 
                 question = Question(
                     signature=data['id'],
