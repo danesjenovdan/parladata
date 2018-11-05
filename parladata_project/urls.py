@@ -12,7 +12,7 @@ from parladata.views import index
 urlpatterns = [
     #url(r'^', include_docs_urls(title='Test Suite API')),
     # url(r'^blog/', include('blog.urls')),
-    #(r'^$', index),
+    url(r'^$', index),
     url(r'^admin/', include(admin.site.urls)),
     url(r'^v1/', include('parladata.urls', namespace='API')),
     url(r'^v1/tasks/', include('parlasearch.urls')),
