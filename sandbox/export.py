@@ -63,10 +63,10 @@ def num_speeches_and_ballots_opts():
         person_data.append(p)
         person_data.append(Speech.getValidSpeeches(datetime.now()).filter(speaker=p).count())
         options = Counter(Ballot.objects.filter(voter=p).values_list("option", flat=True))
-        person_data.append(options["za"])
-        person_data.append(options["proti"])
-        person_data.append(options["kvorum"])
-        person_data.append(options["ni"])
+        person_data.append(options["for"])
+        person_data.append(options["against"])
+        person_data.append(options["abstain"])
+        person_data.append(options["absent"])
         data.append(person_data)
 
 
@@ -100,3 +100,39 @@ def get_whole_mandate_members():
         else:
           print([mem.end_time for mem in mems])
     return data
+
+
+def export_people():
+    data = [['id',
+             'polno ime',
+             'prejsna zaposlitev',
+             'izobrazba',
+             'stopnja izobrazbe',
+             'st. mandatov',
+             'email',
+             'spol',
+             'datum rojstva',
+             'gov_id',
+             'okraj',
+             'st. volilcev',
+             'poslanska skupina']]
+    for person in Person.objects.all():
+        mem = Membership.objects.filter(person=person)
+        data.append([
+            person.id,
+            person.name,
+            person.previous_occupation,
+            person.education,
+            person.education_level,
+            person.mandates,
+            person.email,
+            person.gender,
+            person.birth_date,
+            person.gov_id,
+            list(person.districts.all().values_list("name", flat=True)),
+            person.voters,
+            mem[0].organization.acronym if mem else '',
+        ])
+
+    listToCSV(data, 'poslanci-VIII.csv')
+

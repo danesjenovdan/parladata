@@ -3,7 +3,6 @@ from defaults import *
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'hashhashhashhashashwkopaskfpjoij3rijfdsf2332fdw!!'
-
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
@@ -22,8 +21,8 @@ DATABASES = {
 #STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
 # static files for production
-STATIC_URL ='/parlastatic/parlalize/'
-STATIC_ROOT = '/home/parlauser/parlastatic/parlalize/'
+STATIC_URL ='/parlastatic/parlalize/' 
+STATIC_ROOT = '/home/parlauser/parlastatic/parlalize/' 
 
 
 RAVEN_CONFIG = {
@@ -57,3 +56,26 @@ FORCE_SCRIPT_NAME = '/data'
 
 #National Assembly id in database
 DZ_ID = 95
+COALITION_ID = 95
+OPPOSITION_ID = 95
+
+country = 'SI'
+
+PS = 'pg'
+
+PS_NP = ['pg', 'unaligned MP']
+
+WBS = ['committee',
+       'comission',
+       'investigative comission']
+
+FRIENDSHIP_GROUP = ['friendship group']
+
+DELEGATION = ['delegation']
+
+COUNCIL = ['council']
+
+#['ministrstvo', 'vlada']
+MINISTRY_GOV = ['ministry', 'gov']
+
+GOV_STAFF = ['gov_service', 'gov_office']

@@ -4,10 +4,9 @@ from dal import autocomplete
 from collections import Counter
 from django.core.urlresolvers import reverse
 from .models import *
-from forms import MembershipForm, PostForm, SpeechForm, PersonForm, OrganizationForm, MotionForm, VoteForm
-
-
-PS_NP = ['poslanska skupina', 'nepovezani poslanec']
+from forms import MembershipForm, PostForm, SpeechForm, PersonForm, OrganizationForm, MotionForm, VoteForm, ContactForm
+from django.conf import settings
+from django.db.models import Q
 
 class OtherNamePersonInline(admin.TabularInline):
     model = OtherName
@@ -276,19 +275,19 @@ class MotionAdmin(admin.ModelAdmin):
     ]
 
     def get_for(self, obj):
-        results = dict(Counter(Ballot.objects.filter(vote__motion=obj).values_list("option", flat=True))).get("za", 0)
+        results = dict(Counter(Ballot.objects.filter(vote__motion=obj).values_list("option", flat=True))).get("for", 0)
         return results
 
     def get_against(self, obj):
-        results = dict(Counter(Ballot.objects.filter(vote__motion=obj).values_list("option", flat=True))).get("proti", 0)
+        results = dict(Counter(Ballot.objects.filter(vote__motion=obj).values_list("option", flat=True))).get("against", 0)
         return results
 
     def get_abstain(self, obj):
-        results = dict(Counter(Ballot.objects.filter(vote__motion=obj).values_list("option", flat=True))).get("kvorum", 0)
+        results = dict(Counter(Ballot.objects.filter(vote__motion=obj).values_list("option", flat=True))).get("abstain", 0)
         return results
 
     def get_not(self, obj):
-        results = dict(Counter(Ballot.objects.filter(vote__motion=obj).values_list("option", flat=True))).get("ni", 0)
+        results = dict(Counter(Ballot.objects.filter(vote__motion=obj).values_list("option", flat=True))).get("absent", 0)
         return results
 
     def link_to_vote(self, obj):
@@ -297,10 +296,10 @@ class MotionAdmin(admin.ModelAdmin):
 
     link_to_vote.allow_tags = True
 
-    get_for.short_description = 'Za'
-    get_against.short_description = 'Proti'
-    get_abstain.short_description = 'Vzdrazan'
-    get_not.short_description = 'Ni'
+    get_for.short_description = 'for'
+    get_against.short_description = 'against'
+    get_abstain.short_description = 'abstain'
+    get_not.short_description = 'absent'
 
 
 class VoteAdmin(admin.ModelAdmin):
@@ -316,6 +315,13 @@ class VoteAdmin(admin.ModelAdmin):
     def the_tags(self, obj):
         return "%s" % (obj.tags.all(), )
     the_tags.short_description = 'tags'
+
+
+class ContactAdmin(admin.ModelAdmin):
+    form = ContactForm
+    list_display = ('id', 'value')
+
+    search_fields = ['value']
 
 
 class PersonAutocomplete(autocomplete.Select2QuerySetView):
@@ -369,7 +375,7 @@ class OrganizationAutocomplete(autocomplete.Select2QuerySetView):
         qs = Organization.objects.all()
 
         if self.q:
-            qs = qs.filter(_name__icontains=self.q)
+            qs = qs.filter(Q(_name__icontains=self.q) | Q(_acronym__icontains=self.q))
 
         return qs
 
@@ -453,7 +459,7 @@ class MPAdmin(admin.ModelAdmin):
     list_filter = ('name',)
 
     def get_queryset(self, request):
-        MPs_ids = Membership.objects.filter(organization__classification__in=PS_NP).values_list('person', flat=True)
+        MPs_ids = Membership.objects.filter(organization__classification__in=settings.PS_NP).values_list('person', flat=True)
         qs = Person.objects.filter(id__in=MPs_ids)
         if request.user.is_superuser:
             return qs
@@ -475,3 +481,5 @@ admin.site.register(Ballot)
 admin.site.register(Question, QuestionAdmin)
 admin.site.register(OrganizationName)
 admin.site.register(AgendaItem)
+admin.site.register(Law)
+admin.site.register(ContactDetail, ContactAdmin)

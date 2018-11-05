@@ -1,11 +1,16 @@
 from django.db.models import Count
 
-from parladata.models import Speech, Question, Vote, Membership, Organization, Ballot, Person
+from parladata.models import Speech, Question, Vote, Membership, Organization, Ballot, Person, Area
 from parladata.utils import parseRecipient
 from django.db.models import Q
 from django.conf import settings
 
 from datetime import datetime
+from collections import *
+
+import requests
+from requests.auth import HTTPBasicAuth
+
 PS_NP = ['poslanska skupina', 'nepovezani poslanec']
 
 
@@ -61,8 +66,13 @@ def fixBallotsVoterParty(person_id):
     """
     set voter party for each ballot of person
     """
+    #mems = Membership.objects.filter(person_id=person_id,
+    #                                 organization__classification__in=PS_NP)
+
     mems = Membership.objects.filter(person_id=person_id,
-                                     organization__classification__in=PS_NP)
+                                     organization=settings.DZ_ID,
+                                     role='voter').exclude(on_behalf_of=None)
+
     print mems
     for mem in mems:
         start_time, end_time = getStartEndTime(mem)
@@ -70,7 +80,7 @@ def fixBallotsVoterParty(person_id):
                                         vote__start_time__gte=start_time,
                                         vote__start_time__lte=end_time)
         print list(set(list(ballots.values_list("voterparty", flat=True))))
-        ballots.update(voterparty=mem.organization)
+        ballots.update(voterparty=mem.on_behalf_of)
 
 
 def getStartEndTime(membership):
@@ -123,7 +133,8 @@ def fixSpeakerParty(person_id):
     """
 
     party = Membership.objects.filter(person_id=person_id,
-                                      organization__classification__in=PS_NP)
+                                      organization=settings.DZ_ID,
+                                      role='voter').exclude(on_behalf_of=None)
 
     ministry = Membership.objects.filter(person_id=person_id,
                                          organization__classification='ministrstvo',
@@ -138,12 +149,13 @@ def fixSpeakerParty(person_id):
         speeches = Speech.objects.filter(speaker_id=person_id,
                                          start_time__gte=start_time,
                                          start_time__lte=end_time)
-        speeches.update(party=mem.organization)
+        speeches.update(party=mem.on_behalf_of)
 
 
 def test_ministers_memberships(person_id):
     party = Membership.objects.filter(person_id=person_id,
-                                      organization__classification__in=PS_NP)
+                                      organization=settings.DZ_ID,
+                                      role='voter').exclude(on_behalf_of=None)
 
     ministry = Membership.objects.filter(person_id=person_id,
                                          organization__classification='ministrstvo',
@@ -157,7 +169,6 @@ def test_ministers_memberships(person_id):
 
 
 def uk_motion_result():
-    from collections import *
     for motion in Motion.objects.all():
         vote = motion.vote.all()[0]
         options = vote.ballot_set.all().values_list("option", flat=True)
@@ -171,7 +182,7 @@ def uk_motion_result():
 
 
 def set_ballot(option):
-    dz_org = Organization.objects.filter(id=DZ_ID)
+    dz_org = Organization.objects.filter(id=settings.DZ_ID)[0]
     for vote in Vote.objects.all():
         # get all MPs
         voters = vote.ballot_set.all().values_list('voter', flat=True)
@@ -199,3 +210,200 @@ def check_person_parser_data():
             data.append({'missing': missing_data, 'person': p.name, 'id': p.id, 'url': 'http://51.15.135.53/data/admin/parladata/person/' + str(p.id) + '/'})
     return data
 
+
+def getPersonsFromOldParlameter():
+    import sys
+    reload(sys)
+    sys.setdefaultencoding('utf8')
+    count = 0
+    url = 'https://data.parlameter.si/v1/persons'
+    old_people = getDataFromPagerApiDRF(url)
+    for person in Person.objects.all():
+        old = get_person_by_parser_name(old_people, person.name_parser)
+        if old:
+            count += 1
+            print 'update ', person.name.encode('utf-8'), old['name'].encode('utf-8')
+            person.name = old['name']
+            #person.family_name = old['family_name']
+            #person.given_name = old['given_name']
+            #person.additional_name = old['additional_name']
+            #person.honorific_prefix = old['honorific_prefix']
+            #person.honorific_suffix = old['honorific_suffix']
+            #person.previous_occupation = 'poslanec'
+            #person.education = old['education']
+            #person.education_level = old['education_level']
+            #try:
+            #    person.mandates = int(old['mandates']) + 1 
+            #except:
+            #    person.mandates = 1
+            #person.email = old['email']
+            #person.gender = old['gender']
+            #person.birth_date = old['birth_date']
+            person.save()
+        else:
+            print 'skipp ', person.name.encode('utf-8')
+
+    print count
+
+
+def get_person_by_parser_name(old_people, name_parser):
+    names = name_parser.split(',')
+    for p in old_people:
+        for p_name in p['name_parser'].split(','):
+            if p_name in names:
+                return p
+    
+    return None
+
+
+def getDataFromPagerApiDRF(url):
+    print(url)
+    data = []
+    end = False
+    page = 1
+    while url:
+        response = requests.get(url, auth=HTTPBasicAuth('djnd', 'necakajpomladi')).json()
+        data += response['results']
+        url = response['next']
+    return data
+
+
+def getDuplicatedPersons():
+    visited = []
+    for p in Person.objects.all():
+        d = Person.objects.filter(name_parser__icontains=p.name).exclude(id__in=visited)
+        if d.count() > 1:
+            for i in d:
+                visited.append(i.id)
+            merge_people(d)
+            print d
+
+
+def merge_people(q_s):
+    base_person = q_s.first()
+    others = q_s.exclude(id=base_person.id)
+    for other in others:
+        other.speech_set.all().update(speaker=base_person)
+        other.ballot_set.all().update(voter=base_person)
+        other.delete()
+
+
+def find_non_membershis_votes(others_id):
+    out = ['id', 'name', 'first_vote', 'last_vote']
+    mps = {i:[] for i in  list(set(list(Ballot.objects.filter(voterparty=344, option__in=["for", "against", "abstain"]).values_list("voter__id", flat=True))))}
+    for v in Ballot.objects.filter(voterparty=344, option__in=["for", "against", "abstain"]):
+        mps[v.voter.id].append(v.vote.start_time)
+
+    for i, m in mps.items():
+        out.append([i, Person.objects.get(id=i).name, min(m), max(m)])
+
+    return out
+
+
+"""
+data = {
+    310: [261],
+    319: [291, 258],
+    322: [315],
+    324: [308, 329],
+    330: [275],
+    333: [282, 341, 326],
+    334: [266, 303],
+    335: [263, 316],
+    337: [300],
+    339: [268],
+    340: [289],
+    343: [295, 274],
+}
+"""
+def move_memberships(source_org, dest_org):
+    s_pss = Membership.objects.filter(organization__id=source_org)
+    d_pss = Membership.objects.filter(organization__id=dest_org)
+    print('source', s_pss, 'dest_org', d_pss)
+
+    dest_org_obj = Organization.objects.get(id=dest_org)
+
+    for ps_m in s_pss:
+        print ps_m.person
+        person = ps_m.person
+        dest_membership = d_pss.filter(person=person)
+        if dest_membership:
+            if ps_m.end_time == None:
+                # check start time and fix it
+                if dest_membership[0].end_time == None:
+                    print 'Fixing start time', dest_membership[0].start_time, ps_m.start_time
+                    dest_membership = dest_membership[0]
+                    dest_membership.start_time = ps_m.start_time
+                    dest_membership.save()
+
+                else:
+                    print('This shit does not work')
+            else:
+                # add new membership
+                print 'copying memberhsip 2'
+                ps_m.pk = None
+                ps_m.organization = dest_org_obj
+                ps_m.save()
+
+        else:
+            # add new membership
+            print 'copying memberhsip 1', ps_m.start_time, ps_m.end_time
+            ps_m.pk = None
+            ps_m.organization = dest_org_obj
+            ps_m.save()
+
+
+def create_parliament_memberships(orgs_for_exclude=[]):
+    parliament = Organization.objects.get(id=settings.DZ_ID)
+    mm = Membership.objects.filter(organization__classification__in=settings.PS_NP).exclude(organization__id__in=orgs_for_exclude)
+    for m in mm:
+        m.pk = None
+        m.on_behalf_of = m.organization
+        m.organization = parliament
+        m.role = 'voter'
+        m.save()
+
+
+def add_posts_from_membership():
+    for m in Membership.objects.filter(role='president'):
+        Post(role='president',
+            label='v',
+            organization=m.organization,
+            membership=m,
+            start_time=m.start_time,
+            end_time=m.end_time).save()
+
+    for m in Membership.objects.filter(role='deputy'):
+        Post(role='deputy',
+            label='namv',
+            organization=m.organization,
+            membership=m,
+            start_time=m.start_time,
+            end_time=m.end_time).save()
+
+
+def change_international_classes():
+
+    org_map = {
+        'poslanska skupina': 'pg',
+        'nepovezani poslanec': 'unaligned MP',
+        'odbor': 'committee',
+        'komisija': 'comission',
+        'preiskovalna komisija': 'investigative comission',
+        'skupina prijateljstva': 'friendship group',
+        'delegacija': 'delegation',
+        'kolegij': 'council',
+        'ministrstvo': 'ministry',
+        'vlada': 'gov',
+        'sluzba vlade': 'gov_service',
+        'urad vlade': 'gov_office'
+    }
+
+    for old, new in org_map.items():
+        orgs = Organization.objects.filter(classification=old)
+        orgs.update(classification=new)
+
+    areas = Area.objects.filter(calssification='okraj')
+    areas.update(calssification='district')
+
+    Membership
