@@ -513,3 +513,17 @@ def get_membership_of_member_on_date(person_id, search_date):
     return None
 
 
+def run_parser():
+    mandate_start_time = '2015-10-25'
+
+    # MEMBERS
+
+    members = {p.name_parser: p for p in  Person.objects.all() if p.name_parser}
+    memberships = json.loads(getParliamentMembershipsOfMembers(None).content)
+    options = {
+        '1' : 'for',
+        '2': 'against',
+        '3': 'abstain',
+        '4': 'absent'
+        }
+    import_sessions()
