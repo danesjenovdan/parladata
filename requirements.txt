@@ -16,7 +16,7 @@ django-uuidfield==0.5.0
 djangorestframework==3.7.7
 gunicorn==19.3.0
 numpy==1.10.1
-psycopg2==2.6.1
+psycopg2==2.7.5
 pytz==2015.6
 raven==5.8.1
 requests==2.8.1
@@ -38,3 +38,4 @@ editdistance==0.4
 coreapi==2.3.3
 django-celery-monitor==1.1.2
 django-oauth-toolkit==1.1.2
+pyquery==1.4.0

@@ -886,9 +886,10 @@ def getOwnersOfAmendment(motion):
             if acronyms:
                 query = reduce(operator.or_, (Q(name_parser__icontains=item) for item in acronyms))
                 orgs = Organization.objects.filter(query)
-                orgs = orgs.filter(Q(founding_date__lte=vote.start_time) |
+                s_time = motion.vote.all()[0].start_time
+                orgs = orgs.filter(Q(founding_date__lte=s_time) |
                                    Q(founding_date=None),
-                                   Q(dissolution_date__gte=vote.start_time) |
+                                   Q(dissolution_date__gte=s_time) |
                                    Q(dissolution_date=None))
                 org_ids = list(orgs.values_list('id', flat=True))
             else:

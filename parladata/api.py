@@ -49,6 +49,11 @@ class AgendaItemSerializer(TaggitSerializer, serializers.ModelSerializer):
         model = AgendaItem
         fields = '__all__'
 
+class DebateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Debate
+        fields = '__all__'
+
 class VoteSerializer(TaggitSerializer, serializers.ModelSerializer):
     tags = TagListSerializerField(required=False)
     results = serializers.SerializerMethodField()
@@ -130,6 +135,13 @@ class AgendaItemView(viewsets.ModelViewSet):
     serializer_class = AgendaItemSerializer
 
 
+# ViewSets define the view behavior.
+class DebateView(viewsets.ModelViewSet):
+    authentication_classes = (SessionAuthentication, BasicAuthentication, OAuth2Authentication)
+    queryset = Debate.objects.all()
+    serializer_class = DebateSerializer
+
+
 class SessionView(viewsets.ModelViewSet):
     authentication_classes = (SessionAuthentication, BasicAuthentication, OAuth2Authentication)
     permission_classes = [permissions.IsAuthenticated]
@@ -138,7 +150,7 @@ class SessionView(viewsets.ModelViewSet):
     fields = '__all__'
     filter_backends = (DjangoFilterBackend, filters.OrderingFilter)
     filter_fields = ('organization',)
-    ordering_fields = ('start_time',)
+    ordering_fields = ('-start_time',)
 
 
 class LastSessionWithVoteView(SessionView):
