@@ -214,7 +214,7 @@ def import_agenda_item(data, session):
                 gov_id=motion_data['id'],
             )
             motion.save()
-            motion.agenda_item.add(agenda_items)
+            motion.agenda_item.add(*agenda_items)
             st_date = arse_datetime(motion_data['data']['sejm_votings.time'])
             vote = Vote(
                 motion=motion,
