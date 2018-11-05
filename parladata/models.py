@@ -718,6 +718,8 @@ class Speech(Versionable, Timestampable, Taggable, models.Model):
     agenda_item = models.ForeignKey('AgendaItem', blank=True, null=True,
                                     help_text='Agenda item', related_name='speeches')
 
+    debate = models.ForeignKey('Debate', blank=True, null=True,
+                                help_text='Debates', related_name='speeches')
     @staticmethod
     def getValidSpeeches(date_):
         return Speech.objects.filter(valid_from__lt=date_, valid_to__gt=date_)
@@ -783,6 +785,12 @@ class Motion(Timestampable, Taggable, models.Model):
     epa = models.CharField(blank=True, null=True,
                            max_length=255,
                            help_text='EPA number')
+
+    agenda_item = models.ManyToManyField('AgendaItem', blank=True,
+                                         help_text='Agenda item', related_name='motions')
+
+    debate = models.ForeignKey('Debate', blank=True, null=True,
+                                help_text='Debates', related_name='motions')
 
     def __str__(self):
         return self.text[:100] + ' --> ' + self.session.name if self.session else ''
@@ -941,6 +949,10 @@ class Question(Timestampable, models.Model):
     signature = models.TextField(_('Unique signature'),
                                  blank=True, null=True,
                                  help_text=_('Unique signature'))
+
+    type_of_question = models.CharField(max_length=64,
+                                   blank=True,
+                                   null=True)
 
     def __str__(self):
         return ' '.join(self.authors.all().values_list('name', flat=True))
@@ -1115,8 +1127,28 @@ class AgendaItem(Timestampable, Taggable, models.Model):
     order = models.IntegerField(blank=True, null=True,
                                 help_text='Order of agenda item')
 
+    gov_id = models.CharField(blank=True, max_length=255, null=True, help_text='gov_id of agenda item')
+
     def __str__(self):
         return self.name
+
+
+class Debate(Timestampable, Taggable, models.Model):
+    order = models.IntegerField(blank=True, null=True,
+                                help_text='Order of debate')
+
+    date = PopoloDateTimeField(blank=True,
+                               null=True,
+                               help_text='Date of the item.')
+
+    agenda_item = models.ManyToManyField('AgendaItem', blank=True,
+                                         help_text='Agenda item', related_name='debates')
+
+    gov_id = models.CharField(blank=True, max_length=255, null=True, help_text='gov_id of debate')
+
+    session = models.ForeignKey('Session', blank=True, null=True)
+
+
 
 
 @receiver(pre_save, sender=Organization)

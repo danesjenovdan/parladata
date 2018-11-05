@@ -569,7 +569,7 @@ def getSessions(request, date_=None):
     else:
         fdate = datetime.now().date()
     data = []
-    sessions = Session.objects.filter(start_time__lte=fdate).order_by('-start_time')
+    sessions = Session.objects.filter(Q(start_time__lte=fdate)|Q(start_time=None)).order_by('-start_time')
 
     for i in sessions:
         organizations = i.organizations.all().values_list('id', flat=True)
@@ -2037,6 +2037,7 @@ def motionOfSession(request, id_se):
                          'amendment_of': org_ids,
                          'amendment_of_people': people_ids,
                          'epa': motion.epa,
+                         'agenda_item_ids': list(motion.agenda_item.values_list('id', flat=True)),
                          'counter': json.loads(vote.counter) if vote.counter else None})
         return JsonResponse(data, safe=False)
     else:
@@ -3328,6 +3329,7 @@ def getAllQuestions(request, date_=None):
                  'recipient_posts': list(recipient_posts),
                  'recipient_text': question.recipient_text,
                  'link': link,
+                 'type_of_question': question.type_of_question
                  }
         data.append(q_obj)
 
@@ -3834,11 +3836,11 @@ def getVotesTable(request, date_to=None):
     else:
         fdate = datetime.now().date()
     data = []
-    sessions = Session.objects.filter(vote__isnull=False).distinct().order_by("start_time")
+    sessions = Session.objects.filter(vote__isnull=False).distinct().order_by('id')
     sessions, pager = parsePager(request, sessions, default_per_page=10)
     for session in sessions:
         votes = Vote.objects.filter(session=session,
-                                    start_time__lte=fdate)
+                                    start_time__lte=fdate).order_by('id')
         for vote in votes.prefetch_related('motion'):
             for ballot in Ballot.objects.filter(vote=vote):
                 data.append({'id': ballot.id,
@@ -3938,8 +3940,10 @@ def getAllAllSpeeches(request):
         speech_dict = model_to_dict(speech,
                                     fields=[field.name for field in speech._meta.fields],
                                     exclude=[])
-        if speech.agenda_item:
+        if speech.agenda_item and speech.agenda_item.order:
             speech_dict['agenda_item_order'] = speech.agenda_item.order
+        elif speech.debate and speech.debate.order:
+            speech_dict['agenda_item_order'] = speech.debate.order
         else:
             speech_dict['agenda_item_order'] = 0
         data.append(speech_dict)
