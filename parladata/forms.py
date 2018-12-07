@@ -1,6 +1,6 @@
 from dal import autocomplete
 from django import forms
-from .models import Membership, Post, Speech, Person, Organization, Motion, Vote
+from .models import Membership, Post, Speech, Person, Organization, Motion, Vote, ContactDetail
 from django.contrib.admin.widgets import RelatedFieldWidgetWrapper
 import admin
 
@@ -145,3 +145,21 @@ class VoteForm(forms.ModelForm):
         instance = super(VoteForm, self).save(commit=False)
         return instance
 
+
+class ContactForm(forms.ModelForm):
+    """Form for person."""
+    class Meta:
+        model = ContactDetail
+        fields = ('__all__')
+        widgets = {
+            'person': autocomplete.ModelSelect2(url='API:person-autocomplete'),
+            'organization': autocomplete.ModelSelect2(url='API:organization-autocomplete'),
+            'membership': autocomplete.ModelSelect2(url='API:membership-autocomplete'),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super(ContactForm, self).__init__(*args, **kwargs)
+
+    def save(self, *args, **kwargs):
+        instance = super(ContactForm, self).save(commit=False)
+        return instance

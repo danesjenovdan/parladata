@@ -29,9 +29,6 @@ import requests
 import json
 
 
-DZ_ID = settings.DZ_ID
-PS = 'poslanska skupina'
-
 def index(request):
     return JsonResponse({"index": True})
 
@@ -325,8 +322,8 @@ def getMPStatic(request, person_id, date_=None):
         client.captureException()
         age = None
 
-    twitter = member.link_set.filter(tags__name__in=['tw'])
-    facebook = member.link_set.filter(tags__name__in=['fb'])
+    twitter = member.link_set.filter(tags__name__in=['tw', 'TW'])
+    facebook = member.link_set.filter(tags__name__in=['fb', 'FB'])
     linkedin = member.link_set.filter(tags__name__in=['linkedin'])
 
     social_output = {}
@@ -349,15 +346,19 @@ def getMPStatic(request, person_id, date_=None):
         district = None
 
     # get functions in working bodies
-    roles = ['predsednik',
-             'predsednica',
+    roles = ['president',
+             'deputy',
              'podpredsednica',
-             'podpredsednik']
+             'podpredsednik',
+             'president',
+             'deputy']
 
     trans_map = {'predsednik': 'president',
                  'predsednica': 'president',
                  'podpredsednica': 'vice_president',
-                 'podpredsednik': 'vice_president'}
+                 'podpredsednik': 'vice_president',
+                 'president': 'president',
+                 'deputy': 'vice_president'}
 
     wb = Organization.objects.filter(Q(classification__in=settings.WBS) |
                                      Q(id=95))
@@ -398,10 +399,7 @@ def getIDsOfAllMinisters(request, date_=None):
         fdate = datetime.strptime(date_, settings.API_DATE_FORMAT).date()
     else:
         fdate = datetime.now().date()
-    ministry = Organization.objects.filter(classification__in=['ministrstvo',
-                                                               'vlada',
-                                                               'sluzba vlade',
-                                                               'urad vlade'])
+    ministry = Organization.objects.filter(classification__in=settings.MINISTRY_GOV + settings.GOV_STAFF)
     memberships = Membership.objects.filter(organization__in=ministry)
     ids = list(set(list(memberships.values_list('person_id', flat=True))))
 
@@ -426,10 +424,7 @@ def getMinistrStatic(request, person_id, date_=None):
                                             Q(end_time=None))"""
     memberships = person.memberships.all()
 
-    ministry = memberships.filter(organization__classification__in=['ministrstvo',
-                                                                    'vlada',
-                                                                    'sluzba vlade',
-                                                                    'urad vlade'])
+    ministry = memberships.filter(organization__classification__in=settings.MINISTRY_GOV + settings.GOV_STAFF)
     for ministr in ministry:
         ministry_data = {'name': ministr.organization.name,
                          'id': ministr.organization.id,
@@ -443,7 +438,7 @@ def getMinistrStatic(request, person_id, date_=None):
         else:
             party_data = {}
 
-        settings.PS_NP_VLADA = ['ministrstvo', 'vlada'] + settings.PS_NP
+        PS_NP_VLADA = settings.MINISTRY_GOV + settings.PS_NP
         groups = memberships.exclude(organization__classification__in=PS_NP_VLADA)
 
         groups_data = [{'name': membership.organization.name,
@@ -574,7 +569,7 @@ def getSessions(request, date_=None):
     else:
         fdate = datetime.now().date()
     data = []
-    sessions = Session.objects.filter(start_time__lte=fdate).order_by('-start_time')
+    sessions = Session.objects.filter(Q(start_time__lte=fdate)|Q(start_time=None)).order_by('-start_time')
 
     for i in sessions:
         organizations = i.organizations.all().values_list('id', flat=True)
@@ -883,9 +878,9 @@ def getMembersOfPGsOnDate(request, date_=None):
 def getCoalitionPGs(request):
     """Returns coalitions PGs."""
 
-    coalition = Organization.objects.filter(classification=PS,
+    coalition = Organization.objects.filter(classification=settings.PS,
                                             is_coalition="1").values_list("id", flat=True)
-    oppo = Organization.objects.filter(classification=PS)
+    oppo = Organization.objects.filter(classification=settings.PS)
     oppo = oppo.exclude(is_coalition="1").values_list("id", flat=True)
 
     return JsonResponse({'coalition': list(coalition), 'opposition': list(oppo)})
@@ -939,18 +934,18 @@ def getNumberOfAllMPAttendedSessions(request, date_):
         allOfHimS = list(set(Ballot.objects.filter(voter__id=member.id,
                                                    vote__start_time__lte=fdate).values_list("vote__session", flat=True)))
         # list of all session that the opiton of Ballot was: kvorum, proti, za
-        votesOnS = list(set(Ballot.objects.filter(Q(option="kvorum") |
-                                                  Q(option="proti") |
-                                                  Q(option="za"),
+        votesOnS = list(set(Ballot.objects.filter(Q(option="abstain") |
+                                                  Q(option="against") |
+                                                  Q(option="for"),
                                                   voter__id=member.id,
                                                   vote__start_time__lte=fdate).values_list("vote__session", flat=True)))
         # list of all votes of MP
         allOfHimV = list(set(Ballot.objects.filter(voter__id=member.id,
                                                    vote__start_time__lte=fdate).values_list("vote", flat=True)))
         # list of all votes that the opiton of ballot was: kvorum, proti, za
-        votesOnV = list(set(Ballot.objects.filter(Q(option="kvorum") |
-                                                  Q(option="proti") |
-                                                  Q(option="za"),
+        votesOnV = list(set(Ballot.objects.filter(Q(option="abstain") |
+                                                  Q(option="against") |
+                                                  Q(option="for"),
                                                   voter__id=member.id,
                                                   vote__start_time__lte=fdate).values_list("vote", flat=True)))
         try:
@@ -1071,7 +1066,7 @@ def getAllSpeechesOfMPs(request, date_=None):
     else:
         fdate = datetime.now().date()
 
-    parliamentary_group = Organization.objects.filter(classification=PS)
+    parliamentary_group = Organization.objects.filter(classification=settings.PS)
     members = list(set(Membership.objects.filter(organization__in=parliamentary_group).values_list("person__id", flat=True)))
 
     speeches_queryset = Speech.getValidSpeeches(fdate)
@@ -1116,7 +1111,7 @@ def getMPParty(request, person_id):
               'acronym': membership.organization.acronym}
              for membership
              in person.memberships.all()
-             if membership.organization.classification == PS]
+             if membership.organization.classification == settings.PS]
 
     out = {'name': party[0]['name'],
            'id': party[0]['id'],
@@ -1147,7 +1142,7 @@ def getNumberOfSeatsOfPG(request, pg_id):
     """
 
     value = dict()
-    parliamentary_group = Organization.objects.filter(classification=PS,
+    parliamentary_group = Organization.objects.filter(classification=settings.PS,
                                                       id=int(pg_id))
     members = Membership.objects.filter(organization__in=parliamentary_group)
     data = {pg.id: len([member.person.id for member in members.filter(organization=pg)]) for pg in parliamentary_group}
@@ -1199,7 +1194,7 @@ def getBasicInfOfPG(request, pg_id, date_=None):
     viceOfPG = []
     data = dict()
     listOfVotes = []
-    parliamentary_group = Organization.objects.filter(classification=PS,
+    parliamentary_group = Organization.objects.filter(classification=settings.PS,
                                                       id=pg_id)
 
     members = Membership.objects.filter(Q(start_time__lte=fdate) |
@@ -1250,10 +1245,11 @@ def getBasicInfOfPG(request, pg_id, date_=None):
             listOfVotes.append(0)
 
     allVoters = sum(listOfVotes)
-    if len(Link.objects.filter(organization=parliamentary_group,
-                               note='FB')) > 0:
-        FB = Link.objects.filter(organization=parliamentary_group,
-                                 note='FB')[0].url
+
+    fb_links = Link.objects.filter(organization=parliamentary_group,
+                                   tags__name__in=['fb', 'FB'])
+    if len(fb_links) > 0:
+        FB = list(fb_links.values_list('url', flat=True))
     else:
         FB = None
     if len(ContactDetail.objects.filter(organization=parliamentary_group,
@@ -1262,10 +1258,10 @@ def getBasicInfOfPG(request, pg_id, date_=None):
                                             label='Mail')[0].value
     else:
         mail = None
-    if len(Link.objects.filter(organization=parliamentary_group,
-                               note='TW')) > 0:
-        twitter = Link.objects.filter(organization=parliamentary_group,
-                                      note='TW')[0].url
+    tw_links = Link.objects.filter(organization=parliamentary_group,
+                                   tags__name__in=['tw', 'TW'])
+    if len(tw_links) > 0:
+        twitter = list(tw_links.values_list('url', flat=True))
 
     else:
         twitter = None
@@ -1360,7 +1356,7 @@ def getAllPGs(request, date_=None):
         fdate = datetime.strptime(date_, settings.API_DATE_FORMAT)
     else:
         fdate = datetime.now()
-    parliamentary_group = Organization.objects.filter(classification=PS)
+    parliamentary_group = Organization.objects.filter(classification=settings.PS)
     parliamentary_group = parliamentary_group.filter(Q(founding_date__lte=fdate) |
                                                      Q(founding_date=None),
                                                      Q(dissolution_date__gte=fdate) |
@@ -1460,7 +1456,7 @@ def getAllPGsExt(request):
     }
     """
 
-    parliamentary_group = Organization.objects.filter(classification=PS)
+    parliamentary_group = Organization.objects.filter(classification=settings.PS)
     data = {pg.id: {'name': pg.name,
                     'acronym': pg.acronym,
                     'id': pg.id,
@@ -1710,7 +1706,7 @@ def getAllBallots(request, date_=None):
     * @apiSuccess {Integer} data.vote Parladata ID of the vote.
     * @apiSuccess {Integer} data.voter Parladata ID of the MP who submitted the ballot.
     * @apiSuccess {Integer} data.id Parladata ID of the ballot.
-    * @apiSuccess {String} data.option The option of the ballot (za, proti, kvorum, ni).
+    * @apiSuccess {String} data.option The option of the ballot (for, against, abtain, absent).
 
     * @apiExample {curl} Example:
         curl -i https://data.parlameter.si/v1/getAllBallots
@@ -1728,22 +1724,22 @@ def getAllBallots(request, date_=None):
                 "vote": 6601,
                 "voter": 95,
                 "id": 593806,
-                "option": "za"
+                "option": "for"
             }, {
                 "vote": 6601,
                 "voter": 2,
                 "id": 593807,
-                "option": "kvorum"
+                "option": "abstain"
             }, {
                 "vote": 6601,
                 "voter": 3,
                 "id": 593808,
-                "option": "za"
+                "option": "for"
             }, {
                 "vote": 6601,
                 "voter": 4,
                 "id": 593809,
-                "option": "ni"
+                "option": "absent"
             }
         ]
     }
@@ -1908,6 +1904,7 @@ def getAllPeople(request):
     for i in persons:
         membership = Membership.objects.filter(person=i.id,
                                                organization__in=parliamentary_group)
+        pgs = []
         for me in membership:
             pg = me.organization.name
             pgs.append(me.organization.name)
@@ -2039,7 +2036,9 @@ def motionOfSession(request, id_se):
                          'start_time': vote.start_time,
                          'amendment_of': org_ids,
                          'amendment_of_people': people_ids,
-                         'epa': motion.epa})
+                         'epa': motion.epa,
+                         'agenda_item_ids': list(motion.agenda_item.values_list('id', flat=True)),
+                         'counter': json.loads(vote.counter) if vote.counter else None})
         return JsonResponse(data, safe=False)
     else:
         return JsonResponse([], safe=False)
@@ -2063,7 +2062,7 @@ def getBallotsOfSession(request, id_se):
     * @apiSuccess {String} data.Acronym PG acronym for MP's PG.
     * @apiSuccess {Integer} data.pg_id Parladata id of the PG the MP that submitted the ballot belongs to.
     * @apiSuccess {Integer} data.mo_id Parladata id of the motion this ballot belongs to.
-    * @apiSuccess {String} data.option The option on the ballot. One of "za", "proti", "kvorum", "ni").
+    * @apiSuccess {String} data.option The option on the ballot. One of "for", "against", "abstain", "absent").
       
 
     * @apiExample {curl} Example:
@@ -2081,37 +2080,37 @@ def getBallotsOfSession(request, id_se):
                 "pg_id": 5,
                 "mp_id": 91,
                 "mo_id": 6650,
-                "option": "kvorum"
+                "option": "abstain"
             }, {
                 "Acronym": "SMC",
                 "pg_id": 1,
                 "mp_id": 89,
                 "mo_id": 6650,
-                "option": "za"
+                "option": "for"
             }, {
                 "Acronym": "SMC",
                 "pg_id": 1,
                 "mp_id": 88,
                 "mo_id": 6650,
-                "option": "za"
+                "option": "for"
             }, {
                 "Acronym": "SMC",
                 "pg_id": 1,
                 "mp_id": 87,
                 "mo_id": 6650,
-                "option": "za"
+                "option": "for"
             }, {
                 "Acronym": "NSI",
                 "pg_id": 6,
                 "mp_id": 86,
                 "mo_id": 6650,
-                "option": "kvorum"
+                "option": "abstain"
             }, {
                 "Acronym": "DeSUS",
                 "pg_id": 3,
                 "mp_id": 85,
                 "mo_id": 6650,
-                "option": "za"
+                "option": "for"
             }
         ]
     }
@@ -2120,7 +2119,7 @@ def getBallotsOfSession(request, id_se):
     fdate = Session.objects.get(id=str(id_se)).start_time
     orgs = Organization.objects.filter(classification__in=settings.PS_NP)
     org_acronym = {org.id: org.acronym for org in orgs}
-    ballots = Ballot.objects.filter(vote__session__id=str(id_se)).order_by("id")
+    ballots = Ballot.objects.filter(vote__session__id=str(id_se)).order_by("id").prefetch_related('vote')
     ballots, pager = parsePager(request, ballots, default_per_page=1000)
     data = []
 
@@ -2149,7 +2148,7 @@ def getBallotsOfMotion(request, motion_id):
     * @apiSuccess {String} /.Acronym PG acronym for MP's PG.
     * @apiSuccess {Integer} /.pg_id Parladata id of the PG the MP that submitted the ballot belongs to.
     * @apiSuccess {Integer} /.mo_id Parladata id of the motion this ballot belongs to.
-    * @apiSuccess {String} /.option The option on the ballot. One of "za", "proti", "kvorum", "ni").
+    * @apiSuccess {String} /.option The option on the ballot. One of "for", "against", "abstain", "absent").
       
 
     * @apiExample {curl} Example:
@@ -2162,31 +2161,31 @@ def getBallotsOfMotion(request, motion_id):
             "pg_id": 7,
             "mp_id": 95,
             "mo_id": 6406,
-            "option": "za"
+            "option": "for"
         }, {
             "Acronym": "SDS",
             "pg_id": 5,
             "mp_id": 2,
             "mo_id": 6406,
-            "option": "za"
+            "option": "for"
         }, {
             "Acronym": "SMC",
             "pg_id": 1,
             "mp_id": 3,
             "mo_id": 6406,
-            "option": "za"
+            "option": "for"
         }, {
             "Acronym": "IMNS",
             "pg_id": 2,
             "mp_id": 4,
             "mo_id": 6406,
-            "option": "ni"
+            "option": "absent"
         }, {
             "Acronym": "DeSUS",
             "pg_id": 3,
             "mp_id": 5,
             "mo_id": 6406,
-            "option": "za"
+            "option": "for"
         }
     ]
     """
@@ -2691,12 +2690,46 @@ def getAllTimeMemberships(request):
     ]
     """
 
-    parliamentary_group = Organization.objects.filter(classification__in=settings.PS_NP)
-    members = Membership.objects.filter(organization__in=parliamentary_group)
-    return JsonResponse([{"start_time": member.start_time,
-                          "end_time": member.end_time,
-                          "id": member.person.id} for member in members],
-                        safe=False)
+    parliamentary_group = Organization.objects.filter(id=settings.DZ_ID)
+    members = Membership.objects.filter(organization=parliamentary_group,
+        role='voter').exclude(on_behalf_of=None)
+    members = members.prefetch_related('person')
+    data = []
+
+    for member in members:
+        if member.end_time != None:
+            if members.filter(Q(end_time=None) |
+                              Q(start_time__gte=member.start_time),
+                              person_id=member.person_id).exclude(id=member.id):
+                continue
+        data.append({'start_time': member.start_time,
+                          'end_time': member.end_time,
+                          "id": member.person.id,
+                          'name': member.person.name,
+                          'membership': member.on_behalf_of.name,
+                          'acronym': member.on_behalf_of.acronym,
+                          'family_name': member.person.family_name,
+                          'given_name': member.person.given_name,
+                          'additional_name': member.person.additional_name,
+                          'honorific_prefix': member.person.honorific_prefix,
+                          'honorific_suffix': member.person.honorific_suffix,
+                          'patronymic_name': member.person.patronymic_name,
+                          'sort_name': member.person.sort_name,
+                          'email': '',
+                          'gender': member.person.gender,
+                          'birth_date': member.person.birth_date,
+                          'death_date': member.person.death_date,
+                          'summary': member.person.summary,
+                          'biography': member.person.biography,
+                          'image': member.person.image,
+                          #     'district': districts,
+                          'gov_url': member.person.gov_url.url if member.person.gov_url else '',
+                          'gov_id': member.person.gov_id,
+                          'gov_picture_url': member.person.gov_picture_url,
+                          'voters': member.person.voters,
+                          'active': member.person.active,
+                          'party_id': member.on_behalf_of_id})
+    return JsonResponse(data, safe=False)
 
 
 def getOrganizatonsByClassification(request):
@@ -2763,9 +2796,9 @@ def getOrganizatonsByClassification(request):
     }
     """
 
-    workingBodies = Organization.objects.filter(classification__in=["odbor", "komisija", "preiskovalna komisija"])
+    workingBodies = Organization.objects.filter(classification__in=settings.WBS)
     parliamentaryGroups = Organization.objects.filter(classification__in=settings.PS_NP)
-    council = Organization.objects.filter(classification="kolegij")
+    council = Organization.objects.filter(classification__in=settings.COUNCIL)
 
     return JsonResponse({"working_bodies": [{"id": wb.id,
                                              "name": wb.name} for wb in workingBodies],
@@ -2787,13 +2820,16 @@ def getOrganizationRolesAndMembers(request, org_id, date_=None):
     out = {}
     trans_map = {"debug": "debug",
                  "predsednik": "president",
+                 "president": "president",
                  "predsednica": "president",
                  smart_str("član"): "members",
                  smart_str("namestnica člana"): "viceMember",
                  smart_str("namestnik člana"): "viceMember",
                  smart_str("članica"): "members",
+                 "member": "members",
                  "podpredsednica": "vice_president",
-                 "podpredsednik": "vice_president"}
+                 "podpredsednik": "vice_president",
+                 "deputy": "vice_president"}
     if org:
         out = {"debug": [],
                "members": [],
@@ -2896,7 +2932,7 @@ def getDistricts(request):
     """
 
     out = [{"id": area.id,
-            "name": area.name} for area in Area.objects.filter(calssification="okraj")]
+            "name": area.name} for area in Area.objects.filter(calssification="district")]
 
     return JsonResponse(out, safe=False)
 
@@ -3164,7 +3200,7 @@ def getMembersWithFunction(request):
     
     fdate = datetime.today()
     data = []
-    dz = Organization.objects.filter(id=DZ_ID)
+    dz = Organization.objects.filter(id=settings.DZ_ID)
     members = Membership.objects.filter(Q(start_time__lte=fdate) |
                                         Q(start_time=None),
                                         Q(end_time__gte=fdate) |
@@ -3260,13 +3296,13 @@ def getAllQuestions(request, date_=None):
     else:
         fdate = datetime.now().date()
 
-    question_queryset = Question.objects.filter(date__lte=fdate).order_by('date')
+    question_queryset = Question.objects.filter(date__lte=fdate).order_by('id')
     question_queryset, pager = parsePager(request, question_queryset, default_per_page=500)
 
     data = []
 
     for question in question_queryset:
-        link = question.links.filter(note__icontains='Besedilo')
+        link = question.links.filter()#note__icontains='Besedilo')
         if link:
             link = link[0].url
         else:
@@ -3275,19 +3311,25 @@ def getAllQuestions(request, date_=None):
                                                                        flat=True)
         recipient_org = question.recipient_organization.all().values_list('id',
                                                                           flat=True)
+        author_persons = question.authors.all().values_list('id',
+                                                           flat=True)
+        author_orgs = question.author_orgs.all().values_list('id',
+                                                            flat=True)
+
         recipient_posts = question.recipient_post.all().values('organization_id',
                                                                 'membership__person_id')
         q_obj = {'date': question.date,
                  'id': question.id,
                  'title': question.title,
                  'session_id': getIdSafe(question.session),
-                 'author_id': getIdSafe(question.author),
-                 'author_org_id': getIdSafe(question.author_org),
+                 'author_id': list(author_persons),
+                 'author_org_id': list(author_orgs),
                  'recipient_id': list(recipient_person),
                  'recipient_org_id': list(recipient_org),
                  'recipient_posts': list(recipient_posts),
                  'recipient_text': question.recipient_text,
                  'link': link,
+                 'type_of_question': question.type_of_question
                  }
         data.append(q_obj)
 
@@ -3320,7 +3362,7 @@ def getBallotsCounter(voter_obj, date_=None):
 
     ballots = ballots.annotate(ballot_count=Count('option')).order_by('month')
 
-    votes = Vote.objects.filter(start_time__lt=fdate)
+    votes = Vote.objects.filter(start_time__lt=fdate, counter=None)
     #votes = votes.annotate(month=DateTime("start_time",
     #                                      "month",
     #                       tzinfo=None)).values("month")
@@ -3379,27 +3421,27 @@ def getBallotsCounterOfPerson(request, person_id, date_=None):
     * @apiSuccessExample {json} Example response:
     [
         {
-            "ni": 2,
-            "proti": 3,
+            "absent": 2,
+            "against": 3,
             "date_ts": "2014-08-01T00:00:00",
-            "za": 7,
-            "kvorum": 5,
+            "for": 7,
+            "abstain": 5,
             "date": "01.08.2014",
             "total": 17
         }, {
-            "ni": 2,
-            "proti": 8,
+            "absent": 2,
+            "against": 8,
             "date_ts": "2014-09-01T00:00:00",
-            "za": 2,
-            "kvorum": 3,
+            "for": 2,
+            "abstain": 3,
             "date": "01.09.2014",
             "total": 15
         }, {
-            "ni": 1,
-            "proti": 1,
+            "absent": 1,
+            "against": 1,
             "date_ts": "2014-10-01T00:00:00",
-            "za": 2,
-            "kvorum": 0,
+            "for": 2,
+            "abstain": 0,
             "date": "01.10.2014",
             "total": 4
         }
@@ -3440,27 +3482,27 @@ def getBallotsCounterOfParty(request, party_id, date_=None):
     * @apiSuccessExample {json} Example response:
     [
         {
-            "ni": 0,
-            "proti": 3,
+            "absent": 0,
+            "against": 3,
             "date_ts": "2014-08-01T00:00:00",
-            "za": 28,
-            "kvorum": 3,
+            "for": 28,
+            "abstain": 3,
             "date": "01.08.2014",
             "total": 17
         }, {
-            "ni": 9,
-            "proti": 1,
+            "absent": 9,
+            "against": 1,
             "date_ts": "2014-09-01T00:00:00",
-            "za": 20,
-            "kvorum": 0,
+            "for": 20,
+            "abstain": 0,
             "date": "01.09.2014",
             "total": 15
         }, {
-            "ni": 0,
-            "proti": 0,
+            "absent": 0,
+            "against": 0,
             "date_ts": "2014-10-01T00:00:00",
-            "za": 6,
-            "kvorum": 2,
+            "for": 6,
+            "abstain": 2,
             "date": "01.10.2014",
             "total": 4
         }
@@ -3509,7 +3551,7 @@ def addQuestion(request): # TODO not documented because private refactor with se
         session = determineSession(data['datum'])
         name = replace_all(data['vlagatelj'], rep)
         authorPerson = determinePerson(name)
-        dz = Organization.objects.get(id=DZ_ID)
+        dz = Organization.objects.get(id=settings.DZ_ID)
         date_of = datetime.strptime(data['datum'], '%d.%m.%Y')
         recipients = parseRecipient(data['naslovljenec'], date_of)
         recipient_persons = [person['recipient']
@@ -3545,8 +3587,6 @@ def addQuestion(request): # TODO not documented because private refactor with se
         question = Question(session=session,
                             date=datetime.strptime(data['datum'], '%d.%m.%Y'),
                             title=data['naslov'],
-                            author=authorPerson,
-                            author_org=author_org,
                             recipient_text=data['naslovljenec'],
                             json_data=request.body
                             )
@@ -3554,6 +3594,8 @@ def addQuestion(request): # TODO not documented because private refactor with se
         question.recipient_person.add(*recipient_persons)
         question.recipient_organization.add(*recipient_organizations)
         question.recipient_post.add(*recipient_posts)
+        question.authors.add(authorPerson)
+        question.author_orgs.add(author_org)
 
         print 'save question'
 
@@ -3724,14 +3766,18 @@ def getAllChangesAfter(request, # TODO not documented because strange
                                                                        flat=True)
         recipient_org = question.recipient_organization.all().values_list('id',
                                                                           flat=True)
+        author_persons = question.authors.all().values_list('id',
+                                                           flat=True)
+        author_orgs = question.author_orgs.all().values_list('id',
+                                                            flat=True)
         recipient_posts = question.recipient_post.all().values('organization_id',
                                                                 'membership__person_id')
         q_obj = {'date': question.date,
                  'id': question.id,
                  'title': question.title,
                  'session_id': getIdSafe(question.session),
-                 'author_id': getIdSafe(question.author),
-                 'author_org_id': getIdSafe(question.author_org),
+                 'author_id': list(author_persons),
+                 'author_org_id': list(author_orgs),
                  'recipient_id': list(recipient_person),
                  'recipient_org_id': list(recipient_org),
                  'recipient_posts': list(recipient_posts),
@@ -3790,11 +3836,11 @@ def getVotesTable(request, date_to=None):
     else:
         fdate = datetime.now().date()
     data = []
-    sessions = Session.objects.filter(vote__isnull=False).distinct().order_by("start_time")
+    sessions = Session.objects.filter(vote__isnull=False).distinct().order_by('id')
     sessions, pager = parsePager(request, sessions, default_per_page=10)
     for session in sessions:
         votes = Vote.objects.filter(session=session,
-                                    start_time__lte=fdate)
+                                    start_time__lte=fdate).order_by('id')
         for vote in votes.prefetch_related('motion'):
             for ballot in Ballot.objects.filter(vote=vote):
                 data.append({'id': ballot.id,
@@ -3894,8 +3940,10 @@ def getAllAllSpeeches(request):
         speech_dict = model_to_dict(speech,
                                     fields=[field.name for field in speech._meta.fields],
                                     exclude=[])
-        if speech.agenda_item:
+        if speech.agenda_item and speech.agenda_item.order:
             speech_dict['agenda_item_order'] = speech.agenda_item.order
+        elif speech.debate and speech.debate.order:
+            speech_dict['agenda_item_order'] = speech.debate.order
         else:
             speech_dict['agenda_item_order'] = 0
         data.append(speech_dict)
@@ -4044,7 +4092,7 @@ def setDateIfNone(date, type_='start'):
 
 
 def getAmendment(request):
-    parliamentaryGroups = Organization.objects.filter(classification__in=PS)
+    parliamentaryGroups = Organization.objects.filter(classification__in=settings.PS)
     acronyms = list(set(list(parliamentaryGroups.values_list('_acronym', flat=True))))
     amandmas = Vote.objects.filter(name__icontains='amandma')
     staticData = requests.get('https://analize.parlameter.si/v1/utils/getAllStaticData/').json()
@@ -4144,7 +4192,7 @@ def getAllORGsExt(request):
     }
     """
 
-    parliamentary_group = Organization.objects.filter(classification=PS)
+    parliamentary_group = Organization.objects.filter(classification=settings.PS)
     data = {pg.id: {'name': pg.name,
                     'id': pg.id,
                     'acronym': pg.acronym,
@@ -4171,3 +4219,18 @@ def getAllORGsExt(request):
                            'is_coalition': True if pg.is_coalition == 1 else False,
                            'disbanded': pg.dissolution_date}
     return JsonResponse(data, safe=False)
+
+
+def getParliamentMembershipsOfMembers(request):
+    out_data = {}
+    mems = Membership.objects.filter(organization=settings.DZ_ID,
+                                     role='voter')
+    mems = mems.distinct().values("start_time", "end_time", "on_behalf_of_id", "person_id").order_by('person_id')
+
+    for mem in mems:
+        if mem['person_id'] in out_data.keys():
+            out_data[mem['person_id']].append(mem)
+        else:
+            out_data[mem['person_id']] = [mem]
+
+    return JsonResponse(out_data)

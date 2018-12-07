@@ -1,11 +1,12 @@
 from django.db.models import Count
 
-from parladata.models import Speech, Question, Vote, Membership, Organization, Ballot, Person
+from parladata.models import Speech, Question, Vote, Membership, Organization, Ballot, Person, Area
 from parladata.utils import parseRecipient
 from django.db.models import Q
 from django.conf import settings
 
 from datetime import datetime
+from collections import *
 
 import requests
 from requests.auth import HTTPBasicAuth
@@ -148,7 +149,7 @@ def fixSpeakerParty(person_id):
         speeches = Speech.objects.filter(speaker_id=person_id,
                                          start_time__gte=start_time,
                                          start_time__lte=end_time)
-        speeches.update(party=mem.organization)
+        speeches.update(party=mem.on_behalf_of)
 
 
 def test_ministers_memberships(person_id):
@@ -168,7 +169,6 @@ def test_ministers_memberships(person_id):
 
 
 def uk_motion_result():
-    from collections import *
     for motion in Motion.objects.all():
         vote = motion.vote.all()[0]
         options = vote.ballot_set.all().values_list("option", flat=True)
@@ -290,8 +290,8 @@ def merge_people(q_s):
 
 def find_non_membershis_votes(others_id):
     out = ['id', 'name', 'first_vote', 'last_vote']
-    mps = {i:[] for i in  list(set(list(Ballot.objects.filter(voterparty=344, option__in=["za", "proti", "kvorum"]).values_list("voter__id", flat=True))))}
-    for v in Ballot.objects.filter(voterparty=344, option__in=["za", "proti", "kvorum"]):
+    mps = {i:[] for i in  list(set(list(Ballot.objects.filter(voterparty=344, option__in=["for", "against", "abstain"]).values_list("voter__id", flat=True))))}
+    for v in Ballot.objects.filter(voterparty=344, option__in=["for", "against", "abstain"]):
         mps[v.voter.id].append(v.vote.start_time)
 
     for i, m in mps.items():
@@ -362,3 +362,48 @@ def create_parliament_memberships(orgs_for_exclude=[]):
         m.organization = parliament
         m.role = 'voter'
         m.save()
+
+
+def add_posts_from_membership():
+    for m in Membership.objects.filter(role='president'):
+        Post(role='president',
+            label='v',
+            organization=m.organization,
+            membership=m,
+            start_time=m.start_time,
+            end_time=m.end_time).save()
+
+    for m in Membership.objects.filter(role='deputy'):
+        Post(role='deputy',
+            label='namv',
+            organization=m.organization,
+            membership=m,
+            start_time=m.start_time,
+            end_time=m.end_time).save()
+
+
+def change_international_classes():
+
+    org_map = {
+        'poslanska skupina': 'pg',
+        'nepovezani poslanec': 'unaligned MP',
+        'odbor': 'committee',
+        'komisija': 'comission',
+        'preiskovalna komisija': 'investigative comission',
+        'skupina prijateljstva': 'friendship group',
+        'delegacija': 'delegation',
+        'kolegij': 'council',
+        'ministrstvo': 'ministry',
+        'vlada': 'gov',
+        'sluzba vlade': 'gov_service',
+        'urad vlade': 'gov_office'
+    }
+
+    for old, new in org_map.items():
+        orgs = Organization.objects.filter(classification=old)
+        orgs.update(classification=new)
+
+    areas = Area.objects.filter(calssification='okraj')
+    areas.update(calssification='district')
+
+    Membership

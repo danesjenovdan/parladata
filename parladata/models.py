@@ -234,7 +234,7 @@ class Organization(Timestampable, Taggable, models.Model):
     objects = PassThroughManager.for_queryset_class(OrganizationQuerySet)()
 
     def __str__(self):
-        return self.name + " " + unicode(self.id)
+        return self.name + " " + unicode(self.id) + " " + (self._acronym if self._acronym else '')
 
     def name_on(self, fdate=datetime.now()):
         name_obj = self.names.filter(models.Q(start_time__lte=fdate) |
@@ -312,7 +312,7 @@ class Post(Timestampable, Taggable, models.Model):
         m.save()
 
     def __str__(self):
-        return u'Org: {0}, Role: {1}, Person: {2}'.format(self.membership.organization if self.membership else self.organization, self.role, self.membership.person.name if self.membership else "None")
+        return u'Org: {0}, Role: {1}, Person: {2}'.format(self.membership.organization if self.membership else self.organization, self.role, self.membership.person.name if self.membership and self.membership.person else "None")
 
 
 @python_2_unicode_compatible
@@ -693,7 +693,7 @@ class Speech(Versionable, Timestampable, Taggable, models.Model):
     speaker = models.ForeignKey('Person',
                                 help_text='Person making the speech')
 
-    party = models.ForeignKey('Organization',
+    party = models.ForeignKey('Organization', null=True, blank=True,
                               help_text='The party of the person making the speech',
                               default=2)
 
@@ -718,6 +718,8 @@ class Speech(Versionable, Timestampable, Taggable, models.Model):
     agenda_item = models.ForeignKey('AgendaItem', blank=True, null=True,
                                     help_text='Agenda item', related_name='speeches')
 
+    debate = models.ForeignKey('Debate', blank=True, null=True,
+                                help_text='Debates', related_name='speeches')
     @staticmethod
     def getValidSpeeches(date_):
         return Speech.objects.filter(valid_from__lt=date_, valid_to__gt=date_)
@@ -784,6 +786,12 @@ class Motion(Timestampable, Taggable, models.Model):
                            max_length=255,
                            help_text='EPA number')
 
+    agenda_item = models.ManyToManyField('AgendaItem', blank=True,
+                                         help_text='Agenda item', related_name='motions')
+
+    debate = models.ForeignKey('Debate', blank=True, null=True,
+                                help_text='Debates', related_name='motions')
+
     def __str__(self):
         return self.text[:100] + ' --> ' + self.session.name if self.session else ''
 
@@ -837,10 +845,10 @@ class Vote(Timestampable, Taggable, models.Model):
         opts = self.ballot_set.all().values_list("option")
         opt_counts = opts.annotate(dCount('option'))
 
-        out = {'ni': 0,
-               'proti': 0,
-               'za': 0,
-               'kvorum': 0
+        out = {'for': 0,
+               'against': 0,
+               'abstain': 0,
+               'absent': 0
                }
         for opt in opt_counts:
             out[opt[0]] = opt[1]
@@ -907,16 +915,13 @@ class Question(Timestampable, models.Model):
                              null=True,
                              help_text='Title name as written on dz-rs.si')
 
-    author = models.ForeignKey('Person',
-                               blank=True,
-                               null=True,
-                               help_text='The person (MP) who asked the question.',
-                               related_name='asked')
-    author_org = models.ForeignKey('Organization',
-                                   blank=True,
-                                   null=True,
-                                   help_text='The organization of person (MP) who asked the question.',
-                                   related_name='asked')
+    authors = models.ManyToManyField('Person',
+                                     blank=True,
+                                     help_text='The persons (MP) who asked the question.')
+
+    author_orgs = models.ManyToManyField('Organization',
+                                         blank=True,
+                                         help_text='The organizations of person (MP) who asked the question.')
 
     recipient_person = models.ManyToManyField('Person',
                                               blank=True,
@@ -945,8 +950,12 @@ class Question(Timestampable, models.Model):
                                  blank=True, null=True,
                                  help_text=_('Unique signature'))
 
+    type_of_question = models.CharField(max_length=64,
+                                   blank=True,
+                                   null=True)
+
     def __str__(self):
-        return self.author.name
+        return ' '.join(self.authors.all().values_list('name', flat=True))
 
 
 # Parser "buffer" storage models
@@ -1118,8 +1127,28 @@ class AgendaItem(Timestampable, Taggable, models.Model):
     order = models.IntegerField(blank=True, null=True,
                                 help_text='Order of agenda item')
 
+    gov_id = models.CharField(blank=True, max_length=255, null=True, help_text='gov_id of agenda item')
+
     def __str__(self):
         return self.name
+
+
+class Debate(Timestampable, Taggable, models.Model):
+    order = models.IntegerField(blank=True, null=True,
+                                help_text='Order of debate')
+
+    date = PopoloDateTimeField(blank=True,
+                               null=True,
+                               help_text='Date of the item.')
+
+    agenda_item = models.ManyToManyField('AgendaItem', blank=True,
+                                         help_text='Agenda item', related_name='debates')
+
+    gov_id = models.CharField(blank=True, max_length=255, null=True, help_text='gov_id of debate')
+
+    session = models.ForeignKey('Session', blank=True, null=True)
+
+
 
 
 @receiver(pre_save, sender=Organization)

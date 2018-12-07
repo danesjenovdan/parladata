@@ -26,6 +26,7 @@ router.register(r'memberships', MembershipView)
 router.register(r'areas', AreaView)
 router.register(r'agenda-items', AgendaItemView)
 router.register(r'questions', QuestionView)
+router.register(r'debates', DebateView)
 
 urlpatterns = [    
     # autocomplete urls
@@ -69,6 +70,8 @@ urlpatterns = [
 
     url(r'^getDistricts', getDistricts),
     url(r'^getAllTimeMemberships', getAllTimeMemberships),
+
+    url(r'^getParliamentMembershipsOfMembers', getParliamentMembershipsOfMembers),
 
     # PGs URLs with and without dates
     url(r'^getMembersOfPGs/', getMembersOfPGs),

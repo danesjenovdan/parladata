@@ -54,8 +54,7 @@ def getMPObjects(date_=None):
 
     if not date_:
         date_ = datetime.now()
-    parliamentary_group = Organization.objects.filter(Q(classification="poslanska skupina") |
-                                                      Q(classification="nepovezani poslanec"))
+    parliamentary_group = Organization.objects.filter(classification__in=settings.PS_NP)
     members = Membership.objects.filter(organization__in=parliamentary_group)
     members = members.filter(Q(start_time__lte=date_) |
                              Q(start_time=None),
@@ -113,9 +112,9 @@ def getVotesDict(date=None):
 def voteToLogical(vote):
     """Returns 1 instead of 'za' and 0 of 'proti'."""
 
-    if vote == "za":
+    if vote == "for":
         return 1
-    elif vote == "proti":
+    elif vote == "against":
         return 0
     else:
         return -1
@@ -165,7 +164,7 @@ def getMembershipDuplications(request):
     context = {}
     start_time = datetime(day=1, month=8, year=2014)
     end_time = datetime.now()
-    parliamentary_groups = Organization.objects.filter(classification__in=PS_NP)
+    parliamentary_groups = Organization.objects.filter(classification__in=settings.PS_NP)
 
     members = Membership.objects.filter(organization__in=parliamentary_groups)
 
@@ -304,8 +303,7 @@ def getBlindVotes():
     """Checks if memberships of PGs are ok."""
 
     context = {}
-    parliamentary_groups = Organization.objects.filter(Q(classification="poslanska skupina") |
-                                                       Q(classification="nepovezani poslanec"))
+    parliamentary_groups = Organization.objects.filter(classification__in=settings.PS_NP)
     context["vote_without_membership"] = []
     with open('zombie_votes.csv', 'wb') as csvfile:
         csvwriter = csv.writer(csvfile, delimiter=',',
@@ -470,7 +468,7 @@ def membersFlowInDZ(request):
     """
     Debug method which shows when members joins and leave DZ.
     """
-    parliamentary_groups = Organization.objects.filter(Q(classification="poslanska skupina") | Q(classification="nepovezani poslanec"))
+    parliamentary_groups = Organization.objects.filter(classification__in=settings.PS_NP)
 
     context = {}
     context["orgs"]=[]
@@ -494,33 +492,19 @@ def getMPsOrganizationsByClassification():
     """
     CSV export memberships of all DZ members grouped by classification
     """
-    classes = ["skupina prijateljstva",
-               "delegacija",
-               "komisija",
-               "poslanska skupina",
-               "odbor", "kolegij",
-               "preiskovalna komisija",
-               "",
-               "nepovezani poslanec"]
+
+    classes = settings.PS_NP + settings.WBS + settings.FRIENDSHIP_GROUP + settings.DELEGATION + ['']
     with open('members_orgs.csv', 'w') as csvfile:
         csvwriter = csv.writer(csvfile,
                                delimiter=';',
                                quotechar='|',
                                quoting=csv.QUOTE_MINIMAL)
         csvwriter.writerow(["Person"]+[clas for clas in classes])
-        parliamentary_group = Organization.objects.filter(classification__in=PS_NP)
+        parliamentary_group = Organization.objects.filter(classification__in=settings.PS_NP)
         pgs = Membership.objects.filter(organization__in=parliamentary_group)
         for person_mps in pgs:
             memberships = person_mps.person.memberships.all()
-            counter = {"skupina prijateljstva": [],
-                       "delegacija": [],
-                       "komisija": [],
-                       "poslanska skupina": [],
-                       "odbor": [],
-                       "kolegij": [],
-                       "preiskovalna komisija": [],
-                       "": [],
-                       "nepovezani poslanec": []}
+            counter = {cl: [] for cl in classes}
             for mem in memberships:
                 c_obj = counter[mem.organization.classification]
                 c_obj.append(smart_str(mem.organization.name))
@@ -547,8 +531,7 @@ def updateSpeechOrg():
 def getNonPGSpeekers():
     """Return speakers that are not in PG."""
 
-    parliamentary_group = Organization.objects.filter(Q(classification="poslanska skupina") |
-                                                      Q(classification="nepovezani poslanec"))
+    parliamentary_group = Organization.objects.filter(classification__in=settings.PS_NP)
     memberships = Membership.objects.filter(organization=parliamentary_group).values_list("person__id", flat=True)
     ids = list(memberships)
     Speech.objects.all().exclude(speaker__id__in=ids)
@@ -568,10 +551,10 @@ def updateMotins():
     """Updates motion."""
 
     for motion in Motion.objects.all():
-        yes = dict(Counter(Ballot.objects.filter(vote__motion=motion).values_list("option", flat=True))).get("za", 0)
-        against = dict(Counter(Ballot.objects.filter(vote__motion=motion).values_list("option", flat=True))).get("proti", 0)
-        kvorum = dict(Counter(Ballot.objects.filter(vote__motion=motion).values_list("option", flat=True))).get("kvorum", 0)
-        no = dict(Counter(Ballot.objects.filter(vote__motion=motion).values_list("option", flat=True))).get("ni", 0)
+        yes = dict(Counter(Ballot.objects.filter(vote__motion=motion).values_list("option", flat=True))).get("for", 0)
+        against = dict(Counter(Ballot.objects.filter(vote__motion=motion).values_list("option", flat=True))).get("against", 0)
+        kvorum = dict(Counter(Ballot.objects.filter(vote__motion=motion).values_list("option", flat=True))).get("abstain", 0)
+        no = dict(Counter(Ballot.objects.filter(vote__motion=motion).values_list("option", flat=True))).get("absent", 0)
         if motion.text == "Dnevni red v celoti" or motion.text == "Širitev dnevnega reda".decode('utf8'):
             if yes > (yes + against + kvorum + no) / 2:
                 motion.result = 1
@@ -895,6 +878,7 @@ def parsePager(request, objs, default_per_page=1000):
 def getOwnersOfAmendment(motion):
     orgs_ids = []
     people_ids = []
+    amendment_words = ['AMANDMANI', 'AMANDMAN']
     if settings.COUNTRY == 'SI':
         if 'Amandma' in motion.text:
             acronyms = re.findall('\; \s*(\w+)|\[\s*(\w+)', motion.text)
@@ -902,9 +886,10 @@ def getOwnersOfAmendment(motion):
             if acronyms:
                 query = reduce(operator.or_, (Q(name_parser__icontains=item) for item in acronyms))
                 orgs = Organization.objects.filter(query)
-                orgs = orgs.filter(Q(founding_date__lte=vote.start_time) |
+                s_time = motion.vote.all()[0].start_time
+                orgs = orgs.filter(Q(founding_date__lte=s_time) |
                                    Q(founding_date=None),
-                                   Q(dissolution_date__gte=vote.start_time) |
+                                   Q(dissolution_date__gte=s_time) |
                                    Q(dissolution_date=None))
                 org_ids = list(orgs.values_list('id', flat=True))
             else:
@@ -914,63 +899,58 @@ def getOwnersOfAmendment(motion):
         return {'orgs': org_ids, 'people': []}
     elif settings.COUNTRY == 'HR':
         links = motion.links.all()
-        amendment_words = ['AMANDMANI', 'AMANDMAN']
-        end_words = ['PZE', 'PZ', 'P.Z.E.']
+        orgs = Organization.objects.filter(classification__in=settings.PS_NP)
+        acronyms = {}
+        for org in orgs:
+            acronyms[' '.join(org.acronym.split(', '))]= org.id
+        vlada_id = Organization.objects.get(_name='Vlada').id
+        acronyms['Vlada VladaRH']= vlada_id
         for link in links:
             tokens = link.name.replace(" ", '_').replace("-", '_').split('_')
-            is_amendment = False
-            for word in amendment_words:
-                if word in tokens:
-                    is_amendment = True
-                    break
-            if is_amendment:
+            print(link.name)
+            if 'AMANDMAN' in link.name:
+                for acronym, i in acronyms.items():
+                    # find orgs
+                    for splited_acr in acronym.split(' '):
+                        if splited_acr in link.name:
+                            orgs_ids.append(i)
+                            break
                 num_ids = [hasNumbersOrPdfOrEndWord(token) for token in tokens]
                 if True in num_ids:
-                    tokens = tokens [:num_ids.index(True)]
+                    tokens = tokens[:num_ids.index(True)]
                 has_amendment = [token in amendment_words for token in tokens]
                 if True in has_amendment:
                     tokens = tokens[has_amendment.index(True)+1:]
-                orgs = Organization.objects.filter(classification__in=PS_NP)
                 # find proposers
-                if tokens[0].lower() == 'vlada' or tokens[0].lower() == 'vladarh':
+                #if tokens[0].lower() == 'vlada' or tokens[0].lower() == 'vladarh':
                     # vlada
-                    orgs_ids = [Organization.objects.get(_name='Vlada').id]
                 elif tokens[0].lower() == 'klub':
                     tokens = tokens[1:]
-                    n_tokens = len(tokens)
-                    for i in range(n_tokens):
-                        d_tokens = [[tokens[i]]]
-                        if i + 1 < n_tokens:
-                            d_tokens.append([tokens[i], tokens[i+1]])
-                        for d_token in d_tokens:
-                            filtred_orgs = orgs.filter(name_parser__icontains=' '.join(d_token))
-                            if filtred_orgs.count() > 0:
-                                names = filtred_orgs.values('id', 'name_parser')
-                                for name in names:
-                                    if re.search("\\b" + ' '.join(d_token) + "\\b", name['name_parser']):
-                                        orgs_ids.append(name['id'])
-                                        break
-                elif tokens[0].lower() == 'odbor':
-                    pass
-                else:
-                    n_tokens = len(tokens)
-                    for i in range(n_tokens):
-                        d_tokens = [[tokens[i]]]
-                        if i + 1 < n_tokens:
-                            d_tokens.append([tokens[i], tokens[i+1]])
-                        for d_token in d_tokens:
-                            person = Person.objects.filter(name_parser__icontains=' '.join(d_token))
-                            if person.count() == 1: 
-                                people_ids.append(person[0].id)
-                                break
-                            if person.count() > 0:
-                                names = person.values('id', 'name_parser')
-                                for name in names:
-                                    if re.search("\\b" + ' '.join(d_token) + "\\b", name['name_parser']):
-                                        people_ids.append(name['id'])
-                                        break
 
-    return {'orgs': orgs_ids, 'people': people_ids}
+                n_tokens = len(tokens)
+                for i in range(n_tokens):
+                    d_tokens = [[tokens[i]]]
+                    if i + 1 < n_tokens:
+                        d_tokens.append([tokens[i], tokens[i+1]])
+                    for d_token in d_tokens:
+                        n_tokens = len(tokens)
+                        for i in range(n_tokens):
+                            d_tokens = [[tokens[i]]]
+                            if i + 1 < n_tokens:
+                                d_tokens.append([tokens[i], tokens[i+1]])
+                            for d_token in d_tokens:
+                                person = Person.objects.filter(name_parser__icontains=' '.join(d_token))
+                                if person.count() == 1: 
+                                    people_ids.append(person[0].id)
+                                    break
+                                if person.count() > 0:
+                                    names = person.values('id', 'name_parser')
+                                    for name in names:
+                                        if re.search("\\b" + ' '.join(d_token) + "\\b", name['name_parser']):
+                                            people_ids.append(name['id'])
+                                            break
+        print acronyms
+    return {'orgs': orgs_ids, 'people': list(set(people_ids))}
 
 
 def hasNumbersOrPdfOrEndWord(inputString):
