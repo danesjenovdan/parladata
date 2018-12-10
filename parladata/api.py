@@ -238,7 +238,7 @@ class LinkView(viewsets.ModelViewSet):
     queryset = Link.objects.all()
     serializer_class = LinkSerializer
     filter_backends = (DjangoFilterBackend,)
-    filter_fields = ('person', 'tags__name')
+    filter_fields = ('person', 'tags__name', 'organization')
     authentication_classes = (SessionAuthentication, BasicAuthentication, OAuth2Authentication)
 
 
