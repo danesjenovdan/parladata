@@ -285,9 +285,9 @@ def getMPStatic(request, person_id, date_=None):
     }
     """
     if date_:
-        fdate = datetime.strptime(date_, settings.API_DATE_FORMAT).date()
+        fdate = datetime.strptime(date_, settings.API_DATE_FORMAT)
     else:
-        fdate = datetime.now().date()
+        fdate = datetime.now()
     data = dict()
     member = Person.objects.get(id=person_id)
     memberships = member.memberships.filter(Q(start_time__lte=fdate) |
@@ -2205,6 +2205,7 @@ def getBallotsOfMotion(request, motion_id):
 
     for bal in vote.ballot_set.all():
         mem = mems[bal.voter_id]
+        # TODO fix this if it breaks
         data.append({'mo_id': vote.motion_id,
                      "mp_id": bal.voter_id,
                      "Acronym": mem.organization.acronym,
