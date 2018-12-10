@@ -302,7 +302,7 @@ def getMPStatic(request, person_id, date_=None):
                  'acronym': party[0].organization.acronym,
                  'members_since': party[0].start_time.strftime(settings.API_DATE_FORMAT)}
     else:
-        return JsonResponse({})
+        return JsonResponse({'data': {},'error': 'No party memberships.'})
 
     groups = [{'name': membership.organization.name,
                'id': membership.organization.id}
