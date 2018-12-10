@@ -299,4 +299,4 @@ class ContactDetailView(viewsets.ModelViewSet):
     queryset = ContactDetail.objects.all()
     serializer_class = ContactDetailSerializer
     authentication_classes = (SessionAuthentication, BasicAuthentication, OAuth2Authentication)
-    filter_fields = ('person', 'type', 'organization')
+    filter_fields = ('person', 'contact_type', 'organization')
