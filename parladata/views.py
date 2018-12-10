@@ -290,9 +290,9 @@ def getMPStatic(request, person_id, date_=None):
         fdate = datetime.now()
     data = dict()
     member = Person.objects.get(id=person_id)
-    memberships = member.memberships.filter(Q(start_time__lte=fdate) |
+    memberships = member.memberships.filter(Q(start_time__date__lte=fdate) |
                                             Q(start_time=None),
-                                            Q(end_time__gte=fdate) |
+                                            Q(end_time__date__gte=fdate) |
                                             Q(end_time=None))
 
     party = memberships.filter(organization__classification__in=settings.PS_NP)
