@@ -4208,7 +4208,7 @@ def getAllORGsExt(request):
                        'id': pg.id,
                        'acronym': pg.acronym,
                        'founded': pg.founding_date,
-                       'type': 'coalition' if pg.is_coalition == 1 else 'oposition',
+                       'type': 'coalition' if pg.is_coalition == 1 else 'opposition',
                        'is_coalition': True if pg.is_coalition == 1 else False,
                        'disbanded': pg.dissolution_date}
     parliament = Organization.objects.get(id=settings.DZ_ID)
