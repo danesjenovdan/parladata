@@ -1082,8 +1082,7 @@ class Law(Timestampable, Taggable, models.Model):
                               max_length=255,
                               help_text='result of law')
 
-    proposer_text = models.CharField(blank=True, null=True,
-                                     max_length=255,
+    proposer_text = models.TextField(blank=True, null=True,
                                      help_text='Proposer of law')
 
     procedure_phase = models.CharField(blank=True, null=True,
