@@ -693,7 +693,7 @@ class Speech(Versionable, Timestampable, Taggable, models.Model):
     speaker = models.ForeignKey('Person',
                                 help_text='Person making the speech')
 
-    party = models.ForeignKey('Organization',
+    party = models.ForeignKey('Organization', null=True, blank=True,
                               help_text='The party of the person making the speech',
                               default=2)
 
@@ -1082,8 +1082,7 @@ class Law(Timestampable, Taggable, models.Model):
                               max_length=255,
                               help_text='result of law')
 
-    proposer_text = models.CharField(blank=True, null=True,
-                                     max_length=255,
+    proposer_text = models.TextField(blank=True, null=True,
                                      help_text='Proposer of law')
 
     procedure_phase = models.CharField(blank=True, null=True,

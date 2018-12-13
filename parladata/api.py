@@ -109,6 +109,11 @@ class TagsSerializer(serializers.ModelSerializer):
         model = Tag
         fields = '__all__'
 
+class ContactDetailSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ContactDetail
+        fields = '__all__'
+
 
 # ViewSets define the view behavior.
 class PersonView(viewsets.ModelViewSet):
@@ -238,7 +243,7 @@ class LinkView(viewsets.ModelViewSet):
     queryset = Link.objects.all()
     serializer_class = LinkSerializer
     filter_backends = (DjangoFilterBackend,)
-    filter_fields = ('person', 'tags__name')
+    filter_fields = ('person', 'tags__name', 'organization')
     authentication_classes = (SessionAuthentication, BasicAuthentication, OAuth2Authentication)
 
 
@@ -289,3 +294,9 @@ class QuestionView(viewsets.ModelViewSet):
     filter_backends = (DjangoFilterBackend, filters.OrderingFilter)
     filter_fields = ('authors',)
     ordering_fields = ('date',)
+
+class ContactDetailView(viewsets.ModelViewSet):
+    queryset = ContactDetail.objects.all()
+    serializer_class = ContactDetailSerializer
+    authentication_classes = (SessionAuthentication, BasicAuthentication, OAuth2Authentication)
+    filter_fields = ('person', 'contact_type', 'organization')

@@ -285,14 +285,14 @@ def getMPStatic(request, person_id, date_=None):
     }
     """
     if date_:
-        fdate = datetime.strptime(date_, settings.API_DATE_FORMAT).date()
+        fdate = datetime.strptime(date_, settings.API_DATE_FORMAT)
     else:
-        fdate = datetime.now().date()
+        fdate = datetime.now()
     data = dict()
     member = Person.objects.get(id=person_id)
-    memberships = member.memberships.filter(Q(start_time__lte=fdate) |
+    memberships = member.memberships.filter(Q(start_time__date__lte=fdate) |
                                             Q(start_time=None),
-                                            Q(end_time__gte=fdate) |
+                                            Q(end_time__date__gte=fdate) |
                                             Q(end_time=None))
 
     party = memberships.filter(organization__classification__in=settings.PS_NP)
@@ -302,7 +302,7 @@ def getMPStatic(request, person_id, date_=None):
                  'acronym': party[0].organization.acronym,
                  'members_since': party[0].start_time.strftime(settings.API_DATE_FORMAT)}
     else:
-        return JsonResponse({})
+        return JsonResponse({'data': {},'error': 'No party memberships.'})
 
     groups = [{'name': membership.organization.name,
                'id': membership.organization.id}
@@ -2205,6 +2205,7 @@ def getBallotsOfMotion(request, motion_id):
 
     for bal in vote.ballot_set.all():
         mem = mems[bal.voter_id]
+        # TODO fix this if it breaks
         data.append({'mo_id': vote.motion_id,
                      "mp_id": bal.voter_id,
                      "Acronym": mem.organization.acronym,
@@ -4207,7 +4208,7 @@ def getAllORGsExt(request):
                        'id': pg.id,
                        'acronym': pg.acronym,
                        'founded': pg.founding_date,
-                       'type': 'coalition' if pg.is_coalition == 1 else 'oposition',
+                       'type': 'coalition' if pg.is_coalition == 1 else 'opposition',
                        'is_coalition': True if pg.is_coalition == 1 else False,
                        'disbanded': pg.dissolution_date}
     parliament = Organization.objects.get(id=settings.DZ_ID)
