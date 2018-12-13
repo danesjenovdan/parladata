@@ -72,9 +72,9 @@ def getMPVoteObjects(date_=None):
         date_ = datetime.now()
     parliamentary_group = Organization.objects.filter(id=settings.DZ_ID)
     members = Membership.objects.filter(organization=parliamentary_group, role='voter').exclude(on_behalf_of=None)
-    members = members.filter(Q(start_time__lte=date_) |
+    members = members.filter(Q(start_time__date__lte=date_) |
                              Q(start_time=None),
-                             Q(end_time__gte=date_) |
+                             Q(end_time__date__gte=date_) |
                              Q(end_time=None)).prefetch_related('person')
 
     return members
