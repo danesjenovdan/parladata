@@ -154,7 +154,7 @@ class SessionView(viewsets.ModelViewSet):
     serializer_class = SessionSerializer
     fields = '__all__'
     filter_backends = (DjangoFilterBackend, filters.OrderingFilter)
-    filter_fields = ('organization',)
+    filter_fields = ('organization', 'id')
     ordering_fields = ('-start_time',)
 
 
