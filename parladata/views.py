@@ -1238,13 +1238,15 @@ def getBasicInfOfPG(request, pg_id, date_=None):
 
     numberOfSeats = len(members)
 
-    for a in members:
-        if a.person.voters is not None:
-            listOfVotes.append(a.person.voters)
-        else:
-            listOfVotes.append(0)
+    # for a in members:
+    #     if a.person.voters is not None:
+    #         listOfVotes.append(a.person.voters)
+    #     else:
+    #         listOfVotes.append(0)
 
-    allVoters = sum(listOfVotes)
+    # allVoters = sum(listOfVotes)
+
+    allVoters = parliamentary_group.voters
 
     fb_links = Link.objects.filter(organization=parliamentary_group,
                                    tags__name__in=['fb', 'FB'])
