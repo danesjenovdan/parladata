@@ -117,7 +117,8 @@ class ContactDetailSerializer(serializers.ModelSerializer):
 
 # ViewSets define the view behavior.
 class PersonView(viewsets.ModelViewSet):
-    authentication_classes = (SessionAuthentication, BasicAuthentication, OAuth2Authentication)
+    authentication_classes = (SessionAuthentication, BasicAuthentication, OAuth2Authentication,)
+    permissions = (permissions.IsAuthenticatedOrReadOnly,)
     serializer_class = PersonSerializer
     filter_backends = (filters.SearchFilter,)
     search_fields = ('name',)
