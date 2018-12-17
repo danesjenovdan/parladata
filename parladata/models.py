@@ -231,6 +231,11 @@ class Organization(Timestampable, Taggable, models.Model):
 
     url_name = 'organization-detail'
 
+    voters = models.IntegerField(_('voters'),
+                                 blank=True,
+                                 null=True,
+                                 help_text='number of votes cast for this person in their district')
+
     objects = PassThroughManager.for_queryset_class(OrganizationQuerySet)()
 
     def __str__(self):

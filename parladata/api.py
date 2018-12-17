@@ -117,7 +117,7 @@ class ContactDetailSerializer(serializers.ModelSerializer):
 
 # ViewSets define the view behavior.
 class PersonView(viewsets.ModelViewSet):
-    authentication_classes = (SessionAuthentication, BasicAuthentication, OAuth2Authentication)
+    # authentication_classes = (SessionAuthentication, BasicAuthentication, OAuth2Authentication,)
     serializer_class = PersonSerializer
     filter_backends = (filters.SearchFilter,)
     search_fields = ('name',)
@@ -154,7 +154,7 @@ class SessionView(viewsets.ModelViewSet):
     serializer_class = SessionSerializer
     fields = '__all__'
     filter_backends = (DjangoFilterBackend, filters.OrderingFilter)
-    filter_fields = ('organization',)
+    filter_fields = ('organization', 'id')
     ordering_fields = ('-start_time',)
 
 
