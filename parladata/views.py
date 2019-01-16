@@ -1246,7 +1246,7 @@ def getBasicInfOfPG(request, pg_id, date_=None):
 
     # allVoters = sum(listOfVotes)
 
-    allVoters = parliamentary_group.voters
+    allVoters = parliamentary_group[0].voters
 
     fb_links = Link.objects.filter(organization=parliamentary_group,
                                    tags__name__in=['fb', 'FB'])
