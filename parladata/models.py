@@ -1107,7 +1107,7 @@ class Law(Timestampable, Taggable, models.Model):
 
     date = PopoloDateTimeField(blank=True,
                                null=True,
-                               help_text='Date of the question.')
+                               help_text='Date of the law.')
 
     classification = models.CharField(blank=True, null=True,
                                       max_length=255,
@@ -1176,7 +1176,7 @@ def validate_date_fields(sender, **kwargs):
 
 @receiver(post_save, sender=Law)
 def set_mdt(sender, instance, **kwargs):
-    if not instance.mdt_fk:
+    if not instance.mdt_fk and instance.mdt:
       mdt_str = instance.mdt
       mdt = Organization.objects.filter(_name__icontains=mdt_str)
       if mdt:
