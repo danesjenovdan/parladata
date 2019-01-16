@@ -127,9 +127,7 @@ class PersonView(viewsets.ModelViewSet):
         mps = self.request.query_params.get('mps', None)
         if mps is not None:
             MPs_ids = Membership.objects.filter(organization__classification__in=settings.PS_NP).values_list('person', flat=True)
-            qs = queryset.filter(id__in=MPs_ids)
-            if self.request.user.is_superuser:
-                return qs
+            queryset = queryset.filter(id__in=MPs_ids)
         return queryset
 
 
