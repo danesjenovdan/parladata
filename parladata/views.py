@@ -1236,7 +1236,7 @@ def getBasicInfOfPG(request, pg_id, date_=None):
     else:
         viceOfPG = None
 
-    numberOfSeats = len(members)
+    numberOfSeats = members.distinct('person').count()
 
     # for a in members:
     #     if a.person.voters is not None:
