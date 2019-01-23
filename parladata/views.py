@@ -1208,13 +1208,13 @@ def getBasicInfOfPG(request, pg_id, date_=None):
                                Q(end_time__gte=fdate) |
                                Q(end_time=None),
                                membership__organization=parliamentary_group,
-                               role="president")) == 1:
+                               label="v")) == 1:
         headOfPG = Post.objects.get(Q(start_time__lte=fdate) |
                                     Q(start_time=None),
                                     Q(end_time__gte=fdate) |
                                     Q(end_time=None),
                                     membership__organization=parliamentary_group,
-                                    role="president").membership.person.id
+                                    label="v").membership.person.id
     else:
         headOfPG = None
 
@@ -1223,14 +1223,14 @@ def getBasicInfOfPG(request, pg_id, date_=None):
                                Q(end_time__gte=fdate) |
                                Q(end_time=None),
                                membership__organization=parliamentary_group,
-                               role="deputy")) > 0:
+                               label="namv")) > 0:
 
         for post in Post.objects.filter(Q(start_time__lte=fdate) |
                                         Q(start_time=None),
                                         Q(end_time__gte=fdate) |
                                         Q(end_time=None),
                                         membership__organization=parliamentary_group,
-                                        role="deputy"):
+                                        label="namv"):
 
             viceOfPG.append(post.membership.person.id)
     else:
