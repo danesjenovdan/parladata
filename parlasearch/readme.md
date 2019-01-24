@@ -1,1 +1,0 @@
-App for search engine. It calls SOLR and refines JSON.

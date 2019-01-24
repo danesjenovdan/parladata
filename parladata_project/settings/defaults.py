@@ -20,7 +20,6 @@ INSTALLED_APPS = (
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'parladata',
-    'parlasearch',
     'django_extensions',
     'raven.contrib.django.raven_compat',
     'corsheaders',
@@ -28,7 +27,6 @@ INSTALLED_APPS = (
     'rest_framework',
     'taggit_serializer',
     'django_filters',
-    'django_celery_monitor',
 )
 
 """MIDDLEWARE = (
