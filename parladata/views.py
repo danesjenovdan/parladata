@@ -3736,7 +3736,10 @@ def getAllChangesAfter(request, # TODO not documented because strange
         temp_speech = model_to_dict(speech, fields=[field.name
                                                     for field
                                                     in speech._meta.fields])
-        temp_speech['agenda_item_order'] = speech.agenda_item.order
+        if speech.agenda_item:
+            temp_speech['agenda_item_order'] = speech.agenda_item.order
+        else:
+            temp_speech['agenda_item_order'] = 0
         speech_data.append(temp_speech)
     data['speeches'] = speech_data
 
