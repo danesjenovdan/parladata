@@ -1,0 +1,43 @@
+{
+  "name": "parlasearch",
+  "version": "1.0.0",
+  "description": "Parlameter front facing api for searching parliamentary data",
+  "main": "run.js",
+  "scripts": {
+    "dev": "cross-env NODE_ENV=development nodemon run.js",
+    "lint": "eslint ."
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/danesjenovdan/parlasearch.git"
+  },
+  "author": "danesjenovdan",
+  "license": "Unlicense",
+  "bugs": {
+    "url": "https://github.com/danesjenovdan/parlasearch/issues"
+  },
+  "homepage": "https://github.com/danesjenovdan/parlasearch#readme",
+  "dependencies": {
+    "body-parser": "^1.18.3",
+    "chalk": "^2.4.1",
+    "cors": "^2.8.4",
+    "cron": "^1.3.0",
+    "cross-env": "^5.2.0",
+    "date-fns": "^1.29.0",
+    "express": "^4.16.4",
+    "fs-extra": "^7.0.0",
+    "lodash": "^4.17.11",
+    "node-fetch": "^2.2.0"
+  },
+  "devDependencies": {
+    "eslint": "^5.13.0",
+    "eslint-config-airbnb-base": "^13.1.0",
+    "eslint-plugin-import": "^2.16.0",
+    "nodemon": "^1.18.3"
+  },
+  "nodemonConfig": {
+    "ignore": [
+      "data/*"
+    ]
+  }
+}
