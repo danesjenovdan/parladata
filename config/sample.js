@@ -7,4 +7,5 @@ module.exports = {
     glej: 'http://localhost:3000',
     base: 'http://localhost:3066',
   },
+  solrUrl: 'http://localhost:8983/solr/parlameter',
 };
