@@ -22,7 +22,10 @@ function setupExpress() {
     require('./resources')(app);
 
     app.get('*', (req, res) => {
-      res.status(400).send('Bad Request');
+      res.status(404).json({
+        status: 404,
+        message: 'Not Found',
+      });
     });
 
     // start listening on port
