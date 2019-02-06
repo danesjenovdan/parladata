@@ -23,6 +23,7 @@ function setupExpress() {
 
     app.get('*', (req, res) => {
       res.status(404).json({
+        error: true,
         status: 404,
         message: 'Not Found',
       });

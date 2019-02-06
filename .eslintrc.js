@@ -8,5 +8,6 @@ module.exports = {
     'object-curly-newline': ['error', { multiline: true, consistent: true }],
     'no-param-reassign': 'off',
     'prefer-destructuring': 'off',
+    'quote-props': ['error', 'consistent-as-needed', { keywords: false, unnecessary: true, numbers: false }],
   },
 };
