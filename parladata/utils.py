@@ -768,7 +768,7 @@ def sendMailForEditVotes(votes):
               content,
               'test@parlameter.si',
               [admin[1] for admin in settings.ADMINS + settings.DATA_ADMINS],
-              fail_silently=False,)
+              fail_silently=True,)
 
 
 def parseRecipient(text, date_of):
