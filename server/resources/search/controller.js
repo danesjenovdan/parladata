@@ -43,12 +43,9 @@ function fixResponse(json) {
 }
 
 async function solrSelect({ highlight = false, facet = false } = {}, params) {
-  // 'sort': 'datetime_dt desc',
-
   const defaults = {
     wt: 'json',
-    // debugQuery: true,
-
+    sort: 'start_time desc',
     rows: ROWS_PER_PAGE,
     start: 0,
   };
@@ -58,11 +55,7 @@ async function solrSelect({ highlight = false, facet = false } = {}, params) {
       'hl': true,
       'hl.fl': 'content',
       'hl.method': 'unified',
-      // 'hl.fragmenter': 'regex',
-      // 'hl.regex.pattern': '\\w[^\\.!\\?]{1,600}[\\.!\\?]',
-      // 'hl.fragsize': '5000',
-      // 'hl.mergeContiguous': false,
-      // 'hl.snippets': 1,
+      'hl.fragsize': '400',
     });
   }
 
@@ -70,7 +63,7 @@ async function solrSelect({ highlight = false, facet = false } = {}, params) {
     Object.assign(defaults, {
       'facet': true,
       'facet.field': ['speaker_i', 'party_i'],
-      'facet.range': 'datetime_dt',
+      'facet.range': 'start_time',
       'facet.range.start': '2014-01-01T00:00:00.000Z', // TODO: different start time based on country
       'facet.range.gap': '+1MONTHS',
       'facet.range.end': 'NOW',
@@ -92,9 +85,9 @@ function fixQuery(q) {
   return String(q).replace(/\bIN\b/g, 'AND').replace(/\B!\b/g, '+');
 }
 
-function search(type) {
+function search({ type, facet = false, highlight = false }) {
   return async (req, res) => {
-    const query = req.query.q.trim();
+    const query = (req.query.q || '').trim();
     if (!query) {
       res.status(400).json({
         error: true,
@@ -104,12 +97,12 @@ function search(type) {
       return;
     }
 
-    const q = fixQuery(query || '');
+    const q = fixQuery(query);
     const startPage = Number(req.query.page) || 0;
 
     const solrJson = await solrSelect({
-      highlight: true,
-      facet: true,
+      highlight,
+      facet,
     }, {
       fq: `type:${type}`,
       q: `content:(${q}) OR title:(${q})`,
@@ -154,8 +147,8 @@ function refetchData(req, res) {
 }
 
 module.exports = {
-  searchSpeeches: wrap(search('speech')),
-  searchVotes: wrap(search('vote')),
-  searchLegislation: wrap(search('legislation')),
+  searchSpeeches: wrap(search({ type: 'speech', highlight: true, facet: true })),
+  searchVotes: wrap(search({ type: 'vote', highlight: true })),
+  searchLegislation: wrap(search({ type: 'legislation', highlight: true })),
   refetchData,
 };
