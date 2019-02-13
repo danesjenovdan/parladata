@@ -2,11 +2,15 @@ version: '3'
 services:
   solr:
     container_name: solr
-    build: .
+    image: solr:7.6.0
     restart: always
     ports:
       - 8983:8983
     volumes:
-      - ./solr-data:/opt/solr/server/solr/mycores
+      - solr-data:/opt/solr/server/solr/mycores
       - ./scripts/beforestart.sh:/docker-entrypoint-initdb.d/beforestart.sh
       - ./parlasearch-conf:/parlasearch-conf
+      - ./slolem/libLemmatizer.so:/usr/lib/libLemmatizer.so
+      - ./slolem/lemmatizer:/usr/bin/lemmatizer
+volumes:
+  solr-data:
