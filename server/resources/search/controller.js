@@ -98,11 +98,15 @@ function getFilters(qp) {
     filters.parties = parties;
     fq.push(`party_id:(${parties.join(' OR ')})`);
   }
+  if (qp.wb) {
+    const wb = qp.wb.split(',').map(Number);
+    filters.wb = wb;
+    fq.push(`org_id:(${wb.join(' OR ')})`);
+  }
   // from_date = request.GET.get('from')
   // to_date = request.GET.get('to')
   // is_dz = request.GET.get('dz')
   // is_council = request.GET.get('council')
-  // working_bodies = request.GET.get('wb', [])
   // time_filter = request.GET.get('time_filter')
 
   return [filters, fq];
