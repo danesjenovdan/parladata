@@ -85,31 +85,46 @@ function fixQuery(q) {
   return String(q).replace(/\bIN\b/g, 'AND').replace(/\B!\b/g, '+').trim() || '*';
 }
 
-function getFilters(qp) {
-  const filters = {};
+function getFilters(type, qp) {
+  const response = {
+    filters: {},
+  };
   const fq = [];
-  if (qp.people) {
-    const people = qp.people.split(',').map(Number);
-    filters.people = people;
-    fq.push(`person_id:(${people.join(' OR ')})`);
+  if (type === 'speech') {
+    if (qp.people) {
+      const people = qp.people.split(',').map(Number).filter(Boolean);
+      response.filters.people = people;
+      fq.push(`person_id:(${people.join(' OR ')})`);
+      if (people.length === 1) {
+        const person = data.staticData.persons[String(people[0])];
+        if (person) {
+          response.person = person;
+        }
+      }
+    }
+    if (qp.parties) {
+      const parties = qp.parties.split(',').map(Number).filter(Boolean);
+      response.filters.parties = parties;
+      fq.push(`party_id:(${parties.join(' OR ')})`);
+      if (parties.length === 1) {
+        const party = data.staticData.partys[String(parties[0])];
+        if (party) {
+          response.party = party;
+        }
+      }
+    }
+    if (qp.wb) {
+      const wb = qp.wb.split(',').map(Number).filter(Boolean);
+      response.filters.wb = wb;
+      fq.push(`org_id:(${wb.join(' OR ')})`);
+    }
+    // from_date = request.GET.get('from')
+    // to_date = request.GET.get('to')
+    // is_dz = request.GET.get('dz')
+    // is_council = request.GET.get('council')
+    // time_filter = request.GET.get('time_filter')
   }
-  if (qp.parties) {
-    const parties = qp.parties.split(',').map(Number);
-    filters.parties = parties;
-    fq.push(`party_id:(${parties.join(' OR ')})`);
-  }
-  if (qp.wb) {
-    const wb = qp.wb.split(',').map(Number);
-    filters.wb = wb;
-    fq.push(`org_id:(${wb.join(' OR ')})`);
-  }
-  // from_date = request.GET.get('from')
-  // to_date = request.GET.get('to')
-  // is_dz = request.GET.get('dz')
-  // is_council = request.GET.get('council')
-  // time_filter = request.GET.get('time_filter')
-
-  return [filters, fq];
+  return [response, fq];
 }
 
 function search({ type, facet = false, highlight = false }) {
@@ -118,7 +133,7 @@ function search({ type, facet = false, highlight = false }) {
     const q = fixQuery(query);
     const startPage = Number(req.query.page) || 0;
 
-    const [filters, fq] = getFilters(req.query);
+    const [response, fq] = getFilters(type, req.query);
     fq.push(`type:${type}`);
 
     const solrJson = await solrSelect({
@@ -142,7 +157,7 @@ function search({ type, facet = false, highlight = false }) {
 
     res.json({
       query,
-      filters,
+      ...response,
       response: solrJson.response,
       facet_counts: solrJson.facet_counts,
     });

@@ -10,6 +10,7 @@ fs.ensureDirSync(dataPath);
 const dataFiles = {
   urls: `${config.urls.analize}/p/getSlugs/`,
   orgs: `${config.urls.data}/getAllOrganizations/`,
+  staticData: `${config.urls.analize}/utils/getAllStaticData/`,
 };
 
 const dataTransforms = {
@@ -98,5 +99,8 @@ module.exports = {
   },
   get orgs() {
     return loadedData.orgs;
+  },
+  get staticData() {
+    return loadedData.staticData;
   },
 };
