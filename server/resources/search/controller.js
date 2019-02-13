@@ -82,29 +82,46 @@ async function solrSelect({ highlight = false, facet = false } = {}, params) {
 }
 
 function fixQuery(q) {
-  return String(q).replace(/\bIN\b/g, 'AND').replace(/\B!\b/g, '+');
+  return String(q).replace(/\bIN\b/g, 'AND').replace(/\B!\b/g, '+').trim() || '*';
+}
+
+function getFilters(qp) {
+  const filters = {};
+  const fq = [];
+  if (qp.people) {
+    const people = qp.people.split(',').map(Number);
+    filters.people = people;
+    fq.push(`person_id:(${people.join(' OR ')})`);
+  }
+  if (qp.parties) {
+    const parties = qp.parties.split(',').map(Number);
+    filters.parties = parties;
+    fq.push(`party_id:(${parties.join(' OR ')})`);
+  }
+  // from_date = request.GET.get('from')
+  // to_date = request.GET.get('to')
+  // is_dz = request.GET.get('dz')
+  // is_council = request.GET.get('council')
+  // working_bodies = request.GET.get('wb', [])
+  // time_filter = request.GET.get('time_filter')
+
+  return [filters, fq];
 }
 
 function search({ type, facet = false, highlight = false }) {
   return async (req, res) => {
-    const query = (req.query.q || '').trim();
-    if (!query) {
-      res.status(400).json({
-        error: true,
-        status: 400,
-        message: 'Invalid query',
-      });
-      return;
-    }
-
+    const query = req.query.q || '';
     const q = fixQuery(query);
     const startPage = Number(req.query.page) || 0;
 
+    const [filters, fq] = getFilters(req.query);
+    fq.push(`type:${type}`);
+
     const solrJson = await solrSelect({
-      highlight,
+      highlight: query ? highlight : false, // don't hl if no query since we match everything
       facet,
     }, {
-      fq: `type:${type}`,
+      fq: fq.join(' AND '),
       q: `content:(${q}) OR title:(${q})`,
       start: startPage * ROWS_PER_PAGE,
     });
@@ -120,7 +137,8 @@ function search({ type, facet = false, highlight = false }) {
     }
 
     res.json({
-      query: req.query.q,
+      query,
+      filters,
       response: solrJson.response,
       facet_counts: solrJson.facet_counts,
     });
