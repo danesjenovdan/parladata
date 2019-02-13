@@ -16,3 +16,6 @@ config/production.js
 
 # auto-downloaded assets
 /data/*
+
+# solr docker volume
+/solr/solr-data

@@ -14,7 +14,7 @@ const defaultConfig = {
     // glej: 'https://glej.parlameter.si',
     // base: 'https://parlameter.si',
   },
-  solrUrl: 'http://localhost:8983/solr/parlameter',
+  solrUrl: 'http://localhost:8983/solr/parlasearch',
 };
 
 if (env === 'production') {
