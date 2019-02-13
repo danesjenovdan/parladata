@@ -4,7 +4,7 @@ let config;
 const env = process.env.NODE_ENV;
 
 const defaultConfig = {
-  port: 3003,
+  port: 7003,
   serverTimeout: 30000,
   urls: {
     cdn: 'https://cdn.parlameter.si/v1/parlassets',
