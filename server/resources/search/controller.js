@@ -13,6 +13,35 @@ const wrap = fn => (req, res, next) => fn(req, res, next).catch((error) => {
 
 const ROWS_PER_PAGE = 10;
 
+function fixResponse(json) {
+  if (json.response && json.response.docs) {
+    json.response.docs.forEach((doc) => {
+      // eslint-disable-next-line no-underscore-dangle
+      delete doc._version_;
+
+      Object.keys(doc)
+        .filter(key => key.endsWith('_json'))
+        .forEach((key) => {
+          doc[key.slice(0, -5)] = JSON.parse(doc[key]);
+          delete doc[key];
+        });
+    });
+
+    if (json.highlighting) {
+      Object.keys(json.highlighting)
+        .forEach((key) => {
+          const val = json.highlighting[key];
+          const hl = Array.isArray(val.content) ? val.content.join(' … ') : val.content;
+          const doc = json.response.docs.find(d => d.id === key);
+          if (doc) {
+            doc.content_hl = hl;
+          }
+        });
+    }
+  }
+  return json;
+}
+
 async function solrSelect({ highlight = false, facet = false } = {}, params) {
   // 'sort': 'datetime_dt desc',
 
@@ -27,12 +56,13 @@ async function solrSelect({ highlight = false, facet = false } = {}, params) {
   if (highlight) {
     Object.assign(defaults, {
       'hl': true,
-      'hl.fl': 'content_t',
-      'hl.fragmenter': 'regex',
-      'hl.regex.pattern': '\\w[^\\.!\\?]{1,600}[\\.!\\?]',
-      'hl.fragsize': '5000',
-      'hl.mergeContiguous': false,
-      'hl.snippets': 1,
+      'hl.fl': 'content',
+      'hl.method': 'unified',
+      // 'hl.fragmenter': 'regex',
+      // 'hl.regex.pattern': '\\w[^\\.!\\?]{1,600}[\\.!\\?]',
+      // 'hl.fragsize': '5000',
+      // 'hl.mergeContiguous': false,
+      // 'hl.snippets': 1,
     });
   }
 
@@ -53,28 +83,55 @@ async function solrSelect({ highlight = false, facet = false } = {}, params) {
   const qs = querystring.stringify(defaults);
 
   const resp = await fetch(`${url}?${qs}`);
-  const { responseHeader, ...json } = await resp.json();
-  return json;
+  const json = await resp.json();
+
+  return fixResponse(json);
 }
 
 function fixQuery(q) {
-  return q.replace(/\bIN\b/g, 'AND').replace(/\B!\b/g, '+');
+  return String(q).replace(/\bIN\b/g, 'AND').replace(/\B!\b/g, '+');
 }
 
-async function search(req, res) {
-  const q = fixQuery(req.query.q || '');
-  const startPage = Number(req.query.page) || 0;
+function search(type) {
+  return async (req, res) => {
+    const query = req.query.q.trim();
+    if (!query) {
+      res.status(400).json({
+        error: true,
+        status: 400,
+        message: 'Invalid query',
+      });
+      return;
+    }
 
-  const json = await solrSelect({
-    highlight: true,
-    facet: true,
-  }, {
-    fq: 'tip_t:govor',
-    q: `content_t:(${q})`,
-    start: startPage * ROWS_PER_PAGE,
-  });
+    const q = fixQuery(query || '');
+    const startPage = Number(req.query.page) || 0;
 
-  res.json(json);
+    const solrJson = await solrSelect({
+      highlight: true,
+      facet: true,
+    }, {
+      fq: `type:${type}`,
+      q: `content:(${q}) OR title:(${q})`,
+      start: startPage * ROWS_PER_PAGE,
+    });
+
+    if (solrJson.error) {
+      const status = solrJson.error.code || solrJson.responseHeader.status || 0;
+      res.status(status).json({
+        error: true,
+        status,
+        message: solrJson.error.msg,
+      });
+      return;
+    }
+
+    res.json({
+      query: req.query.q,
+      response: solrJson.response,
+      facet_counts: solrJson.facet_counts,
+    });
+  };
 }
 
 function refetchData(req, res) {
@@ -97,6 +154,8 @@ function refetchData(req, res) {
 }
 
 module.exports = {
-  search: wrap(search),
+  searchSpeeches: wrap(search('speech')),
+  searchVotes: wrap(search('vote')),
+  searchLegislation: wrap(search('legislation')),
   refetchData,
 };
