@@ -9,6 +9,7 @@ fs.ensureDirSync(dataPath);
 
 const dataFiles = {
   urls: `${config.urls.analize}/p/getSlugs/`,
+  orgs: `${config.urls.data}/getAllOrganizations/`,
 };
 
 const dataTransforms = {
@@ -16,6 +17,12 @@ const dataTransforms = {
     // allow replacing urls in config
     data.urls = { ...data.urls, ...config.urls };
     return data;
+  },
+  orgs(data) {
+    return Object.keys(data).map((key) => {
+      data[key].id = Number(key);
+      return data[key];
+    });
   },
 };
 
@@ -88,5 +95,8 @@ module.exports = {
   refetch,
   get urls() {
     return loadedData.urls;
+  },
+  get orgs() {
+    return loadedData.orgs;
   },
 };
