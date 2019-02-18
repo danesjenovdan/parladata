@@ -62,7 +62,7 @@ async function solrSelect({ highlight = false, facet = false } = {}, params) {
   if (facet) {
     Object.assign(defaults, {
       'facet': true,
-      'facet.field': ['speaker_i', 'party_i'],
+      'facet.field': ['person_id', 'party_id'],
       'facet.range': 'start_time',
       'facet.range.start': '2014-01-01T00:00:00.000Z', // TODO: different start time based on country
       'facet.range.gap': '+1MONTHS',
