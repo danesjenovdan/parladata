@@ -1,5 +1,6 @@
 const querystring = require('querystring');
 const fetch = require('node-fetch');
+const _ = require('lodash');
 const data = require('../../data');
 const config = require('../../../config');
 
@@ -37,6 +38,27 @@ function fixResponse(json) {
             doc.content_hl = hl;
           }
         });
+    }
+  }
+  if (json.facet_counts && json.facet_counts.facet_fields) {
+    const ff = json.facet_counts.facet_fields;
+    if (ff.person_id) {
+      ff.person = _.chain(ff.person_id).chunk(2).map(([id, score]) => {
+        const person = data.staticData.persons[String(id)];
+        return {
+          person,
+          score,
+        };
+      }).value();
+    }
+    if (ff.party_id) {
+      ff.party = _.chain(ff.party_id).chunk(2).map(([id, score]) => {
+        const party = data.staticData.partys[String(id)];
+        return {
+          party,
+          score,
+        };
+      }).value();
     }
   }
   return json;
