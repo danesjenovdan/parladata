@@ -384,7 +384,7 @@ def getMPStatic(request, person_id, date_=None):
         'name': member.name,
         'social': social_output,
         'gov_id': member.gov_id,
-        'gender': 'm' if member.gender == 'male' or member.gender == 'm'  else 'f',
+        'gender': 'm' if member.gender == 'male' or member.gender == 'm' else 'f',
         'working_bodies_functions': person_functions,
     }
 
