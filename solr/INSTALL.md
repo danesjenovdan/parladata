@@ -6,8 +6,8 @@
 git clone https://github.com/danesjenovdan/parlasearch.git
 ```
 
-- Create config/production.js
-- Create config/ecosystem.config.js
+- Create `config/production.js` (see `config/sample.js`)
+- Create `config/ecosystem.config.js` for pm2
 
 ```bash
 pm2 startOrRestart /home/<user>/parlasearch/config/ecosystem.config.js
