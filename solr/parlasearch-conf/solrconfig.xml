@@ -70,4 +70,60 @@
       <str name="wt">json</str>
     </lst>
   </requestHandler>
+
+  <!--
+    Term Vector Component
+    http://wiki.apache.org/solr/TermVectorComponent
+  -->
+  <searchComponent name="tvComponent" class="solr.TermVectorComponent"/>
+  <requestHandler name="/tvrh" class="solr.SearchHandler" startup="lazy">
+    <lst name="defaults">
+      <bool name="tv">true</bool>
+    </lst>
+    <arr name="last-components">
+      <str>tvComponent</str>
+    </arr>
+  </requestHandler>
+
+  <!--
+    Update Processors
+    http://wiki.apache.org/solr/UpdateRequestProcessor
+  -->
+  <updateProcessor class="solr.UUIDUpdateProcessorFactory" name="uuid"/>
+  <updateProcessor class="solr.RemoveBlankFieldUpdateProcessorFactory" name="remove-blank"/>
+  <updateProcessor class="solr.FieldNameMutatingUpdateProcessorFactory" name="field-name-mutating">
+    <str name="pattern">[^\w-\.]</str>
+    <str name="replacement">_</str>
+  </updateProcessor>
+  <updateProcessor class="solr.ParseBooleanFieldUpdateProcessorFactory" name="parse-boolean"/>
+  <updateProcessor class="solr.ParseLongFieldUpdateProcessorFactory" name="parse-long"/>
+  <updateProcessor class="solr.ParseDoubleFieldUpdateProcessorFactory" name="parse-double"/>
+  <updateProcessor class="solr.ParseDateFieldUpdateProcessorFactory" name="parse-date">
+    <arr name="format">
+      <str>yyyy-MM-dd'T'HH:mm:ss.SSSZ</str>
+      <str>yyyy-MM-dd'T'HH:mm:ss,SSSZ</str>
+      <str>yyyy-MM-dd'T'HH:mm:ss.SSS</str>
+      <str>yyyy-MM-dd'T'HH:mm:ss,SSS</str>
+      <str>yyyy-MM-dd'T'HH:mm:ssZ</str>
+      <str>yyyy-MM-dd'T'HH:mm:ss</str>
+      <str>yyyy-MM-dd'T'HH:mmZ</str>
+      <str>yyyy-MM-dd'T'HH:mm</str>
+      <str>yyyy-MM-dd HH:mm:ss.SSSZ</str>
+      <str>yyyy-MM-dd HH:mm:ss,SSSZ</str>
+      <str>yyyy-MM-dd HH:mm:ss.SSS</str>
+      <str>yyyy-MM-dd HH:mm:ss,SSS</str>
+      <str>yyyy-MM-dd HH:mm:ssZ</str>
+      <str>yyyy-MM-dd HH:mm:ss</str>
+      <str>yyyy-MM-dd HH:mmZ</str>
+      <str>yyyy-MM-dd HH:mm</str>
+      <str>yyyy-MM-dd</str>
+    </arr>
+  </updateProcessor>
+
+  <updateRequestProcessorChain name="add-unknown-fields-to-the-schema" default="false"
+           processor="uuid,remove-blank,field-name-mutating,parse-boolean,parse-long,parse-double,parse-date">
+    <processor class="solr.LogUpdateProcessorFactory"/>
+    <processor class="solr.DistributedUpdateProcessorFactory"/>
+    <processor class="solr.RunUpdateProcessorFactory"/>
+  </updateRequestProcessorChain>
 </config>
