@@ -411,7 +411,7 @@ def membersFlowInOrg(request):
     """
     context = {}
     context["orgs"]=[]
-    orgs_all = requests.get("https://data.parlameter.si/v1/getOrganizatonByClassification").json()
+    orgs_all = requests.get("https://data.parlameter.si/v1/getOrganizatonsByClassification").json()
     orgs = [ org["id"] for org in orgs_all["working_bodies"] + orgs_all["council"]]
     for org in orgs:
         flow = []
@@ -441,13 +441,13 @@ def membersFlowInPGs(request):
     """
     context = {}
     context["orgs"]=[]
-    orgs_all = requests.get("https://data.parlameter.si/v1/getOrganizatonByClassification").json()
+    orgs_all = requests.get("http://data.nov.parlameter.si/v1/getOrganizatonsByClassification").json()
     orgs = [ org["id"] for org in orgs_all["parliamentary_groups"]]
     for org in orgs:
         flow = []
         org_id = org
         print org
-        pgRanges = requests.get("https://data.parlameter.si/v1/getMembersOfOrgsRanges/"+str(org_id)+"/"+datetime.now().strftime("%d.%m.%Y")).json()
+        pgRanges = requests.get("http://data.nov.parlameter.si/v1/getMembersOfPGsRanges/"+str(org_id)+"/"+datetime.now().strftime("%d.%m.%Y")).json()
         for pgRange in pgRanges:
             count = len([member for pg in pgRange["members"].values() for member in pg])
             members_ids = [member for pg in pgRange["members"].values() for member in pg]
@@ -768,7 +768,7 @@ def sendMailForEditVotes(votes):
               content,
               'test@parlameter.si',
               [admin[1] for admin in settings.ADMINS + settings.DATA_ADMINS],
-              fail_silently=False,)
+              fail_silently=True,)
 
 
 def parseRecipient(text, date_of):
