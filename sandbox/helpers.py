@@ -11,6 +11,8 @@ from collections import *
 import requests
 from requests.auth import HTTPBasicAuth
 
+import csv
+
 PS_NP = ['poslanska skupina', 'nepovezani poslanec']
 
 
@@ -407,3 +409,40 @@ def change_international_classes():
     areas.update(calssification='district')
 
     Membership
+
+def importPersonData(file_name):
+    with open(file_name) as tsvfile:
+        reader = csv.reader(tsvfile, delimiter='\t')
+        for row in reader:
+            print(row)
+            p = Person.objects.get(id=row[0])
+            p.previous_occupation = row[2]
+            p.education = row[3]
+            p.education_level = row[4]
+            p.mandates = row[5]
+            p.email = row[6]
+            p.gender = row[7]
+            p.birth_date = datetime.strptime(row[8], settings.API_DATE_FORMAT).date()
+            p.voters = row[11]
+            p.save()
+
+            for area_str in row[10].split(','):
+                area_str = area_str.strip()
+                area = Area.objects.filter(name=area_str)
+                if area:
+                    area = area[0]
+                else:
+                    area = Area(name=area_str, calssification='district')
+                    area.save()
+                p.district.add(area)
+
+def find_voters_without_membership():
+    for ballot in Ballot.objects.all().distinct("voter"):
+        voter_ballots = Ballot.objects.filter(voter=ballot.voter)
+        memberships = ballot.voter.memberships.filter(role='voter')
+        for membership in memberships:
+            start_time = membership.start_time if membership.start_time else datetime.min
+            end_time = membership.end_time if membership.end_time else datetime.max
+            voter_ballots = voter_ballots.exclude(vote__start_time__range=[start_time, end_time])
+
+        print(voter_ballots)
