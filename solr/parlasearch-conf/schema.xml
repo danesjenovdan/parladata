@@ -37,7 +37,8 @@
   <field name="results_json"  type="string"       indexed="false" stored="true" multiValued="false" />
   <!-- analyzed fields -->
   <field name="title"         type="text_general" indexed="true"  stored="true" multiValued="false" />
-  <field name="content"       type="text_general" indexed="true"  stored="true" multiValued="false" />
+  <field name="content"       type="text_general" indexed="true"  stored="true" multiValued="false"
+         termVectors="true" termPositions="true" termOffsets="true" />
 
 
   <!-- ================================= END FIELD DEFINITIONS ================================= -->
