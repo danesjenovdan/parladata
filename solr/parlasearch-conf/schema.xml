@@ -105,40 +105,25 @@
   <fieldType name="text_general" class="solr.TextField" positionIncrementGap="100">
     <analyzer type="index">
       <tokenizer class="solr.StandardTokenizerFactory" />
-      <filter class="solr.StopFilterFactory" ignoreCase="true" words="stopwords.txt" />
+      <filter class="solr.StopFilterFactory" words="stopwords.txt" ignoreCase="true" />
+      <filter class="solr.WordDelimiterGraphFilterFactory" catenateNumbers="1" generateNumberParts="1"
+              splitOnCaseChange="1" generateWordParts="1" catenateAll="0" catenateWords="1" />
       <filter class="solr.LowerCaseFilterFactory" />
+      <filter class="solr.KeywordMarkerFilterFactory" protected="protwords.txt" />
+      <filter class="si.virag.solr.RdrLemmatizerFactory" dictionary="/opt/solr-slolem/data/lem-me-sl.bin" />
+      <filter class="solr.ShingleFilterFactory" outputUnigrams="true" maxShingleSize="2" />
+      <filter class="solr.RemoveDuplicatesTokenFilterFactory" />
+      <filter class="solr.FlattenGraphFilterFactory" />
     </analyzer>
     <analyzer type="query">
-      <tokenizer class="solr.StandardTokenizerFactory" />
-      <filter class="solr.StopFilterFactory" ignoreCase="true" words="stopwords.txt" />
-      <filter class="solr.SynonymGraphFilterFactory" synonyms="synonyms.txt" ignoreCase="true" expand="true" />
+      <tokenizer class="solr.StandardTokenizerFactory"/>
+      <filter class="solr.SynonymGraphFilterFactory" expand="true" ignoreCase="true" synonyms="synonyms.txt" />
+      <filter class="solr.StopFilterFactory" words="stopwords.txt" ignoreCase="true"/>
+      <filter class="solr.WordDelimiterGraphFilterFactory" catenateNumbers="0" generateNumberParts="1"
+              splitOnCaseChange="1" generateWordParts="1" catenateAll="0" catenateWords="0" />
       <filter class="solr.LowerCaseFilterFactory" />
-    </analyzer>
-  </fieldType>
-
-  <!--
-    A text field with defaults appropriate for English: it tokenizes with StandardTokenizer,
-    removes English stop words (lang/stopwords_en.txt), down cases, protects words from
-    protwords.txt, and finally applies Porter's stemming. The query time analyzer also applies
-    synonyms from synonyms.txt.
-  -->
-  <fieldType name="text_en" class="solr.TextField" positionIncrementGap="100">
-    <analyzer type="index">
-      <tokenizer class="solr.StandardTokenizerFactory" />
-      <filter class="solr.StopFilterFactory" ignoreCase="true" words="lang/stopwords_en.txt" />
-      <filter class="solr.LowerCaseFilterFactory" />
-      <filter class="solr.EnglishPossessiveFilterFactory" />
       <filter class="solr.KeywordMarkerFilterFactory" protected="protwords.txt" />
-      <filter class="solr.PorterStemFilterFactory" />
-    </analyzer>
-    <analyzer type="query">
-      <tokenizer class="solr.StandardTokenizerFactory" />
-      <filter class="solr.StopFilterFactory" ignoreCase="true" words="lang/stopwords_en.txt" />
-      <filter class="solr.SynonymGraphFilterFactory" synonyms="synonyms.txt" ignoreCase="true" expand="true" />
-      <filter class="solr.LowerCaseFilterFactory" />
-      <filter class="solr.EnglishPossessiveFilterFactory" />
-      <filter class="solr.KeywordMarkerFilterFactory" protected="protwords.txt" />
-      <filter class="solr.PorterStemFilterFactory" />
+      <filter class="si.virag.solr.RdrLemmatizerFactory" dictionary="/opt/solr-slolem/data/lem-me-sl.bin" />
     </analyzer>
   </fieldType>
 </schema>
