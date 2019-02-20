@@ -120,7 +120,7 @@
     </arr>
   </updateProcessor>
 
-  <updateRequestProcessorChain name="add-unknown-fields-to-the-schema" default="false"
+  <updateRequestProcessorChain name="add-unknown-fields-to-the-schema" default="true"
            processor="uuid,remove-blank,field-name-mutating,parse-boolean,parse-long,parse-double,parse-date">
     <processor class="solr.LogUpdateProcessorFactory"/>
     <processor class="solr.DistributedUpdateProcessorFactory"/>
