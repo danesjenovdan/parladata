@@ -86,6 +86,29 @@
   </requestHandler>
 
   <!--
+    Highlighting Component
+    http://wiki.apache.org/solr/HighlightingParameters
+    -->
+  <searchComponent class="solr.HighlightComponent" name="highlight">
+    <highlighting>
+      <fragmenter name="regex" default="true" class="solr.highlight.RegexFragmenter">
+        <lst name="defaults">
+          <int name="hl.fragsize">400</int>
+          <float name="hl.regex.slop">0.4</float>
+          <str name="hl.regex.pattern">[-\w ,/\n\&quot;&apos;]{20,600}</str>
+        </lst>
+      </fragmenter>
+      <formatter name="html" default="true" class="solr.highlight.HtmlFormatter">
+        <lst name="defaults">
+          <str name="hl.simple.pre"><![CDATA[<em>]]></str>
+          <str name="hl.simple.post"><![CDATA[</em>]]></str>
+        </lst>
+      </formatter>
+      <encoder name="html" class="solr.highlight.HtmlEncoder" />
+    </highlighting>
+  </searchComponent>
+
+  <!--
     Update Processors
     http://wiki.apache.org/solr/UpdateRequestProcessor
   -->

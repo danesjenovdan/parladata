@@ -76,8 +76,6 @@ async function solrSelect({ highlight = false, facet = false } = {}, params) {
     Object.assign(defaults, {
       'hl': true,
       'hl.fl': 'content',
-      'hl.method': 'unified',
-      'hl.fragsize': '400',
     });
   }
 
