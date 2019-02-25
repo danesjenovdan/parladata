@@ -14,9 +14,13 @@ const wrap = fn => (req, res, next) => fn(req, res, next).catch((error) => {
 
 const ROWS_PER_PAGE = 10;
 
-function shortenHighlight(hl, length = 275) {
+function shortenHighlight(hl, length = 250) {
+  if (hl.length <= length) {
+    return hl;
+  }
+
   const startEm = hl.indexOf('<em>');
-  const endEm = hl.indexOf('</em>') + '</em>'.length - 1;
+  const endEm = hl.indexOf('</em>') + '</em>'.length;
   const emLen = endEm - startEm;
 
   const beforeMax = startEm;
@@ -35,7 +39,7 @@ function shortenHighlight(hl, length = 275) {
     afterTarget = afterMax;
   }
 
-  let short = hl.slice(beforeMax - beforeTarget, endEm + afterTarget)
+  let short = hl.slice(Math.max(0, beforeMax - beforeTarget), endEm + afterTarget)
     // trim incomplete <em> </em> tags on start/end of string
     .replace(/(<\/?(e(m)?)?)$/g, '')
     .replace(/^((((\/)e)?m)?>)?/g, '')
