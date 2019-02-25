@@ -93,9 +93,9 @@
     <highlighting>
       <fragmenter name="regex" default="true" class="solr.highlight.RegexFragmenter">
         <lst name="defaults">
-          <int name="hl.fragsize">400</int>
-          <float name="hl.regex.slop">0.4</float>
-          <str name="hl.regex.pattern">[-\w ,/\n\&quot;&apos;]{20,600}</str>
+          <int name="hl.fragsize">300</int>
+          <float name="hl.regex.slop">0.2</float>
+          <str name="hl.regex.pattern">\w[^\.!\?]{20,400}[\.!\?]</str>
         </lst>
       </fragmenter>
       <formatter name="html" default="true" class="solr.highlight.HtmlFormatter">
