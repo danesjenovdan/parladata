@@ -14,6 +14,43 @@ const wrap = fn => (req, res, next) => fn(req, res, next).catch((error) => {
 
 const ROWS_PER_PAGE = 10;
 
+function shortenHighlight(hl, length = 275) {
+  const startEm = hl.indexOf('<em>');
+  const endEm = hl.indexOf('</em>') + '</em>'.length - 1;
+  const emLen = endEm - startEm;
+
+  const beforeMax = startEm;
+  const afterMax = hl.length - endEm;
+
+  let beforeTarget = Math.floor((length - emLen) / 2);
+  let afterTarget = beforeTarget;
+
+  if (beforeTarget > beforeMax) {
+    afterTarget += beforeTarget - beforeMax;
+    beforeTarget = beforeMax;
+  }
+
+  if (afterTarget > afterMax) {
+    beforeTarget += afterTarget - afterMax;
+    afterTarget = afterMax;
+  }
+
+  let short = hl.slice(beforeMax - beforeTarget, endEm + afterTarget)
+    // trim incomplete <em> </em> tags on start/end of string
+    .replace(/(<\/?(e(m)?)?)$/g, '')
+    .replace(/^((((\/)e)?m)?>)?/g, '')
+    .trim();
+
+  const startEmMatches = short.match(/<em>/g);
+  const endEmMatches = short.match(/<\/em>/g);
+
+  if ((startEmMatches && startEmMatches.length) !== (endEmMatches && endEmMatches.length)) {
+    short += '</em>';
+  }
+
+  return short;
+}
+
 function fixResponse(json) {
   if (json.response && json.response.docs) {
     json.response.docs.forEach((doc) => {
@@ -35,7 +72,7 @@ function fixResponse(json) {
           const hl = Array.isArray(val.content) ? val.content.join(' … ') : val.content;
           const doc = json.response.docs.find(d => d.id === key);
           if (doc) {
-            doc.content_hl = hl;
+            doc.content_hl = shortenHighlight(hl);
           }
         });
     }
