@@ -5,6 +5,8 @@ const data = require('../../data');
 const config = require('../../../config');
 
 const wrap = fn => (req, res, next) => fn(req, res, next).catch((error) => {
+  // eslint-disable-next-line no-console
+  console.log(error);
   res.status(500).json({
     error: true,
     status: 500,
@@ -15,6 +17,10 @@ const wrap = fn => (req, res, next) => fn(req, res, next).catch((error) => {
 const ROWS_PER_PAGE = 10;
 
 function shortenHighlight(hl, length = 250) {
+  if (hl == null) {
+    return '';
+  }
+
   if (hl.length <= length) {
     return hl;
   }
@@ -73,7 +79,7 @@ function fixResponse(json) {
       Object.keys(json.highlighting)
         .forEach((key) => {
           const val = json.highlighting[key];
-          const hl = Array.isArray(val.content) ? val.content.join(' … ') : val.content;
+          const hl = Array.isArray(val.content) ? val.content.join(' … ') : (val.content || '');
           const doc = json.response.docs.find(d => d.id === key);
           if (doc) {
             doc.content_hl = shortenHighlight(hl);
