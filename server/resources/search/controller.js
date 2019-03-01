@@ -14,7 +14,7 @@ const wrap = fn => (req, res, next) => fn(req, res, next).catch((error) => {
   });
 });
 
-const ROWS_PER_PAGE = 10;
+const ROWS_PER_PAGE = 50;
 
 function shortenHighlight(hl, length = 250) {
   if (hl == null) {
