@@ -108,6 +108,19 @@ function fixResponse(json) {
       }).value();
     }
   }
+  if (json.termVectors && json.termVectors.length > 1 && json.termVectors[1].length > 3) {
+    json.tfidf = _.chain(json.termVectors[1][3])
+      .chunk(2)
+      .map(([term, scores]) => ({ term, scores: _.fromPairs(_.chunk(scores, 2)) }))
+      .filter(o => o.scores.tf >= 8)
+      .filter(o => !/^[0-9,.]+$/i.test(o.term))
+      .filter(o => o.term.length > 1 && !o.term.includes(' '))
+      .filter(o => !config.tfidf.blacklist.includes(o.term))
+      .sortBy(o => o.scores['tf-idf'])
+      .reverse()
+      .slice(0, 50)
+      .value();
+  }
   return json;
 }
 
@@ -231,6 +244,89 @@ function search({ type, facet = false, highlight = false }) {
   };
 }
 
+async function solrTvrh(params) {
+  const defaults = {
+    'wt': 'json',
+    'tv.tf': true,
+    'tv.df': true,
+    'tv.tf_idf': true,
+    'fl': 'id',
+    'tv.fl': 'content',
+  };
+
+  Object.assign(defaults, params);
+
+  const url = `${config.solrUrl}/tvrh`;
+  const qs = querystring.stringify(defaults);
+
+  const resp = await fetch(`${url}?${qs}`);
+  const json = await resp.json();
+
+  return fixResponse(json);
+}
+
+function getTfidfTarget(prefix, id) {
+  const response = {};
+  if (prefix === 'pms') {
+    const person = data.staticData.persons[String(id)];
+    if (person) {
+      response.person = person;
+    }
+  }
+  if (prefix === 'pgms') {
+    const party = data.staticData.partys[String(id)];
+    if (party) {
+      response.party = party;
+    }
+  }
+  if (prefix === 'session') {
+    const session = data.staticData.sessions[String(id)];
+    if (session) {
+      response.session = session;
+    }
+  }
+  return response;
+}
+
+function tfidf({ type, prefix }) {
+  return async (req, res) => {
+    const id = Number(req.query.id);
+    if (!id) {
+      res.status(400).json({
+        error: true,
+        status: 400,
+        message: '`id` is required and must be a number',
+      });
+      return;
+    }
+
+    // Set a higher (5min) timeout value since tfidf can sometimes take a while
+    req.setTimeout(1000 * 60 * 5);
+
+    const solrJson = await solrTvrh({
+      q: `id:${prefix}_${id}`,
+    });
+
+    if (solrJson.error) {
+      const status = solrJson.error.code || solrJson.responseHeader.status || 0;
+      res.status(status).json({
+        error: true,
+        status,
+        message: solrJson.error.msg,
+      });
+      return;
+    }
+
+    const response = getTfidfTarget(prefix, id);
+
+    res.json({
+      id,
+      ...response,
+      tfidf: solrJson.tfidf,
+    });
+  };
+}
+
 function refetchData(req, res) {
   Promise.resolve()
     .then(() => data.refetch())
@@ -261,5 +357,8 @@ module.exports = {
   searchSpeeches: wrap(search({ type: 'speech', highlight: true, facet: true })),
   searchVotes: wrap(search({ type: 'vote', highlight: true })),
   searchLegislation: wrap(search({ type: 'legislation', highlight: true })),
+  tfidfPerson: wrap(tfidf({ type: 'pmegastring', prefix: 'pms' })),
+  tfidfParty: wrap(tfidf({ type: 'pgmegastring', prefix: 'pgms' })),
+  tfidfSession: wrap(tfidf({ type: 'session', prefix: 'session' })),
   refetchData,
 };
