@@ -741,7 +741,7 @@ class Record(Timestampable, Taggable, models.Model):
 
     session = models.ForeignKey('Session',
                                 blank=True, null=True,
-                                help_text='Speech session')
+                                help_text='Record session')
 
     agenda_item = models.ForeignKey('AgendaItem', blank=True, null=True,
                                     help_text='Agenda item', related_name='records')
