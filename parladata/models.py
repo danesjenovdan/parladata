@@ -734,7 +734,7 @@ class Speech(Versionable, Timestampable, Taggable, models.Model):
 
 
 @python_2_unicode_compatible
-class Record(Versionable, Timestampable, Taggable, models.Model):
+class Record(Timestampable, Taggable, models.Model):
     """Record that happened in parlament."""
 
     content = models.TextField(help_text='Record content')
