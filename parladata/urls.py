@@ -28,8 +28,9 @@ router.register(r'agenda-items', AgendaItemView)
 router.register(r'questions', QuestionView)
 router.register(r'debates', DebateView)
 router.register(r'contact_detail', ContactDetailView)
+router.register(r'records', RecordView)
 
-urlpatterns = [    
+urlpatterns = [
     # autocomplete urls
     url(r'^person-autocomplete/$', admin.PersonAutocomplete.as_view(), name='person-autocomplete'),
     url(r'^membership-autocomplete/$', admin.MembershipAutocomplete.as_view(), name='membership-autocomplete'),
@@ -102,7 +103,7 @@ urlpatterns = [
     url(r'^getOrganizationRolesAndMembers/(?P<org_id>\d+)/(?P<date_>[\w].+)', getOrganizationRolesAndMembers),
     url(r'^getOrganizationRolesAndMembers/(?P<org_id>\d+)', getOrganizationRolesAndMembers),
 
-    url(r'^getNumberOfAllMPAttendedSessions/(?P<date_>[\w].+)', getNumberOfAllMPAttendedSessions), 
+    url(r'^getNumberOfAllMPAttendedSessions/(?P<date_>[\w].+)', getNumberOfAllMPAttendedSessions),
 
     url(r'^getPGsSpeechesIDs/(?P<org_id>\d+)/(?P<date_>[\w].+)', getPGsSpeechesIDs),
 

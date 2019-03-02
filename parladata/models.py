@@ -733,6 +733,27 @@ class Speech(Versionable, Timestampable, Taggable, models.Model):
         return self.speaker.name
 
 
+@python_2_unicode_compatible
+class Record(Versionable, Timestampable, Taggable, models.Model):
+    """Record that happened in parlament."""
+
+    content = models.TextField(help_text='Record content')
+
+    session = models.ForeignKey('Session',
+                                blank=True, null=True,
+                                help_text='Speech session')
+
+    agenda_item = models.ForeignKey('AgendaItem', blank=True, null=True,
+                                    help_text='Agenda item', related_name='records')
+
+    gov_id = models.CharField(max_length=255,
+                              blank=True, null=True,
+                              help_text='Government website id')
+
+    def __str__(self):
+        return self.session.name
+
+
 class Motion(Timestampable, Taggable, models.Model):
     """Votings which taken place in parlament."""
     uid = models.CharField(max_length=64,

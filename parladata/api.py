@@ -37,6 +37,11 @@ class SpeechSerializer(serializers.ModelSerializer):
         model = Speech
         fields = '__all__'
 
+class RecordSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Record
+        fields = '__all__'
+
 class MotionSerializer(serializers.ModelSerializer):
     vote = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
     class Meta:
@@ -186,7 +191,6 @@ class OrganizationView(viewsets.ModelViewSet):
         return response
 
 
-
 class SpeechView(viewsets.ModelViewSet):
     queryset = Speech.objects.all()
     serializer_class = SpeechSerializer
@@ -198,6 +202,13 @@ class SpeechView(viewsets.ModelViewSet):
         self.perform_create(serializer)
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+
+class RecordView(viewsets.ModelViewSet):
+    queryset = Record.objects.all()
+    serializer_class = RecordSerializer
+    authentication_classes = (SessionAuthentication, BasicAuthentication, OAuth2Authentication)
+    fields = '__all__'
 
 
 class MotionView(viewsets.ModelViewSet):
