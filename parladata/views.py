@@ -4227,9 +4227,9 @@ def getAllORGsExt(request):
     return JsonResponse(data, safe=False)
 
 
-def getParliamentMembershipsOfMembers(request):
+def getOrganizationMembershipsOfMembers(request, organization=settings.DZ_ID):
     out_data = {}
-    mems = Membership.objects.filter(organization=settings.DZ_ID,
+    mems = Membership.objects.filter(organization=organization,
                                      role='voter')
     mems = mems.distinct().values("start_time", "end_time", "on_behalf_of_id", "person_id").order_by('person_id')
 

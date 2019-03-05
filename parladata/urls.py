@@ -1,4 +1,5 @@
 from django.conf.urls import url, include
+from dajngo.conf import settings
 from parladata.views import *
 from parladata.api import *
 from .utils import getMembershipDuplications, membersFlowInOrg, postMembersFixer, membersFlowInPGs, membersFlowInDZ, checkSessions
@@ -29,7 +30,7 @@ router.register(r'questions', QuestionView)
 router.register(r'debates', DebateView)
 router.register(r'contact_detail', ContactDetailView)
 
-urlpatterns = [    
+urlpatterns = [
     # autocomplete urls
     url(r'^person-autocomplete/$', admin.PersonAutocomplete.as_view(), name='person-autocomplete'),
     url(r'^membership-autocomplete/$', admin.MembershipAutocomplete.as_view(), name='membership-autocomplete'),
@@ -72,7 +73,8 @@ urlpatterns = [
     url(r'^getDistricts', getDistricts),
     url(r'^getAllTimeMemberships', getAllTimeMemberships),
 
-    url(r'^getParliamentMembershipsOfMembers', getParliamentMembershipsOfMembers),
+    url(r'^getParliamentMembershipsOfMembers', getOrganizationMembershipsOfMembers),
+
 
     # PGs URLs with and without dates
     url(r'^getMembersOfPGs/', getMembersOfPGs),
@@ -102,7 +104,7 @@ urlpatterns = [
     url(r'^getOrganizationRolesAndMembers/(?P<org_id>\d+)/(?P<date_>[\w].+)', getOrganizationRolesAndMembers),
     url(r'^getOrganizationRolesAndMembers/(?P<org_id>\d+)', getOrganizationRolesAndMembers),
 
-    url(r'^getNumberOfAllMPAttendedSessions/(?P<date_>[\w].+)', getNumberOfAllMPAttendedSessions), 
+    url(r'^getNumberOfAllMPAttendedSessions/(?P<date_>[\w].+)', getNumberOfAllMPAttendedSessions),
 
     url(r'^getPGsSpeechesIDs/(?P<org_id>\d+)/(?P<date_>[\w].+)', getPGsSpeechesIDs),
 
@@ -183,3 +185,5 @@ urlpatterns = [
     #url(r'^docs/', include_docs_urls(title='Test Suite API')),
     url(r'^', include(router.urls)),
 ]
+if settings.PEOPLE_ID:
+    urlpatterns.append(url(r'^getPeopleMembershipsOfMembers', getOrganizationMembershipsOfMembers, {'organization': settings.PEOPLE_ID}))

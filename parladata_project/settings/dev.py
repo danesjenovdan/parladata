@@ -56,6 +56,7 @@ FORCE_SCRIPT_NAME = '/data'
 
 #National Assembly id in database
 DZ_ID = 95
+PEOPLE_ID = None
 COALITION_ID = 95
 OPPOSITION_ID = 95
 
