@@ -1,5 +1,5 @@
 from django.conf.urls import url, include
-from dajngo.conf import settings
+from django.conf import settings
 from parladata.views import *
 from parladata.api import *
 from .utils import getMembershipDuplications, membersFlowInOrg, postMembersFixer, membersFlowInPGs, membersFlowInDZ, checkSessions
