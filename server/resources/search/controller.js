@@ -165,7 +165,7 @@ async function solrSelect({ highlight = false, facet = false } = {}, params) {
       'facet': true,
       'facet.field': ['person_id', 'party_id'],
       'facet.range': 'start_time',
-      'facet.range.start': '2014-01-01T00:00:00.000Z', // TODO: different start time based on country
+      'facet.range.start': `${config.facetRangeStart}T00:00:00.000Z`,
       'facet.range.gap': '+1MONTHS',
       'facet.range.end': 'NOW',
     });
@@ -309,7 +309,7 @@ function getTfidfTarget(prefix, id) {
   return response;
 }
 
-function tfidf({ type, prefix }) {
+function tfidf({ prefix }) {
   return async (req, res) => {
     const id = Number(req.query.id);
     if (!id) {
