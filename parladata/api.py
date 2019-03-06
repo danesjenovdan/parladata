@@ -6,7 +6,7 @@ from taggit_serializer.serializers import (TagListSerializerField,
                                            TaggitSerializer)
 from django.db.models import Q
 from django.conf import settings
-from rest_framework.decorators import detail_route
+from rest_framework.decorators import detail_route, action
 
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.response import Response
@@ -154,6 +154,19 @@ class SessionView(viewsets.ModelViewSet):
     filter_backends = (DjangoFilterBackend, filters.OrderingFilter)
     filter_fields = ('organization', 'id')
     ordering_fields = ('-start_time',)
+
+    @action(detail=False)
+    def sessions_with_speeches(self, request):
+        sessions_ids = Speech.objects.all().distinct('session').values_list('session_id', flat=True)
+        sessions = Session.objects.filter(id__id=sessions_ids)
+
+        page = self.paginate_queryset(sessions)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(sessions, many=True)
+        return Response(serializer.data)
 
 
 class LastSessionWithVoteView(SessionView):
