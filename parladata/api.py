@@ -158,7 +158,7 @@ class SessionView(viewsets.ModelViewSet):
     @action(detail=False)
     def sessions_with_speeches(self, request):
         sessions_ids = Speech.objects.all().distinct('session').values_list('session_id', flat=True)
-        sessions = Session.objects.filter(id__id=sessions_ids)
+        sessions = Session.objects.filter(id__in=sessions_ids)
 
         page = self.paginate_queryset(sessions)
         if page is not None:
