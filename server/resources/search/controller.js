@@ -45,7 +45,20 @@ function shortenHighlight(hl, length = 250) {
     afterTarget = afterMax;
   }
 
-  let short = hl.slice(Math.max(0, beforeMax - beforeTarget), endEm + afterTarget)
+  let sliceStart = Math.max(0, beforeMax - beforeTarget);
+  if (sliceStart > 0) {
+    const nextSpace = hl.indexOf(' ', sliceStart) + 1;
+    if (nextSpace !== -1) {
+      sliceStart = nextSpace;
+    }
+  }
+  let sliceEnd = endEm + afterTarget;
+  if (sliceEnd < hl.length) {
+    const nextSpace = hl.indexOf(' ', sliceEnd);
+    sliceEnd = nextSpace !== -1 ? nextSpace : hl.length;
+  }
+
+  let short = hl.slice(sliceStart, sliceEnd)
     // trim incomplete <em> </em> tags on start/end of string
     .replace(/(<\/?(e(m)?)?)$/g, '')
     .replace(/^((((\/)e)?m)?>)?/g, '')
@@ -56,6 +69,14 @@ function shortenHighlight(hl, length = 250) {
 
   if ((startEmMatches && startEmMatches.length) !== (endEmMatches && endEmMatches.length)) {
     short += '</em>';
+  }
+
+  if (sliceStart > 0) {
+    short = `…${short}`;
+  }
+
+  if (sliceEnd < hl.length) {
+    short = `${short}…`;
   }
 
   return short;
