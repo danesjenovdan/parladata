@@ -3582,7 +3582,7 @@ def addQuestion(request): # TODO not documented because private refactor with se
         if Question.objects.filter(session=session,
                                    title=data['naslov'],
                                    date=datetime.strptime(data['datum'], '%d.%m.%Y'),
-                                   author=authorPerson,
+                                   authors=authorPerson,
                                    recipient_text=data['naslovljenec']
                                    ):
             return JsonResponse({'status': 'This question is allready saved'})
