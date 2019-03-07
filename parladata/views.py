@@ -3570,7 +3570,7 @@ def addQuestion(request): # TODO not documented because private refactor with se
                                        in recipients
                                        if person['type'] == 'org']
         except:
-            recipient_persons = []
+            recipient_organizations = []
         try:
             recipient_posts = [post['recipient']
                             for post
@@ -3693,7 +3693,7 @@ def getAllChangesAfter(request, # TODO not documented because strange
                              'epa': law.epa,
                              'text': law.text,
                              'status': law.status,
-                             'result': law.result,  
+                             'result': law.result,
                              'mdt': law.mdt,
                              'id': law.id,
                              'status': law.status,
