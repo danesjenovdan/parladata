@@ -3557,14 +3557,20 @@ def addQuestion(request): # TODO not documented because private refactor with se
         dz = Organization.objects.get(id=settings.DZ_ID)
         date_of = datetime.strptime(data['datum'], '%d.%m.%Y')
         recipients = parseRecipient(data['naslovljenec'], date_of)
-        recipient_persons = [person['recipient']
-                             for person
-                             in recipients
-                             if person['type'] == 'person']
-        recipient_organizations = [person['recipient']
-                                   for person
-                                   in recipients
-                                   if person['type'] == 'org']
+        try:
+            recipient_persons = [person['recipient']
+                                 for person
+                                 in recipients
+                                 if person['type'] == 'person']
+        except:
+            recipient_persons = []
+        try:
+            recipient_organizations = [person['recipient']
+                                       for person
+                                       in recipients
+                                       if person['type'] == 'org']
+        except:
+            recipient_persons = []
         recipient_posts = [post['recipient']
                            for post
                            in recipients
