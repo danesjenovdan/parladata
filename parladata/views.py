@@ -3571,10 +3571,13 @@ def addQuestion(request): # TODO not documented because private refactor with se
                                        if person['type'] == 'org']
         except:
             recipient_persons = []
-        recipient_posts = [post['recipient']
-                           for post
-                           in recipients
-                           if post['type'] == 'post']
+        try:
+            recipient_posts = [post['recipient']
+                            for post
+                            in recipients
+                            if post['type'] == 'post']
+        except:
+            recipient_posts = []
         membership = Membership.objects.filter(Q(start_time__lte=date_of) |
                                                Q(start_time=None),
                                                Q(end_time__gte=date_of) |
