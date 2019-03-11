@@ -145,6 +145,12 @@ class Person(Timestampable, models.Model):
                                  null=True,
                                  help_text='number of votes cast for this person in their district')
 
+    points = models.IntegerField(_('points'),
+                                 blank=True,
+                                 null=True,
+                                 default=None,
+                                 help_text='number of points cast for this person')
+
     active = models.BooleanField(_('active'),
                                  default=True,
                                  help_text='a generic active or not toggle')

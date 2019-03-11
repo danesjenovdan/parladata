@@ -378,6 +378,7 @@ def getMPStatic(request, person_id, date_=None):
         'member_at_pg_since': party['members_since'],
         'district': district,
         'voters': member.voters,
+        'points': member.points,
         'age': age,
         'birth_date': member.birth_date.isoformat() if member.birth_date else None,
         'groups': groups,
