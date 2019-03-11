@@ -199,7 +199,7 @@ def getMPStatic(request, person_id, date_=None):
     * @api {get} getMPStatic/{id}/{?date} MP's static info
     * @apiName getMPStatic
     * @apiGroup MPs
-    * @apiDescription This function returns an object with all 
+    * @apiDescription This function returns an object with all
       "static" data belonging to an MP. By static we mean that it
       is entered and maintained by hand and rarely, if ever, changes.
     * @apiParam {Integer} id MPs Parladata id.
@@ -774,7 +774,7 @@ def getMembersOfPGs(request):
     * @apiName getMembersOfPGs
     * @apiGroup PGs
     * @apiDescription This function returns object with PG Parladata ids as keys.
-      Each key corresponds to an array of integers containing Parladata ids of 
+      Each key corresponds to an array of integers containing Parladata ids of
       all MPs that are members of the corresponging PG.
 
     * @apiSuccess {Object} / An object with PG ids as keys.
@@ -824,7 +824,7 @@ def getMembersOfPGsOnDate(request, date_=None):
     * @apiName getMembersOfPGsOnDate
     * @apiGroup PGs
     * @apiDescription This function returns object with PG Parladata ids as keys.
-      Each key corresponds to an array of integers containing Parladata ids of 
+      Each key corresponds to an array of integers containing Parladata ids of
       all MPs that are members of the corresponging PG.
 
     * @apiParam {date} date The date for which memberships should be displayed.
@@ -861,7 +861,7 @@ def getMembersOfPGsOnDate(request, date_=None):
     else:
         fdate = datetime.now().date()
     parliamentary_group = Organization.objects.filter(classification__in=settings.PS_NP)
-    
+
     """members = Membership.objects.filter(Q(end_time__gte=fdate) |
                                         Q(end_time=None),
                                         Q(start_time__lte=fdate) |
@@ -903,7 +903,7 @@ def getNumberOfAllMPAttendedSessions(request, date_):
 
     * @apiExample {curl} Example:
         curl -i https://data.parlameter.si/v1/getNumberOfAllMPAttendedSessions/5.2.2017
-    
+
     * @apiSuccessExample {json} Example response:
     {
         "votes": {
@@ -1034,7 +1034,7 @@ def getAllSpeechesOfMPs(request, date_=None):
         page: 1,
         pages: 10,
         data:
-        [   
+        [
             {
                 "valid_from": "2014-08-01T02:00:00",
                 "start_time": "2014-08-01T02:00:00",
@@ -1287,7 +1287,7 @@ def getAllPGs(request, date_=None):
     * @apiName getAllPGs
     * @apiGroup PGs
     * @apiDescription This function returns an object with all the PG's active on a given date.
-      If no optional date parameter is given, it is assumed the date is today. It lists PGs in 
+      If no optional date parameter is given, it is assumed the date is today. It lists PGs in
       an object with the PGs' Parladata ids as keys.
     * @apiParam {date} date Optional date.
 
@@ -1379,7 +1379,7 @@ def getAllPGsExt(request):
     * @apiName getAllPGsExt
     * @apiGroup PGs
     * @apiDescription This function returns an object with all the PG's active on a given date.
-      If no optional date parameter is given, it is assumed the date is today. It lists PGs in 
+      If no optional date parameter is given, it is assumed the date is today. It lists PGs in
       an object with the PGs' Parladata ids as keys.
     * @apiParam {date} date Optional date.
 
@@ -1477,7 +1477,7 @@ def getAllOrganizations(request):
     * @apiName getAllOrganizations
     * @apiGroup Other
     * @apiDescription This function returns an object with all the organizations active on a given date.
-      If no optional date parameter is given, it is assumed the date is today. It lists organizations in 
+      If no optional date parameter is given, it is assumed the date is today. It lists organizations in
       an object with the organizations' Parladata ids as keys.
     * @apiParam {date} date Optional date.
 
@@ -1537,7 +1537,7 @@ def getAllSpeeches(request, date_=None):
     * @apiName getAllSpeeches
     * @apiGroup Other
     * @apiDescription This function returns an object with all the organizations active on a given date.
-      If no optional date parameter is given, it is assumed the date is today. It lists organizations in 
+      If no optional date parameter is given, it is assumed the date is today. It lists organizations in
       an object with the organizations' Parladata ids as keys.
     * @apiParam {date} date Optional date.
     * @apiParam {Integer} per_page Maximum number of items to be returned in result set.
@@ -1632,7 +1632,7 @@ def getVotes(request, date_=None):
         page: 1,
         pages: 10,
         data:
-        [   
+        [
             {
                 "start_time": "2014-08-01T12:16:54",
                 "motion": "Dnevni red v celoti",
@@ -1811,7 +1811,7 @@ def getAllPeople(request):
     * @apiSuccess {String} data.summary Person's summary if applicable. If not returns empty string.
     * @apiSuccess {String} data.birth_date Person's date of birth. Returns time as well, so that all
       objects are datetime, but the time can be ignored.
-    
+
 
     * @apiExample {curl} Example:
         curl -i https://data.parlameter.si/v1/getAllPeople/
@@ -1963,7 +1963,7 @@ def motionOfSession(request, id_se):
     * @apiSuccess {Integer} /.vote_id Parladata id of the vote that took place for this motion.
     * @apiSuccess {Integer} /.id Parladata id of the motion.
     * @apiSuccess {Object[]} /.amendment_of Parladata id of organizations that submited amendment.
-      
+
 
     * @apiExample {curl} Example:
         curl -i https://data.parlameter.si/v1/motionOfSession/9158
@@ -2066,7 +2066,7 @@ def getBallotsOfSession(request, id_se):
     * @apiSuccess {Integer} data.pg_id Parladata id of the PG the MP that submitted the ballot belongs to.
     * @apiSuccess {Integer} data.mo_id Parladata id of the motion this ballot belongs to.
     * @apiSuccess {String} data.option The option on the ballot. One of "for", "against", "abstain", "absent").
-      
+
 
     * @apiExample {curl} Example:
         curl -i https://data.parlameter.si/v1/getBallotsOfSession/9158
@@ -2152,7 +2152,7 @@ def getBallotsOfMotion(request, motion_id):
     * @apiSuccess {Integer} /.pg_id Parladata id of the PG the MP that submitted the ballot belongs to.
     * @apiSuccess {Integer} /.mo_id Parladata id of the motion this ballot belongs to.
     * @apiSuccess {String} /.option The option on the ballot. One of "for", "against", "abstain", "absent").
-      
+
 
     * @apiExample {curl} Example:
         curl -i https://data.parlameter.si/v1/getBallotsOfMotion/6650
@@ -2227,11 +2227,11 @@ def getNumberOfPersonsSessions(request, person_id, date_=None):
     * @apiDescription This function returns an object with the calculated presence for a specific person up until
       a given date. If no date is supplied it is assumed the date is today.
 
-    * @apiSuccess {Object} / 
+    * @apiSuccess {Object} /
     * @apiSuccess {Integer} /.sessions_with_speeches The number of sessions this person spoke at at least once.
     * @apiSuccess {Integer} /.all_sessions The number of sessions this person either voted or spoke at.
     * @apiSuccess {Integer} /.session_with_vote The number of sessions this person voted on at least once.
-      
+
 
     * @apiExample {curl} Example:
         curl -i https://data.parlameter.si/v1/getNumberOfPersonsSessions/2
@@ -2287,11 +2287,11 @@ def getMembersOfPGsRanges(request, date_=None):
       objects as there were different membership settings. If no date is specified it is assumed
       the date is today, otherwise the results returned span only until the supplied date.
 
-    * @apiSuccess {Object[]} / 
+    * @apiSuccess {Object[]} /
     * @apiSuccess {Object} /.members Object with PG Parladata ids as keys.
     * @apiSuccess {Integer[]} /.members.PG_ID List of Parladata ids for all members of this PG in the current timespan.
     * @apiSuccess {date} /.start_date This range's start date (from).
-    * @apiSuccess {date} /.end_date This range's end date (to).      
+    * @apiSuccess {date} /.end_date This range's end date (to).
 
     * @apiExample {curl} Example:
         curl -i https://data.parlameter.si/v1/getMembersOfPGsRanges/
@@ -2447,10 +2447,10 @@ def getMembersOfPGRanges(request, org_id, date_=None):
       objects as there were different membership settings. If no date is specified it is assumed
       the date is today, otherwise the results returned span only until the supplied date.
 
-    * @apiSuccess {Object[]} / 
+    * @apiSuccess {Object[]} /
     * @apiSuccess {Integer[]} /.members List of Parladata ids for all members of this PG in the current timespan.
     * @apiSuccess {date} /.start_date This range's start date (from).
-    * @apiSuccess {date} /.end_date This range's end date (to).      
+    * @apiSuccess {date} /.end_date This range's end date (to).
 
     * @apiExample {curl} Example:
         curl -i https://data.parlameter.si/v1/getMembersOfPGRanges/2
@@ -2559,7 +2559,7 @@ def getMembershipsOfMember(request, person_id, date=None):
 
     * @apiSuccess {Integer[]} /.members List of Parladata ids for all members of this PG in the current timespan.
     * @apiSuccess {date} /.start_date This range's start date (from).
-    * @apiSuccess {date} /.end_date This range's end date (to).      
+    * @apiSuccess {date} /.end_date This range's end date (to).
 
     * @apiExample {curl} Example:
         curl -i https://data.parlameter.si/v1/getMembershipsOfMember/2
@@ -2660,7 +2660,7 @@ def getAllTimeMemberships(request):
       for individual MPs. Iterating through these objects will give you a complete picture of when
       an MP was a member of the national assembly.
 
-    * @apiSuccess {Object[]} / 
+    * @apiSuccess {Object[]} /
     * @apiSuccess {date} /.start_time Membership start time (from).
     * @apiSuccess {date} /.end_time Membership end time (to).
     * @apiSuccess {Integer} /.id The person's Parladata id.
@@ -2870,7 +2870,7 @@ def getTags(request):
     * @apiDescription This function returns a list of objects representing individual
       tags used for tagging motions.
 
-    * @apiSuccess {Object[]} / 
+    * @apiSuccess {Object[]} /
     * @apiSuccess {String} /.name The tag's name.
     * @apiSuccess {Integer} /.id The tag's Parladata id.
 
@@ -2910,7 +2910,7 @@ def getDistricts(request):
     * @apiDescription This function returns a list of objects representing individual
       voting districts.
 
-    * @apiSuccess {Object[]} / 
+    * @apiSuccess {Object[]} /
     * @apiSuccess {String} /.name The district's name.
     * @apiSuccess {Integer} /.id The district's Parladata id.
 
@@ -2949,7 +2949,7 @@ def getSpeechData(request, speech_id):
     * @apiGroup Other
     * @apiDescription This function returns an object with the speech's basic info.
 
-    * @apiSuccess {Object[]} / 
+    * @apiSuccess {Object[]} /
     * @apiSuccess {String} /.date The date of the speech.
     * @apiSuccess {String} /.session_name The name of the session at which the speech took place.
     * @apiSuccess {Integer} /.session_id The Parladata id of the session at which the speech took place.
@@ -3006,7 +3006,7 @@ def getPersonData(request, person_id):
     * @apiGroup Other
     * @apiDescription This function returns an object with the person's basic info.
 
-    * @apiSuccess {Object[]} / 
+    * @apiSuccess {Object[]} /
     * @apiSuccess {String} /.gender The person's recorded gender, usually female or male. Used primarily for front-end grammar.
     * @apiSuccess {String} /.name The name of the person.
     * @apiSuccess {String} /.gov_id The person's gov_id if applicable.
@@ -3043,7 +3043,7 @@ def isSpeechOnDay(request, date_=None):
       did a speech happen on a specific day? If no date is supplied it is assumed the date
       is today.
 
-    * @apiSuccess {Object[]} / 
+    * @apiSuccess {Object[]} /
     * @apiSuccess {Boolean} /.isSpeech True if a speech happened on the supplied date.
 
     * @apiExample {curl} Example:
@@ -3077,7 +3077,7 @@ def isVoteOnDay(request, date_=None):
       did a vote happen on a specific day? If no date is supplied it is assumed the date
       is today.
 
-    * @apiSuccess {Object[]} / 
+    * @apiSuccess {Object[]} /
     * @apiSuccess {Boolean} /.isVote True if a speech happened on the supplied date.
 
     * @apiExample {curl} Example:
@@ -3191,7 +3191,7 @@ def getMembersWithFunction(request):
 
     * @apiExample {curl} Example:
         curl -i https://data.parlameter.si/v1/getMembersWithFunction/
-    
+
     * @apiSuccessExample {json} Example response:
     {
         "members_with_function": [
@@ -3201,7 +3201,7 @@ def getMembersWithFunction(request):
         ]
     }
     """
-    
+
     fdate = datetime.today()
     data = []
     dz = Organization.objects.filter(id=settings.DZ_ID)
@@ -3250,7 +3250,7 @@ def getAllQuestions(request, date_=None):
         curl -i https://data.parlameter.si/v1/getAllQuestions/
     * @apiExample {curl} Example with date:
         curl -i https://data.parlameter.si/v1/getAllQuestions/12.12.2014
-    
+
     * @apiSuccessExample {json} Example response:
     {
         per_page: 500,
@@ -3421,7 +3421,7 @@ def getBallotsCounterOfPerson(request, person_id, date_=None):
         curl -i https://data.parlameter.si/v1/getBallotsCounterOfPerson/2
     * @apiExample {curl} Example with date:
         curl -i https://data.parlameter.si/v1/getBallotsCounterOfPerson/2/12.12.2014
-    
+
     * @apiSuccessExample {json} Example response:
     [
         {
@@ -3482,7 +3482,7 @@ def getBallotsCounterOfParty(request, party_id, date_=None):
         curl -i https://data.parlameter.si/v1/getBallotsCounterOfParty/2
     * @apiExample {curl} Example with date:
         curl -i https://data.parlameter.si/v1/getBallotsCounterOfParty/2/12.12.2014
-    
+
     * @apiSuccessExample {json} Example response:
     [
         {
@@ -3829,7 +3829,7 @@ def monitorMe(request): # TODO refactor name KUNST
 
     * @apiExample {curl} Example:
         curl -i https://data.parlameter.si/v1/monitoring
-    
+
     * @apiSuccessExample {json} Example response:
     All iz well.
     """
@@ -4025,7 +4025,7 @@ def getMembershipNetwork(request):
     members = Membership.objects.filter(organization__in=parliamentary_group)
 
     staticData = requests.get('https://analize.parlameter.si/v1/utils/getAllStaticData/').json()
-    
+
     members = members.order_by("start_time")
 
     mems = {}
@@ -4123,7 +4123,7 @@ def getAmendment(request):
             acronym = pg[0] if pg[0] else pg[1]
             if acronym in ['V', 'vlada', 'Bon', '14']:
                 continue
-            # fix ZL 
+            # fix ZL
             if acronym == 'ZL':
                 acronym = 'Levica'
             data.append({'acronym': acronym,
@@ -4170,7 +4170,7 @@ def getAllORGsExt(request):
     * @apiName getAllPGsExt
     * @apiGroup PGs
     * @apiDescription This function returns an object with all the PG's active on a given date.
-      If no optional date parameter is given, it is assumed the date is today. It lists PGs in 
+      If no optional date parameter is given, it is assumed the date is today. It lists PGs in
       an object with the PGs' Parladata ids as keys.
     * @apiParam {date} date Optional date.
 
