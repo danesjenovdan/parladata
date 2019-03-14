@@ -7,21 +7,17 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         self.stdout.write('Start setting results')
 
-        for vote in Vote.objects.filter(result=None):
-            results = vote.getResult()
-            print(vote.ballot_set.all().filter(option="against").count())
-            if vote.ballot_set.all().filter(option="against").count()>61:
-                motion=vote.motion
-                motion.result=1
-                motion.save()
-                self.stdout.write('setting vote: ' + vote.name + ' with results ' + str(results) + ' as accepted')
 
         for vote in Vote.objects.filter(result=None):
-            if vote.ballot_set.all().filter(option="against").count() >= vote.ballot_set.all().filter(option="for").count():
-                motion=vote.motion
-                motion.result=0
-                motion.save()
-                self.stdout.write('setting vote: ' + vote.name + ' with results ' + str(results) + ' as rejected')
+            final_result = None
+            results = vote.getResult()
+            if results['absent'] > 44:
+                final_result = 0
+            elif results['for'] > results['against']:
+                final_result = 1
+            else:
+                final_result = 0
+            self.stdout.write('setting vote: ' + vote.name + ' with results ' + str(results) + ' as accepted' if final_result else 'as rejected')
 
         self.stdout.write('\n')
         self.stdout.write('DONE')
