@@ -17,6 +17,9 @@ class Command(BaseCommand):
                 final_result = 1
             else:
                 final_result = 0
+            motion = vote.motion
+            motion.result = final_result
+            motion.save()
             self.stdout.write('setting vote: ' + vote.name + ' with results ' + str(results) + ' as accepted' if final_result else 'as rejected')
 
         self.stdout.write('\n')
