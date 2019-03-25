@@ -77,7 +77,7 @@ urlpatterns = [
 
 
     # PGs URLs with and without dates
-    url(r'^getMembersOfPGs/', getMembersOfPGs),
+    url(r'^getMembersOfPGs/', getVotersByOrganizations),
     url(r'^getCoalitionPGs/', getCoalitionPGs),
     url(r'^getNumberOfSeatsOfPG/(?P<pg_id>\d+)', getNumberOfSeatsOfPG),
 
@@ -91,8 +91,8 @@ urlpatterns = [
     url(r'^getAllORGsExt/', getAllORGsExt),
     url(r'^getAllOrganizations/', getAllOrganizations),
 
-    url(r'^getMembersOfPGsOnDate/(?P<date_>[\w].+)', getMembersOfPGsOnDate),
-    url(r'^getMembersOfPGsOnDate', getMembersOfPGsOnDate),
+    url(r'^getMembersOfPGsOnDate/(?P<date_>[\w].+)', getVotersByOrganizations),
+    url(r'^getMembersOfPGsOnDate', getVotersByOrganizations),
 
     url(r'^getMembersOfPGsRanges/(?P<date_>[\w].+)', getMembersOfPGsRanges),
     url(r'^getMembersOfPGsRanges', getMembersOfPGsRanges),
@@ -184,6 +184,6 @@ urlpatterns = [
     url(r'^monitoring', monitorMe),
     #url(r'^docs/', include_docs_urls(title='Test Suite API')),
     url(r'^', include(router.urls)),
+
+    url(r'^getPeopleMembershipsOfMembers/', getOrganizationMembershipsOfMembers, {'organization': settings.PEOPLE_ID}),
 ]
-if settings.PEOPLE_ID:
-    urlpatterns.append(url(r'^getPeopleMembershipsOfMembers', getOrganizationMembershipsOfMembers, {'organization': settings.PEOPLE_ID}))

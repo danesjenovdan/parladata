@@ -30,7 +30,23 @@ class SessionSerializer(serializers.ModelSerializer):
 class OrganizationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Organization
-        fields = '__all__'
+        fields = [
+            "id",
+            "created_at",
+            "updated_at",
+            "_name",
+            "name_parser",
+            "_acronym",
+            "gov_id",
+            "classification",
+            "dissolution_date",
+            "founding_date",
+            "description",
+            "is_coalition",
+            "voters",
+            "parent",
+            "has_voteres"
+        ]
 
 class SpeechSerializer(serializers.ModelSerializer):
     class Meta:

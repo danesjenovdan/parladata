@@ -63,14 +63,14 @@ def getMPObjects(date_=None):
 
     return [i.person for i in members]
 
-def getMPVoteObjects(date_=None):
+def getMPVoteObjects(date_=None, organization=settings.DZ_ID):
     """Return objects of all parlament memberships with voting ability.
        Function: git config
     """
 
     if not date_:
         date_ = datetime.now()
-    parliamentary_group = Organization.objects.filter(id=settings.DZ_ID)
+    parliamentary_group = Organization.objects.filter(id=organization)
     members = Membership.objects.filter(organization=parliamentary_group, role='voter').exclude(on_behalf_of=None)
     members = members.filter(Q(start_time__date__lte=date_) |
                              Q(start_time=None),
@@ -940,7 +940,7 @@ def getOwnersOfAmendment(motion):
                                 d_tokens.append([tokens[i], tokens[i+1]])
                             for d_token in d_tokens:
                                 person = Person.objects.filter(name_parser__icontains=' '.join(d_token))
-                                if person.count() == 1: 
+                                if person.count() == 1:
                                     people_ids.append(person[0].id)
                                     break
                                 if person.count() > 0:

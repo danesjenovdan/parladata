@@ -283,6 +283,13 @@ class Organization(Timestampable, Taggable, models.Model):
         else:
             return self._name
 
+    @property
+    def has_voteres(self):
+        if self.memberships.filter(role='voter'):
+            return True
+        else:
+            return False
+
 
 @python_2_unicode_compatible
 class Post(Timestampable, Taggable, models.Model):

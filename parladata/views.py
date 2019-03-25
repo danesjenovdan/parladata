@@ -295,7 +295,7 @@ def getMPStatic(request, person_id, date_=None):
                                             Q(end_time__date__gte=fdate) |
                                             Q(end_time=None))
 
-    party = memberships.filter(organization__classification__in=settings.PS_NP)
+    party = memberships.filter(organization__classification__in=settings.PS_NP_D)
     if party:
         party = {'name': party[0].organization.name,
                  'id': party[0].organization.id,
@@ -307,7 +307,7 @@ def getMPStatic(request, person_id, date_=None):
     groups = [{'name': membership.organization.name,
                'id': membership.organization.id}
                     for membership
-                    in memberships.exclude(organization__classification__in=settings.PS_NP)]
+                    in memberships.exclude(organization__classification__in=settings.PS_NP_D)]
 
 
 
@@ -765,63 +765,11 @@ def getSpeechesInRange(request, person_id, date_from, date_to):
     return JsonResponse(speeches, safe=False)
 
 
-def getMembersOfPGs(request):
-    """Returns list of member's id for each PG.
-    PG = Parlamentary group
+def getVotersByOrganizations(request, date_=None):
+    """Returns list of voter's id for each organization."""
     """
-    """
-    * @api {get} getMembersOfPGs/ Get PGs and their members today
-    * @apiName getMembersOfPGs
-    * @apiGroup PGs
-    * @apiDescription This function returns object with PG Parladata ids as keys.
-      Each key corresponds to an array of integers containing Parladata ids of
-      all MPs that are members of the corresponging PG.
-
-    * @apiSuccess {Object} / An object with PG ids as keys.
-    * @apiSuccess {Integer[]} /.id An array of integers corresponding to members' Parladata ids.
-
-    * @apiExample {curl} Example:
-        curl -i https://data.parlameter.si/v1/getMembersOfPGs/
-
-    * @apiSuccessExample {json} Example response:
-    {
-        "1": [3, 14, 21, 39, 44, 68, 71, 74, 88, 16, 11, 27, 33, 40, 43, 57, 60, 70, 72, 19, 76, 77, 87, 89, 1354, 73, 84, 67, 48, 59, 92, 2933, 2934, 1357, 1355],
-        "2": [4, 24],
-        "3": [69, 22, 29, 34, 45, 52, 96, 85, 37, 41, 5],
-        "4": [],
-        "5": [10, 12, 26, 35, 51, 54, 55, 64, 66, 75, 36, 78, 25, 2, 23, 47, 53, 65, 91],
-        "6": [32, 86, 63, 81, 17, 49],
-        "7": [61, 62, 1356, 83, 30, 95],
-        "8": [80, 82, 31, 42, 79, 58],
-        "107": [],
-        "108": [15],
-        "109": [50, 9, 18, 7],
-        "110": [],
-        "111": [],
-        "112": [],
-        "97": [],
-        "100": []
-    }
-    """
-
-    parliamentary_group = Organization.objects.filter(classification__in=settings.PS_NP)
-    members = Membership.objects.filter(Q(end_time=None) |
-                                        Q(end_time__gt=datetime.now()),
-                                        organization__in=parliamentary_group
-                                        )
-    data = {pg.id: [member.person.id
-                    for member
-                    in members.filter(organization=pg)
-                    ] for pg in parliamentary_group}
-
-    return JsonResponse(data)
-
-
-def getMembersOfPGsOnDate(request, date_=None):
-    """Returns list of member's id for each PG, on specific date."""
-    """
-    * @api {get} getMembersOfPGsOnDate/{date} Get PGs and their members on a specific date
-    * @apiName getMembersOfPGsOnDate
+    * @api {get} getVotersByOrganizations/{date} Get organizations and their voters on a specific date or today
+    * @apiName getVotersByOrganizations
     * @apiGroup PGs
     * @apiDescription This function returns object with PG Parladata ids as keys.
       Each key corresponds to an array of integers containing Parladata ids of
@@ -833,7 +781,7 @@ def getMembersOfPGsOnDate(request, date_=None):
     * @apiSuccess {Integer[]} /.id An array of integers corresponding to members' Parladata ids.
 
     * @apiExample {curl} Example:
-        curl -i https://data.parlameter.si/v1/getMembersOfPGsOnDate/12.12.2015
+        curl -i https://data.parlameter.si/v1/getVotersByOrganizations/12.12.2015
 
     * @apiSuccessExample {json} Example response:
     {
@@ -860,18 +808,18 @@ def getMembersOfPGsOnDate(request, date_=None):
         fdate = datetime.strptime(date_, settings.API_DATE_FORMAT).date()
     else:
         fdate = datetime.now().date()
-    parliamentary_group = Organization.objects.filter(classification__in=settings.PS_NP)
 
-    """members = Membership.objects.filter(Q(end_time__gte=fdate) |
-                                        Q(end_time=None),
-                                        Q(start_time__lte=fdate) |
-                                        Q(start_time=None),
-                                        organization__in=parliamentary_group
-                                        )"""
+    members = Membership.objects.filter(role='voter').exclude(on_behalf_of=None)
+    members = members.filter(Q(start_time__date__lte=fdate) |
+                             Q(start_time=None),
+                             Q(end_time__date__gte=fdate) |
+                             Q(end_time=None))#.prefetch_related('person')
 
-    members = getMPVoteObjects(fdate)
+    #data = {str(i.id): [] for i in members.distinct('on_behalf_of').values_list('on_behalf_of', flat=True)}
+    data = {str(i): [] for i in list(set(list(members.values_list('on_behalf_of', flat=True))))} # workaround for sqlite
 
-    data = {pg.id: [member.person.id for member in members.filter(on_behalf_of=pg)] for pg in parliamentary_group}
+    for member in members:
+        data[str(member.on_behalf_of_id)].append(member.person_id)
 
     return JsonResponse(data)
 
@@ -1899,7 +1847,7 @@ def getAllPeople(request):
         ]
     }
     """
-    parliamentary_group = Organization.objects.filter(classification__in=settings.PS_NP)
+    parliamentary_group = Organization.objects.filter(classification__in=settings.PS_NP_D)
     data = []
     pg = ''
     persons = Person.objects.all().order_by('id')
@@ -2120,8 +2068,7 @@ def getBallotsOfSession(request, id_se):
     """
 
     fdate = Session.objects.get(id=str(id_se)).start_time
-    orgs = Organization.objects.filter(classification__in=settings.PS_NP)
-    org_acronym = {org.id: org.acronym for org in orgs}
+    org_acronym = {org.id: org.acronym for org in Organization.objects.all()}
     ballots = Ballot.objects.filter(vote__session__id=str(id_se)).order_by("id").prefetch_related('vote')
     ballots, pager = parsePager(request, ballots, default_per_page=1000)
     data = []
@@ -2258,7 +2205,7 @@ def getNumberOfPersonsSessions(request, person_id, date_=None):
 
     else:
         person = person[0]
-        sessions_with_vote = person.ballot_set.filter(vote__start_time__lte=fdate).exclude(option='ni').values_list("vote__session", flat=True).distinct()
+        sessions_with_vote = person.ballot_set.filter(vote__start_time__lte=fdate).exclude(option='absent').values_list("vote__session", flat=True).distinct()
         sessions_with_speech = person.speech_set.filter(start_time__lte=fdate).values_list("session", flat=True).distinct()
 
         sessions = set(list(sessions_with_vote) + list(sessions_with_speech))
@@ -2379,16 +2326,12 @@ def getMembersOfPGsRanges(request, date_=None):
         fdate = datetime.now().date()
     tempDate = settings.MANDATE_START_TIME.date()
 
-    """
-    parliamentary_group = Organization.objects.filter(classification__in=settings.PS_NP)
-    members = Membership.objects.filter(organization__in=parliamentary_group)
-    """
+    members = Membership.objects.filter(role='voter').exclude(on_behalf_of=None)
 
-    parliament= Organization.objects.filter(id=settings.DZ_ID)
-    parliamentary_group = Organization.objects.filter(classification__in=settings.PS_NP)
-    members = Membership.objects.filter(organization=parliament, role='voter').exclude(on_behalf_of=None)
+    #data = {str(i.id): [] for i in members.distinct('on_behalf_of').values_list('on_behalf_of', flat=True)}
+    pgs_ids = [i for i in list(set(list(members.values_list('on_behalf_of', flat=True))))] # workaround for sqlite
 
-    pgs_ids = parliamentary_group.values_list("id", flat=True)
+    #pgs_ids = parliamentary_group.values_list("id", flat=True)
     out = {(tempDate + timedelta(days=days)): {grup: []
                                                for grup
                                                in pgs_ids}
@@ -2476,7 +2419,10 @@ def getMembersOfPGRanges(request, org_id, date_=None):
     else:
         fdate = datetime.now().date()
     tempDate = settings.MANDATE_START_TIME.date()
-    members = Membership.objects.filter(organization__id=org_id)
+    members = Membership.objects.filter(
+        on_behalf_of_id=org_id,
+        role='voter'
+    )
     out = {(tempDate+timedelta(days=days)): {int(org_id): []}
            for days
            in range((fdate-tempDate).days+1)}
@@ -2499,7 +2445,7 @@ def getMembersOfPGRanges(request, org_id, date_=None):
                 end_time = fdate
         for days in range((end_time-start_time).days + 1):
             day = out[(start_time+timedelta(days=days))]
-            day[member.organization.id].append(member.person.id)
+            day[member.on_behalf_of.id].append(member.person.id)
 
     keys = out.keys()
     keys.sort()
@@ -2803,13 +2749,16 @@ def getOrganizatonsByClassification(request):
     workingBodies = Organization.objects.filter(classification__in=settings.WBS)
     parliamentaryGroups = Organization.objects.filter(classification__in=settings.PS_NP)
     council = Organization.objects.filter(classification__in=settings.COUNCIL)
+    people = Organization.objects.filter(classification__in=settings.DELEGATE)
 
     return JsonResponse({"working_bodies": [{"id": wb.id,
                                              "name": wb.name} for wb in workingBodies],
                          "parliamentary_groups": [{"id": pg.id,
                                                    "name": pg.name} for pg in parliamentaryGroups],
                          "council": [{"id": c.id,
-                                      "name": c.name} for c in council]})
+                                      "name": c.name} for c in council],
+                         "people": [{"id": p.id,
+                                     "name": p.name} for p in people]})
 
 
 def getOrganizationRolesAndMembers(request, org_id, date_=None):
@@ -3667,7 +3616,7 @@ def getAllChangesAfter(request, # TODO not documented because strange
     deleteMotionsWithoutText()
 
     par_group = Organization.objects.all()
-    par_group = par_group.filter(classification__in=settings.PS_NP)
+    par_group = par_group.filter(classification__in=settings.PS_NP_D)
     data = {}
 
     print "sessions"
@@ -3905,13 +3854,11 @@ def getVotesOfSessionTable(request, session_id, date_to=None):
     return JsonResponse(data, safe=False)
 
 
-def getVotesTableExtended(request, date_to=None):
+def getVotesTableExtended(request, by_organization=settings.DZ_ID, date_to=None):
     """
     Pandas table
     """
-    orgs = {}
-    for org in Organization.objects.filter(classification__in=settings.PS_NP):
-        orgs[org.id] = org.acronym
+    orgs = {org.id: org.acronym for org in Organization.objects.all()}
 
     if date_to:
         fdate = datetime.strptime(date_to,
@@ -3919,7 +3866,7 @@ def getVotesTableExtended(request, date_to=None):
     else:
         fdate = datetime.now().date()
     data = []
-    sessions = Session.objects.filter(vote__isnull=False).distinct().order_by("start_time")
+    sessions = Session.objects.filter(vote__isnull=False, organizations_id=by_organization).distinct().order_by("start_time")
     sessions, pager = parsePager(request, sessions, default_per_page=10)
     for session in sessions:
         votes = Vote.objects.filter(session=session,
