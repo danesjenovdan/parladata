@@ -7,6 +7,7 @@ from taggit_serializer.serializers import (TagListSerializerField,
 from django.db.models import Q
 from django.conf import settings
 from rest_framework.decorators import detail_route, action
+from datetime import datetime
 
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.response import Response
@@ -125,9 +126,29 @@ class PersonView(viewsets.ModelViewSet):
     def get_queryset(self):
         queryset = Person.objects.all()
         mps = self.request.query_params.get('mps', None)
+        voters_of = self.request.query_params.get('voters_of', None)
+        date_ = datetime.now()
         if mps is not None:
-            MPs_ids = Membership.objects.filter(organization__classification__in=settings.PS_NP).values_list('person', flat=True)
+            MPs_ids = Membership.objects.filter(
+                Q(start_time__date__lte=date_) |
+                Q(start_time=None),
+                Q(end_time__date__gte=date_) |
+                Q(end_time=None),
+                organization__classification__in=settings.PS_NP,
+            ).values_list('person', flat=True)
             queryset = queryset.filter(id__in=MPs_ids)
+        if voters_of:
+            print('voters_of', voters_of)
+            MPs_ids = Membership.objects.filter(
+                Q(start_time__date__lte=date_) |
+                Q(start_time=None),
+                Q(end_time__date__gte=date_) |
+                Q(end_time=None),
+                organization_id=voters_of,
+                role='voter'
+            ).values_list('person', flat=True)
+            queryset = queryset.filter(id__in=MPs_ids)
+
         return queryset
 
 
@@ -262,7 +283,7 @@ class MembershipView(viewsets.ModelViewSet):
     queryset = Membership.objects.all()
     serializer_class = MembershipSerializer
     filter_backends = (DjangoFilterBackend,)
-    filter_fields = ('person', 'organization')
+    filter_fields = ('person', 'organization', 'role')
 
 
 class AreaView(viewsets.ModelViewSet):
