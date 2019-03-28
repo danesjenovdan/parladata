@@ -284,7 +284,7 @@ class Organization(Timestampable, Taggable, models.Model):
             return self._name
 
     @property
-    def has_voteres(self):
+    def has_voters(self):
         if self.memberships.filter(role='voter'):
             return True
         else:
