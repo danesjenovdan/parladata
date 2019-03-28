@@ -46,7 +46,7 @@ class OrganizationSerializer(serializers.ModelSerializer):
             "is_coalition",
             "voters",
             "parent",
-            "has_voteres"
+            "has_voters"
         ]
 
 class SpeechSerializer(serializers.ModelSerializer):
