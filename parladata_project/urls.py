@@ -17,6 +17,6 @@ urlpatterns = [
     url(r'^v1/', include('parladata.urls', namespace='API')),
     url(r'^v2/', include('parladata.urls_v2', namespace='APIv2')),
     url(r'^v1/sandbox/', include('sandbox.urls')),
-    url(r'^docs/', include_docs_urls(title='My API title', public=True)),
+    url(r'^docs/', include_docs_urls(title='Parladata v1 API', public=True)),
     url(r'^oauth/', include('oauth2_provider.urls', namespace='oauth2_provider')),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

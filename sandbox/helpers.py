@@ -72,7 +72,6 @@ def fixBallotsVoterParty(person_id):
     #                                 organization__classification__in=PS_NP)
 
     mems = Membership.objects.filter(person_id=person_id,
-                                     organization=settings.DZ_ID,
                                      role='voter').exclude(on_behalf_of=None)
 
     print mems
@@ -135,7 +134,6 @@ def fixSpeakerParty(person_id):
     """
 
     party = Membership.objects.filter(person_id=person_id,
-                                      organization=settings.DZ_ID,
                                       role='voter').exclude(on_behalf_of=None)
 
     ministry = Membership.objects.filter(person_id=person_id,
@@ -235,7 +233,7 @@ def getPersonsFromOldParlameter():
             #person.education = old['education']
             #person.education_level = old['education_level']
             #try:
-            #    person.mandates = int(old['mandates']) + 1 
+            #    person.mandates = int(old['mandates']) + 1
             #except:
             #    person.mandates = 1
             #person.email = old['email']
@@ -254,7 +252,7 @@ def get_person_by_parser_name(old_people, name_parser):
         for p_name in p['name_parser'].split(','):
             if p_name in names:
                 return p
-    
+
     return None
 
 

@@ -241,6 +241,8 @@ class SpeechView(viewsets.ModelViewSet):
     queryset = Speech.objects.all()
     serializer_class = SpeechSerializer
     authentication_classes = (SessionAuthentication, BasicAuthentication, OAuth2Authentication)
+    filter_backends = (DjangoFilterBackend, filters.SearchFilter,)
+    filter_fields = ('party', 'speaker')
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data, many=isinstance(request.data,list))

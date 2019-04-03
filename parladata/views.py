@@ -3303,19 +3303,27 @@ def getBallotsCounter(voter_obj, date_=None):
     fdate = fdate + timedelta(days=1)
 
     data = []
+    organization = None
 
-    if type(voter_obj) == Person:
-        ballots = Ballot.objects.filter(voter=voter_obj,
-                                        vote__start_time__lt=fdate)
-    elif type(voter_obj) == Organization:
-        ballots = Ballot.objects.filter(voterparty=voter_obj,
-                                        vote__start_time__lt=fdate)
+    try:
+        if type(voter_obj) == Person:
+            ballots = Ballot.objects.filter(voter=voter_obj,
+                                            vote__start_time__lt=fdate)
+            organization = voter_obj.memberships.filter(role='voter').first().organization
+
+        elif type(voter_obj) == Organization:
+            ballots = Ballot.objects.filter(voterparty=voter_obj,
+                                            vote__start_time__lt=fdate)
+            organization = voter_obj.memberships_on_behalf_of.filter(role='voter').first().organization
+    except:
+        raise
 
     ballots = ballots.annotate(month=TruncMonth('vote__start_time')).values('month', 'option')
 
     ballots = ballots.annotate(ballot_count=Count('option')).order_by('month')
 
-    votes = Vote.objects.filter(start_time__lt=fdate, counter=None)
+    print(organization)
+    votes = Vote.objects.filter(start_time__lt=fdate, counter=None, session__organization=organization)
     #votes = votes.annotate(month=DateTime("start_time",
     #                                      "month",
     #                       tzinfo=None)).values("month")
@@ -3866,7 +3874,7 @@ def getVotesTableExtended(request, by_organization=settings.DZ_ID, date_to=None)
     else:
         fdate = datetime.now().date()
     data = []
-    sessions = Session.objects.filter(vote__isnull=False, organizations_id=by_organization).distinct().order_by("start_time")
+    sessions = Session.objects.filter(vote__isnull=False, organizations=by_organization).distinct().order_by("start_time")
     sessions, pager = parsePager(request, sessions, default_per_page=10)
     for session in sessions:
         votes = Vote.objects.filter(session=session,
