@@ -1143,8 +1143,7 @@ def getBasicInfOfPG(request, pg_id, date_=None):
     viceOfPG = []
     data = dict()
     listOfVotes = []
-    parliamentary_group = Organization.objects.filter(classification=settings.PS,
-                                                      id=pg_id)
+    parliamentary_group = Organization.objects.filter(id=pg_id)
 
     members = Membership.objects.filter(Q(start_time__lte=fdate) |
                                         Q(start_time=None),
