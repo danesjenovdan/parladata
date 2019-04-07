@@ -1,6 +1,7 @@
 const querystring = require('querystring');
 const fetch = require('node-fetch');
 const _ = require('lodash');
+const dateFns = require('date-fns');
 const data = require('../../data');
 const config = require('../../../config');
 
@@ -219,11 +220,22 @@ function getFilters(type, qp) {
       response.filters.wb = wb;
       fq.push(`org_id:(${wb.join(' OR ')})`);
     }
+    if (qp.months) {
+      const months = qp.months.split(',').filter(e => /^\d{4}-[0-1]?[0-9]$/g.test(e));
+      const ranges = months.map((m) => {
+        const [year, month] = m.split('-').map(Number);
+        const date = new Date(year, month - 1);
+        const from = dateFns.startOfMonth(date);
+        const to = dateFns.endOfMonth(date);
+        return `[${from.toISOString()} TO ${to.toISOString()}]`;
+      });
+      response.filters.months = ranges;
+      fq.push(`start_time:(${ranges.join(' OR ')})`);
+    }
     // from_date = request.GET.get('from')
     // to_date = request.GET.get('to')
     // is_dz = request.GET.get('dz')
     // is_council = request.GET.get('council')
-    // time_filter = request.GET.get('time_filter')
   }
   return [response, fq];
 }
