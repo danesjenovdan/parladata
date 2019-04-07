@@ -269,9 +269,21 @@ class VoteView(viewsets.ModelViewSet):
     queryset = Vote.objects.all()
     serializer_class = VoteSerializer
     filter_backends = (DjangoFilterBackend, filters.SearchFilter,)
+    filter_fields = ('session', 'tags__name')
+    ordering_fields = ('start_time',)
+    search_fields = ('name', 'tags__name')
+
+
+class UntaggedVoteView(viewsets.ModelViewSet):
+    authentication_classes = (SessionAuthentication, BasicAuthentication, OAuth2Authentication)
+    tags=Vote.tags.all()
+    tag_list = tags.values_list('name', flat=True)
+    queryset = Vote.objects.all().exclude(tags__name__in=list(tag_list))
+    serializer_class = VoteSerializer
+    filter_backends = (DjangoFilterBackend, filters.SearchFilter,)
     filter_fields = ('session',)
     ordering_fields = ('start_time',)
-    search_fields = ('name',)
+    search_fields = ('name', 'tags__name')
 
 
 class BallotView(viewsets.ModelViewSet):

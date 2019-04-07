@@ -29,6 +29,7 @@ router.register(r'agenda-items', AgendaItemView)
 router.register(r'questions', QuestionView)
 router.register(r'debates', DebateView)
 router.register(r'contact_detail', ContactDetailView)
+router.register(r'untagged_votes', UntaggedVoteView)
 
 urlpatterns = [
     # autocomplete urls

@@ -8,7 +8,7 @@ class Command(BaseCommand):
         self.stdout.write('Start setting results')
 
 
-        for vote in Vote.objects.filter(result=None):
+        for vote in Vote.objects.filter(motion__result=None):
             final_result = None
             results = vote.getResult()
             if results['absent'] > 44:
