@@ -1405,8 +1405,6 @@ def getAllPGsExt(request):
         }
     }
     """
-
-    #parliamentary_group = Organization.objects.filter(classification=settings.PS)
     mm = Membership.objects.filter(role='voter').distinct('on_behalf_of').prefetch_related('on_behalf_of')
     data = {membership.on_behalf_of_id: {'name': membership.on_behalf_of.name,
                     'acronym': membership.on_behalf_of.acronym,
@@ -2640,10 +2638,7 @@ def getAllTimeMemberships(request):
         }
     ]
     """
-
-    parliamentary_group = Organization.objects.filter(id=settings.DZ_ID)
-    members = Membership.objects.filter(organization=parliamentary_group,
-        role='voter').exclude(on_behalf_of=None)
+    members = Membership.objects.filter(role='voter').exclude(on_behalf_of=None)
     members = members.prefetch_related('person')
     data = []
 
@@ -2658,6 +2653,7 @@ def getAllTimeMemberships(request):
                           "id": member.person.id,
                           'name': member.person.name,
                           'membership': member.on_behalf_of.name,
+                          'parent_org_id': member.organization_id,
                           'acronym': member.on_behalf_of.acronym,
                           'family_name': member.person.family_name,
                           'given_name': member.person.given_name,
