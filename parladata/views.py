@@ -1406,13 +1406,15 @@ def getAllPGsExt(request):
     }
     """
 
-    parliamentary_group = Organization.objects.filter(classification=settings.PS)
-    data = {pg.id: {'name': pg.name,
-                    'acronym': pg.acronym,
-                    'id': pg.id,
-                    'founded': pg.founding_date,
-                    'is_coalition': True if pg.is_coalition == 1 else False,
-                    'disbanded': pg.dissolution_date} for pg in parliamentary_group}
+    #parliamentary_group = Organization.objects.filter(classification=settings.PS)
+    mm = Membership.objects.filter(role='voter').distinct('on_behalf_of').prefetch_related('on_behalf_of')
+    data = {membership.on_behalf_of_id: {'name': membership.on_behalf_of.name,
+                    'acronym': membership.on_behalf_of.acronym,
+                    'id': membership.on_behalf_of_id,
+                    'founded': membership.on_behalf_of.founding_date,
+                    'parent_org_id': membership.organization_id,
+                    'is_coalition': True if membership.on_behalf_of.is_coalition == 1 else False,
+                    'disbanded': membership.on_behalf_of.dissolution_date} for membership in mm}
 
     return JsonResponse(data, safe=False)
 
