@@ -4159,15 +4159,17 @@ def getAllORGsExt(request):
         }...
     }
     """
-
-    parliamentary_group = Organization.objects.filter(classification=settings.PS)
-    data = {pg.id: {'name': pg.name,
-                    'id': pg.id,
-                    'acronym': pg.acronym,
-                    'founded': pg.founding_date,
-                    'type': 'party',
-                    'is_coalition': True if pg.is_coalition == 1 else False,
-                    'disbanded': pg.dissolution_date} for pg in parliamentary_group}
+    mm = Membership.objects.filter(role='voter').distinct('on_behalf_of').prefetch_related('on_behalf_of')
+    data = {
+        membership.on_behalf_of.id: {
+            'name': membership.on_behalf_of.name,
+            'id': membership.on_behalf_of.id,
+            'acronym': membership.on_behalf_of.acronym,
+            'founded': membership.on_behalf_of.founding_date,
+            'type': 'party',
+            'is_coalition': True if membership.on_behalf_of.is_coalition == 1 else False,
+            'disbanded': membership.on_behalf_of.dissolution_date
+        } for membership in mm}
 
     parliament_sides = Organization.objects.filter(id__in=[settings.COALITION_ID, settings.OPPOSITION_ID])
     for pg in parliament_sides:
