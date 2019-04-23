@@ -4166,6 +4166,7 @@ def getAllORGsExt(request):
             'id': membership.on_behalf_of.id,
             'acronym': membership.on_behalf_of.acronym,
             'founded': membership.on_behalf_of.founding_date,
+            'parent_org_id': membership.organization_id,
             'type': 'party',
             'is_coalition': True if membership.on_behalf_of.is_coalition == 1 else False,
             'disbanded': membership.on_behalf_of.dissolution_date
@@ -4177,17 +4178,22 @@ def getAllORGsExt(request):
                        'id': pg.id,
                        'acronym': pg.acronym,
                        'founded': pg.founding_date,
+                       'parent_org_id': settings.DZ_ID,
                        'type': 'coalition' if pg.is_coalition == 1 else 'opposition',
                        'is_coalition': True if pg.is_coalition == 1 else False,
                        'disbanded': pg.dissolution_date}
     parliament = Organization.objects.get(id=settings.DZ_ID)
-    data[parliament.id] = {'name': parliament.name,
-                           'id': parliament.id,
-                           'acronym': parliament.acronym,
-                           'founded': parliament.founding_date,
-                           'type': 'parliament',
-                           'is_coalition': True if pg.is_coalition == 1 else False,
-                           'disbanded': pg.dissolution_date}
+    mm = Membership.objects.filter(role='voter').distinct('organization').prefetch_related('organization')
+    for membership in mm:
+        data[membership.organization_id] = {
+            'name': membership.organization.name,
+            'id': membership.organization.id,
+            'acronym': membership.organization.acronym,
+            'founded': membership.organization.founding_date,
+            'type': 'parliament',
+            'parent_org_id': None,
+            'is_coalition': False,
+            'disbanded': membership.organization.dissolution_date}
     return JsonResponse(data, safe=False)
 
 
