@@ -3746,8 +3746,8 @@ def getAllChangesAfter(request, # TODO not documented because strange
         temp_speech = model_to_dict(speech, fields=[field.name
                                                     for field
                                                     in speech._meta.fields])
-        if speech.agenda_item:
-            temp_speech['agenda_item_order'] = speech.agenda_item.order
+        if speech.agenda_items.first():
+            temp_speech['agenda_item_order'] = speech.agenda_items.first().order
         else:
             temp_speech['agenda_item_order'] = 0
         speech_data.append(temp_speech)
@@ -3956,8 +3956,8 @@ def getAllAllSpeeches(request):
         speech_dict = model_to_dict(speech,
                                     fields=[field.name for field in speech._meta.fields],
                                     exclude=[])
-        if speech.agenda_item and speech.agenda_item.order:
-            speech_dict['agenda_item_order'] = speech.agenda_item.order
+        if speech.agenda_items.first():
+            speech_dict['agenda_item_order'] = speech.agenda_items.first().order
         elif speech.debate and speech.debate.order:
             speech_dict['agenda_item_order'] = speech.debate.order
         else:
