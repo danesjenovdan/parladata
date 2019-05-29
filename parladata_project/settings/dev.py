@@ -66,6 +66,7 @@ PS = 'pg'
 
 PS_NP = ['pg', 'unaligned MP']
 
+PS_NP_D = ['pg', 'unaligned MP', 'club']
 WBS = ['committee',
        'comission',
        'investigative comission']
