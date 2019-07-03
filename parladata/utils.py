@@ -70,8 +70,8 @@ def getMPVoteObjects(date_=None):
 
     if not date_:
         date_ = datetime.now()
-    parliamentary_group = Organization.objects.filter(id=settings.DZ_ID)
-    members = Membership.objects.filter(organization=parliamentary_group, role='voter').exclude(on_behalf_of=None)
+
+    members = Membership.objects.filter(role='voter').exclude(on_behalf_of=None)
     members = members.filter(Q(start_time__date__lte=date_) |
                              Q(start_time=None),
                              Q(end_time__date__gte=date_) |
@@ -940,7 +940,7 @@ def getOwnersOfAmendment(motion):
                                 d_tokens.append([tokens[i], tokens[i+1]])
                             for d_token in d_tokens:
                                 person = Person.objects.filter(name_parser__icontains=' '.join(d_token))
-                                if person.count() == 1: 
+                                if person.count() == 1:
                                     people_ids.append(person[0].id)
                                     break
                                 if person.count() > 0:
