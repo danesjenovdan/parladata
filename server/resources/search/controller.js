@@ -379,14 +379,7 @@ function refetchData(req, res) {
     });
 }
 
-function landing(req, res) {
-  res.json({
-    ok: true,
-  });
-}
-
 module.exports = {
-  landing,
   searchSpeeches: wrap(search({ type: 'speech', highlight: true, facet: true })),
   searchVotes: wrap(search({ type: 'vote', highlight: true })),
   searchLegislation: wrap(search({ type: 'legislation', highlight: true })),
