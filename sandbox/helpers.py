@@ -435,6 +435,7 @@ def importPersonData(file_name):
                 p.district.add(area)
 
 def find_voters_without_membership():
+    out = []
     for ballot in Ballot.objects.all().distinct("voter"):
         voter_ballots = Ballot.objects.filter(voter=ballot.voter)
         memberships = ballot.voter.memberships.filter(role='voter')
@@ -443,4 +444,27 @@ def find_voters_without_membership():
             end_time = membership.end_time if membership.end_time else datetime.max
             voter_ballots = voter_ballots.exclude(vote__start_time__range=[start_time, end_time])
 
-        print(voter_ballots)
+        out.append(voter_ballots)
+    return out
+
+
+def add_absent_ballot_if_membership_exists():
+    for ballot in Ballot.objects.all().distinct("voter"):
+        print ballot.voter.name
+        mms = Membership.objects.filter(person=ballot.voter, role="voter")
+        voter_ballots = Ballot.objects.filter(voter=ballot.voter)
+        votes_on = voter_ballots.values_list("vote_id")
+        for m in mms.order_by("start_time"):
+            if m.end_time:
+                votes = Vote.objects.filter(Q(start_time__gte=m.start_time),
+                                            Q(start_time__lte=m.end_time))
+            else:
+                votes = Vote.objects.filter(Q(start_time__gte=m.start_time))
+
+            votes_without_ballots = votes.exclude(id__in=votes_on)
+            votes_without_ballots = votes_without_ballots.exclude(counter__isnull=False)
+
+            print(votes_without_ballots.count())
+            # add ballots for this votes
+            for vote in votes_without_ballots:
+                Ballot(vote=vote, voter=ballot.voter, voterparty=m.on_behalf_of, option='absent').save()
