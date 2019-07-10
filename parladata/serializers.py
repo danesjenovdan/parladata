@@ -1,0 +1,126 @@
+from rest_framework import serializers
+from taggit_serializer.serializers import (TagListSerializerField,
+                                           TaggitSerializer)
+from taggit.models import Tag
+
+from parladata.models import *
+
+
+
+class PersonSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Person
+        fields = '__all__'
+
+class SessionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Session
+        fields = '__all__'
+
+class OrganizationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Organization
+        fields = [
+            "id",
+            "created_at",
+            "updated_at",
+            "_name",
+            "name_parser",
+            "_acronym",
+            "gov_id",
+            "classification",
+            "dissolution_date",
+            "founding_date",
+            "description",
+            "is_coalition",
+            "voters",
+            "parent",
+            "has_voters"
+        ]
+
+class SpeechSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Speech
+        fields = '__all__'
+
+class MotionSerializer(serializers.ModelSerializer):
+    vote = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
+    class Meta:
+        model = Motion
+        fields = '__all__'
+
+class AgendaItemSerializer(TaggitSerializer, serializers.ModelSerializer):
+    tags = TagListSerializerField(required=False)
+    class Meta:
+        model = AgendaItem
+        fields = '__all__'
+
+class DebateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Debate
+        fields = '__all__'
+
+class VoteSerializer(TaggitSerializer, serializers.ModelSerializer):
+    tags = TagListSerializerField(required=False)
+    results = serializers.SerializerMethodField()
+    class Meta:
+        model = Vote
+        fields = '__all__'
+    def get_results(self, obj):
+        return obj.getResult()
+
+
+class BallotSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Ballot
+        fields = '__all__'
+
+
+class LinkSerializer(TaggitSerializer, serializers.ModelSerializer):
+    tags = TagListSerializerField(required=False)
+    class Meta:
+        model = Link
+        fields = '__all__'
+
+class AreaSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Area
+        fields = '__all__'
+
+class MembershipSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Membership
+        fields = '__all__'
+
+class PostSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Post
+        fields = '__all__'
+
+class LawSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Law
+        fields = '__all__'
+
+class QuestionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Question
+        fields = '__all__'
+
+class EpaSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Motion
+        fields = ('epa',)
+    def to_representation(self, data):
+        res = super(EpaSerializer, self).to_representation(data)
+        return res['epa']
+
+class TagsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Tag
+        fields = '__all__'
+
+class ContactDetailSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ContactDetail
+        fields = '__all__'
