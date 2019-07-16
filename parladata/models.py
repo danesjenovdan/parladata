@@ -737,7 +737,7 @@ class Speech(Versionable, Timestampable, Taggable, models.Model):
                                     help_text='Agenda item', related_name='speeches')
 
     agenda_items = models.ManyToManyField('AgendaItem', blank=True,
-                                          help_text='Agenda items', related_name='speeches-many')
+                                          help_text='Agenda items', related_name='speeches_many')
 
     debate = models.ForeignKey('Debate', blank=True, null=True,
                                 help_text='Debates', related_name='speeches')

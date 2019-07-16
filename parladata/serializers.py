@@ -93,9 +93,13 @@ class MembershipSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class PostSerializer(serializers.ModelSerializer):
+    person = serializers.SerializerMethodField()
     class Meta:
         model = Post
-        fields = '__all__'
+        exclude = ()
+
+    def get_person(self, obj):
+        return obj.membership.person_id
 
 class LawSerializer(serializers.ModelSerializer):
     class Meta:
