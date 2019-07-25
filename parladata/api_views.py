@@ -9,7 +9,7 @@ from django.conf import settings
 from rest_framework.decorators import detail_route, action
 from datetime import datetime
 
-from django_filters.rest_framework import DjangoFilterBackend
+from django_filters.rest_framework import DjangoFilterBackend, Filter, FilterSet
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.authentication import SessionAuthentication, BasicAuthentication
@@ -17,8 +17,22 @@ from oauth2_provider.contrib.rest_framework import OAuth2Authentication
 
 from raven.contrib.django.raven_compat.models import client
 
-# Serializers define the API representation.
+class MultiValueKeyFilter(Filter):
+    def filter(self, qs, value):
+        if not value:
+            return qs
 
+        self.lookup_expr = 'in'
+        values = value.split(',')
+        return super(MultiValueKeyFilter, self).filter(qs, values)
+
+
+class OrganizationsFilterSet(FilterSet):
+    ids = MultiValueKeyFilter(field_name='id')
+
+    class Meta:
+        model = Organization
+        fields = ('ids',)
 
 
 # ViewSets define the view behavior.
@@ -102,7 +116,9 @@ class LastSessionWithVoteView(SessionView):
 class OrganizationView(viewsets.ModelViewSet):
     authentication_classes = (SessionAuthentication, BasicAuthentication, OAuth2Authentication)
     serializer_class = OrganizationSerializer
-    filter_backends = (DjangoFilterBackend, filters.SearchFilter,)
+    filter_backends = (DjangoFilterBackend, filters.SearchFilter)
+    filter_class = OrganizationsFilterSet
+    #filter_fields = ('id',)
     search_fields = ('name_parser', '_name')
 
     def get_queryset(self):

@@ -35,8 +35,11 @@ class OrganizationSerializer(serializers.ModelSerializer):
             "is_coalition",
             "voters",
             "parent",
-            "has_voters"
+            "has_voters",
+            "name"
         ]
+    def get_name(self, obj):
+        return obj.name
 
 class SpeechSerializer(serializers.ModelSerializer):
     class Meta:
