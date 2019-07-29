@@ -46,6 +46,7 @@ class OrganizationSerializer(serializers.ModelSerializer):
         return obj.acronym
 
 class SpeechSerializer(serializers.ModelSerializer):
+    agenda_item_order = serializers.SerializerMethodField()
     class Meta:
         model = Speech
         fields = [
