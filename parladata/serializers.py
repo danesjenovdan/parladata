@@ -36,15 +36,45 @@ class OrganizationSerializer(serializers.ModelSerializer):
             "voters",
             "parent",
             "has_voters",
-            "name"
+            "name",
+            "acronym"
         ]
     def get_name(self, obj):
         return obj.name
 
+    def get_acronym(self, obj):
+        return obj.acronym
+
 class SpeechSerializer(serializers.ModelSerializer):
     class Meta:
         model = Speech
-        fields = '__all__'
+        fields = [
+            "id",
+            "created_at",
+            "updated_at",
+            "valid_from",
+            "valid_to",
+            "content",
+            "order",
+            "start_time",
+            "end_time",
+            "version_con",
+            "speaker",
+            "party",
+            "session",
+            "agenda_item",
+            "debate",
+            "agenda_items",
+            "agenda_item_order"
+        ]
+
+    def get_agenda_item_order(self, obj):
+        if obj.agenda_items.first():
+            return obj.agenda_items.first().order
+        elif obj.debate and obj.debate.order:
+            return obj.debate.order
+        else:
+            return 0
 
 class MotionSerializer(serializers.ModelSerializer):
     vote = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
