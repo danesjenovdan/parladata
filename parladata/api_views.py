@@ -254,6 +254,8 @@ class PostView(viewsets.ModelViewSet):
 class AreaView(viewsets.ModelViewSet):
     queryset = Area.objects.all()
     serializer_class = AreaSerializer
+    filter_backends = (DjangoFilterBackend,)
+    filter_fields = ('calssification',)
 
 
 class LawView(viewsets.ModelViewSet):
