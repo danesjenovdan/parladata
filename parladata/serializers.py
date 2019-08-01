@@ -169,17 +169,19 @@ class BallotTableSerializer(serializers.ModelSerializer):
     text = serializers.SerializerMethodField()
     date = serializers.SerializerMethodField()
     session_id = serializers.SerializerMethodField()
-    fields = (
-        'id',
-        'voter',
-        'voterparty',
-        'orgvoter',
-        'result',
-        'text',
-        'date',
-        'vote',
-        'session_id'
-    )
+    class Meta:
+        model = Ballot
+        fields = (
+            'id',
+            'voter',
+            'voterparty',
+            'orgvoter',
+            'result',
+            'text',
+            'date',
+            'vote',
+            'session_id'
+        )
 
     def get_result(self, obj):
         return False if obj.vote.motion.result == '0' else True
