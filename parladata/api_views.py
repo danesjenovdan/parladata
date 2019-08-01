@@ -294,6 +294,7 @@ class QuestionView(viewsets.ModelViewSet):
     filter_fields = ('authors',)
     ordering_fields = ('date',)
 
+
 class ContactDetailView(viewsets.ModelViewSet):
     queryset = ContactDetail.objects.all()
     serializer_class = ContactDetailSerializer
@@ -301,10 +302,18 @@ class ContactDetailView(viewsets.ModelViewSet):
     filter_backends = (DjangoFilterBackend, filters.OrderingFilter)
     filter_fields = ('person', 'contact_type', 'organization')
 
+
 class BallotTableView(viewsets.ModelViewSet):
-    queryset = Ballot.objects.all().prefetch_related('vote', 'vote__motion', 'vote__session').order_by('id')
+    queryset = Ballot.objects.all().prefetch_related('vote', 'vote__motion', 'vote_tags', 'vote__session').order_by('id')
     serializer_class = BallotTableSerializer
     authentication_classes = (SessionAuthentication, BasicAuthentication, OAuth2Authentication)
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     filter_backends = (DjangoFilterBackend, filters.OrderingFilter)
     filter_fields = ('vote__session',)
+
+
+class BallotTable(views.APIView):
+    def get(self, request, format=None):
+        queryset = Ballot.objects.all().prefetch_related('vote', 'vote__motion', 'vote__tags', 'vote__session').order_by('id')
+        serializer = BallotTableSerializer(queryset, many=True)
+        return Response(serializer.data)
