@@ -2,7 +2,7 @@ from parladata.models import *
 from parladata.serializers import *
 from taggit.models import Tag
 from rest_framework import (viewsets, pagination, permissions,
-                            mixins, filters, generics)
+                            mixins, filters, generics, views)
 
 from django.db.models import Q
 from django.conf import settings
