@@ -169,6 +169,7 @@ class BallotTableSerializer(serializers.ModelSerializer):
     text = serializers.SerializerMethodField()
     date = serializers.SerializerMethodField()
     session_id = serializers.SerializerMethodField()
+    tags = serializers.SerializerMethodField()
     class Meta:
         model = Ballot
         fields = (
@@ -180,7 +181,8 @@ class BallotTableSerializer(serializers.ModelSerializer):
             'text',
             'date',
             'vote',
-            'session_id'
+            'session_id',
+            'tags',
         )
 
     def get_result(self, obj):
@@ -194,3 +196,6 @@ class BallotTableSerializer(serializers.ModelSerializer):
 
     def get_session_id(self, obj):
         return obj.vote.session.id
+
+    def get_tags(self, obj):
+        return TagListSerializerField(obj.vote.tags.all(), many=True, read_only=True).data
