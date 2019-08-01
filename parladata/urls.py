@@ -30,6 +30,7 @@ router.register(r'debates', DebateView)
 router.register(r'contact_detail', ContactDetailView)
 router.register(r'untagged_votes', UntaggedVoteView)
 router.register(r'posts', PostView)
+router.register(r'ballot_table', BallotTableView)
 
 urlpatterns = [
     # autocomplete urls

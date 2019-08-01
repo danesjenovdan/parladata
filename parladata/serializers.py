@@ -162,3 +162,33 @@ class ContactDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = ContactDetail
         fields = '__all__'
+
+
+class BallotTableSerializer(serializers.ModelSerializer):
+    result = serializers.SerializerMethodField()
+    text = serializers.SerializerMethodField()
+    date = serializers.SerializerMethodField()
+    session_id = serializers.SerializerMethodField()
+    fields = (
+        'id',
+        'voter',
+        'voterparty',
+        'orgvoter',
+        'result',
+        'text',
+        'date',
+        'vote',
+        'session_id'
+    )
+
+    def get_result(self, obj):
+        return False if obj.vote.motion.result == '0' else True
+
+    def get_text(self, obj):
+        return obj.vote.motion.text
+
+    def get_date(self, obj):
+        return obj.vote.start_time
+
+    def get_session_id(self, obj):
+        return obj.vote.session.id

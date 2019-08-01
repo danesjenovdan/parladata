@@ -298,4 +298,13 @@ class ContactDetailView(viewsets.ModelViewSet):
     queryset = ContactDetail.objects.all()
     serializer_class = ContactDetailSerializer
     authentication_classes = (SessionAuthentication, BasicAuthentication, OAuth2Authentication)
+    filter_backends = (DjangoFilterBackend, filters.OrderingFilter)
     filter_fields = ('person', 'contact_type', 'organization')
+
+class BallotTableView(viewsets.ModelViewSet):
+    queryset = Ballot.objects.all().prefetch_related('vote', 'vote__motion', 'vote__session').order_by('id')
+    serializer_class = BallotTableSerializer
+    authentication_classes = (SessionAuthentication, BasicAuthentication, OAuth2Authentication)
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    filter_backends = (DjangoFilterBackend, filters.OrderingFilter)
+    filter_fields = ('vote__session',)
