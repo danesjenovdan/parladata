@@ -33,6 +33,9 @@ router.register(r'posts', PostView)
 router.register(r'ballot_table', BallotTableView)
 
 urlpatterns = [
+    # DRF APIViews
+    url(r'^ballot_table_test/', BallotTable.as_view()),
+
     # autocomplete urls
     url(r'^person-autocomplete/$', admin.PersonAutocomplete.as_view(), name='person-autocomplete'),
     url(r'^membership-autocomplete/$', admin.MembershipAutocomplete.as_view(), name='membership-autocomplete'),
