@@ -198,4 +198,4 @@ class BallotTableSerializer(serializers.ModelSerializer):
         return obj.vote.session.id
 
     def get_tags(self, obj):
-        return TagListSerializerField(obj.vote.tags.all(), many=True, read_only=True).data
+        return obj.vote.tags.all()
