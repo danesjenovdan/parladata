@@ -304,7 +304,7 @@ class ContactDetailView(viewsets.ModelViewSet):
 
 
 class BallotTableView(viewsets.ModelViewSet):
-    queryset = Ballot.objects.all().prefetch_related('vote', 'vote__motion', 'vote_tags', 'vote__session').order_by('id')
+    queryset = Ballot.objects.all().prefetch_related('vote', 'vote__motion', 'vote__tags', 'vote__session').order_by('id')
     serializer_class = BallotTableSerializer
     authentication_classes = (SessionAuthentication, BasicAuthentication, OAuth2Authentication)
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
@@ -317,3 +317,17 @@ class BallotTable(views.APIView):
         queryset = Ballot.objects.all().prefetch_related('vote', 'vote__motion', 'vote__tags', 'vote__session').order_by('id')
         serializer = BallotTableSerializer(queryset, many=True)
         return Response(serializer.data)
+
+
+class MPSpeeches(views.APIView):
+    def get(self, request, person_id, format=None):
+        date_ = request.GET.get('date', None)
+        if date_:
+            fdate = datetime.strptime(date_, settings.API_DATE_FORMAT).date()
+        else:
+            fdate = datetime.now().date()
+        speeches_queryset = Speech.getValidSpeeches(fdate)
+        content = speeches_queryset.filter(speaker__id=person_id,
+                                        start_time__lte=fdate)
+        content = list(content.values_list('content', flat=True))
+        return Response(content)
