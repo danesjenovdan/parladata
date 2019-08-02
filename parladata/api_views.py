@@ -308,7 +308,7 @@ class BallotTableView(viewsets.ModelViewSet):
     serializer_class = BallotTableSerializer
     authentication_classes = (SessionAuthentication, BasicAuthentication, OAuth2Authentication)
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
-    filter_backends = (DjangoFilterBackend, filters.OrderingFilter)
+    filter_backends = (DjangoFilterBackend,)
     filter_fields = ('vote__session',)
 
 
