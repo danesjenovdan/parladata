@@ -309,14 +309,7 @@ class BallotTableView(viewsets.ModelViewSet):
     authentication_classes = (SessionAuthentication, BasicAuthentication, OAuth2Authentication)
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     filter_backends = (DjangoFilterBackend,)
-    filter_fields = ('vote__session',)
-
-
-class BallotTable(views.APIView):
-    def get(self, request, format=None):
-        queryset = Ballot.objects.all().prefetch_related('vote', 'vote__motion', 'vote__tags', 'vote__session').order_by('id')
-        serializer = BallotTableSerializer(queryset, many=True)
-        return Response(serializer.data)
+    filter_fields = ('vote__session', 'vote__session__organization')
 
 
 class MPSpeeches(views.APIView):
