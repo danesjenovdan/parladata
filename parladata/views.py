@@ -1702,7 +1702,7 @@ def getAllBallots(request, date_=None):
     ballots = Ballot.objects.filter(vote__start_time__lte=fdate).order_by('id')
     ballots, pager = parsePager(request, ballots, default_per_page=1000)
     data = [model_to_dict(ballot,
-                          fields=['id', 'vote', 'voter', 'option'], exclude=[])
+                          fields=['id', 'vote', 'voter', 'option', 'voterparty'], exclude=[])
             for ballot in ballots]
     out = pager
     out['data'] = data
@@ -3714,7 +3714,8 @@ def getAllChangesAfter(request, # TODO not documented because strange
                                      fields=['id',
                                              'vote',
                                              'voter',
-                                             'option']) for ballot in ballots]
+                                             'option',
+                                             'voterparty']) for ballot in ballots]
     newVotesSessions = list(set(list(ballots.values_list("vote__session__id",
                                                          flat=True))))
     newVotes = list(set(list(ballots.values_list("vote_id",

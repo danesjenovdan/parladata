@@ -1,11 +1,10 @@
 from django.conf.urls import url, include
 from django.conf import settings
 from parladata.views import *
-from parladata.api import *
+from parladata.api_views import *
 from .utils import getMembershipDuplications, membersFlowInOrg, postMembersFixer, membersFlowInPGs, membersFlowInDZ, checkSessions
 from rest_framework import routers
 from parladata import admin
-from parladata.api import *
 from rest_framework import routers
 
 from rest_framework.documentation import include_docs_urls
@@ -30,8 +29,13 @@ router.register(r'questions', QuestionView)
 router.register(r'debates', DebateView)
 router.register(r'contact_detail', ContactDetailView)
 router.register(r'untagged_votes', UntaggedVoteView)
+router.register(r'posts', PostView)
+router.register(r'ballot_table', BallotTableView)
 
 urlpatterns = [
+    # DRF APIViews
+    url(r'^speeches-of-mp/(?P<person_id>\d+)/', MPSpeeches.as_view()),
+
     # autocomplete urls
     url(r'^person-autocomplete/$', admin.PersonAutocomplete.as_view(), name='person-autocomplete'),
     url(r'^membership-autocomplete/$', admin.MembershipAutocomplete.as_view(), name='membership-autocomplete'),

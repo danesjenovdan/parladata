@@ -1,15 +1,15 @@
 from parladata.models import *
+from parladata.serializers import *
 from taggit.models import Tag
-from rest_framework import (serializers, viewsets, pagination, permissions,
-                            mixins, filters, generics)
-from taggit_serializer.serializers import (TagListSerializerField,
-                                           TaggitSerializer)
+from rest_framework import (viewsets, pagination, permissions,
+                            mixins, filters, generics, views)
+
 from django.db.models import Q
 from django.conf import settings
 from rest_framework.decorators import detail_route, action
 from datetime import datetime
 
-from django_filters.rest_framework import DjangoFilterBackend
+from django_filters.rest_framework import DjangoFilterBackend, Filter, FilterSet
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.authentication import SessionAuthentication, BasicAuthentication
@@ -17,119 +17,22 @@ from oauth2_provider.contrib.rest_framework import OAuth2Authentication
 
 from raven.contrib.django.raven_compat.models import client
 
-# Serializers define the API representation.
-class PersonSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Person
-        fields = '__all__'
+class MultiValueKeyFilter(Filter):
+    def filter(self, qs, value):
+        if not value:
+            return qs
 
-class SessionSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Session
-        fields = '__all__'
+        self.lookup_expr = 'in'
+        values = value.split(',')
+        return super(MultiValueKeyFilter, self).filter(qs, values)
 
-class OrganizationSerializer(serializers.ModelSerializer):
+
+class OrganizationsFilterSet(FilterSet):
+    ids = MultiValueKeyFilter(field_name='id')
+
     class Meta:
         model = Organization
-        fields = [
-            "id",
-            "created_at",
-            "updated_at",
-            "_name",
-            "name_parser",
-            "_acronym",
-            "gov_id",
-            "classification",
-            "dissolution_date",
-            "founding_date",
-            "description",
-            "is_coalition",
-            "voters",
-            "parent",
-            "has_voters"
-        ]
-
-class SpeechSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Speech
-        fields = '__all__'
-
-class MotionSerializer(serializers.ModelSerializer):
-    vote = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
-    class Meta:
-        model = Motion
-        fields = '__all__'
-
-class AgendaItemSerializer(TaggitSerializer, serializers.ModelSerializer):
-    tags = TagListSerializerField(required=False)
-    class Meta:
-        model = AgendaItem
-        fields = '__all__'
-
-class DebateSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Debate
-        fields = '__all__'
-
-class VoteSerializer(TaggitSerializer, serializers.ModelSerializer):
-    tags = TagListSerializerField(required=False)
-    results = serializers.SerializerMethodField()
-    class Meta:
-        model = Vote
-        fields = '__all__'
-    def get_results(self, obj):
-        return obj.getResult()
-
-
-class BallotSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Ballot
-        fields = '__all__'
-
-
-class LinkSerializer(TaggitSerializer, serializers.ModelSerializer):
-    tags = TagListSerializerField(required=False)
-    class Meta:
-        model = Link
-        fields = '__all__'
-
-class AreaSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Area
-        fields = '__all__'
-
-class MembershipSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Membership
-        fields = '__all__'
-
-class LawSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Law
-        fields = '__all__'
-
-class QuestionSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Question
-        fields = '__all__'
-
-class EpaSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Motion
-        fields = ('epa',)
-    def to_representation(self, data):
-        res = super(EpaSerializer, self).to_representation(data)
-        return res['epa']
-
-class TagsSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Tag
-        fields = '__all__'
-
-class ContactDetailSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = ContactDetail
-        fields = '__all__'
+        fields = ('ids',)
 
 
 # ViewSets define the view behavior.
@@ -213,7 +116,9 @@ class LastSessionWithVoteView(SessionView):
 class OrganizationView(viewsets.ModelViewSet):
     authentication_classes = (SessionAuthentication, BasicAuthentication, OAuth2Authentication)
     serializer_class = OrganizationSerializer
-    filter_backends = (DjangoFilterBackend, filters.SearchFilter,)
+    filter_backends = (DjangoFilterBackend, filters.SearchFilter)
+    filter_class = OrganizationsFilterSet
+    #filter_fields = ('id',)
     search_fields = ('name_parser', '_name')
 
     def get_queryset(self):
@@ -243,6 +148,27 @@ class SpeechView(viewsets.ModelViewSet):
     authentication_classes = (SessionAuthentication, BasicAuthentication, OAuth2Authentication)
     filter_backends = (DjangoFilterBackend, filters.SearchFilter,)
     filter_fields = ('party', 'speaker', 'session')
+
+    def list(self, request, *args, **kwargs):
+        date_ = request.GET.get('date', None)
+        valid = request.GET.get('valid', False)
+
+        if date_:
+            date_ = datetime.strptime(settings.API_DATE_FORMAT, date_)
+        else:
+            date_ = datetime.now()
+        if valid:
+            queryset = self.filter_queryset(Speech.getValidSpeeches(date_))
+        else:
+            queryset = self.filter_queryset(self.get_queryset())
+
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data, many=isinstance(request.data,list))
@@ -292,6 +218,8 @@ class BallotView(viewsets.ModelViewSet):
     queryset = Ballot.objects.all()
     serializer_class = BallotSerializer
     authentication_classes = (SessionAuthentication, BasicAuthentication, OAuth2Authentication)
+    filter_backends = (DjangoFilterBackend, filters.SearchFilter,)
+    filter_fields = ('vote', 'voter', 'vote__session')
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data, many=isinstance(request.data,list))
@@ -305,7 +233,7 @@ class LinkView(viewsets.ModelViewSet):
     queryset = Link.objects.all()
     serializer_class = LinkSerializer
     filter_backends = (DjangoFilterBackend,)
-    filter_fields = ('person', 'tags__name', 'organization')
+    filter_fields = ('person', 'tags__name', 'organization', 'question')
     authentication_classes = (SessionAuthentication, BasicAuthentication, OAuth2Authentication)
 
 
@@ -313,12 +241,21 @@ class MembershipView(viewsets.ModelViewSet):
     queryset = Membership.objects.all()
     serializer_class = MembershipSerializer
     filter_backends = (DjangoFilterBackend,)
-    filter_fields = ('person', 'organization', 'role')
+    filter_fields = ('person', 'organization', 'role', 'on_behalf_of')
+
+
+class PostView(viewsets.ModelViewSet):
+    queryset = Post.objects.all()
+    serializer_class = PostSerializer
+    filter_backends = (DjangoFilterBackend,)
+    filter_fields = ('membership__person', 'organization', 'role')
 
 
 class AreaView(viewsets.ModelViewSet):
     queryset = Area.objects.all()
     serializer_class = AreaSerializer
+    filter_backends = (DjangoFilterBackend,)
+    filter_fields = ('calssification',)
 
 
 class LawView(viewsets.ModelViewSet):
@@ -357,8 +294,33 @@ class QuestionView(viewsets.ModelViewSet):
     filter_fields = ('authors',)
     ordering_fields = ('date',)
 
+
 class ContactDetailView(viewsets.ModelViewSet):
     queryset = ContactDetail.objects.all()
     serializer_class = ContactDetailSerializer
     authentication_classes = (SessionAuthentication, BasicAuthentication, OAuth2Authentication)
+    filter_backends = (DjangoFilterBackend, filters.OrderingFilter)
     filter_fields = ('person', 'contact_type', 'organization')
+
+
+class BallotTableView(viewsets.ModelViewSet):
+    queryset = Ballot.objects.all().prefetch_related('vote', 'vote__motion', 'vote__tags', 'vote__session').order_by('id')
+    serializer_class = BallotTableSerializer
+    authentication_classes = (SessionAuthentication, BasicAuthentication, OAuth2Authentication)
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    filter_backends = (DjangoFilterBackend,)
+    filter_fields = ('vote__session', 'vote__session__organization')
+
+
+class MPSpeeches(views.APIView):
+    def get(self, request, person_id, format=None):
+        date_ = request.GET.get('date', None)
+        if date_:
+            fdate = datetime.strptime(date_, settings.API_DATE_FORMAT).date()
+        else:
+            fdate = datetime.now().date()
+        speeches_queryset = Speech.getValidSpeeches(fdate)
+        content = speeches_queryset.filter(speaker__id=person_id,
+                                        start_time__lte=fdate)
+        content = list(content.values_list('content', flat=True))
+        return Response(content)
