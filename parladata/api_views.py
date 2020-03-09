@@ -194,7 +194,7 @@ class MotionFilter(MotionView):
 
 class VoteView(viewsets.ModelViewSet):
     authentication_classes = (SessionAuthentication, BasicAuthentication, OAuth2Authentication)
-    queryset = Vote.objects.all()
+    queryset = Vote.objects.all().order_by("id")
     serializer_class = VoteSerializer
     filter_backends = (DjangoFilterBackend, filters.SearchFilter,)
     filter_fields = ('session', 'tags__name')

@@ -92,13 +92,18 @@ class DebateSerializer(serializers.ModelSerializer):
 class VoteSerializer(TaggitSerializer, serializers.ModelSerializer):
     tags = TagListSerializerField(required=False)
     results = serializers.SerializerMethodField()
+    has_ballots = serializers.SerializerMethodField()
     class Meta:
         model = Vote
         fields = '__all__'
+
     def get_results(self, obj):
         if obj.counter:
             return {}
         return obj.getResult()
+
+    def get_has_ballots(self, obj):
+        return bool(obj.ballot_set.count())
 
 class BallotSerializer(serializers.ModelSerializer):
     class Meta:
