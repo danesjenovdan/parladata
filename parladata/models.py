@@ -384,13 +384,13 @@ class Membership(Timestampable, models.Model):
 class OrganizationMembership(Timestampable, models.Model):
     organization = models.ForeignKey('Organization',
                                      blank=True, null=True,
-                                     related_name='memberships',
+                                     related_name='organization_memberships',
                                      on_delete=models.CASCADE,
                                      help_text=_('The organization that is a party to the relationship'))
 
     parent = models.ForeignKey('Organization',
                                      blank=True, null=True,
-                                     related_name='memberships_on_behalf_of',
+                                     related_name='organization_parent_memberships',
                                      on_delete=models.CASCADE,
                                      help_text=_('The organization which is parent in the relationship'))
 
