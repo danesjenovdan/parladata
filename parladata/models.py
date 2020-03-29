@@ -381,7 +381,26 @@ class Membership(Timestampable, models.Model):
         return u'Person: {0}, Org: {1}, StartTime: {2}'.format(self.person, self.organization, self.start_time.date() if self.start_time else "")
 
 
-@python_2_unicode_compatible
+class OrganizationMembership(Timestampable, models.Model):
+    organization = models.ForeignKey('Organization',
+                                     blank=True, null=True,
+                                     related_name='memberships',
+                                     on_delete=models.CASCADE,
+                                     help_text=_('The organization that is a party to the relationship'))
+
+    parent = models.ForeignKey('Organization',
+                                     blank=True, null=True,
+                                     related_name='memberships_on_behalf_of',
+                                     on_delete=models.CASCADE,
+                                     help_text=_('The organization which is parent in the relationship'))
+
+    start_time = PopoloDateTimeField(blank=True, null=True,
+                                     help_text='Start time')
+
+    end_time = PopoloDateTimeField(blank=True, null=True,
+                                   help_text='End time')
+
+
 class ContactDetail(Timestampable, models.Model):
     """A means of contacting an entity."""
 

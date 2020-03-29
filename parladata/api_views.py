@@ -6,7 +6,7 @@ from rest_framework import (viewsets, pagination, permissions,
 
 from django.db.models import Q
 from django.conf import settings
-from rest_framework.decorators import detail_route, action
+from rest_framework.decorators import action
 from datetime import datetime
 
 from django_filters.rest_framework import DjangoFilterBackend, Filter, FilterSet
@@ -324,3 +324,10 @@ class MPSpeeches(views.APIView):
                                         start_time__lte=fdate)
         content = list(content.values_list('content', flat=True))
         return Response(content)
+
+
+class OrganizationMembershipsViewSet():
+    queryset = OrganizationMembership.objects.all().order_by('id')
+    serializer_class = OrganizationMembershipSerializer
+    authentication_classes = (SessionAuthentication, BasicAuthentication, OAuth2Authentication)
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]

@@ -208,3 +208,15 @@ class BallotTableSerializer(serializers.ModelSerializer):
 
     def get_tags(self, obj):
         return [tag.name for tag in obj.vote.tags.all()]
+
+
+class OrganizationMembershipSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = OrganizationMembership
+        fields = (
+            'id',
+            'organization',
+            'parent',
+            'start_time',
+            'end_time'
+        )

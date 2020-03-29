@@ -259,6 +259,7 @@ class MotionAdmin(admin.ModelAdmin):
     list_display = ('id',
                     'text',
                     'date',
+                    'epa',
                     'result',
                     'requirement',
                     'get_for',
@@ -268,7 +269,7 @@ class MotionAdmin(admin.ModelAdmin):
                     'link_to_vote')
 
     list_editable = ('result',)
-    list_filter = ('result', 'date')
+    list_filter = ('result', 'date', 'session')
     search_fields = ['text']
     inlines = [
         LinkMotionInline,
@@ -464,6 +465,10 @@ class MPAdmin(admin.ModelAdmin):
         if request.user.is_superuser:
             return qs
 
+class LawAdmin(admin.ModelAdmin):
+    list_display = ('text', 'session', 'status', 'epa', 'classification', 'procedure_ended')
+    list_filter = ('session',)
+    search_fields = ['text']
 
 admin.site.register(Person, PersonAdmin)
 admin.site.register(PersonEducation, PersonEducationAdmin)
@@ -481,5 +486,6 @@ admin.site.register(Ballot)
 admin.site.register(Question, QuestionAdmin)
 admin.site.register(OrganizationName)
 admin.site.register(AgendaItem)
-admin.site.register(Law)
+admin.site.register(Law, LawAdmin)
 admin.site.register(ContactDetail, ContactAdmin)
+admin.site.register(OrganizationMembership)
