@@ -326,7 +326,7 @@ class MPSpeeches(views.APIView):
         return Response(content)
 
 
-class OrganizationMembershipsViewSet():
+class OrganizationMembershipsViewSet(viewsets.ModelViewSet):
     queryset = OrganizationMembership.objects.all().order_by('id')
     serializer_class = OrganizationMembershipSerializer
     authentication_classes = (SessionAuthentication, BasicAuthentication, OAuth2Authentication)
