@@ -4173,7 +4173,7 @@ def getAllORGsExt(request):
             'disbanded': membership.on_behalf_of.dissolution_date
         } for membership in mm if membership.on_behalf_of.classification != 'unaligned MP'}
 
-    parliament_sides = Organization.objects.filter(id__in=[settings.COALITION_ID, settings.OPPOSITION_ID])
+    parliament_sides = Organization.objects.filter(classification__in=['coalition', 'opposition'])
     for pg in parliament_sides:
         data[pg.id] = {'name': pg.name,
                        'id': pg.id,
