@@ -24,12 +24,12 @@ parser_vars = {'6': {'member_class': ' width: 216px;',
 def add_membership(name, parties, sklic=6):
     person = find_person(name)
     for i in parties:
-        print("input: ", name, i)
+        print "input: ", name, i
         #organization = Organization.objects.filter(name_parser__icontains=i)
         organization = find_org(i, name, sklic)
         if not organization:
             continue
-        print(person, organization)
+        print person, organization
         if organization.classification == 'nepovezani poslanec' or organization._acronym == 'NP':
             Membership(person = person[0],
                        organization=organization,
@@ -99,15 +99,15 @@ def find_org(name_parser, person_name, sklic):
         name_parser = 'NP'
     elif name_parser == 'NeP':
         name_parser = 'NeP - ' + ''.join(reversed([name[0] for name in person_name.split(' ')]))
-        print('NEP ', name_parser)
+        print 'NEP ', name_parser
     elif name_parser in parser_vars[str(sklic)]['imns']:
-        print(name_parser)
+        print name_parser
         name_parser = 'NS'
     organizations = Organization.objects.filter(name_parser__icontains=name_parser)
     for organization in organizations:
         if name_parser in organization.name_parser.split(','):
             return organization
-    print('______________________________', person_name)
+    print '______________________________', person_name
     return None
 
 
@@ -118,7 +118,7 @@ def find_person(name_parser):
         name_parser = name_parser[5:]
     person = Person.objects.filter(name_parser__icontains=name_parser.strip())
     if len(person)>1:
-        print("TUKI NEKI NI OK")
+        print "TUKI NEKI NI OK"
     return person
 
 parse_memberships("https://www.dz-rs.si/wps/portal/Home/ODrzavnemZboru/Dogodki/20obletnicaDrzavnegazbora/bee07e17-39db-4caa-935b-92e8f781828b/!ut/p/z1/tVRLU8IwEP4reOBYs0lf6bGA1gKlI22F5uL0EbBqE8QKyq83Mo7jYxAch1wymf0eu8luEENTxES2quZZU0mR3atzyqzrzmhs-gMPQ9ihBPxxEJk9Y4R9z0KTLWDgh5HTwS54Y0MB8MCJh8EQgwKwL-Ez3FPhwL_wRy4BwN_5oYPPwU90z9CDGCAgh_Fhx3Jhy__InzqOBW7Uv0yuuqBDz3zn_wJgf6r_a_4ePdB_V_0J2ce_QgyxQjSL5gal5aZVyuKp5qJ5bINslctNthK8bm1yuXxqQynnsryr2kDgtCXze96IqsjakHMONse2pjtlrhlFlmmObuaaQzid2RRTQvM3n0VRlSg9CD3Z1zjs92dLFd_eyacGmqwqvkaJkMta9Wn0x_QufjhQ6lrKIR4a59ElUTf0T4dv8jCw3wqIeyQMOzp4xnHlrePKm8eVt_8p3983tepbI8ugG8yVbNbcaJWYSTQ9SFtRq9uHB-aqsZOi4c8Nmh517hZ1sl011V-0tL9ar-NZ3c3pp21CH92TV0q17Hw!/dz/d5/L2dBISEvZ0FBIS9nQSEh/", 5)

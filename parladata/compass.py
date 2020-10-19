@@ -21,7 +21,7 @@ def getVotingArray():
         # generate voting record
         record = []
 
-        print 'Processing votes for ' + person.name
+        print()'Processing votes for ' + person.name)
         
         # for each vote that happened
         for vote in votes:
@@ -41,7 +41,7 @@ def getVotingArray():
 #                if ballot.option == other.ballot_set.all().order_by('vote')[j].option:
 #                    results[i][k] = results[i][k] + 1
     
-    print 'Finished processing votes.'
+    print('Finished processing votes.')
     
     return results
 
@@ -52,7 +52,7 @@ def getScores(results):
     # for all people
     for i, person in enumerate(results):
         
-        print u'Processing person ' + person
+        print('Processing person ' + person)
         
         # make new person score
         scores[person] = []
@@ -62,7 +62,7 @@ def getScores(results):
         
         for other in results:
             
-            print u'Other ' + other
+            print('Other ' + other)
             
             score = 0
             # for every vote

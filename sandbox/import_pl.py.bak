@@ -29,7 +29,7 @@ def import_mps():
     sejm = Organization.objects.get(_name='Sejm')
     for page in read_data_from_api('https://api-v3.mojepanstwo.pl/dane/sejm_mps'):
         for mp in page:
-            print(mp)
+            print mp
             if Person.objects.filter(gov_id=mp['id']):
                 continue
             else:
@@ -123,7 +123,7 @@ def read_data_from_api(url, per_page = None):
     while not end:
         response = tryHard(url).json()
         yield response['Dataobject']
-        if 'next' not in list(response['Links'].keys()):
+        if 'next' not in response['Links'].keys():
             break
         url = response['Links']['next']
 
@@ -139,7 +139,7 @@ def get_or_add_speaker(data):
     try:
         person = members[data['data']['sejm_speakers.id']]
     except:
-        print(('adding visitor ', data['data']['sejm_speakers.name']))
+        print('adding visitor ', data['data']['sejm_speakers.name'])
         person = Person(
             name=data['data']['sejm_speakers.name'],
             name_parser=data['data']['sejm_speakers.id']
@@ -154,7 +154,7 @@ def get_od_add_speaker_by_name(name_str):
     if person:
         return person[0]
     else:
-        print("ADDING PERSON " + name_str)
+        print "ADDING PERSON " + name_str
         person = Person(
             name=name_str,
             )
@@ -168,7 +168,7 @@ def import_sessions():
     sejm = Organization.objects.get(_name='Sejm')
     for page in read_data_from_api('https://api-v3.mojepanstwo.pl/dane/sejm_sittings/'):
         for item in page:
-            print(('adding session', item['data']['sejm_sittings.number']))
+            print('adding session', item['data']['sejm_sittings.number'])
             session = Session.objects.filter(gov_id=item['data']['sejm_sittings.id'])
             if session:
                 session = session[0]
@@ -197,7 +197,7 @@ def import_agenda_item(data, session):
             session=session,
         )
         agenda_item.save()
-        print(('adding agneda item', data['data']['sejm_agenda_items.title']))
+        print('adding agneda item', data['data']['sejm_agenda_items.title'])
 
     for debate in data['data']['sejm_agenda_items.debate_id']:
         debate_data = tryHard('https://api-v3.mojepanstwo.pl/dane/sejm_debates/' + debate).json()
@@ -290,7 +290,7 @@ def import_questions():
             data = requests.get('https://api-v3.mojepanstwo.pl/dane/sejm_interpellations/' + q_data['id'] + '.json?layers[]=letters').json()
             authors = []
             authors_orgs = []
-            if 'layers' in list(data.keys()):
+            if 'layers' in data.keys():
                 date=datetime.strptime(data['data']['sejm_interpellations.date_registered_min'], '%Y-%m-%d')
                 recipient_text = ', '.join([content['to_str_a'] for content in data['layers']['letters'][0]['contents']])
                 if data['layers']['letters']:
@@ -323,17 +323,17 @@ def tryHard(url):
         try:
             data = requests.get(url)
         except:
-            print((data.status_code, counterm, url))
+            print(data.status_code, counterm, url)
             #counter += 1
             time.sleep(5)
             pass
         if not data:
-            print((data.status_code, counterm, url))
+            print(data.status_code, counterm, url)
             time.sleep(5)
             counter += 1
         
         if counter > 5:
-            print('SHITT')
+            print 'SHITT'
             return None
     return data
 
@@ -346,7 +346,7 @@ def parse_speech_content(data):
     # this dont work yet
     #content = data['data']['sejm_speeches.html']
     content = tryHard('https://sejmometr.pl/api/wystapienia/'+data['id']+'.html').text
-    print(content)
+    print content
     d = pq(content)
 
     order = {'value': int(data['data']['sejm_speeches.ord']) * 100}
@@ -360,7 +360,7 @@ def parse_speech_content(data):
         
         text = p.text()
         # text = unicodedata.normalize('NFC', unicode(p.text()))
-        print(text)
+        print text
         if p.hasClass("opis") or text.startswith('(Poseł'.decode("utf-8")) or text.startswith('(Głos z sali'.decode("utf-8")):
 
             # if injected speech
@@ -370,7 +370,7 @@ def parse_speech_content(data):
                 c_str = []
             text = text.strip("()").split(':')
             if len(text) == 2:
-                print('Poseł'.decode("utf-8"), text[0])
+                print 'Poseł'.decode("utf-8"), text[0]
                 if 'Poseł'.decode("utf-8") in text[0]:
                     op_person = get_od_add_speaker_by_name(text[0][7:].strip())
                     out.append({'text': text[1].strip(), 'person': op_person, 'order': get_and_increase_order(order)})
@@ -415,8 +415,8 @@ def parse_motions_manual():
                 if session:
                     session = session[0]
                 else:
-                    print('theres no session for motion')
-                    print(motion_data['id'])
+                    print 'theres no session for motion'
+                    print motion_data['id']
                     continue
 
                 projects = []
@@ -430,7 +430,7 @@ def parse_motions_manual():
                 else:
                     vote_str = motion_data['data']['sejm_votings.title']
 
-                print('adding', session.name, agenda_items)
+                print 'adding', session.name, agenda_items
                 motion_data = tryHard('https://api-v3.mojepanstwo.pl/dane/sejm_votings/' + motion_data['id'] + '.json?layers[]=votes').json()
                 motion = Motion(
                     text=vote_str,
@@ -465,10 +465,10 @@ def get_vote_and_projects():
             if motion:
                 motion = motion[0]
             else:
-                print("tega movsna nimamo shranjenga")
+                print "tega movsna nimamo shranjenga"
                 continue
 
-            print(motion_data['id'])
+            print motion_data['id']
             projects = []
             for proj_id in motion_data['data']['sejm_votings.project_id']:
                 proj_data = requests.get('https://api-v3.mojepanstwo.pl/dane/sejm_projects/'+str(proj_id)+'/').json()
@@ -489,16 +489,16 @@ def fix_agenda_items():
     for ai in AgendaItem.objects.all():
         for page in read_data_from_api('https://api-v3.mojepanstwo.pl/dane/sejm_votings/?conditions[sejm_votings.agenda_item_id]='+ai.gov_id):
             for motion_data in page:
-                print(motion_data['id'])
+                print motion_data['id']
                 try:
                     motion = Motion.objects.get(gov_id=motion_data['id'])
                 except:
-                    print(("This motion doesnt exists" + motion_data['id']))
+                    print("This motion doesnt exists" + motion_data['id'])
                 motion.agenda_item.add(ai)
 
 
 def get_membership_of_member_on_date(person_id, search_date):
-    if person_id in list(memberships.keys()):
+    if person_id in memberships.keys():
         # person in member of parliamnet
         mems = memberships[person_id]
         for mem in mems:

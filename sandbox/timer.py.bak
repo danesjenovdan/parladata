@@ -35,7 +35,7 @@ def tajmer(base_url, endpoints, id_):
     data = []
     for endpoint in endpoints:
         start = time.time()
-        print(base_url + endpoint + '/' + str(id_))
+        print base_url + endpoint + '/' + str(id_)
         resp = requests.get(base_url + endpoint + '/' + str(id_))
         end = time.time()
         data.append({'endpoint': endpoint,

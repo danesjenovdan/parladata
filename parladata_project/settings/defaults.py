@@ -9,10 +9,9 @@ ALLOWED_HOSTS = ['*']
 # Application definition
 INSTALLED_APPS = (
     'taggit',
-    'djgeojson',
-    'leaflet',
-    'dal',
-    'dal_select2',
+    #'leaflet',
+    #'dal',
+    #'dal_select2',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -90,7 +89,9 @@ WSGI_APPLICATION = 'parladata_project.wsgi.application'
 # Internationalization
 # https://docs.djangoproject.com/en/1.8/topics/i18n/
 
-LANGUAGE_CODE = 'sl-si'
+LANGUAGES = [('sl', 'Slovenian')]
+
+LANGUAGE_CODE = 'sl'
 
 TIME_ZONE = 'Europe/Ljubljana'
 

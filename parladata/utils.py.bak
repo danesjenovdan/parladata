@@ -19,8 +19,6 @@ from django.core.exceptions import PermissionDenied
 from django.core.cache import cache
 from django.core.paginator import Paginator
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from functools import reduce
-import importlib
 
 
 DZ_ID = settings.DZ_ID
@@ -145,11 +143,11 @@ def getFails():
                                         Q(end_time__lte=datetime.now()))
         for vote in votes:
             if not Ballot.objects.filter(voter=member.person, vote=vote):
-                if member.person.id in list(out.keys()):
+                if member.person.id in out.keys():
                     out[member.person.id].append(vote.start_time)
                 else:
                     out[member.person.id] = [vote.start_time]
-    print(out)
+    print out
 
 
 def getMembershipDuplications(request):
@@ -200,7 +198,7 @@ def getMembershipDuplications(request):
                                 "mem2": chk_mem})
 
             else:
-                print("WTF enaka sta?")
+                print "WTF enaka sta?"
 
     context["data"] = out
 
@@ -210,11 +208,11 @@ def getMembershipDuplications(request):
     added_mems = []
     for member in members_list:
         temp = dict(Counter(list(members.filter(person__id=member).values_list("organization", flat=True))))
-        print(temp)
-        for key, val in list(temp.items()):
+        print temp
+        for key, val in temp.items():
             if val > 1 and not Membership.objects.filter(person__id=member,
                                                          organization__id=key)[0].id in added_mems:
-                print(val)
+                print val
                 added_mems.append(Membership.objects.filter(person__id=member,
                                                             organization__id=key)[0].id)
                 org_per_person.append({"member": Person.objects.get(id=member),
@@ -231,15 +229,15 @@ def getMembershipDuplications(request):
         org_ = Organization.objects.get(id=org)
         posts = [membership.memberships.all().values_list("role", flat=True) for membership in org_.memberships.all()]
         roles = dict(Counter([role for post in posts for role in post]))
-        context["roles"].append({"org": org_, "roles": [{"role": role, "count": count}for role, count in list(roles.items())]})
+        context["roles"].append({"org": org_, "roles": [{"role": role, "count": count}for role, count in roles.items()]})
 
 
     context["count_of_persons"] = []
     pgRanges = requests.get("https://data.parlameter.si/v1/getMembersOfPGsRanges/"+datetime.now().strftime("%d.%m.%Y")).json()
     for pgRange in pgRanges:
-        count = len([member for pg in list(pgRange["members"].values()) for member in pg])
-        members_ids = [member for pg in list(pgRange["members"].values()) for member in pg]
-        context["count_of_persons"].append({"count": {"count": count, "start_date": pgRange["start_date"], "end_date": pgRange["end_date"]}, "members": [member for pg in list(pgRange["members"].values()) for member in pg]})
+        count = len([member for pg in pgRange["members"].values() for member in pg])
+        members_ids = [member for pg in pgRange["members"].values() for member in pg]
+        context["count_of_persons"].append({"count": {"count": count, "start_date": pgRange["start_date"], "end_date": pgRange["end_date"]}, "members": [member for pg in pgRange["members"].values() for member in pg]})
         if len(context["count_of_persons"])>1:
             context["count_of_persons"][-1]["added"] = [{"name": Person.objects.get(id=x).name, "membership": Membership.objects.filter(organization__in=parliamentary_groups, person__id=x, start_time=(datetime.strptime(context["count_of_persons"][-1]["count"]["start_date"], "%d.%m.%Y")).strftime("%Y-%m-%d %H:%M"))[0] if Membership.objects.filter(organization__in=parliamentary_groups, person__id=x, start_time=(datetime.strptime(context["count_of_persons"][-1]["count"]["start_date"], "%d.%m.%Y")).strftime("%Y-%m-%d %H:%M")) else ""} for x in context["count_of_persons"][-1]["members"] if x not in context["count_of_persons"][-2]["members"]]
             context["count_of_persons"][-1]["removed"] = [{"name": Person.objects.get(id=x).name, "membership": Membership.objects.filter(organization__in=parliamentary_groups, person__id=x, end_time=(datetime.strptime(context["count_of_persons"][-1]["count"]["start_date"], "%d.%m.%Y")-timedelta(days=1)).strftime("%Y-%m-%d %H:%M"))[0] if Membership.objects.filter(organization__in=parliamentary_groups, person__id=x, end_time=(datetime.strptime(context["count_of_persons"][-1]["count"]["start_date"], "%d.%m.%Y")-timedelta(days=1)).strftime("%Y-%m-%d %H:%M")) else None} for x in context["count_of_persons"][-2]["members"] if x not in context["count_of_persons"][-1]["members"]]
@@ -268,14 +266,14 @@ def getMembershipDuplications(request):
         end_time = datetime.now()
 
         checked = []
-        print("count postov", posts.count())
+        print "count postov", posts.count()
         for post in posts:
             post_start = post.start_time if post.start_time else start_time
             post_end = post.end_time if post.end_time else end_time
             checked.append(post.id)
             for chk_post in posts.exclude(id__in=checked):
-                print(post)
-                print(chk_post)
+                print post
+                print chk_post
                 chk_start = chk_post.start_time if chk_post.start_time else start_time
                 chk_end = chk_post.end_time if chk_post.end_time else end_time
                 #check here
@@ -296,7 +294,7 @@ def getMembershipDuplications(request):
                 elif chk_end == post_end:
                     context["post_dupl"].append({"member": post.membership.person, "post1": post, "post2": chk_post})
 
-    print(context["post_dupl"])
+    print context["post_dupl"]
 
     return render(request, "debug_memberships.html", context)
 
@@ -418,12 +416,12 @@ def membersFlowInOrg(request):
     for org in orgs:
         flow = []
         org_id = org
-        print(org)
+        print org
         pgRanges = requests.get("https://data.parlameter.si/v1/getMembersOfOrgsRanges/"+str(org_id)+"/"+datetime.now().strftime("%d.%m.%Y")).json()
         for pgRange in pgRanges:
-            count = len([member for pg in list(pgRange["members"].values()) for member in pg])
-            members_ids = [member for pg in list(pgRange["members"].values()) for member in pg]
-            flow.append({"count": {"count": count, "start_date": pgRange["start_date"], "end_date": pgRange["end_date"]}, "members": [member for pg in list(pgRange["members"].values()) for member in pg]})
+            count = len([member for pg in pgRange["members"].values() for member in pg])
+            members_ids = [member for pg in pgRange["members"].values() for member in pg]
+            flow.append({"count": {"count": count, "start_date": pgRange["start_date"], "end_date": pgRange["end_date"]}, "members": [member for pg in pgRange["members"].values() for member in pg]})
             if len(flow)>1:
                 flow[-1]["added"] = [{"name": Person.objects.get(id=x).name, "membership": Membership.objects.filter(organization__id=org_id, person__id=x, start_time=(datetime.strptime(flow[-1]["count"]["start_date"], "%d.%m.%Y")).strftime("%Y-%m-%d %H:%M"))[0] if Membership.objects.filter(organization__id=org_id, person__id=x, start_time=(datetime.strptime(flow[-1]["count"]["start_date"], "%d.%m.%Y")).strftime("%Y-%m-%d %H:%M")) else ""} for x in flow[-1]["members"] if x not in flow[-2]["members"]]
                 flow[-1]["removed"] = [{"name": Person.objects.get(id=x).name, "membership": Membership.objects.filter(organization__id=org_id, person__id=x, end_time=(datetime.strptime(flow[-1]["count"]["start_date"], "%d.%m.%Y")-timedelta(days=1)).strftime("%Y-%m-%d %H:%M"))[0] if Membership.objects.filter(organization__id=org_id, person__id=x, end_time=(datetime.strptime(flow[-1]["count"]["start_date"], "%d.%m.%Y")-timedelta(days=1)).strftime("%Y-%m-%d %H:%M")) else None} for x in flow[-2]["members"] if x not in flow[-1]["members"]]
@@ -448,12 +446,12 @@ def membersFlowInPGs(request):
     for org in orgs:
         flow = []
         org_id = org
-        print(org)
+        print org
         pgRanges = requests.get("http://data.nov.parlameter.si/v1/getMembersOfPGsRanges/"+str(org_id)+"/"+datetime.now().strftime("%d.%m.%Y")).json()
         for pgRange in pgRanges:
-            count = len([member for pg in list(pgRange["members"].values()) for member in pg])
-            members_ids = [member for pg in list(pgRange["members"].values()) for member in pg]
-            flow.append({"count": {"count": count, "start_date": pgRange["start_date"], "end_date": pgRange["end_date"]}, "members": [member for pg in list(pgRange["members"].values()) for member in pg]})
+            count = len([member for pg in pgRange["members"].values() for member in pg])
+            members_ids = [member for pg in pgRange["members"].values() for member in pg]
+            flow.append({"count": {"count": count, "start_date": pgRange["start_date"], "end_date": pgRange["end_date"]}, "members": [member for pg in pgRange["members"].values() for member in pg]})
             if len(flow)>1:
                 flow[-1]["added"] = [{"name": Person.objects.get(id=x).name, "membership": Membership.objects.filter(organization__id=org_id, person__id=x, start_time=(datetime.strptime(flow[-1]["count"]["start_date"], "%d.%m.%Y")).strftime("%Y-%m-%d %H:%M"))[0] if Membership.objects.filter(organization__id=org_id, person__id=x, start_time=(datetime.strptime(flow[-1]["count"]["start_date"], "%d.%m.%Y")).strftime("%Y-%m-%d %H:%M")) else ""} for x in flow[-1]["members"] if x not in flow[-2]["members"]]
                 flow[-1]["removed"] = [{"name": Person.objects.get(id=x).name, "membership": Membership.objects.filter(organization__id=org_id, person__id=x, end_time=(datetime.strptime(flow[-1]["count"]["start_date"], "%d.%m.%Y")-timedelta(days=1)).strftime("%Y-%m-%d %H:%M"))[0] if Membership.objects.filter(organization__id=org_id, person__id=x, end_time=(datetime.strptime(flow[-1]["count"]["start_date"], "%d.%m.%Y")-timedelta(days=1)).strftime("%Y-%m-%d %H:%M")) else None} for x in flow[-2]["members"] if x not in flow[-1]["members"]]
@@ -477,9 +475,9 @@ def membersFlowInDZ(request):
     context["count_of_persons"] = []
     pgRanges = requests.get("https://data.parlameter.si/v1/getMembersOfPGsRanges/"+datetime.now().strftime("%d.%m.%Y")).json()
     for pgRange in pgRanges:
-        count = len([member for pg in list(pgRange["members"].values()) for member in pg])
-        members_ids = [member for pg in list(pgRange["members"].values()) for member in pg]
-        context["count_of_persons"].append({"count": {"count": count, "start_date": pgRange["start_date"], "end_date": pgRange["end_date"]}, "members": [member for pg in list(pgRange["members"].values()) for member in pg]})
+        count = len([member for pg in pgRange["members"].values() for member in pg])
+        members_ids = [member for pg in pgRange["members"].values() for member in pg]
+        context["count_of_persons"].append({"count": {"count": count, "start_date": pgRange["start_date"], "end_date": pgRange["end_date"]}, "members": [member for pg in pgRange["members"].values() for member in pg]})
         if len(context["count_of_persons"])>1:
             context["count_of_persons"][-1]["added"] = [{"name": Person.objects.get(id=x).name, "membership": Membership.objects.filter(organization__in=parliamentary_groups, person__id=x, start_time=(datetime.strptime(context["count_of_persons"][-1]["count"]["start_date"], "%d.%m.%Y")).strftime("%Y-%m-%d %H:%M"))[0] if Membership.objects.filter(organization__in=parliamentary_groups, person__id=x, start_time=(datetime.strptime(context["count_of_persons"][-1]["count"]["start_date"], "%d.%m.%Y")).strftime("%Y-%m-%d %H:%M")) else ""} for x in context["count_of_persons"][-1]["members"] if x not in context["count_of_persons"][-2]["members"]]
             context["count_of_persons"][-1]["removed"] = [{"name": Person.objects.get(id=x).name, "membership": Membership.objects.filter(organization__in=parliamentary_groups, person__id=x, end_time=(datetime.strptime(context["count_of_persons"][-1]["count"]["start_date"], "%d.%m.%Y")-timedelta(days=1)).strftime("%Y-%m-%d %H:%M"))[0] if Membership.objects.filter(organization__in=parliamentary_groups, person__id=x, end_time=(datetime.strptime(context["count_of_persons"][-1]["count"]["start_date"], "%d.%m.%Y")-timedelta(days=1)).strftime("%Y-%m-%d %H:%M")) else None} for x in context["count_of_persons"][-2]["members"] if x not in context["count_of_persons"][-1]["members"]]
@@ -522,9 +520,9 @@ def updateSpeechOrg():
         edate = datetime.strptime(mem['end_date'], settings.API_DATE_FORMAT)
         sdate = datetime.strptime(mem['start_date'], settings.API_DATE_FORMAT)
         speeches = Speech.objects.filter(start_time__range=[sdate, edate + timedelta(hours=23, minutes=59)])
-        print("count range speeches", speeches.count())
+        print "count range speeches", speeches.count()
         for spee in speeches:
-            for m, ids in list(mem['members'].items()):
+            for m, ids in mem['members'].items():
                 if spee.speaker.id in ids:
                     spee.party = Organization.objects.get(id=int(m))
                     spee.save()
@@ -541,7 +539,7 @@ def getNonPGSpeekers():
     nonPGspeekers = {speaker: {"name": Person.objects.get(id=speaker).name,
                                 "id": Person.objects.get(id=speaker).id,
                                 "count": Speech.objects.filter(speaker__id=speaker).count()} for speaker in nonPgSpeakers}
-    data = sorted(list(nonPGspeekers.values()), key=lambda k: k["count"], reverse=True)
+    data = sorted(nonPGspeekers.values(), key=lambda k: k["count"], reverse=True)
     with open('non_pg_speakers.csv', 'w') as csvfile:
         svwriter = csv.writer(csvfile, delimiter=',',quotechar='|',
                                        quoting=csv.QUOTE_MINIMAL)
@@ -577,10 +575,10 @@ def exportTagsOfVotes():
         votes = Vote.objects.all()
         for vote in votes:
             if vote.tags.all():
-                print(vote.session.name, vote.motion.text, vote.tags.all().values_list("name", flat=True))
-                csvwriter.writerow([str(vote.session.name),
-                                    str(vote.motion.text),
-                                    str(";".join(vote.tags.all().values_list("name", flat=True)))])
+                print vote.session.name, vote.motion.text, vote.tags.all().values_list("name", flat=True)
+                csvwriter.writerow([unicode(vote.session.name),
+                                    unicode(vote.motion.text),
+                                    unicode(";".join(vote.tags.all().values_list("name", flat=True)))])
     return 1
 
 
@@ -595,9 +593,9 @@ def exportResultOfVotes():
         votes = Motion.objects.all()
         count = 0
         for vote in votes:
-            csvwriter.writerow([str(vote.session.name),
-                                str(vote.text),
-                                str(vote.result)])
+            csvwriter.writerow([unicode(vote.session.name),
+                                unicode(vote.text),
+                                unicode(vote.result)])
             if vote.result:
                 count += 1
     return 1
@@ -614,7 +612,7 @@ def migrateVotesInMotions():
                                      organization=org)
         vote.session = ses[0]
         vote.save()
-        print(ses[0].name, ses[0].created_at, vote.created_at)
+        print ses[0].name, ses[0].created_at, vote.created_at
 
 
 def showSpeechesDuplicate():
@@ -656,15 +654,15 @@ def updateSessionInReviewStatus(filename):
                 try:
                     id_session = int(candidate)
                 except:
-                    print("ni id :)", candidate)
+                    print "ni id :)", candidate
                 if id_session:
                     session = Session.objects.filter(id=id_session)
                     if session.count() == 1:
-                        print("updejtam", session[0].name, "ivan")
+                        print "updejtam", session[0].name, "ivan"
                         session[0].in_review = True
                         session[0].save()
                     else:
-                        print("Neki ni ql s sejo count je : ", session.count())
+                        print "Neki ni ql s sejo count je : ", session.count()
 
 
 def determineSession(date_):
@@ -707,7 +705,7 @@ def replace_all(text, dic):
        with the words in dic attribute.
     """
 
-    for i, j in dic.items():
+    for i, j in dic.iteritems():
         pattern = re.compile(i, re.IGNORECASE)
         text = pattern.sub(j, text)
     return text
@@ -737,7 +735,7 @@ def sendMailForEditVotes(votes):
     reLastSession = 'https://analize.parlameter.si/v1/utils/recacheLastSession' + api_key
     dashboard = 'https://dashboard.parlameter.si/'
 
-    updated_votes = Vote.objects.filter(id__in=list(votes.keys()))
+    updated_votes = Vote.objects.filter(id__in=votes.keys())
     motionUrls = []
     updateUrls = []
     sesUpdateUrls = []
@@ -747,7 +745,7 @@ def sendMailForEditVotes(votes):
         updateUrls.append(url)
         url = pageVotes + str(session) + '?forceRender=true'
         sesUpdateUrls.append(url)
-    for vote, session in list(votes.items()):
+    for vote, session in votes.items():
         url = pageGraph + str(session) + '/' + str(vote) + '?forceRender=true'
         graphUpdateUrls.append(url)
 
@@ -776,7 +774,7 @@ def sendMailForEditVotes(votes):
 def parseRecipient(text, date_of):
     # set utf-8 encoding
     import sys
-    importlib.reload(sys)
+    reload(sys)
     sys.setdefaultencoding("UTF-8")
 
     mv = Organization.objects.filter(classification__in=['vlada',
@@ -835,7 +833,7 @@ def parseRecipient(text, date_of):
                                     'type': 'post'})
                         added = True
                     else:
-                        print('There is no POsts', text, date_of)
+                        print 'There is no POsts', text, date_of
                     break
                 else:
                     pass
@@ -909,9 +907,9 @@ def getOwnersOfAmendment(motion):
         acronyms['Vlada VladaRH']= vlada_id
         for link in links:
             tokens = link.name.replace(" ", '_').replace("-", '_').split('_')
-            print((link.name))
+            print(link.name)
             if 'AMANDMAN' in link.name:
-                for acronym, i in list(acronyms.items()):
+                for acronym, i in acronyms.items():
                     # find orgs
                     for splited_acr in acronym.split(' '):
                         if splited_acr in link.name:
@@ -951,7 +949,7 @@ def getOwnersOfAmendment(motion):
                                         if re.search("\\b" + ' '.join(d_token) + "\\b", name['name_parser']):
                                             people_ids.append(name['id'])
                                             break
-        print(acronyms)
+        print acronyms
     return {'orgs': orgs_ids, 'people': list(set(people_ids))}
 
 

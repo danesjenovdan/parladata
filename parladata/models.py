@@ -2,15 +2,13 @@
 
 from django.db import models
 from model_utils import Choices
-from model_utils.managers import PassThroughManager
-from django.utils.encoding import python_2_unicode_compatible
 from django.utils.translation import ugettext_lazy as _
 from django.db.models.signals import pre_save, post_save
 from django.dispatch import receiver
 from datetime import datetime
 from .behaviors.models import Timestampable, Taggable, Versionable
 from .querysets import PostQuerySet, OtherNameQuerySet, ContactDetailQuerySet, MembershipQuerySet, OrganizationQuerySet, PersonQuerySet
-from djgeojson.fields import PolygonField
+#from django.contrib.gis.db import models as gis_models
 from django.db.models import Count as dCount
 from tinymce.models import HTMLField
 
@@ -20,7 +18,6 @@ class PopoloDateTimeField(models.DateTimeField):
         return str(datetime.strftime(value, '%Y-%m-%d'))
 
 
-@python_2_unicode_compatible
 class Person(Timestampable, models.Model):
     """Model for all people that are somehow connected to the parlament."""
 
@@ -123,6 +120,7 @@ class Person(Timestampable, models.Model):
 
     gov_url = models.ForeignKey('Link',
                                 blank=True, null=True,
+                                on_delete=models.CASCADE,
                                 help_text='URL to gov website profile',
                                 related_name='gov_link')
 
@@ -161,7 +159,6 @@ class Person(Timestampable, models.Model):
 
     gov_image.allow_tags = True
     url_name = 'person-detail'
-    objects = PassThroughManager.for_queryset_class(PersonQuerySet)()
 
     # also handles party and work group memberships
     def add_membership(self, organization):
@@ -184,10 +181,9 @@ class Person(Timestampable, models.Model):
         super(Person, self).save(*args, **kwargs)
 
     def __str__(self):
-        return self.name + " " + unicode(self.id)
+        return self.name + " " + str(self.id)
 
 
-@python_2_unicode_compatible
 class Organization(Timestampable, Taggable, models.Model):
     """A group with a common purpose or reason
     for existence that goes beyond the set of people belonging to it.
@@ -220,6 +216,7 @@ class Organization(Timestampable, Taggable, models.Model):
     parent = models.ForeignKey('Organization',
                                blank=True, null=True,
                                related_name='children',
+                               on_delete=models.CASCADE,
                                help_text=_('The organization that contains this organization'))
 
     dissolution_date = PopoloDateTimeField(blank=True, null=True,
@@ -242,10 +239,8 @@ class Organization(Timestampable, Taggable, models.Model):
                                  null=True,
                                  help_text='number of votes cast for this person in their district')
 
-    objects = PassThroughManager.for_queryset_class(OrganizationQuerySet)()
-
     def __str__(self):
-        return self.name + " " + unicode(self.id) + " " + (self._acronym if self._acronym else '')
+        return self.name + " " + str(self.id) + " " + (self._acronym if self._acronym else '')
 
     def name_on(self, fdate=datetime.now()):
         name_obj = self.names.filter(models.Q(start_time__lte=fdate) |
@@ -291,7 +286,6 @@ class Organization(Timestampable, Taggable, models.Model):
             return False
 
 
-@python_2_unicode_compatible
 class Post(Timestampable, Taggable, models.Model):
     """A position that exists independent of the person holding it."""
 
@@ -309,12 +303,14 @@ class Post(Timestampable, Taggable, models.Model):
     organization = models.ForeignKey('Organization',
                                      blank=True, null=True,
                                      related_name='posts',
+                                     on_delete=models.CASCADE,
                                      help_text=_('The organization in which the post is held'))
 
     # reference to "http://popoloproject.com/schemas/post.json#"
     membership = models.ForeignKey('Membership',
                                    blank=True, null=True,
                                    related_name='memberships',
+                                   on_delete=models.CASCADE,
                                    help_text=_('The post held by the person in the organization through this membership'))
 
     # start and end time of memberships
@@ -322,8 +318,6 @@ class Post(Timestampable, Taggable, models.Model):
                                      help_text='Start time')
     end_time = PopoloDateTimeField(blank=True, null=True,
                                    help_text='End time')
-
-    objects = PassThroughManager.for_queryset_class(PostQuerySet)()
 
     def add_person(self, person):
         m = Membership(post=self, person=person, organization=self.organization)
@@ -333,7 +327,6 @@ class Post(Timestampable, Taggable, models.Model):
         return u'Org: {0}, Role: {1}, Person: {2}'.format(self.membership.organization if self.membership else self.organization, self.role, self.membership.person.name if self.membership and self.membership.person else "None")
 
 
-@python_2_unicode_compatible
 class Membership(Timestampable, models.Model):
     """A relationship between a person and an organization."""
 
@@ -351,17 +344,20 @@ class Membership(Timestampable, models.Model):
     person = models.ForeignKey('Person',
                                blank=True, null=True,
                                related_name='memberships',
+                               on_delete=models.CASCADE,
                                help_text=_('The person who is a party to the relationship'))
 
     # reference to "http://popoloproject.com/schemas/organization.json#"
     organization = models.ForeignKey('Organization',
                                      blank=True, null=True,
                                      related_name='memberships',
+                                     on_delete=models.CASCADE,
                                      help_text=_('The organization that is a party to the relationship'))
 
     on_behalf_of = models.ForeignKey('Organization',
                                      blank=True, null=True,
                                      related_name='memberships_on_behalf_of',
+                                     on_delete=models.CASCADE,
                                      help_text=_('The organization on whose behalf the person is a party to the relationship'))
 
     # start and end time of memberships
@@ -374,8 +370,6 @@ class Membership(Timestampable, models.Model):
     @property
     def slug_source(self):
         return self.label
-
-    objects = PassThroughManager.for_queryset_class(MembershipQuerySet)()
 
     def __str__(self):
         return u'Person: {0}, Org: {1}, StartTime: {2}'.format(self.person, self.organization, self.start_time.date() if self.start_time else "")
@@ -433,27 +427,28 @@ class ContactDetail(Timestampable, models.Model):
                             blank=True, null=True,
                             help_text=_('A note, e.g. for grouping contact details by physical location'))
 
-    objects = PassThroughManager.for_queryset_class(ContactDetailQuerySet)()
-
     person = models.ForeignKey('Person',
                                blank=True, null=True,
+                               on_delete=models.CASCADE,
                                help_text='The person this name belongs to')
     organization = models.ForeignKey('Organization',
                                      blank=True, null=True,
+                                     on_delete=models.CASCADE,
                                      help_text='The organization this name belongs to')
 
     post = models.ForeignKey('Post',
                              blank=True, null=True,
+                             on_delete=models.CASCADE,
                              help_text='The person this name belongs to')
     membership = models.ForeignKey('Membership',
                                    blank=True, null=True,
+                                   on_delete=models.CASCADE,
                                    help_text='The organization this name belongs to')
 
     def __str__(self):
         return u'{0} - {1}'.format(self.value, self.contact_type)
 
 
-@python_2_unicode_compatible
 class OtherName(models.Model):
     """An alternate or former name."""
 
@@ -466,20 +461,19 @@ class OtherName(models.Model):
                             blank=True, null=True,
                             help_text=_('A note, e.g. \'Birth name\''))
 
-    objects = PassThroughManager.for_queryset_class(OtherNameQuerySet)()
-
     person = models.ForeignKey('Person',
                                blank=True, null=True,
+                               on_delete=models.CASCADE,
                                help_text='The person this name belongs to')
     organization = models.ForeignKey('Organization',
                                      blank=True, null=True,
+                                     on_delete=models.CASCADE,
                                      help_text='The organization this name belongs to')
 
     def __str__(self):
         return self.name
 
 
-@python_2_unicode_compatible
 class Identifier(models.Model):
     """An issued identifier."""
 
@@ -494,17 +488,18 @@ class Identifier(models.Model):
 
     person = models.ForeignKey('Person',
                                blank=True, null=True,
+                               on_delete=models.CASCADE,
                                help_text='The person this identifier belongs to')
 
     organization = models.ForeignKey('Organization',
                                      blank=True, null=True,
+                                     on_delete=models.CASCADE,
                                      help_text='The organization this identifier belongs to')
 
     def __str__(self):
         return '{0}: {1}'.format(self.scheme, self.identifier)
 
 
-@python_2_unicode_compatible
 class Link(Timestampable, Taggable, models.Model):
     """
     A URL
@@ -524,31 +519,36 @@ class Link(Timestampable, Taggable, models.Model):
 
     date = models.DateField(blank=True, null=True)
 
-    session = models.ForeignKey('Session', blank=True, null=True)
+    session = models.ForeignKey('Session', blank=True, null=True, on_delete=models.CASCADE)
 
     organization = models.ForeignKey('Organization',
                                      blank=True,
                                      null=True,
+                                     on_delete=models.CASCADE,
                                      help_text='The organization of this link.',
                                      related_name='links')
 
     person = models.ForeignKey('Person',
                                blank=True, null=True,
+                               on_delete=models.CASCADE,
                                help_text='The person of this link.')
 
     membership = models.ForeignKey('Membership',
                                    blank=True, null=True,
+                                   on_delete=models.CASCADE,
                                    help_text='The membership of this link.')
 
     motion = models.ForeignKey('Motion',
                                blank=True,
                                null=True,
+                               on_delete=models.CASCADE,
                                help_text='The motion of this link.',
                                related_name='links')
 
     question = models.ForeignKey('Question',
                                  blank=True,
                                  null=True,
+                                 on_delete=models.CASCADE,
                                  help_text='The question this link belongs to.',
                                  related_name='links')
 
@@ -556,7 +556,6 @@ class Link(Timestampable, Taggable, models.Model):
         return self.url
 
 
-@python_2_unicode_compatible
 class Source(Timestampable, Taggable, models.Model):
     """ A URL for referring to sources of information."""
 
@@ -570,22 +569,27 @@ class Source(Timestampable, Taggable, models.Model):
 
     person = models.ForeignKey('Person',
                                blank=True, null=True,
+                               on_delete=models.CASCADE,
                                help_text='The person of this source.')
 
     organization = models.ForeignKey('Organization',
                                      blank=True, null=True,
+                                     on_delete=models.CASCADE,
                                      help_text='The organization of this source.')
 
     post = models.ForeignKey('Post',
                              blank=True, null=True,
+                             on_delete=models.CASCADE,
                              help_text='The post of this source.')
 
     membership = models.ForeignKey('Membership',
                                    blank=True, null=True,
+                                   on_delete=models.CASCADE,
                                    help_text='The membership of this source.')
 
     contact_detail = models.ForeignKey('ContactDetail',
                                        blank=True, null=True,
+                                       on_delete=models.CASCADE,
                                        help_text='The person of this source.')
 
     def __str__(self):
@@ -622,26 +626,30 @@ class Milestone(Taggable, models.Model):
 
     mandate = models.ForeignKey('Mandate',
                                 blank=True, null=True,
+                                on_delete=models.CASCADE,
                                 help_text='The mandate of this milestone.')
 
     session = models.ForeignKey('Session',
                                 blank=True, null=True,
+                                on_delete=models.CASCADE,
                                 help_text='The session of this milestone.')
 
     speech = models.ForeignKey('Speech',
                                blank=True, null=True,
+                               on_delete=models.CASCADE,
                                help_text='The speech of this milestone.')
 
     organization = models.ForeignKey('Organization',
                                      blank=True, null=True,
+                                     on_delete=models.CASCADE,
                                      help_text='The organization of this milestone.')
 
     person = models.ForeignKey('Person',
                                blank=True, null=True,
+                               on_delete=models.CASCADE,
                                help_text='The person of this milestone.')
 
 
-@python_2_unicode_compatible
 class Mandate(models.Model):
     """Mandate"""
 
@@ -652,7 +660,6 @@ class Mandate(models.Model):
         return self.description
 
 
-@python_2_unicode_compatible
 class Area(Timestampable, Taggable, models.Model):
     """Places of any kind."""
 
@@ -667,10 +674,11 @@ class Area(Timestampable, Taggable, models.Model):
 
     parent = models.ForeignKey('Area',
                                blank=True, null=True,
+                               on_delete=models.CASCADE,
                                help_text='Area parent')
 
-    geometry = PolygonField(blank=True, null=True,
-                            help_text='Polygon field for area')
+    #geometry = gis_models.PolygonField(blank=True, null=True,
+    #                        help_text='Polygon field for area')
 
     calssification = models.CharField(_('classification'),
                                       blank=True, null=True,
@@ -681,12 +689,12 @@ class Area(Timestampable, Taggable, models.Model):
         return self.name
 
 
-@python_2_unicode_compatible
 class Session(Timestampable, Taggable, models.Model):
     """Sessions that happened in parliament."""
 
     mandate = models.ForeignKey('Mandate',
                                 blank=True, null=True,
+                                on_delete=models.CASCADE,
                                 help_text='The mandate of this milestone.')
 
     name = models.CharField(max_length=255,
@@ -706,6 +714,7 @@ class Session(Timestampable, Taggable, models.Model):
     organization = models.ForeignKey('Organization',
                                      blank=True, null=True,
                                      related_name='session',
+                                     on_delete=models.CASCADE,
                                      help_text='The organization in session')
     organizations = models.ManyToManyField('Organization',
                                            related_name='sessions',
@@ -719,18 +728,20 @@ class Session(Timestampable, Taggable, models.Model):
 
     def __str__(self):
         if self and self.organization:
-          return unicode(self.name) + ",  " + unicode(self.organization.name)
+          return str(self.name) + ",  " + str(self.organization.name)
         else:
           return "Session"
 
-@python_2_unicode_compatible
+
 class Speech(Versionable, Timestampable, Taggable, models.Model):
     """Speeches that happened in parlament."""
 
     speaker = models.ForeignKey('Person',
+                                on_delete=models.CASCADE,
                                 help_text='Person making the speech')
 
     party = models.ForeignKey('Organization', null=True, blank=True,
+                              on_delete=models.CASCADE,
                               help_text='The party of the person making the speech',
                               default=2)
 
@@ -741,6 +752,7 @@ class Speech(Versionable, Timestampable, Taggable, models.Model):
 
     session = models.ForeignKey('Session',
                                 blank=True, null=True,
+                                on_delete=models.CASCADE,
                                 help_text='Speech session')
 
     start_time = PopoloDateTimeField(blank=True, null=True,
@@ -753,13 +765,15 @@ class Speech(Versionable, Timestampable, Taggable, models.Model):
                                       help_text='Order of speech')
 
     agenda_item = models.ForeignKey('AgendaItem', blank=True, null=True,
+                                    on_delete=models.CASCADE,
                                     help_text='Agenda item', related_name='speeches')
 
     agenda_items = models.ManyToManyField('AgendaItem', blank=True,
                                           help_text='Agenda items', related_name='speeches_many')
 
     debate = models.ForeignKey('Debate', blank=True, null=True,
-                                help_text='Debates', related_name='speeches')
+                                help_text='Debates', related_name='speeches',
+                                on_delete=models.CASCADE,)
     @staticmethod
     def getValidSpeeches(date_):
         return Speech.objects.filter(valid_from__lt=date_, valid_to__gt=date_)
@@ -776,6 +790,7 @@ class Motion(Timestampable, Taggable, models.Model):
 
     organization = models.ForeignKey('Organization',
                                      blank=True, null=True,
+                                     on_delete=models.CASCADE,
                                      help_text='the organization in which the motion is proposed')
 
     gov_id = models.CharField(max_length=255,
@@ -787,15 +802,18 @@ class Motion(Timestampable, Taggable, models.Model):
 
     session = models.ForeignKey('Session',
                                 blank=True, null=True,
+                                on_delete=models.CASCADE,
                                 help_text='The legislative session in which the motion was proposed')
 
     person = models.ForeignKey('Person',
                                blank=True, null=True,
+                               on_delete=models.CASCADE,
                                help_text='The person who proposed the motion')
 
     party = models.ForeignKey('Organization',
                               help_text='The party of the person who proposed the motion.',
                               related_name='motion_party',
+                              on_delete=models.CASCADE,
                               default=2)
 
     recap = models.TextField(blank=True, null=True,
@@ -830,6 +848,7 @@ class Motion(Timestampable, Taggable, models.Model):
                                          help_text='Agenda item', related_name='motions')
 
     debate = models.ForeignKey('Debate', blank=True, null=True,
+                                on_delete=models.CASCADE,
                                 help_text='Debates', related_name='motions')
 
     def __str__(self):
@@ -846,14 +865,17 @@ class Vote(Timestampable, Taggable, models.Model):
     motion = models.ForeignKey('Motion',
                                blank=True, null=True,
                                related_name='vote',
+                               on_delete=models.CASCADE,
                                help_text='The motion for which the vote took place')
 
     organization = models.ForeignKey('Organization',
                                      blank=True, null=True,
+                                     on_delete=models.CASCADE,
                                      help_text='The organization whose members are voting')
 
     session = models.ForeignKey('Session',
                                 blank=True, null=True,
+                                on_delete=models.CASCADE,
                                 help_text='The legislative session in which the vote event occurs')
 
     start_time = PopoloDateTimeField(blank=True, null=True,
@@ -906,28 +928,32 @@ class Count(Timestampable, models.Model):
 
     vote = models.ForeignKey('Vote',
                              blank=True, null=True,
+                             on_delete=models.CASCADE,
                              help_text='The vote of this count.')
 
 
-@python_2_unicode_compatible
 class Ballot(Timestampable, models.Model):
     """All ballots from all votes."""
 
     vote = models.ForeignKey('Vote',
-                             help_text='The vote event')
+                             help_text='The vote event',
+                             on_delete=models.CASCADE)
 
     voter = models.ForeignKey('Person',
                               blank=True, null=True,
+                              on_delete=models.CASCADE,
                               help_text='The voter')
 
     voterparty = models.ForeignKey('Organization',
                                    help_text='The party of the voter.',
                                    related_name='party',
+                                   on_delete=models.CASCADE,
                                    default=2)
 
     orgvoter = models.ForeignKey('Organization',
                                  blank=True,
                                  null=True,
+                                 on_delete=models.CASCADE,
                                  help_text='The voter represents and organisation.')
 
     option = models.CharField(max_length=128,
@@ -938,13 +964,13 @@ class Ballot(Timestampable, models.Model):
         return self.voter.name
 
 
-@python_2_unicode_compatible
 class Question(Timestampable, models.Model):
     """All questions from members of parlament."""
 
     session = models.ForeignKey('Session',
                                 blank=True,
                                 null=True,
+                                on_delete=models.CASCADE,
                                 help_text='The session this question belongs to.')
 
     date = PopoloDateTimeField(blank=True,
@@ -998,8 +1024,6 @@ class Question(Timestampable, models.Model):
         return ' '.join(self.authors.all().values_list('name', flat=True))
 
 
-# Parser "buffer" storage models
-@python_2_unicode_compatible
 class tmp_votelinks(Timestampable, models.Model):
     session_id = models.CharField(max_length=255,
                                   blank=True,
@@ -1017,7 +1041,6 @@ class tmp_votelinks(Timestampable, models.Model):
         return self.session_id
 
 
-@python_2_unicode_compatible
 class session_deleted(Timestampable, models.Model):
     mandate_id = models.IntegerField(blank=True,
                                      null=True)
@@ -1065,6 +1088,7 @@ class OrganizationName(Timestampable, models.Model):
     """
     organization = models.ForeignKey('Organization',
                                      help_text=_('The organization who hold this name.'),
+                                     on_delete=models.CASCADE,
                                      related_name='names')
 
     name = models.TextField(_('name'),
@@ -1093,6 +1117,7 @@ class Law(Timestampable, Taggable, models.Model):
 
     session = models.ForeignKey('Session',
                                 blank=True, null=True,
+                                on_delete=models.CASCADE,
                                 help_text='The legislative session in which the law was proposed')
 
 
@@ -1112,6 +1137,7 @@ class Law(Timestampable, Taggable, models.Model):
                                related_name='laws',
                                blank=True, null=True,
                                max_length=255,
+                               on_delete=models.CASCADE,
                                help_text='Working body obj')
 
     status = models.CharField(blank=True, null=True,
@@ -1152,6 +1178,9 @@ class Law(Timestampable, Taggable, models.Model):
                                           max_length=255,
                                           help_text='Procedure phase of law')
 
+    def __str__(self):
+        return (self.session.name if self.session else '') + ' -> ' + self.text
+
 
 class AgendaItem(Timestampable, Taggable, models.Model):
     name = models.TextField(blank=True, null=True,
@@ -1161,7 +1190,8 @@ class AgendaItem(Timestampable, Taggable, models.Model):
                                null=True,
                                help_text='Date of the item.')
 
-    session = models.ForeignKey('Session', blank=True, null=True)
+    session = models.ForeignKey('Session', blank=True, null=True,
+                                on_delete=models.CASCADE,)
 
     order = models.IntegerField(blank=True, null=True,
                                 help_text='Order of agenda item')
@@ -1169,7 +1199,7 @@ class AgendaItem(Timestampable, Taggable, models.Model):
     gov_id = models.CharField(blank=True, max_length=255, null=True, help_text='gov_id of agenda item')
 
     def __str__(self):
-        return self.name
+        return (self.session.name if self.session else '') + ' -> ' + self.name
 
 
 class Debate(Timestampable, Taggable, models.Model):
@@ -1185,7 +1215,7 @@ class Debate(Timestampable, Taggable, models.Model):
 
     gov_id = models.CharField(blank=True, max_length=255, null=True, help_text='gov_id of debate')
 
-    session = models.ForeignKey('Session', blank=True, null=True)
+    session = models.ForeignKey('Session', blank=True, null=True, on_delete=models.CASCADE,)
 
 
 

@@ -12,7 +12,6 @@ import requests
 from requests.auth import HTTPBasicAuth
 
 import csv
-import importlib
 
 PS_NP = ['poslanska skupina', 'nepovezani poslanec']
 
@@ -37,7 +36,7 @@ def fixSpeeches():
         multi.delete()
 
     for i in range(45):
-        print(Speech.getValidSpeeches(new_year+timedelta(i)).filter(speaker__id=41).count())
+        print Speech.getValidSpeeches(new_year+timedelta(i)).filter(speaker__id=41).count()
 
 
 def setRecipientsToQuestions():
@@ -47,17 +46,17 @@ def setRecipientsToQuestions():
         text = question.recipient_text
         date = question.date
         recipients = parseRecipient(text, date)
-        print(recipients, text)
+        print recipients, text
         for i, recipient in enumerate(recipients):
             if recipient:
                 if recipient['type'] == 'person':
-                    print('save person')
+                    print 'save person'
                     question.recipient_person.add(recipient['recipient'])
                 elif recipient['type'] == 'org':
-                    print('save org')
+                    print 'save org'
                     question.recipient_organization.add(recipient['recipient'])
                 elif recipient['type'] == 'post':
-                    print('save post')
+                    print 'save post'
                     question.recipient_post.add(recipient['recipient'])
             else:
                 #not_a_member.append({text.split(',')[i]: date})
@@ -75,13 +74,13 @@ def fixBallotsVoterParty(person_id):
     mems = Membership.objects.filter(person_id=person_id,
                                      role='voter').exclude(on_behalf_of=None)
 
-    print(mems)
+    print mems
     for mem in mems:
         start_time, end_time = getStartEndTime(mem)
         ballots = Ballot.objects.filter(voter_id=person_id,
                                         vote__start_time__gte=start_time,
                                         vote__start_time__lte=end_time)
-        print(list(set(list(ballots.values_list("voterparty", flat=True)))))
+        print list(set(list(ballots.values_list("voterparty", flat=True))))
         ballots.update(voterparty=mem.on_behalf_of)
 
 
@@ -142,7 +141,7 @@ def fixSpeakerParty(person_id):
                                          role__in=['minister', 'ministrica'])
     mems = list(party) + list(ministry)
     mems = sorted(mems, key=lambda x: x.start_time)
-    print(mems)
+    print mems
     prev_end = None
     for mem in mems:
         start_time, end_time = getStartEndTime(mem)
@@ -166,7 +165,7 @@ def test_ministers_memberships(person_id):
     for i, mem in enumerate(mems):
         if i+1 < len(mems):
             if mem.end_time > mems[i+1].start_time:
-                print(mem, mems[i+1], "membershipa se prekrivata")
+                print mem, mems[i+1], "membershipa se prekrivata"
 
 
 def uk_motion_result():
@@ -187,7 +186,7 @@ def set_ballot(option):
     for vote in Vote.objects.all():
         # get all MPs
         voters = vote.ballot_set.all().values_list('voter', flat=True)
-        print((voters.count()))
+        print(voters.count())
         mems = Membership.objects.filter(organization__classification__in=PS_NP)
 
         fdate = vote.start_time
@@ -198,7 +197,7 @@ def set_ballot(option):
             Q(end_time=None)
         )
         people = Person.objects.filter(id__in=mems.values_list('person_id', flat=True)).exclude(id__in=voters)
-        print((people.count(), "people"))
+        print(people.count(), "people")
         for person in people:
             Ballot(vote=vote, voter=person, option=option, voterparty=dz_org).save()
 
@@ -214,7 +213,7 @@ def check_person_parser_data():
 
 def getPersonsFromOldParlameter():
     import sys
-    importlib.reload(sys)
+    reload(sys)
     sys.setdefaultencoding('utf8')
     count = 0
     url = 'https://data.parlameter.si/v1/persons'
@@ -223,7 +222,7 @@ def getPersonsFromOldParlameter():
         old = get_person_by_parser_name(old_people, person.name_parser)
         if old:
             count += 1
-            print('update ', person.name.encode('utf-8'), old['name'].encode('utf-8'))
+            print 'update ', person.name.encode('utf-8'), old['name'].encode('utf-8')
             person.name = old['name']
             #person.family_name = old['family_name']
             #person.given_name = old['given_name']
@@ -242,9 +241,9 @@ def getPersonsFromOldParlameter():
             #person.birth_date = old['birth_date']
             person.save()
         else:
-            print('skipp ', person.name.encode('utf-8'))
+            print 'skipp ', person.name.encode('utf-8')
 
-    print(count)
+    print count
 
 
 def get_person_by_parser_name(old_people, name_parser):
@@ -277,7 +276,7 @@ def getDuplicatedPersons():
             for i in d:
                 visited.append(i.id)
             merge_people(d)
-            print(d)
+            print d
 
 
 def merge_people(q_s):
@@ -295,7 +294,7 @@ def find_non_membershis_votes(others_id):
     for v in Ballot.objects.filter(voterparty=344, option__in=["for", "against", "abstain"]):
         mps[v.voter.id].append(v.vote.start_time)
 
-    for i, m in list(mps.items()):
+    for i, m in mps.items():
         out.append([i, Person.objects.get(id=i).name, min(m), max(m)])
 
     return out
@@ -320,19 +319,19 @@ data = {
 def move_memberships(source_org, dest_org):
     s_pss = Membership.objects.filter(organization__id=source_org)
     d_pss = Membership.objects.filter(organization__id=dest_org)
-    print(('source', s_pss, 'dest_org', d_pss))
+    print('source', s_pss, 'dest_org', d_pss)
 
     dest_org_obj = Organization.objects.get(id=dest_org)
 
     for ps_m in s_pss:
-        print(ps_m.person)
+        print ps_m.person
         person = ps_m.person
         dest_membership = d_pss.filter(person=person)
         if dest_membership:
             if ps_m.end_time == None:
                 # check start time and fix it
                 if dest_membership[0].end_time == None:
-                    print('Fixing start time', dest_membership[0].start_time, ps_m.start_time)
+                    print 'Fixing start time', dest_membership[0].start_time, ps_m.start_time
                     dest_membership = dest_membership[0]
                     dest_membership.start_time = ps_m.start_time
                     dest_membership.save()
@@ -341,14 +340,14 @@ def move_memberships(source_org, dest_org):
                     print('This shit does not work')
             else:
                 # add new membership
-                print('copying memberhsip 2')
+                print 'copying memberhsip 2'
                 ps_m.pk = None
                 ps_m.organization = dest_org_obj
                 ps_m.save()
 
         else:
             # add new membership
-            print('copying memberhsip 1', ps_m.start_time, ps_m.end_time)
+            print 'copying memberhsip 1', ps_m.start_time, ps_m.end_time
             ps_m.pk = None
             ps_m.organization = dest_org_obj
             ps_m.save()
@@ -400,7 +399,7 @@ def change_international_classes():
         'urad vlade': 'gov_office'
     }
 
-    for old, new in list(org_map.items()):
+    for old, new in org_map.items():
         orgs = Organization.objects.filter(classification=old)
         orgs.update(classification=new)
 
@@ -444,226 +443,28 @@ def find_voters_without_membership():
             start_time = membership.start_time if membership.start_time else datetime.min
             end_time = membership.end_time if membership.end_time else datetime.max
             voter_ballots = voter_ballots.exclude(vote__start_time__range=[start_time, end_time])
-        if voter_ballots:
-            start_times = voter_ballots.values_list('vote__start_time', flat=True)
-            out.append({
-                'voter': membership.person.name,
-                'votes_count': voter_ballots.count(),
-                'votes_min_start_time': min(start_times),
-                'votes_max_start_time': max(start_times),
-                'votes_options': list(voter_ballots.order_by('vote__start_time').values_list('option', flat=True)),
-                'queryset': voter_ballots
-            })
 
+        out.append(voter_ballots)
     return out
 
 
 def add_absent_ballot_if_membership_exists():
     for ballot in Ballot.objects.all().distinct("voter"):
-        print(ballot.voter.name)
+        print ballot.voter.name
         mms = Membership.objects.filter(person=ballot.voter, role="voter")
         voter_ballots = Ballot.objects.filter(voter=ballot.voter)
         votes_on = voter_ballots.values_list("vote_id")
         for m in mms.order_by("start_time"):
             if m.end_time:
-                votes = Vote.objects.filter(Q(start_time__gte=m.start_time), Q(start_time__lte=m.end_time), organization_id=199)
+                votes = Vote.objects.filter(Q(start_time__gte=m.start_time),
+                                            Q(start_time__lte=m.end_time))
             else:
-                votes = Vote.objects.filter(Q(start_time__gte=m.start_time), organization_id=199)
+                votes = Vote.objects.filter(Q(start_time__gte=m.start_time))
+
             votes_without_ballots = votes.exclude(id__in=votes_on)
             votes_without_ballots = votes_without_ballots.exclude(counter__isnull=False)
-            print((votes_without_ballots.count()))
+
+            print(votes_without_ballots.count())
             # add ballots for this votes
             for vote in votes_without_ballots:
                 Ballot(vote=vote, voter=ballot.voter, voterparty=m.on_behalf_of, option='absent').save()
-
-
-def unknown_sniperts():
-    da = AgendaItem.objects.values('name')\
-                .annotate(Count('id'), 'id') \
-                .order_by()\
-                .filter(id__count__gt=1)
-
-    now=datetime.now()
-    for d in da:
-        ais = AgendaItem.objects.filter(name=d['name']).order_by("created_at")
-        s1 = ais[0].speeches_many.all().filter(valid_from__lt=now, valid_to__gt=now)
-        s2 = ais[1].speeches_many.all().filter(valid_from__lt=now, valid_to__gt=now)
-        c1 = s1.count()
-        c2 = s2.count()
-        if c1 != 0 and c2 != 0:
-            #print(ais[0].created_at, ais[1].created_at)
-            print(c1, c2)
-            sc1 = list(s1.values_list("content", flat=True))
-            sc2 = list(s2.values_list("content", flat=True))
-            inter = intersect(sc1, sc2)
-            inter_c=len(inter)
-            if c1>c2:
-                print('wird')
-            print(inter_c)
-            if inter_c == c1:
-            print(ais[0].session.name)
-            cc+=1
-            #print inter
-            if c2 < 10:
-                print list(s1.values_list('content'))
-                print list(s2.values_list('content'))
-            print
-
-
-    cc=0
-    sessions=[]
-    for d in da:
-        ais = AgendaItem.objects.filter(name=d['name']).order_by("created_at")
-        s1 = ais[0].speeches_many.all().filter(valid_from__lt=now, valid_to__gt=now).order_by('order')
-        s2 = ais[1].speeches_many.all().filter(valid_from__lt=now, valid_to__gt=now).order_by('order')
-        c1 = s1.count()
-        c2 = s2.count()
-        if c1 != 0 and c2 != 0:
-            #print(ais[0].created_at, ais[1].created_at)
-            print(c1, c2)
-            sc1 = list(s1.values_list("content", flat=True))
-            sc2 = list(s2.values_list("content", flat=True))
-            inter = intersect(sc1, sc2)
-            inter_c=len(inter)
-            if c1>c2:
-                print('wird')
-                print(s1[0].agenda_items.all().values_list('name', flat=True))
-                print(s2[0].agenda_items.all().values_list('name', flat=True))
-            print(inter_c)
-            print(ais[0].session.id)
-            if inter_c == c1:
-            cc+=1
-            sessions.append(ais[0].session.id)
-            valid_to = s2[0].created_at
-            print('UPDATE')
-            for s in s1:
-                s.valid_to=valid_to
-                s.save()
-            print 'UPDATED', s1.count()
-            if s1[0].content==s2[0].content and s1[2].content==s2[2].content:
-                print list(s1[:5].values_list('content'))
-                print list(s2[:5].values_list('content'))
-                cc+=1
-                sessions.append(ais[0].session.id)
-                print('UPDATE')
-                for s in s1:
-                    s.valid_to=valid_to
-                    s.save()
-                print 'UPDATED', s1.count()
-            print
-
-
-    for i in ids:
-        s1 = Speech.objects.get(id=i[0])
-        a1=s1.agenda_items.all()
-        s2 = Speech.objects.get(id=i[1])
-        a2=s2.agenda_items.all()
-        if s1.valid_to == s2.valid_to and s1.order == s2.order:
-            print a1
-            print a2
-            print s1.content
-            print s1.order, s2.order
-            print s1.id
-            print
-            if a1[0].created_at > a2[0].created_at:
-                a = a1[0]
-                ao = a2[0]
-            else:
-                a = a2[0]
-                ao = a1[0]
-
-            ais = [a, ao]
-            s1 = ais[0].speeches_many.all().filter(valid_from__lt=now, valid_to__gt=now).order_by('order')
-            s2 = ais[1].speeches_many.all().filter(valid_from__lt=now, valid_to__gt=now).order_by('order')
-            c1 = s1.count()
-            c2 = s2.count()
-            if c1 != 0 and c2 != 0:
-                #print(ais[0].created_at, ais[1].created_at)
-                print(c1, c2)
-                sc1 = list(s1.values_list("content", flat=True))
-                sc2 = list(s2.values_list("content", flat=True))
-                inter = intersect(sc1, sc2)
-                inter_c=len(inter)
-                if c1>c2:
-                    print('wird')
-                    print(s1[0].agenda_items.all().values_list('name', flat=True))
-                    print(s2[0].agenda_items.all().values_list('name', flat=True))
-                print(inter_c)
-                print(ais[0].session.id)
-                if inter_c == c1:
-                    cc+=1
-                    sessions.append(ais[0].session.id)
-                    valid_to = s2[0].created_at
-                    print('UPDATE')
-                    for s in s1:
-                        s.valid_to=valid_to
-                        s.save()
-                    print 'UPDATED', s1.count()
-                if s1[0].content==s2[0].content and s1[2].content==s2[2].content:
-                    print list(s1[:5].values_list('content'))
-                    print list(s2[:5].values_list('content'))
-                    cc+=1
-                    sessions.append(ais[0].session.id)
-                    print('UPDATE')
-                    for s in s1:
-                        s.valid_to=valid_to
-                        s.save()
-                    print 'UPDATED', s1.count()
-                print
-
-
-    votes = find_voters_without_membership()
-    for person in votes:
-        if person:
-            if person[0].voter_id==1462:
-                for b in person:
-                    #print(b.option)
-                    if b.option == "for":
-                        print(b.vote.start_time)
-                        print b.vote.ballot_set.count()
-                        print(b.vote.session, b.vote.name)
-                    ss.append(b.vote.session_id)
-
-
-
-    cc= 0
-    data = []
-    for v in Vote.objects.all().order_by("start_time"):
-        count = v.ballot_set.count()
-        if count == 0:
-            continue
-        #if count == 151:
-        #    continue
-        cc+=1
-        print count
-        data.append((v.start_time, count))
-
-
-
-    out=[]
-    cc = 0
-    prev = None
-    for c in data:
-        if c[1] == cc:
-            pass
-        else:
-            cc = c[1]
-            #if cc != 151:
-            out.append(prev)
-            out.append(c)
-        prev = c
-
-    fd=Membership.objects.earliest("start_time").start_time
-    rr=(datetime.now()-fd).days
-
-    for i in range(rr):
-        date_ = fd+timedelta(days=i)
-        members = Membership.objects.filter(Q(start_time__lte=date_) |
-                                Q(start_time=None),
-                                Q(end_time__gte=date_) |
-                                Q(end_time=None),
-                                role='voter',
-                                organization_id=199).count()
-        print(members)
-
-

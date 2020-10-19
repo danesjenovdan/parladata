@@ -32,7 +32,7 @@ def getSpeechesOfPGs(from_year, is_coalition=None):
         return speechesByGroup
     else:
         groups = parlGroups.values_list("id", flat=True)
-        print("Groups in ", groups)
+        print "Groups in ", groups
         return {0: Speech.objects.filter(party__id__in=groups,
                                          start_time__lte=start_time)}
 
@@ -73,8 +73,8 @@ def lemmatizeTokens(tokens):
 
 def counterOfUniqueWords(speechesQS):
     out = {}
-    for owner, speeches in list(speechesQS.items()):
-        print("Stejem: ", owner)
+    for owner, speeches in speechesQS.items():
+        print "Stejem: ", owner
         out[owner] = getWordsCounter(''.join(speeches.values_list('content',
                                                                   flat=True)))
     return out
@@ -113,16 +113,16 @@ def getTopWordsOf(typeOf='pg', nWords=1000, from_year=2016):
     if typeOf == 'pg':
         gS = getSpeechesOfPGs(from_year)
         p_data = requests.get('https://data.parlameter.si/v1/getAllPGs').json()
-        all_keys = {str(obj['id']): obj['acronym'] for obj in list(p_data.values())}
+        all_keys = {str(obj['id']): obj['acronym'] for obj in p_data.values()}
     else:
         gS = getSpeechesOfMembers(from_year)
         p_data = requests.get('https://data.parlameter.si/v1/getMPs').json()
         all_keys = {str(obj['id']): obj['name'] for obj in p_data}
 
-    print(all_keys)
+    print all_keys
     cP = counterOfUniqueWords(gS)
-    for key in list(cP.keys()):
-        if str(key) in list(all_keys.keys()):
+    for key in cP.keys():
+        if str(key) in all_keys.keys():
             file_name = slugify(all_keys[str(key)]) + '_top' + str(nWords) + '.csv'
         else:
             file_name = str(key) + '_top' + str(nWords) + '.csv'
@@ -135,16 +135,16 @@ def getCountOfMentionedOthers(typeOf='pg', from_year=2016):
     if typeOf == 'pg':
         gS = getSpeechesOfPGs(from_year)
         p_data = requests.get('https://data.parlameter.si/v1/getAllPGs').json()
-        all_keys = {str(obj['id']): obj['acronym'] for obj in list(p_data.values())}
+        all_keys = {str(obj['id']): obj['acronym'] for obj in p_data.values()}
     else:
         gS = getSpeechesOfMembers(from_year)
         p_data = requests.get('https://data.parlameter.si/v1/getMPs').json()
         all_keys = {str(obj['id']): obj['name'] for obj in p_data}
 
-    print(all_keys)
+    print all_keys
     cP = counterOfUniqueWords(gS)
-    for key in list(cP.keys()):
-        if str(key) in list(all_keys.keys()):
+    for key in cP.keys():
+        if str(key) in all_keys.keys():
             file_name = slugify(all_keys[str(key)]) + '_mentioned' + '.csv'
         else:
             file_name = str(key) + '_mentioned' + '.csv'
@@ -160,9 +160,9 @@ def getPresence(request):
         sesData = {}
         for v in votes:
             sesData[str(v.id)] = list(v.ballot_set.exclude(option='ni').values_list('voter_id', flat=True))
-            print(len(sesData[str(v.id)]))
-        sesData['on_session'] = list(set(sum(list(sesData.values()), [])))
-        print('on session', len(sesData['on_session']))
+            print len(sesData[str(v.id)])
+        sesData['on_session'] = list(set(sum(sesData.values(), [])))
+        print 'on session', len(sesData['on_session'])
         sesData['name'] = s.name
         presence.append(sesData)
     return JsonResponse(presence, safe=False)

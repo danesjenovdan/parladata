@@ -204,9 +204,15 @@ class VoteView(viewsets.ModelViewSet):
 
 class UntaggedVoteView(viewsets.ModelViewSet):
     authentication_classes = (SessionAuthentication, BasicAuthentication, OAuth2Authentication)
+
+    # TODO fix this. This workaround for migration.
+    # tag_list = []
+    # queryset = Vote.objects.all()#.exclude(tags__name__in=list(tag_list))
+
     tags=Vote.tags.all()
     tag_list = tags.values_list('name', flat=True)
     queryset = Vote.objects.all().exclude(tags__name__in=list(tag_list))
+
     serializer_class = VoteSerializer
     filter_backends = (DjangoFilterBackend, filters.SearchFilter,)
     filter_fields = ('session',)

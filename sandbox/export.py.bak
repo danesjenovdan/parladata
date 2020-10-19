@@ -2,6 +2,8 @@
 import csv
 import sys
 
+reload(sys)
+sys.setdefaultencoding("UTF-8")
 
 PS = ['poslanska skupina']
 
@@ -12,7 +14,7 @@ def dictToCSV(data, file_name):
                                quotechar='|',
                                quoting=csv.QUOTE_MINIMAL)
 
-        for key, value in list(data.items()):
+        for key, value in data.items():
             if type(value) == list:
                 e_data = value
             else:
@@ -85,7 +87,7 @@ def get_whole_mandate_members():
         is_valid = True
         mems = Membership.objects.filter(person_id=p, organization__classification__in=PS_NP).order_by("start_time")
         if mems.filter(end_time=None):
-            print((p, "je zacel"))
+            print(p, "je zacel")
             # This members is stil member
             end_time = mems[0].start_time
             print(end_time)
@@ -146,23 +148,3 @@ def export_questions():
             ' & '.join(list(q.recipient_organization.values_list('_name', flat=True))),
             ' '.join(list(q.links.values_list('url', flat=True))),
         ])
-
-
-def getVotesByHand():
-    out_data = [['session', 'text', 'hand vote']]
-    for vote in Vote.objects.all():
-        out_data.append([
-            vote.session.name,
-            vote.name,
-            bool(vote.counter)
-        ])
-    listToCSV(out_data, 'votes-hand.csv')
-
-
-
-def get_votes_array(votes):
-    return [[vote.motion, vote.result, vote.start_time.isoformat(), vote.session.name] for vote in votes]
-
-# for l in ll:
-#     votes = Vote.objects.filter(epa=l.epa).order_by('start_time')
-#     print(l.epa, l.text, l.result)
