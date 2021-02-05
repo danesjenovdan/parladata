@@ -168,7 +168,7 @@ async function solrSelect({ highlight = false, facet = false } = {}, params) {
       'facet.range': 'start_time',
       'facet.range.start': `${config.facetRangeStart}T00:00:00.000Z`,
       'facet.range.gap': '+1MONTHS',
-      'facet.range.end': 'NOW',
+      'facet.range.end': config.facetRangeEnd ? `${config.facetRangeEnd}T00:00:00.000Z` : 'NOW',
     });
   }
 
