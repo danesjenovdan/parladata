@@ -4,7 +4,7 @@ from taggit_serializer.serializers import (TagListSerializerField,
 from taggit.models import Tag
 
 from parladata.models import *
-
+import json
 
 
 class PersonSerializer(serializers.ModelSerializer):
@@ -99,7 +99,7 @@ class VoteSerializer(TaggitSerializer, serializers.ModelSerializer):
 
     def get_results(self, obj):
         if obj.counter:
-            return {}
+            return json.loads(obj.counter)
         return obj.getResult()
 
     def get_has_ballots(self, obj):
