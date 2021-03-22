@@ -7,7 +7,6 @@ services:
     ports:
       - 8983:8983
     volumes:
-      - ./solr/solr-data:/opt/solr/server/solr/mycores
       - ./solr/parlasearch-conf:/parlasearch-conf
 
   api:
