@@ -1,0 +1,16 @@
+
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: parlameter
+resources:
+  - solr.yaml
+  - api.yaml
+images:
+  -
+    name: parlasearch
+    newName: rg.fr-par.scw.cloud/djnd/parlasearch
+    newTag: 'latest'
+  -
+    name: parlasolr
+    newName: rg.fr-par.scw.cloud/djnd/parlasolr
+    newTag: 'latest'
