@@ -14,7 +14,7 @@ const defaultConfig = {
     // glej: 'https://glej.parlameter.si',
     // base: 'https://parlameter.si',
   },
-  solrUrl: 'http://localhost:8983/solr/parlasearch',
+  solrUrl: process.env.SOLR_URL ? process.env.SOLR_URL : 'http://localhost:8983/solr/parlasearch',
   tfidf: {
     blacklist: ['ako', 'akoprav', 'akoravno', 'akotudi', 'ali', 'ampak', 'bi', 'bili', 'biti', 'bo', 'bodi', 'bodisi', 'bom', 'bržkone', 'če', 'čeprav', 'čeravno', 'četudi', 'čim', 'da', 'danes', 'dasi', 'dasiprav', 'dasiravno', 'dasitudi', 'del', 'do', 'dober', 'dočim', 'dokler', 'doklič', 'dosti', 'drag', 'drug', 'drugače', 'ergo', 'ga', 'glede', 'gor', 'gotovo', 'hvala', 'ima', 'in', 'iz', 'jaz', 'je', 'kadar', 'kaj', 'kajti', 'kak', 'kakor', 'kakšen', 'kar', 'katere', 'kdaj', 'kdo', 'ker', 'ki', 'ko', 'kolikor', 'komaj', 'kot', 'le', 'lep', 'ma', 'magari', 'malce', 'mali', 'marveč', 'me', 'med', 'medtem', 'mi', 'morda', 'na', 'naj', 'najbrž', 'najsi', 'najsibo', 'namreč', 'navrh', 'navsezadnje', 'nazadnje', 'ne', 'nek', 'nekaj', 'nekakšen', 'nekateri', 'nekdo', 'nekje', 'ni', 'nikdar', 'niti', 'no', 'notri', 'očiten', 'od', 'odklej', 'odnosno', 'ogromen', 'ozir', 'oziroma', 'pa', 'pač', 'po', 'pol', 'potem', 'potlej', 'pravzaprav', 'preden', 'predno', 'pri', 'priti', 'res', 'saj', 'sam', 'samo', 'se', 'sem', 'seveda', 'si', 'sicer', 'skupaj', 'smo', 'so', 'spet', 'ste', 'svoj', 'še', 'ta', 'tak', 'tako', 'takoj', 'takrat', 'tale', 'te', 'tedaj', 'teh', 'tem', 'temveč', 'ter', 'ti', 'tisti', 'to', 'toda', 'tolik', 'torej', 'tudi', 'tukaj', 'tule', 'vaš', 'vem', 'vendar', 'vendarle', 'verjetneje', 'ves', 'vi', 'vir', 'vse', 'vseeno', 'vsi', 'za', 'zakaj', 'zame', 'zato', 'zdaj', 'zdi', 'zelo', 'znotraj', 'že'],
   },

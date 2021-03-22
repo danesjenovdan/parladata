@@ -1,0 +1,19 @@
+version: '3'
+services:
+  solr:
+    container_name: solr
+    build: ./solr
+    restart: always
+    ports:
+      - 8983:8983
+    volumes:
+      - ./solr/solr-data:/opt/solr/server/solr/mycores
+      - ./solr/parlasearch-conf:/parlasearch-conf
+
+  api:
+    container_name: api
+    build: ./api
+    ports:
+      - 7003:7003
+    volumes:
+      - ./api:/api
