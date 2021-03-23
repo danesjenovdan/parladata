@@ -37,16 +37,16 @@ spec:
           initialDelaySeconds: 15
           periodSeconds: 30
           timeoutSeconds: 5
-      volumeClaimTemplates:
-      - metadata:
-          name: parlasolr-persistent-storage
-        spec:
-          storageClassName: 'scw-bssd-retain'
-          accessModes:
-            - ReadWriteOnce
-          resources:
-            requests:
-              storage: 10Gi
+  volumeClaimTemplates:
+  - metadata:
+      name: parlasolr-persistent-storage
+    spec:
+      storageClassName: 'scw-bssd-retain'
+      accessModes:
+        - ReadWriteOnce
+      resources:
+        requests:
+          storage: 10Gi
 ---
 apiVersion: v1
 kind: Service
