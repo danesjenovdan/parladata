@@ -9,8 +9,8 @@ images:
   -
     name: parlasearch
     newName: rg.fr-par.scw.cloud/djnd/parlasearch
-    newTag: '09913b79c751bbc2aa86018dfb9e3d0f79fe4098'
+    newTag: 'f277089c59cba187cc8d891e940211f87cccb086'
   -
     name: parlasolr
     newName: rg.fr-par.scw.cloud/djnd/parlasolr
-    newTag: '09913b79c751bbc2aa86018dfb9e3d0f79fe4098'
+    newTag: 'f277089c59cba187cc8d891e940211f87cccb086'
