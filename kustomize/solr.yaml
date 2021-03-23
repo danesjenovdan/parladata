@@ -41,9 +41,8 @@ spec:
       - name: create-core
         image: parlasolr
         # command: ['solr', 'create_core', '-c', 'parlasearch']
-        # a very dirty hack to make sure we always return 0
-        # even when the core already exists
-        command: ['sh', '/scripts/create_core.sh']
+        # create parlasearch core with a convenience script
+        command: ['sh', '/opt/docker-solr/scripts/precreate-core parlasearch']
         volumeMounts:
         - name: parlasolr-persistent-storage
           mountPath: /opt/solr/server/solr/mycores
