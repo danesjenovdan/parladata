@@ -37,9 +37,8 @@ spec:
           periodSeconds: 30
           timeoutSeconds: 5
       volumeClaimTemplates:
-        -
-          metadata:
-            name: parlasolr-persistent-storage
+      - metadata:
+          name: parlasolr-persistent-storage
         spec:
           storageClassName: 'scw-bssd-retain'
           accessModes:
