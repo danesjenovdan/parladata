@@ -2,6 +2,7 @@ FROM solr:7.6.0
 
 COPY ./slolem /opt/solr-slolem
 COPY ./parlasearch-conf /parlasearch-conf
+COPY ./scripts/create_core.sh /scripts/create_core.sh
 
 ENV LD_LIBRARY_PATH=/opt/solr-slolem/bin
 
