@@ -5,6 +5,7 @@ metadata:
   labels:
     app: parlasolr
 spec:
+  serviceName: parlasolr
   replicas: 1
   selector:
     matchLabels:
