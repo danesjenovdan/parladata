@@ -42,7 +42,7 @@ spec:
         image: parlasolr
         # command: ['solr', 'create_core', '-c', 'parlasearch']
         # create parlasearch core with a convenience script
-        command: ['sh', '/opt/docker-solr/scripts/precreate-core', 'parlasearch']
+        command: ['sh', '-c', '/opt/docker-solr/scripts/precreate-core parlasearch']
         volumeMounts:
         - name: parlasolr-persistent-storage
           mountPath: /opt/solr/server/solr/mycores
