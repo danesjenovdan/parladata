@@ -43,7 +43,7 @@ spec:
         # command: ['solr', 'create_core', '-c', 'parlasearch']
         # a very dirty hack to make sure we always return 0
         # even when the core already exists
-        command: ['echo', '$(solr create_core -c parlasearch)']
+        command: ['sh', '/scripts/create_core.sh']
         volumeMounts:
         - name: parlasolr-persistent-storage
           mountPath: /opt/solr/server/solr/mycores
