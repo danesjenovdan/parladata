@@ -48,9 +48,15 @@ spec:
         volumeMounts:
         - name: parlasolr-persistent-storage
           mountPath: /opt/solr/server/solr/mycores
-      - name: link-config
+      - name: link-config-1
         image: parlasolr
-        command: ['ln', '-s', '--force', '/parlasearch-conf/*', '/opt/solr/server/solr/mycores/parlasearch/conf/']
+        command: ['cp', '-f', '/parlasearch-conf/schema.xml', '/opt/solr/server/solr/mycores/parlasearch/conf/']
+        volumeMounts:
+        - name: parlasolr-persistent-storage
+          mountPath: /opt/solr/server/solr/mycores
+      - name: link-config-2
+        image: parlasolr
+        command: ['cp', '-f', '/parlasearch-conf/solrconfig.xml', '/opt/solr/server/solr/mycores/parlasearch/conf/solrconfig.xml']
         volumeMounts:
         - name: parlasolr-persistent-storage
           mountPath: /opt/solr/server/solr/mycores
