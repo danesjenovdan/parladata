@@ -37,6 +37,22 @@ spec:
           initialDelaySeconds: 15
           periodSeconds: 30
           timeoutSeconds: 5
+      initContainers:
+      - name: create-core
+        image: parlasolr
+        # command: ['solr', 'create_core', '-c', 'parlasearch']
+        # a very dirty hack to make sure we always return 0
+        # even when the core already exists
+        command: ['echo', '$(solr create_core -c parlasearch)']
+        volumeMounts:
+        - name: parlasolr-persistent-storage
+          mountPath: /opt/solr/server/solr/mycores
+      - name: link-config
+        image: parlasolr
+        command: ['ln', '-s', '--force', '/parlasearch-conf/*', '/opt/solr/server/solr/mycores/parlasearch/conf/']
+        volumeMounts:
+        - name: parlasolr-persistent-storage
+          mountPath: /opt/solr/server/solr/mycores
   volumeClaimTemplates:
   - metadata:
       name: parlasolr-persistent-storage
