@@ -55,6 +55,8 @@ spec:
   volumeClaimTemplates:
   - metadata:
       name: parlasolr-persistent-storage
+      annotations:
+          pv.beta.kubernetes.io/gid: "8983"
     spec:
       storageClassName: 'scw-bssd-retain'
       accessModes:
