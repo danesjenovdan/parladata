@@ -6,7 +6,7 @@ import sys
 PS = ['poslanska skupina']
 
 def dictToCSV(data, file_name):
-    with open('exports/' + file_name, 'wb') as csvfile:
+    with open('exports/' + file_name, 'w') as csvfile:
         csvwriter = csv.writer(csvfile,
                                delimiter=',',
                                quotechar='|',
@@ -23,7 +23,7 @@ def dictToCSV(data, file_name):
 
 
 def listToCSV(data, file_name):
-    with open('exports/' + file_name, 'wb') as csvfile:
+    with open('exports/' + file_name, 'w') as csvfile:
         csvwriter = csv.writer(csvfile,
                                delimiter='\t',
                                quotechar='"',
