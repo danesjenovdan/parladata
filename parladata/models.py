@@ -914,7 +914,8 @@ class Vote(Timestampable, Taggable, models.Model):
                }
         for opt in opt_counts:
             out[opt[0]] = opt[1]
-
+        if not opts:
+            out = self.counter
         return out
 
 
@@ -976,6 +977,10 @@ class Question(Timestampable, models.Model):
     date = PopoloDateTimeField(blank=True,
                                null=True,
                                help_text='Date of the question.')
+
+    date_of_answer = PopoloDateTimeField(blank=True,
+                                         null=True,
+                                         help_text='Date of answer the question.')
 
     title = models.TextField(blank=True,
                              null=True,

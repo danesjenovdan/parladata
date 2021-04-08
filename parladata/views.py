@@ -3754,6 +3754,7 @@ def getAllChangesAfter(request, # TODO not documented because strange
                  'recipient_posts': list(recipient_posts),
                  'recipient_text': question.recipient_text,
                  'link': link,
+                 'date_of_answer': question.date_of_answer
                  }
         data['questions'].append(q_obj)
 
