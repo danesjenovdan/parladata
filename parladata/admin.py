@@ -245,6 +245,7 @@ class SessionAdmin(admin.ModelAdmin):
 
 class SpeechAdmin(admin.ModelAdmin):
     #form = SpeechForm
+    search_fields = ['speaker__name', 'content']
     inlines = [
         MilestoneSpeechInline,
     ]

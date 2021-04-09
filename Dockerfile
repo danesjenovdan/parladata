@@ -1,5 +1,5 @@
-FROM python:3.7
-RUN apt-get update
+FROM python:3.8
+RUN apt-get update && apt-get install --yes postgresql-client
 RUN mkdir /app
 WORKDIR /app
 COPY . /app
