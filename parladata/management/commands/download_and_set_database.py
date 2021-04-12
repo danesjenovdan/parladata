@@ -1,8 +1,6 @@
 from django.core.management.base import BaseCommand, CommandError
 from django.conf import settings
 
-from parladata.models import Person
-
 import os
 import requests
 

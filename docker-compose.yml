@@ -1,19 +1,27 @@
 version: '3.7'
-
 services:
-  db:
+  parladata-db:
     image: postgres:11
-    container_name: "my_postgres"
+    container_name: "postgres-parladata"
     environment:
-      POSTGRES_USER: parlauser
-      POSTGRES_PASSWORD: parlapassword
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
       POSTGRES_DB: parladata
-      PGDATA: /var/lib/postgresql/data/pgdata
     restart: always
-    volumes:
-      - ./postgres-data:/var/lib/postgresql/data
     ports:
-      - "54320:5432"
+      - "5434:5432"
+
+  parladata:
+    build: .
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+        - .:/app
+        - ./static:/static
+    ports:
+        - "8000:8000"
+    depends_on:
+        - parladata-db
 
 volumes:
   pgdata:
+
