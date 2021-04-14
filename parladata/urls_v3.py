@@ -40,6 +40,7 @@ urlpatterns = [
     url(r'^getAllPGsExt/', AllPGsExt.as_view()), # refactor name
     url(r'^getAllORGsExt/', AllORGsExt.as_view()), # refactor name
     url(r'^getNumberOfSpeeches/', NumberOfSpeeches.as_view()), # refactor name
+    url(r'^', include(router.urls)),
 ]
 
 

@@ -29,96 +29,44 @@ class MultiValueKeyFilter(Filter):
 
 class OrganizationsFilterSet(FilterSet):
     ids = MultiValueKeyFilter(field_name='id')
-
     class Meta:
         model = Organization
         fields = ('ids',)
 
 
-# ViewSets define the view behavior.
 class PersonView(viewsets.ModelViewSet):
-    # authentication_classes = (SessionAuthentication, BasicAuthentication, OAuth2Authentication,)
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     serializer_class = PersonSerializer
     filter_backends = (filters.SearchFilter,)
     search_fields = ('name',)
 
-    def get_queryset(self):
-        queryset = Person.objects.all()
-        mps = self.request.query_params.get('mps', None)
-        voters_of = self.request.query_params.get('voters_of', None)
-        date_ = datetime.now()
-        if mps is not None:
-            MPs_ids = Membership.objects.filter(
-                Q(start_time__date__lte=date_) |
-                Q(start_time=None),
-                Q(end_time__date__gte=date_) |
-                Q(end_time=None),
-                organization__classification__in=settings.PS_NP,
-            ).values_list('person', flat=True)
-            queryset = queryset.filter(id__in=MPs_ids)
-        if voters_of:
-            print('voters_of', voters_of)
-            MPs_ids = Membership.objects.filter(
-                Q(start_time__date__lte=date_) |
-                Q(start_time=None),
-                Q(end_time__date__gte=date_) |
-                Q(end_time=None),
-                organization_id=voters_of,
-                role='voter'
-            ).values_list('person', flat=True)
-            queryset = queryset.filter(id__in=MPs_ids)
 
-        return queryset
-
-
-# ViewSets define the view behavior.
 class AgendaItemView(viewsets.ModelViewSet):
-    authentication_classes = (SessionAuthentication, BasicAuthentication, OAuth2Authentication)
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     queryset = AgendaItem.objects.all()
     serializer_class = AgendaItemSerializer
 
 
-# ViewSets define the view behavior.
 class DebateView(viewsets.ModelViewSet):
-    authentication_classes = (SessionAuthentication, BasicAuthentication, OAuth2Authentication)
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     queryset = Debate.objects.all()
     serializer_class = DebateSerializer
 
 
 class SessionView(viewsets.ModelViewSet):
-    authentication_classes = (SessionAuthentication, BasicAuthentication, OAuth2Authentication)
     permission_classes = [permissions.IsAuthenticated]
     queryset = Session.objects.all()
     serializer_class = SessionSerializer
-    fields = '__all__'
     filter_backends = (DjangoFilterBackend, filters.OrderingFilter)
-    filter_fields = ('organization', 'id')
+    filter_fields = ('organization',)
     ordering_fields = ('-start_time',)
-
-    @action(detail=False)
-    def sessions_with_speeches(self, request):
-        sessions_ids = Speech.objects.all().distinct('session').values_list('session_id', flat=True)
-        sessions = Session.objects.filter(id__in=sessions_ids)
-
-        page = self.paginate_queryset(sessions)
-        if page is not None:
-            serializer = self.get_serializer(page, many=True)
-            return self.get_paginated_response(serializer.data)
-
-        serializer = self.get_serializer(sessions, many=True)
-        return Response(serializer.data)
-
-
-class LastSessionWithVoteView(SessionView):
-    queryset = Session.objects.filter(organization_id=settings.DZ_ID)
 
 
 class OrganizationView(viewsets.ModelViewSet):
-    authentication_classes = (SessionAuthentication, BasicAuthentication, OAuth2Authentication)
     serializer_class = OrganizationSerializer
     filter_backends = (DjangoFilterBackend, filters.SearchFilter)
     filter_class = OrganizationsFilterSet
-    #filter_fields = ('id',)
+    filter_fields = ('classification',)
     search_fields = ('name_parser', '_name')
 
     def get_queryset(self):
