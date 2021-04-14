@@ -36,9 +36,8 @@ class OrganizationsFilterSet(FilterSet):
 
 class PersonView(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    queryset = Person.objects.all().order_by('id')
     serializer_class = PersonSerializer
-    filter_backends = (filters.SearchFilter,)
-    search_fields = ('name',)
 
 
 class AgendaItemView(viewsets.ModelViewSet):
