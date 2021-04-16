@@ -7,8 +7,6 @@ from django.db.models.signals import pre_save, post_save
 from django.dispatch import receiver
 from datetime import datetime
 from .behaviors.models import Timestampable, Taggable, Versionable
-from .querysets import PostQuerySet, OtherNameQuerySet, ContactDetailQuerySet, MembershipQuerySet, OrganizationQuerySet, PersonQuerySet
-#from django.contrib.gis.db import models as gis_models
 from django.db.models import Count as dCount
 from tinymce.models import HTMLField
 
@@ -732,6 +730,9 @@ class Session(Timestampable, Taggable, models.Model):
         else:
           return "Session"
 
+class SpeechQuerySet(models.QuerySet):
+    def getValidSpeeches(self, date_):
+        return Speech.objects.filter(valid_from__lt=date_, valid_to__gt=date_)
 
 class Speech(Versionable, Timestampable, Taggable, models.Model):
     """Speeches that happened in parlament."""
@@ -774,6 +775,9 @@ class Speech(Versionable, Timestampable, Taggable, models.Model):
     debate = models.ForeignKey('Debate', blank=True, null=True,
                                 help_text='Debates', related_name='speeches',
                                 on_delete=models.CASCADE,)
+
+    objects = models.Manager.from_queryset(SpeechQuerySet)()
+
     @staticmethod
     def getValidSpeeches(date_):
         return Speech.objects.filter(valid_from__lt=date_, valid_to__gt=date_)
