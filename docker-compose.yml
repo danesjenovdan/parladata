@@ -1,27 +1,29 @@
-version: '3.7'
-services:
-  parladata-db:
-    image: postgres:11
-    container_name: "postgres-parladata"
-    environment:
-      POSTGRES_USER: user
-      POSTGRES_PASSWORD: password
-      POSTGRES_DB: parladata
-    restart: always
-    ports:
-      - "5434:5432"
+version: '3'
 
+services:
   parladata:
     build: .
-    command: python manage.py runserver 0.0.0.0:8000
-    volumes:
-        - .:/app
-        - ./static:/static
     ports:
-        - "8000:8000"
+      - 8000:8000
     depends_on:
-        - parladata-db
+      - db
+    environment:
+      DJANGO_SETTINGS_MODULE: parladata_project.settings.k8s
+      DJANGO_SECRET_KEY: make-me-secret
+      DJANGO_DATABASE_HOST: db
+      PARLADATA_URL: http://localhost:8000/v1
+      PARLALIZE_URL: http://localhost:8080/v1
+      ISCI_URL: http://localhost:8888/
+      DASHBOARD_URL: http://localhost:8881/
+      PARLAMETER_URL: https://parlameter.si/
+      CARDS_URL: https://glej.parlameter.si/
+      NOTIFICATIONS_URL: https://obvestila.parlameter.si/
+    volumes:
+      - ./:/app
 
-volumes:
-  pgdata:
-
+  db:
+    image: postgres:latest
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: parladata
