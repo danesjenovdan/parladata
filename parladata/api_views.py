@@ -191,9 +191,9 @@ class AreaView(viewsets.ModelViewSet):
     filter_fields = ('calssification',)
 
 
-class LawView(viewsets.ModelViewSet):
+class LegislationView(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
-    queryset = Law.objects.all().order_by('-date')
+    queryset = Law.objects.all().order_by('-id')
     serializer_class = LawSerializer
     fields = '__all__'
     filter_backends = (DjangoFilterBackend,)
