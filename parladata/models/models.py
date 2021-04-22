@@ -6,11 +6,12 @@ from django.utils.translation import ugettext_lazy as _
 from django.db.models.signals import pre_save, post_save
 from django.dispatch import receiver
 from datetime import datetime
-from .behaviors.models import Timestampable, Taggable, Versionable
+from parladata.behaviors.models import Timestampable, Taggable, Versionable
 from django.db.models import Count as dCount
 from tinymce.models import HTMLField
+from parladata.models.organization import Organization
 
-class PopoloDateTimeField(models.DateTimeField):
+class models.DateTimeField(models.DateTimeField):
     """Converting datetime to popolo."""
     def get_popolo_value(self, value):
         return str(datetime.strftime(value, '%Y-%m-%d'))
@@ -93,12 +94,12 @@ class Person(Timestampable, models.Model):
                               blank=True, null=True,
                               help_text=_('A gender'))
 
-    birth_date = PopoloDateTimeField(_('date of birth'),
+    birth_date = models.DateTimeField(_('date of birth'),
                                      blank=True,
                                      null=True,
                                      help_text=_('A date of birth'))
 
-    death_date = PopoloDateTimeField(_('date of death'),
+    death_date = models.DateTimeField(_('date of death'),
                                      blank=True,
                                      null=True,
                                      help_text=_('A date of death'))
@@ -182,108 +183,6 @@ class Person(Timestampable, models.Model):
         return self.name + " " + str(self.id)
 
 
-class Organization(Timestampable, Taggable, models.Model):
-    """A group with a common purpose or reason
-    for existence that goes beyond the set of people belonging to it.
-    """
-
-    _name = models.TextField(_('name'),
-                             help_text=_('A primary name, e.g. a legally recognized name'))
-
-    name_parser = models.CharField(max_length=1024,
-                                   help_text='Name for parser.',
-                                   blank=True, null=True)
-
-    # array of items referencing "http://popoloproject.com/schemas/other_name.json#"
-    _acronym = models.CharField(_('acronym'),
-                                blank=True,
-                                null=True,
-                                max_length=128,
-                                help_text=_('Organization acronym'))
-
-    gov_id = models.TextField(_('Gov website ID'),
-                              blank=True, null=True,
-                              help_text=_('Gov website ID'))
-
-    classification = models.CharField(_('classification'),
-                                      max_length=128,
-                                      blank=True, null=True,
-                                      help_text=('An organization category, e.g. committee'))
-
-    # reference to "http://popoloproject.com/schemas/organization.json#"
-    parent = models.ForeignKey('Organization',
-                               blank=True, null=True,
-                               related_name='children',
-                               on_delete=models.CASCADE,
-                               help_text=_('The organization that contains this organization'))
-
-    dissolution_date = PopoloDateTimeField(blank=True, null=True,
-                                           help_text=_('A date of dissolution'))
-
-    founding_date = PopoloDateTimeField(blank=True, null=True,
-                                        help_text=_('A date of founding'))
-
-    # array of items referencing "http://popoloproject.com/schemas/contact_detail.json#"
-    description = models.TextField(blank=True, null=True,
-                                   help_text='Organization description')
-
-    is_coalition = models.IntegerField(blank=True, null=True,
-                                       help_text='1 if coalition, -1 if not, 0 if it does not apply')
-
-    url_name = 'organization-detail'
-
-    voters = models.IntegerField(_('voters'),
-                                 blank=True,
-                                 null=True,
-                                 help_text='number of votes cast for this person in their district')
-
-    def __str__(self):
-        return self.name + " " + str(self.id) + " " + (self._acronym if self._acronym else '')
-
-    def name_on(self, fdate=datetime.now()):
-        name_obj = self.names.filter(models.Q(start_time__lte=fdate) |
-                                     models.Q(start_time=None),
-                                     models.Q(end_time__gte=fdate) |
-                                     models.Q(end_time=None))
-        if name_obj:
-            return name_obj[0].name
-        else:
-            return self._name
-
-    def acronym_on(self, fdate=datetime.now()):
-        name_obj = self.names.filter(models.Q(start_time__lte=fdate) |
-                                     models.Q(start_time=None),
-                                     models.Q(end_time__gte=fdate) |
-                                     models.Q(end_time=None))
-        if name_obj:
-            return name_obj[0].acronym
-        else:
-            return self._acronym
-
-    @property
-    def name(self):
-        return self.name_on()
-
-    @property
-    def acronym(self):
-        return self.acronym_on()
-
-    @property
-    def former_name(self):
-        name_obj = self.names.all().order_by('start_time')
-        if name_obj.count() > 1:
-            return list(name_obj)[-2].name
-        else:
-            return self._name
-
-    @property
-    def has_voters(self):
-        if self.memberships.filter(role='voter'):
-            return True
-        else:
-            return False
-
-
 class Post(Timestampable, Taggable, models.Model):
     """A position that exists independent of the person holding it."""
 
@@ -312,9 +211,9 @@ class Post(Timestampable, Taggable, models.Model):
                                    help_text=_('The post held by the person in the organization through this membership'))
 
     # start and end time of memberships
-    start_time = PopoloDateTimeField(blank=True, null=True,
+    start_time = models.DateTimeField(blank=True, null=True,
                                      help_text='Start time')
-    end_time = PopoloDateTimeField(blank=True, null=True,
+    end_time = models.DateTimeField(blank=True, null=True,
                                    help_text='End time')
 
     def add_person(self, person):
@@ -359,9 +258,9 @@ class Membership(Timestampable, models.Model):
                                      help_text=_('The organization on whose behalf the person is a party to the relationship'))
 
     # start and end time of memberships
-    start_time = PopoloDateTimeField(blank=True, null=True,
+    start_time = models.DateTimeField(blank=True, null=True,
                                      help_text='Start time')
-    end_time = PopoloDateTimeField(blank=True, null=True,
+    end_time = models.DateTimeField(blank=True, null=True,
                                    help_text='End time')
 
     # array of items referencing "http://popoloproject.com/schemas/contact_detail.json#"
@@ -386,10 +285,10 @@ class OrganizationMembership(Timestampable, models.Model):
                                      on_delete=models.CASCADE,
                                      help_text=_('The organization which is parent in the relationship'))
 
-    start_time = PopoloDateTimeField(blank=True, null=True,
+    start_time = models.DateTimeField(blank=True, null=True,
                                      help_text='Start time')
 
-    end_time = PopoloDateTimeField(blank=True, null=True,
+    end_time = models.DateTimeField(blank=True, null=True,
                                    help_text='End time')
 
 
@@ -703,10 +602,10 @@ class Session(Timestampable, Taggable, models.Model):
                               blank=True, null=True,
                               help_text='Gov website ID.')
 
-    start_time = PopoloDateTimeField(blank=True, null=True,
+    start_time = models.DateTimeField(blank=True, null=True,
                                      help_text='Start time')
 
-    end_time = PopoloDateTimeField(blank=True, null=True,
+    end_time = models.DateTimeField(blank=True, null=True,
                                    help_text='End time')
 
     organization = models.ForeignKey('Organization',
@@ -756,10 +655,10 @@ class Speech(Versionable, Timestampable, Taggable, models.Model):
                                 on_delete=models.CASCADE,
                                 help_text='Speech session')
 
-    start_time = PopoloDateTimeField(blank=True, null=True,
+    start_time = models.DateTimeField(blank=True, null=True,
                                      help_text='Start time')
 
-    end_time = PopoloDateTimeField(blank=True, null=True,
+    end_time = models.DateTimeField(blank=True, null=True,
                                    help_text='End time')
 
     version_con = models.IntegerField(blank=True, null=True,
@@ -801,7 +700,7 @@ class Motion(Timestampable, Taggable, models.Model):
                               blank=True, null=True,
                               help_text='Government website id')
 
-    date = PopoloDateTimeField(blank=True, null=True,
+    date = models.DateTimeField(blank=True, null=True,
                                help_text='The date when the motion was proposed')
 
     session = models.ForeignKey('Session',
@@ -882,10 +781,10 @@ class Vote(Timestampable, Taggable, models.Model):
                                 on_delete=models.CASCADE,
                                 help_text='The legislative session in which the vote event occurs')
 
-    start_time = PopoloDateTimeField(blank=True, null=True,
+    start_time = models.DateTimeField(blank=True, null=True,
                                      help_text='Start time')
 
-    end_time = PopoloDateTimeField(blank=True, null=True,
+    end_time = models.DateTimeField(blank=True, null=True,
                                    help_text='End time')
 
     result = models.CharField(blank=True, null=True,
@@ -978,11 +877,11 @@ class Question(Timestampable, models.Model):
                                 on_delete=models.CASCADE,
                                 help_text='The session this question belongs to.')
 
-    date = PopoloDateTimeField(blank=True,
+    date = models.DateTimeField(blank=True,
                                null=True,
                                help_text='Date of the question.')
 
-    date_of_answer = PopoloDateTimeField(blank=True,
+    date_of_answer = models.DateTimeField(blank=True,
                                          null=True,
                                          help_text='Date of answer the question.')
 
@@ -1062,10 +961,10 @@ class session_deleted(Timestampable, models.Model):
                               blank=True, null=True,
                               help_text='Gov website ID.')
 
-    start_time = PopoloDateTimeField(blank=True, null=True,
+    start_time = models.DateTimeField(blank=True, null=True,
                                      help_text='Start time')
 
-    end_time = PopoloDateTimeField(blank=True, null=True,
+    end_time = models.DateTimeField(blank=True, null=True,
                                    help_text='End time')
 
     organization_id = models.IntegerField(blank=True,
@@ -1089,31 +988,6 @@ class Ignore(Timestampable, Taggable, models.Model):
     uid = models.CharField(max_length=64,
                            blank=True, null=True,
                            help_text='motions uid from DZ page')
-
-
-class OrganizationName(Timestampable, models.Model):
-    """
-    Objects for name history of organization.
-    """
-    organization = models.ForeignKey('Organization',
-                                     help_text=_('The organization who hold this name.'),
-                                     on_delete=models.CASCADE,
-                                     related_name='names')
-
-    name = models.TextField(_('name'),
-                            help_text=_('A primary name, e.g. a legally recognized name'))
-
-    acronym = models.CharField(_('acronym'),
-                               blank=True,
-                               null=True,
-                               max_length=128,
-                               help_text=_('Organization acronym'))
-
-    start_time = PopoloDateTimeField(blank=True, null=True,
-                                     help_text='Start time')
-
-    end_time = PopoloDateTimeField(blank=True, null=True,
-                                   help_text='End time')
 
 
 class Law(Timestampable, Taggable, models.Model):
@@ -1175,7 +1049,7 @@ class Law(Timestampable, Taggable, models.Model):
     note = HTMLField(blank=True,
                      null=True)
 
-    date = PopoloDateTimeField(blank=True,
+    date = models.DateTimeField(blank=True,
                                null=True,
                                help_text='Date of the law.')
 
@@ -1195,7 +1069,7 @@ class AgendaItem(Timestampable, Taggable, models.Model):
     name = models.TextField(blank=True, null=True,
                             help_text='The name of agenda')
 
-    date = PopoloDateTimeField(blank=True,
+    date = models.DateTimeField(blank=True,
                                null=True,
                                help_text='Date of the item.')
 
@@ -1215,7 +1089,7 @@ class Debate(Timestampable, Taggable, models.Model):
     order = models.IntegerField(blank=True, null=True,
                                 help_text='Order of debate')
 
-    date = PopoloDateTimeField(blank=True,
+    date = models.DateTimeField(blank=True,
                                null=True,
                                help_text='Date of the item.')
 

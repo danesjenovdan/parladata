@@ -9,8 +9,6 @@ from datetime import datetime
 
 from taggit.managers import TaggableManager
 
-__author__ = 'guglielmo'
-
 
 class Timestampable(models.Model):
     """

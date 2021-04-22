@@ -41,9 +41,6 @@ STATIC_ROOT = env['STATIC_ROOT']
 # static files for production
 STATIC_URL = env['STATIC_URL']
 
-# TODO this should probably disappear
-DASHBOARD_URL = 'http://localhost:8881'
-
 # TODO this would be awesome if we could
 # set it from admin -> some kind of settings
 # module thing or just use the classification

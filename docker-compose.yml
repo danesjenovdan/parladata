@@ -14,7 +14,6 @@ services:
       PARLADATA_URL: http://localhost:8000/v1
       PARLALIZE_URL: http://localhost:8080/v1
       ISCI_URL: http://localhost:8888/
-      DASHBOARD_URL: http://localhost:8881/
       PARLAMETER_URL: https://parlameter.si/
       CARDS_URL: https://glej.parlameter.si/
       NOTIFICATIONS_URL: https://obvestila.parlameter.si/
