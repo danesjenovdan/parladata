@@ -9,6 +9,25 @@ from datetime import datetime
 
 from taggit.managers import TaggableManager
 
+class Parsable(models.Model):
+    parser_names = models.TextField(blank=True, null=True)
+
+    def add_parser_name(self, new_parser_name):
+        if not self.parser_names:
+            self.parser_names = new_parser_name
+        else:
+            self.parser_names = f'{self.parser_names}|{new_parser_name}'
+    
+    @property
+    def parser_names_as_list(self):
+        if not self.parser_names:
+            return []
+        else:
+            return self.parser_names.split('|')
+
+    class Meta:
+        abstract = True
+
 
 class Timestampable(models.Model):
     """

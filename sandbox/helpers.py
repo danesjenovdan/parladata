@@ -153,22 +153,6 @@ def fixSpeakerParty(person_id):
         speeches.update(party=mem.on_behalf_of)
 
 
-def test_ministers_memberships(person_id):
-    party = Membership.objects.filter(person_id=person_id,
-                                      organization=settings.DZ_ID,
-                                      role='voter').exclude(on_behalf_of=None)
-
-    ministry = Membership.objects.filter(person_id=person_id,
-                                         organization__classification='ministrstvo',
-                                         role='minister')
-    mems = list(party) + list(ministry)
-    mems = sorted(mems, key=lambda x: x.start_time)
-    for i, mem in enumerate(mems):
-        if i+1 < len(mems):
-            if mem.end_time > mems[i+1].start_time:
-                print(mem, mems[i+1], "membershipa se prekrivata")
-
-
 def uk_motion_result():
     for motion in Motion.objects.all():
         vote = motion.vote.all()[0]
@@ -181,26 +165,6 @@ def uk_motion_result():
             motion.result=0
             motion.save()
 
-
-def set_ballot(option):
-    dz_org = Organization.objects.filter(id=settings.DZ_ID)[0]
-    for vote in Vote.objects.all():
-        # get all MPs
-        voters = vote.ballot_set.all().values_list('voter', flat=True)
-        print((voters.count()))
-        mems = Membership.objects.filter(organization__classification__in=PS_NP)
-
-        fdate = vote.start_time
-        mems = mems.filter(
-            Q(start_time__lte=fdate) |
-            Q(start_time=None),
-            Q(end_time__gte=fdate) |
-            Q(end_time=None)
-        )
-        people = Person.objects.filter(id__in=mems.values_list('person_id', flat=True)).exclude(id__in=voters)
-        print((people.count(), "people"))
-        for person in people:
-            Ballot(vote=vote, voter=person, option=option, voterparty=dz_org).save()
 
 def check_person_parser_data():
     fields = ['birth_date', 'gender', 'districts', 'education', 'education_level']
@@ -352,17 +316,6 @@ def move_memberships(source_org, dest_org):
             ps_m.pk = None
             ps_m.organization = dest_org_obj
             ps_m.save()
-
-
-def create_parliament_memberships(orgs_for_exclude=[]):
-    parliament = Organization.objects.get(id=settings.DZ_ID)
-    mm = Membership.objects.filter(organization__classification__in=settings.PS_NP).exclude(organization__id__in=orgs_for_exclude)
-    for m in mm:
-        m.pk = None
-        m.on_behalf_of = m.organization
-        m.organization = parliament
-        m.role = 'voter'
-        m.save()
 
 
 def add_posts_from_membership():

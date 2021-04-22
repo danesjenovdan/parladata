@@ -1,13 +1,8 @@
 from django.conf.urls import url, include
-from django.conf import settings
-from parladata.views import *
-from parladata.api_views import *
-from .utils import getMembershipDuplications, membersFlowInOrg, postMembersFixer, membersFlowInPGs, membersFlowInDZ, checkSessions
-from rest_framework import routers
-from parladata import admin
 from rest_framework import routers
 
-from rest_framework.documentation import include_docs_urls
+from parladata.api_views import *
+
 router = routers.DefaultRouter()
 router.register(r'people', PersonView)
 router.register(r'sessions', SessionView)

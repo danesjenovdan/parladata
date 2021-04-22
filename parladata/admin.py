@@ -463,7 +463,7 @@ class MPAdmin(admin.ModelAdmin):
     list_filter = ('name',)
 
     def get_queryset(self, request):
-        MPs_ids = Membership.objects.filter(organization__classification__in=settings.PS_NP).values_list('person', flat=True)
+        MPs_ids = Membership.objects.filter(role='voter').values_list('person', flat=True)
         qs = Person.objects.filter(id__in=MPs_ids)
         if request.user.is_superuser:
             return qs
