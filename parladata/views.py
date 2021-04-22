@@ -7,7 +7,7 @@ from parladata.models import (Person, Organization, Post, Membership, Session,
 
 from .utils import (getMPObjects, getMPVoteObjects, determineSession, determinePerson,
                    getIdSafe, replace_all, deleteMotionsWithoutText,
-                   parseRecipient, lockSetter,
+                   parseRecipient,
                    parsePager, getOwnersOfAmendment)
 
 from taggit.models import Tag
@@ -3469,122 +3469,6 @@ def getBallotsCounterOfParty(request, party_id, date_=None):
     party = Organization.objects.get(id=party_id)
     data = getBallotsCounter(party, date_=None)
     return JsonResponse(data, safe=False)
-
-
-@csrf_exempt
-@lockSetter
-def addQuestion(request): # TODO not documented because private refactor with security
-    """
-    This is an api endpoint function that saves a new question when prompted with a POST request.
-
-    JSON data model:
-    {
-        "ps": "Poslanska skupina Slovenske demokratske stranke",
-        "links": [{
-            "date": "30.12.2016",
-            "url": "http://www.dz-rs.si/wps/portal/Home/ODrzavnemZboru/KdoJeKdo/PoslankeInPoslanci/poslanec?idOseba=P268",
-            "name": "Dopis za posredovanje pisnega vprašanja - PPDZ"
-        }, {
-            "date": "29.12.2016",
-            "url": "http://www.dz-rs.si/wps/portal/Home/ODrzavnemZboru/KdoJeKdo/PoslankeInPoslanci/poslanec?idOseba=P268",
-            "name": "Besedilo"
-        }],
-        "datum": "29.12.2016",
-        "naslovljenec": "minister za infrastrukturo",
-        "naslov": "v zvezi z nepravilnostmi pri pomoči na slovenskih cestah",
-        "vlagatelj": "Lep Šimenko Suzana"
-    }
-
-    TODO:
-    - determinePerson2() is a non-MVP function that determines the person based on
-      their post at the ministry. Requires extra data to be entered manually.
-    - determineOrganization() is a non-MVP function that determines the Organization
-      the question was directed to. Requires extra data to be entered manually.
-    """
-    print(request.method)
-    if request.method == 'POST':
-        rep = {" mag. ": " ", " mag ": " ", " dr. ": " ", " dr ": " "}
-        data = json.loads(request.body)
-        print(data)
-        session = determineSession(data['datum'])
-        name = replace_all(data['vlagatelj'], rep)
-        authorPerson = determinePerson(name)
-        dz = Organization.objects.get(id=settings.DZ_ID)
-        date_of = datetime.strptime(data['datum'], '%d.%m.%Y')
-        recipients = parseRecipient(data['naslovljenec'], date_of)
-        try:
-            recipient_persons = [person['recipient']
-                                 for person
-                                 in recipients
-                                 if person['type'] == 'person']
-        except:
-            recipient_persons = []
-        try:
-            recipient_organizations = [person['recipient']
-                                       for person
-                                       in recipients
-                                       if person['type'] == 'org']
-        except:
-            recipient_organizations = []
-        try:
-            recipient_posts = [post['recipient']
-                            for post
-                            in recipients
-                            if post['type'] == 'post']
-        except:
-            recipient_posts = []
-        membership = Membership.objects.filter(Q(start_time__lte=date_of) |
-                                               Q(start_time=None),
-                                               Q(end_time__gte=date_of) |
-                                               Q(end_time=None),
-                                               organization__classification__in=settings.PS_NP,
-                                               person=authorPerson)
-
-        author_org = membership[0].organization if membership else None
-
-        print(session, data['naslov'], datetime.strptime(data['datum'], '%d.%m.%Y'), person, data['naslovljenec'])
-        if Question.objects.filter(session=session,
-                                   title=data['naslov'],
-                                   date=datetime.strptime(data['datum'], '%d.%m.%Y'),
-                                   authors=authorPerson,
-                                   recipient_text=data['naslovljenec']
-                                   ):
-            return JsonResponse({'status': 'This question is allready saved'})
-
-        question = Question(session=session,
-                            date=datetime.strptime(data['datum'], '%d.%m.%Y'),
-                            title=data['naslov'],
-                            recipient_text=data['naslovljenec'],
-                            json_data=request.body
-                            )
-        question.save()
-        question.recipient_person.add(*recipient_persons)
-        question.recipient_organization.add(*recipient_organizations)
-        question.recipient_post.add(*recipient_posts)
-        question.authors.add(authorPerson)
-        question.author_orgs.add(author_org)
-
-        print('save question')
-
-        for link in data['links']:
-            link = Link(url=link['url'],
-                        note=link['name'],
-                        date=datetime.strptime(link['date'], '%d.%m.%Y'),
-                        session=session, # TODO use data['datum']
-                        organization=dz,
-                        question=question).save()
-            print('save link')
-            # TODO: link needs tags, but tags need to be determined first
-
-        return JsonResponse({'saved': True,
-                             'status': 'AllIsWell',
-                             'found_session': True if session else False,
-                             'found_person': True if person else False,
-                             })
-    else:
-        return JsonResponse({'status': 'request must be post'})
-
-        return JsonResponse({"link": None}, safe=False)
 
 
 def getAllChangesAfter(request, # TODO not documented because strange

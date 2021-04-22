@@ -41,10 +41,6 @@ STATIC_ROOT = env['STATIC_ROOT']
 # static files for production
 STATIC_URL = env['STATIC_URL']
 
-# TODO we should probably delete this
-# while refactoring `lockSetter`
-SETTER_KEY = 'setter_api_key'
-
 # TODO this should probably disappear
 DASHBOARD_URL = 'http://localhost:8881'
 

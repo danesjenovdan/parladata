@@ -794,18 +794,6 @@ def parseRecipient(text, date_of):
     return out
 
 
-def lockSetter(function):
-    def wrap(request, *args, **kwargs):
-        if request:
-            setterKey = request.GET.get('key')
-            if str(setterKey) == str(settings.SETTER_KEY):
-                return function(request, *args, **kwargs)
-            else:
-                raise PermissionDenied
-        else:
-            return function(*args, **kwargs)
-    return wrap
-
 def parsePager(request, objs, default_per_page=1000):
     if request.GET:
         page = int(request.GET.get('page', 1))
