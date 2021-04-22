@@ -41,24 +41,6 @@ STATIC_ROOT = env['STATIC_ROOT']
 # static files for production
 STATIC_URL = env['STATIC_URL']
 
-# Mail settings
-# TODO
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_USE_TLS = True
-EMAIL_HOST = 'host.si'
-EMAIL_PORT = 587
-EMAIL_HOST_USER = 'user'
-EMAIL_HOST_PASSWORD = 'password'
-
-# TODO what is this
-ADMINS = [('admin', 'admin@mail.com')]
-DATA_ADMINS = [('data admin', 'dataadmin@mail.com')]
-PARSER_ADMINS = [('parser admin', 'parseradmin@mail.com')]
-
-# TODO we should probably delete this
-# while refactoring `sendMailForEditVotes`
-PARLALIZE_API_KEY = 'parlalize_api_key'
-
 # TODO we should probably delete this
 # while refactoring `lockSetter`
 SETTER_KEY = 'setter_api_key'

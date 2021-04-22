@@ -7,7 +7,7 @@ from parladata.models import (Person, Organization, Post, Membership, Session,
 
 from .utils import (getMPObjects, getMPVoteObjects, determineSession, determinePerson,
                    getIdSafe, replace_all, deleteMotionsWithoutText,
-                   sendMailForEditVotes, parseRecipient, lockSetter,
+                   parseRecipient, lockSetter,
                    parsePager, getOwnersOfAmendment)
 
 from taggit.models import Tag
@@ -3761,13 +3761,6 @@ def getAllChangesAfter(request, # TODO not documented because strange
     ballots = Ballot.objects.filter(created_at__gte=time_of_ballot)
     newVotes = list(set(list(ballots.values_list("vote_id",
                                                  flat=True))))
-    # build mail for new votes
-    if newVotes:
-        sendMailForEditVotes({vote.id: vote.session_id
-                              for vote
-                              in Vote.objects.filter(id__in=newVotes)
-                              }
-                             )
 
     return JsonResponse(data)
 

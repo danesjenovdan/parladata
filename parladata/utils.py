@@ -12,7 +12,6 @@ from django.utils.encoding import smart_str
 from django.db.models import Count
 import re
 import operator
-from django.core.mail import send_mail
 from django.core.exceptions import PermissionDenied
 
 
@@ -721,56 +720,6 @@ def jointSessionDataFix():
 
 def deleteMotionsWithoutText():
     Motion.objects.filter(text="").delete()
-
-
-def sendMailForEditVotes(votes):
-    """
-    Send mail to data admin to for tag votes and set votes results
-    """
-    api_key = '/?key=' + settings.PARLALIZE_API_KEY
-    motionAdmin = 'https://data.parlameter.si/admin/parladata/motion/'
-    setMotionsUrl = 'https://analize.parlameter.si/v1/s/setMotionOfSession/'
-    tagsUrl = 'https://data.parlameter.si/tags/'
-    pageVotes = 'https://parlameter.si/seja/glasovanja/'
-    pageGraph = 'https://parlameter.si/seja/glasovanje/'
-    reNavigatePage = 'https://parlameter.si/fetch/sps?t=vkSzv8Nu4eDkLBk7kUw4BBhyLjysJm'
-    reLastSession = 'https://analize.parlameter.si/v1/utils/recacheLastSession' + api_key
-    dashboard = 'https://dashboard.parlameter.si/'
-
-    updated_votes = Vote.objects.filter(id__in=list(votes.keys()))
-    motionUrls = []
-    updateUrls = []
-    sesUpdateUrls = []
-    graphUpdateUrls = []
-    for session in list(set(votes.values())):
-        url = setMotionsUrl + str(session) + api_key
-        updateUrls.append(url)
-        url = pageVotes + str(session) + '?forceRender=true'
-        sesUpdateUrls.append(url)
-    for vote, session in list(votes.items()):
-        url = pageGraph + str(session) + '/' + str(vote) + '?forceRender=true'
-        graphUpdateUrls.append(url)
-
-    pre = 'Na naslednji povezavi najdes glasovanja, ki jih je potrebno poupdejtat: \n'
-    content = dashboard + '\n'
-    #content = pre + "\n " + motionAdmin
-    #content += '\n \n nato jih potagaj: \n' + tagsUrl
-    #content += "\n \n Ko vse to uredis poklikaj naslednje linke, da vse to spravis na parlalize: \n"
-    #content += "\n".join(updateUrls)
-    #content += "\n Pozen se to: \n"
-    #content += reNavigatePage
-    #content += "\n \n Zdj spremembe dodaj na sezname glasovanj od sej: \n"
-    #content += "\n".join(sesUpdateUrls)
-    #content += "\n \n Pa se grafe glasovanj: \n"
-    #content += "\n".join(graphUpdateUrls)
-    #content += "\n \n Dj se refreshi zadno sejo ;): \n"
-    #content += reLastSession
-    #content += "\n \n Lep dan ti zelim ;)"
-    send_mail('Nekaj novih glasovanj je za pottagat :)',
-              content,
-              'test@parlameter.si',
-              [admin[1] for admin in settings.ADMINS + settings.DATA_ADMINS],
-              fail_silently=True,)
 
 
 def parseRecipient(text, date_of):
