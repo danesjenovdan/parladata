@@ -19,8 +19,8 @@ def import_personal_data():
                 twitter = row[5]
                 facebook = row[6]
                 if row[2]:
-                    birth_date = datetime.strptime(row[2].split(' ')[0],'%m/%d/%Y') # 12/9/1960 1:00
-                    person.birth_date = birth_date
+                    date_of_birth = datetime.strptime(row[2].split(' ')[0],'%m/%d/%Y') # 12/9/1960 1:00
+                    person.date_of_birth = date_of_birth
                 cur_twitter = person.link_set.filter(tags__name__in=['tw'])
                 cur_facebook = person.link_set.filter(tags__name__in=['fb'])
                 if not cur_twitter and twitter:

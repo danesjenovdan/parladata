@@ -3,40 +3,17 @@ from datetime import datetime
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 
-from parladata.behaviors.models import Timestampable
+from parladata.behaviors.models import Timestampable, Parsable
 
 
-class Person(Timestampable, models.Model):
+class Person(Timestampable, Parsable):
     """Model for all people that are somehow connected to the parlament."""
 
+    # MAYBE make name change-able like
+    # in organization with OrganizationName
     name = models.CharField(_('name'),
                             max_length=128,
                             help_text=_('A person\'s preferred full name'))
-
-    name_parser = models.CharField(max_length=500,
-                                   help_text='Name for parser.',
-                                   blank=True, null=True)
-
-    classification = models.CharField(_('classification'),
-                                      max_length=128,
-                                      help_text='Classification for sorting purposes.',
-                                      blank=True,
-                                      null=True)
-
-    family_name = models.CharField(_('family name'),
-                                   max_length=128,
-                                   blank=True, null=True,
-                                   help_text=_('One or more family names'))
-
-    given_name = models.CharField(_('given name'),
-                                  max_length=128,
-                                  blank=True, null=True,
-                                  help_text=_('One or more primary given names'))
-
-    additional_name = models.CharField(_('additional name'),
-                                       max_length=128,
-                                       blank=True, null=True,
-                                       help_text=_('One or more secondary given names'))
 
     honorific_prefix = models.CharField(_('honorific prefix'),
                                         max_length=128,
@@ -48,130 +25,70 @@ class Person(Timestampable, models.Model):
                                         blank=True, null=True,
                                         help_text=_('One or more honorifics following a person\'s name'))
 
-    patronymic_name = models.CharField(_('patronymic name'),
-                                       max_length=128,
-                                       blank=True, null=True,
-                                       help_text=_('One or more patronymic names'))
-
-    sort_name = models.CharField(_('sort name'),
-                                 max_length=128,
-                                 blank=True, null=True,
-                                 help_text=_('A name to use in an lexicographically ordered list'))
-
     previous_occupation = models.TextField(_('previous occupation'),
                                            blank=True, null=True,
                                            help_text=_('The person\'s previous occupation'))
 
     education = models.TextField(_('education'),
                                  blank=True, null=True,
-                                 help_text=_('The person\'s education'))
+                                 help_text=_('The person\'s education. Their "topic", like "computer science".'))
 
     education_level = models.TextField(_('education level'),
                                        blank=True, null=True,
-                                       help_text=_('The person\'s education level'))
+                                       help_text=_('The person\'s education level (what they would use to determine their pay in the public sector).'))
 
-    mandates = models.IntegerField(_('mandates'),
+    number_of_mandates = models.IntegerField(_('number of mandates'),
                                    blank=True, null=True,
                                    help_text=_('Person\'s number of mandates, including the current one'))
 
     email = models.EmailField(_('email'),
                               blank=True, null=True,
-                              help_text=_('A preferred email address'))
+                              help_text=_('Official (office) email'))
 
-    gender = models.CharField(_('gender'),
+    # TODO make this a selection
+    # he
+    # she
+    # they
+    preferred_pronoun = models.CharField(_('preferred pronoun'),
                               max_length=128,
                               blank=True, null=True,
-                              help_text=_('A gender'))
+                              help_text=_('Persons preferred pronoun'))
 
-    birth_date = models.DateTimeField(_('date of birth'),
+    date_of_birth = models.DateTimeField(_('date of birth'),
                                      blank=True,
                                      null=True,
                                      help_text=_('A date of birth'))
 
-    death_date = models.DateTimeField(_('date of death'),
+    date_of_death = models.DateTimeField(_('date of death'),
                                      blank=True,
                                      null=True,
                                      help_text=_('A date of death'))
 
-    summary = models.CharField(_('summary'),
-                               max_length=512,
-                               blank=True, null=True,
-                               help_text=_('A one-line account of a person\'s life'))
-
-    biography = models.TextField(_('biography'),
-                                 blank=True, null=True,
-                                 help_text=_('An extended account of a person\'s life'))
-
-    image_url = models.URLField(_('image url'),
-                            blank=True, null=True,
-                            help_text=_('A URL of a head shot from gov site'))
-
-    image = models.ImageField(_('image url'),
+    image = models.ImageField(_('image (url)'),
                               blank=True,
                               null=True,
                               help_text=_('A image of a head shot'))
-
-    gov_url = models.ForeignKey('Link',
-                                blank=True, null=True,
-                                on_delete=models.CASCADE,
-                                help_text='URL to gov website profile',
-                                related_name='gov_link')
-
-    gov_id = models.CharField(_('gov_id'),
-                              max_length=255,
-                              blank=True, null=True,
-                              help_text='gov website id for the scraper')
-
-    gov_picture_url = models.URLField(_('gov image url'),
-                                      blank=True, null=True,
-                                      help_text=_('URL to gov website pic'))
 
     districts = models.ManyToManyField('Area',
                                        blank=True,
                                        help_text='District of person',
                                        related_name="candidates")
 
-    voters = models.IntegerField(_('voters'),
+    number_of_voters = models.IntegerField(_('number of voters'),
                                  blank=True,
                                  null=True,
-                                 help_text='number of votes cast for this person in their district')
+                                 help_text='number of votes cast for this person in their district(s)')
 
-    points = models.IntegerField(_('points'),
+    number_of_points = models.IntegerField(_('number of points awarded'),
                                  blank=True,
                                  null=True,
                                  default=None,
-                                 help_text='number of points cast for this person')
+                                 help_text='number of points cast for this person (in a point-based voting system)')
 
+    # TODO consider this, maybe we don't need it
     active = models.BooleanField(_('active'),
                                  default=True,
                                  help_text='a generic active or not toggle')
 
-    # array of items referencing "http://popoloproject.com/schemas/contact_detail.json"
-    def gov_image(self):
-        return f'<img src="{self.image_url}" style="width:150px; height: auto;"/>'
-
-    gov_image.allow_tags = True
-    url_name = 'person-detail'
-
-    # also handles party and work group memberships
-    def add_membership(self, organization):
-        m = Membership(person=self, organization=organization)
-        m.save()
-
-    def add_memberships(self, organizations):
-        for o in organizations:
-            self.add_membership(o)
-
-    def add_role(self, post):
-        m = Membership(person=self, post=post, organization=post.organization)
-        m.save()
-
-    def save(self, *args, **kwargs):
-        if self.birth_date:
-            self.start_date = self.birth_date
-        if self.death_date:
-            self.end_date = self.death_date
-        super(Person, self).save(*args, **kwargs)
-
     def __str__(self):
-        return self.name + " " + str(self.id)
+        return f'{self.id}: {self.name}'

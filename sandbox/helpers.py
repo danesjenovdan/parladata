@@ -167,7 +167,7 @@ def uk_motion_result():
 
 
 def check_person_parser_data():
-    fields = ['birth_date', 'gender', 'districts', 'education', 'education_level']
+    fields = ['date_of_birth', 'preferred_pronoun', 'districts', 'education', 'education_level']
     data = []
     for p in pp:
         missing_data = [i for i in fields if not getattr(p, i)]
@@ -371,11 +371,11 @@ def importPersonData(file_name):
             p.previous_occupation = row[2]
             p.education = row[3]
             p.education_level = row[4]
-            p.mandates = row[5]
+            p.number_of_mandates = row[5]
             p.email = row[6]
-            p.gender = row[7]
-            p.birth_date = datetime.strptime(row[8], settings.API_DATE_FORMAT).date()
-            p.voters = row[11]
+            p.preferred_pronoun = row[7]
+            p.date_of_birth = datetime.strptime(row[8], settings.API_DATE_FORMAT).date()
+            p.number_of_voters = row[11]
             p.save()
 
             for area_str in row[10].split(','):

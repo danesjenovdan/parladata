@@ -35,7 +35,6 @@ class OrganizationSerializer(serializers.ModelSerializer):
             "founding_date",
             "description",
             "is_coalition",
-            "voters",
             "parent",
             "has_voters",
             "name",
