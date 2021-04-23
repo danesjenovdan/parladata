@@ -42,14 +42,14 @@ def import_mps():
                     previous_occupation=mp['data']['sejm_mps.history'],
                     family_name=mp['data']['sejm_mps.last_name'],
                     given_name=mp['data']['sejm_mps.first_name'],
-                    birth_date=parse_date(mp['data']['sejm_mps.date_birthday']),
+                    date_of_birth=parse_date(mp['data']['sejm_mps.date_birthday']),
                     gov_id=mp['data']['sejm_mps.id'],
                     additional_name=mp['data']['sejm_mps.second_name'],
-                    voters=mp['data']['sejm_mps.election_votes_count'],
+                    number_of_voters=mp['data']['sejm_mps.election_votes_count'],
                     education=mp['data']['sejm_mps.occupation'],
                     education_level=mp['data']['sejm_mps.education'],
                     email=mp['data']['sejm_mps.email'],
-                    gender='male' if mp['data']['sejm_mps.sex'] == 'M' else 'female',
+                    preferred_pronoun='he' if mp['data']['sejm_mps.sex'] == 'he' else 'she',
                     mandates=mandates,
                     )
                 person.save()

@@ -52,8 +52,7 @@ class Command(BaseCommand):
             name_parser='Party from coalition',
             gov_id='13',
             classification='pg',
-            _acronym='PFC',
-            voters=2)
+            _acronym='PFC')
         coal_party.save()
 
         oppo_party = Organization(
@@ -61,8 +60,7 @@ class Command(BaseCommand):
             name_parser='Party from opposition',
             gov_id='12',
             classification='pg',
-            _acronym='PFO',
-            voters=1)
+            _acronym='PFO')
         oppo_party.save()
 
         OrganizationMembership(
@@ -84,10 +82,10 @@ class Command(BaseCommand):
             education='Master of economics',
             education_level=8,
             mandates=3,
-            gender='M',
-            birth_date=bd,
+            preferred_pronoun='he',
+            date_of_birth=bd,
             gov_id='1',
-            voters=100)
+            number_of_voters=100)
         person_pfc_1.save()
         person_pfc_1.districts.add(area)
 
@@ -98,10 +96,10 @@ class Command(BaseCommand):
             education='PhD',
             education_level=9,
             mandates=1,
-            gender='F',
-            birth_date=bd,
+            preferred_pronoun='she',
+            date_of_birth=bd,
             gov_id='2',
-            voters=200)
+            number_of_voters=200)
         person_pfc_2.save()
         person_pfc_2.districts.add(area)
 
@@ -112,10 +110,10 @@ class Command(BaseCommand):
             education='???',
             education_level=7,
             mandates=1,
-            gender='F',
-            birth_date=bd,
+            preferred_pronoun='she',
+            date_of_birth=bd,
             gov_id='3',
-            voters=300)
+            number_of_voters=300)
         person_pfo_1.save()
         person_pfo_1.districts.add(area)
 
