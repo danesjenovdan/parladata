@@ -10,50 +10,7 @@ from tinymce.models import HTMLField
 from parladata.models.organization import Organization
 
 
-# TODO kill this
-class Post(Timestampable, Taggable, models.Model):
-    """A position that exists independent of the person holding it."""
-
-    label = models.CharField(_('label'),
-                             max_length=128,
-                             blank=True, null=True,
-                             help_text=_('A label describing the post'))
-
-    role = models.CharField(_('role'),
-                            max_length=128,
-                            blank=True, null=True,
-                            help_text=_('The function that the holder of the post fulfills'))
-
-    # reference to "http://popoloproject.com/schemas/organization.json#"
-    organization = models.ForeignKey('Organization',
-                                     blank=True, null=True,
-                                     related_name='posts',
-                                     on_delete=models.CASCADE,
-                                     help_text=_('The organization in which the post is held'))
-
-    # reference to "http://popoloproject.com/schemas/post.json#"
-    membership = models.ForeignKey('Membership',
-                                   blank=True, null=True,
-                                   related_name='memberships',
-                                   on_delete=models.CASCADE,
-                                   help_text=_('The post held by the person in the organization through this membership'))
-
-    # start and end time of memberships
-    start_time = models.DateTimeField(blank=True, null=True,
-                                     help_text='Start time')
-    end_time = models.DateTimeField(blank=True, null=True,
-                                   help_text='End time')
-
-    def add_person(self, person):
-        m = Membership(post=self, person=person, organization=self.organization)
-        m.save()
-
-    def __str__(self):
-        return u'Org: {0}, Role: {1}, Person: {2}'.format(self.membership.organization if self.membership else self.organization, self.role, self.membership.person.name if self.membership and self.membership.person else "None")
-
-
-# TODO rename to PersonMembership
-class Membership(Timestampable, models.Model):
+class PersonMembership(Timestampable, models.Model):
     """A relationship between a person and an organization."""
 
     label = models.CharField(_('label'),
@@ -119,61 +76,6 @@ class OrganizationMembership(Timestampable, models.Model):
 
     end_time = models.DateTimeField(blank=True, null=True,
                                    help_text='End time')
-
-
-# TODO kill this
-class ContactDetail(Timestampable, models.Model):
-    """A means of contacting an entity."""
-
-    CONTACT_TYPES = Choices(
-        ('FAX', 'fax', _('Fax')),
-        ('PHONE', 'phone', _('Telephone')),
-        ('MOBILE', 'mobile', _('Mobile')),
-        ('EMAIL', 'email', _('Email')),
-        ('MAIL', 'mail', _('Snail mail')),
-        ('TWITTER', 'twitter', _('Twitter')),
-        ('FACEBOOK', 'facebook', _('Facebook')),
-        ('LINKEDIN', 'linkedin', _('LinkedIn')),
-    )
-
-    label = models.CharField(_('label'),
-                             max_length=128,
-                             blank=True, null=True,
-                             help_text=_('A human-readable label for the contact detail'))
-
-    contact_type = models.CharField(_('type'),
-                                    max_length=12,
-                                    choices=CONTACT_TYPES,
-                                    help_text=_('A type of medium, e.g. \'fax\' or \'email\''))
-
-    value = models.CharField(_('value'),
-                             max_length=128,
-                             help_text=_('A value, e.g. a phone number or email address'))
-    note = models.CharField(_('note'),
-                            max_length=128,
-                            blank=True, null=True,
-                            help_text=_('A note, e.g. for grouping contact details by physical location'))
-
-    person = models.ForeignKey('Person',
-                               blank=True, null=True,
-                               on_delete=models.CASCADE,
-                               help_text='The person this name belongs to')
-    organization = models.ForeignKey('Organization',
-                                     blank=True, null=True,
-                                     on_delete=models.CASCADE,
-                                     help_text='The organization this name belongs to')
-
-    post = models.ForeignKey('Post',
-                             blank=True, null=True,
-                             on_delete=models.CASCADE,
-                             help_text='The person this name belongs to')
-    membership = models.ForeignKey('Membership',
-                                   blank=True, null=True,
-                                   on_delete=models.CASCADE,
-                                   help_text='The organization this name belongs to')
-
-    def __str__(self):
-        return u'{0} - {1}'.format(self.value, self.contact_type)
 
 
 # TODO kill this
@@ -263,7 +165,7 @@ class Link(Timestampable, Taggable, models.Model):
                                on_delete=models.CASCADE,
                                help_text='The person of this link.')
 
-    membership = models.ForeignKey('Membership',
+    membership = models.ForeignKey('PersonMembership',
                                    blank=True, null=True,
                                    on_delete=models.CASCADE,
                                    help_text='The membership of this link.')
@@ -284,102 +186,6 @@ class Link(Timestampable, Taggable, models.Model):
 
     def __str__(self):
         return self.url
-
-
-# TODO kill this
-class Source(Timestampable, Taggable, models.Model):
-    """ A URL for referring to sources of information."""
-
-    url = models.URLField(_('url'),
-                          help_text=_('A URL'))
-
-    note = models.CharField(_('note'),
-                            max_length=256,
-                            blank=True, null=True,
-                            help_text=_('A note, e.g. \'Parliament website\''))
-
-    person = models.ForeignKey('Person',
-                               blank=True, null=True,
-                               on_delete=models.CASCADE,
-                               help_text='The person of this source.')
-
-    organization = models.ForeignKey('Organization',
-                                     blank=True, null=True,
-                                     on_delete=models.CASCADE,
-                                     help_text='The organization of this source.')
-
-    post = models.ForeignKey('Post',
-                             blank=True, null=True,
-                             on_delete=models.CASCADE,
-                             help_text='The post of this source.')
-
-    membership = models.ForeignKey('Membership',
-                                   blank=True, null=True,
-                                   on_delete=models.CASCADE,
-                                   help_text='The membership of this source.')
-
-    contact_detail = models.ForeignKey('ContactDetail',
-                                       blank=True, null=True,
-                                       on_delete=models.CASCADE,
-                                       help_text='The person of this source.')
-
-    def __str__(self):
-        return self.url
-
-
-# TODO kill this
-class Milestone(Taggable, models.Model):
-    """Milestone of any kind (beginning, end,...)."""
-
-    year = models.IntegerField(help_text=_('year'),
-                               blank=True, null=True)
-
-    month = models.IntegerField(help_text=_('month'),
-                                blank=True, null=True)
-
-    day = models.IntegerField(help_text=_('date'),
-                              blank=True, null=True)
-
-    hour = models.IntegerField(help_text=_('hour'),
-                               blank=True, null=True)
-
-    minute = models.IntegerField(help_text=_('minute'),
-                                 blank=True, null=True)
-
-    second = models.IntegerField(help_text=_('second'),
-                                 blank=True, null=True)
-
-    kind = models.CharField(max_length=255,
-                            blank=True, null=True,
-                            help_text='type of milestone')
-
-    start_or_end = models.IntegerField(blank=True, null=True,
-                                       help_text='1 for start, -1 for end')
-
-    mandate = models.ForeignKey('Mandate',
-                                blank=True, null=True,
-                                on_delete=models.CASCADE,
-                                help_text='The mandate of this milestone.')
-
-    session = models.ForeignKey('Session',
-                                blank=True, null=True,
-                                on_delete=models.CASCADE,
-                                help_text='The session of this milestone.')
-
-    speech = models.ForeignKey('Speech',
-                               blank=True, null=True,
-                               on_delete=models.CASCADE,
-                               help_text='The speech of this milestone.')
-
-    organization = models.ForeignKey('Organization',
-                                     blank=True, null=True,
-                                     on_delete=models.CASCADE,
-                                     help_text='The organization of this milestone.')
-
-    person = models.ForeignKey('Person',
-                               blank=True, null=True,
-                               on_delete=models.CASCADE,
-                               help_text='The person of this milestone.')
 
 
 # TODO razmisli kako bomo to uredili
@@ -739,11 +545,6 @@ class Question(Timestampable, models.Model):
                                               blank=True,
                                               help_text='Recipient person (if it\'s a person).',
                                               related_name='questions')
-
-    recipient_post = models.ManyToManyField('Post',
-                                            blank=True,
-                                            help_text='Recipient person\'s post).',
-                                            related_name='questions')
 
     recipient_organization = models.ManyToManyField('Organization',
                                                     blank=True,

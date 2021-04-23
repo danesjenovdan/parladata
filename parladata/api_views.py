@@ -196,20 +196,12 @@ class LinkView(viewsets.ModelViewSet):
     filter_fields = ('person', 'tags__name', 'organization', 'question')
 
 
-class MembershipView(viewsets.ModelViewSet):
+class PersonMembershipView(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
-    queryset = Membership.objects.all().order_by('id')
-    serializer_class = MembershipSerializer
+    queryset = PersonMembership.objects.all().order_by('id')
+    serializer_class = PersonMembershipSerializer
     filter_backends = (DjangoFilterBackend,)
     filter_fields = ('person', 'organization', 'role', 'on_behalf_of')
-
-
-class PostView(viewsets.ModelViewSet):
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
-    queryset = Post.objects.all().order_by('id')
-    serializer_class = PostSerializer
-    filter_backends = (DjangoFilterBackend,)
-    filter_fields = ('membership__person', 'organization', 'role')
 
 
 class AreaView(viewsets.ModelViewSet):
@@ -254,14 +246,6 @@ class QuestionView(viewsets.ModelViewSet):
     filter_backends = (DjangoFilterBackend, filters.OrderingFilter)
     filter_fields = ('authors',)
     ordering_fields = ('date',)
-
-
-class ContactDetailView(viewsets.ModelViewSet):
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
-    queryset = ContactDetail.objects.all().order_by('id')
-    serializer_class = ContactDetailSerializer
-    filter_backends = (DjangoFilterBackend, filters.OrderingFilter)
-    filter_fields = ('person', 'contact_type', 'organization')
 
 
 class OrganizationMembershipsViewSet(viewsets.ModelViewSet):

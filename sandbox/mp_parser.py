@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from bs4 import BeautifulSoup
 import requests
-from parladata.models import Person, Membership, Organization
+from parladata.models import Person, PersonMembership, Organization
 from datetime import datetime
 sklici = {'6':{'start_time': datetime(day=21, month=12, year=2011),
                'end_time': datetime(day=1, month=8, year=2014),
@@ -31,14 +31,14 @@ def add_membership(name, parties, sklic=6):
             continue
         print(person, organization)
         if organization.classification == 'nepovezani poslanec' or organization._acronym == 'NP':
-            Membership(person = person[0],
+            PersonMembership(person = person[0],
                        organization=organization,
                        start_time=sklici[str(sklic)]['nep_wo'],
                        end_time=None,
                        role='član',
                        label='cl').save()
         else:
-            Membership(person = person[0],
+            PersonMembership(person = person[0],
                        organization=organization,
                        start_time=sklici[str(sklic)]['start_time'],
                        end_time=sklici[str(sklic)]['end_time'],

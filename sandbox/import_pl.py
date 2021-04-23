@@ -94,7 +94,7 @@ def add_or_get_party(obj):
 
 #TODO
 def add_membership(person, organization, on_behalf_of, role, start_time, end_time):
-    Membership(
+    PersonMembership(
         organization=organization,
         on_behalf_of=on_behalf_of,
         role=role,

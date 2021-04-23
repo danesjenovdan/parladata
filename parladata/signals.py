@@ -1,7 +1,7 @@
 from django.db.models.signals import pre_save, post_save
 from django.dispatch import receiver
 
-from parladata.models import Organization, Person, Post, Law
+from parladata.models import Organization, Person, Law
 
 @receiver(pre_save, sender=Organization)
 def copy_date_fields(sender, **kwargs):
@@ -16,7 +16,6 @@ def copy_date_fields(sender, **kwargs):
 # all instances are validated before being saved
 @receiver(pre_save, sender=Person)
 @receiver(pre_save, sender=Organization)
-@receiver(pre_save, sender=Post)
 def validate_date_fields(sender, **kwargs):
     obj = kwargs['instance']
     obj.full_clean()

@@ -140,20 +140,10 @@ class AreaSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class MembershipSerializer(serializers.ModelSerializer):
+class PersonMembershipSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Membership
+        model = PersonMembership
         fields = '__all__'
-
-
-class PostSerializer(serializers.ModelSerializer):
-    person = serializers.SerializerMethodField()
-    class Meta:
-        model = Post
-        exclude = ()
-
-    def get_person(self, obj):
-        return obj.membership.person_id
 
 
 class LawSerializer(serializers.ModelSerializer):
@@ -181,12 +171,6 @@ class EpaSerializer(serializers.ModelSerializer):
 class TagsSerializer(serializers.ModelSerializer):
     class Meta:
         model = Tag
-        fields = '__all__'
-
-
-class ContactDetailSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = ContactDetail
         fields = '__all__'
 
 

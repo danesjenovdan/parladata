@@ -4,7 +4,7 @@ from django.conf import settings
 from django.contrib.auth.models import User
 
 from parladata.models import (
-    Organization, OrganizationName, OrganizationMembership, Person, Membership, Speech, Question, Motion, Vote, Ballot, Area, Session, Law
+    Organization, OrganizationName, OrganizationMembership, Person, PersonMembership, Speech, Question, Motion, Vote, Ballot, Area, Session, Law
 )
 
 from oauth2_provider.models import Application
@@ -134,42 +134,42 @@ class Command(BaseCommand):
         person_pfo_1.districts.add(area)
         person_pfo_1.add_parser_name('Maja Oppostion')
 
-        Membership(
+        PersonMembership(
             role='voter',
             person=person_pfc_1,
             organization=dz,
             on_behalf_of=coal_party,
             start_time=start_time).save()
 
-        Membership(
+        PersonMembership(
             role='voter',
             person=person_pfc_2,
             organization=dz,
             on_behalf_of=coal_party,
             start_time=start_time).save()
 
-        Membership(
+        PersonMembership(
             role='voter',
             person=person_pfo_1,
             organization=dz,
             on_behalf_of=oppo_party,
             start_time=start_time).save()
 
-        Membership(
+        PersonMembership(
             role='president',
             person=person_pfc_1,
             organization=coal_party,
             on_behalf_of=None,
             start_time=start_time).save()
 
-        Membership(
+        PersonMembership(
             role='deputy',
             person=person_pfc_2,
             organization=coal_party,
             on_behalf_of=None,
             start_time=start_time).save()
 
-        Membership(
+        PersonMembership(
             role='president',
             person=person_pfo_1,
             organization=oppo_party,
