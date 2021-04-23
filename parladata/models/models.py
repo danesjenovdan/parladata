@@ -10,6 +10,7 @@ from tinymce.models import HTMLField
 from parladata.models.organization import Organization
 
 
+# TODO kill this
 class Post(Timestampable, Taggable, models.Model):
     """A position that exists independent of the person holding it."""
 
@@ -51,6 +52,7 @@ class Post(Timestampable, Taggable, models.Model):
         return u'Org: {0}, Role: {1}, Person: {2}'.format(self.membership.organization if self.membership else self.organization, self.role, self.membership.person.name if self.membership and self.membership.person else "None")
 
 
+# TODO rename to PersonMembership
 class Membership(Timestampable, models.Model):
     """A relationship between a person and an organization."""
 
@@ -119,6 +121,7 @@ class OrganizationMembership(Timestampable, models.Model):
                                    help_text='End time')
 
 
+# TODO kill this
 class ContactDetail(Timestampable, models.Model):
     """A means of contacting an entity."""
 
@@ -173,6 +176,7 @@ class ContactDetail(Timestampable, models.Model):
         return u'{0} - {1}'.format(self.value, self.contact_type)
 
 
+# TODO kill this
 class OtherName(models.Model):
     """An alternate or former name."""
 
@@ -198,6 +202,7 @@ class OtherName(models.Model):
         return self.name
 
 
+# TODO kill this
 class Identifier(models.Model):
     """An issued identifier."""
 
@@ -224,6 +229,7 @@ class Identifier(models.Model):
         return '{0}: {1}'.format(self.scheme, self.identifier)
 
 
+# TODO think about this
 class Link(Timestampable, Taggable, models.Model):
     """
     A URL
@@ -280,6 +286,7 @@ class Link(Timestampable, Taggable, models.Model):
         return self.url
 
 
+# TODO kill this
 class Source(Timestampable, Taggable, models.Model):
     """ A URL for referring to sources of information."""
 
@@ -320,6 +327,7 @@ class Source(Timestampable, Taggable, models.Model):
         return self.url
 
 
+# TODO kill this
 class Milestone(Taggable, models.Model):
     """Milestone of any kind (beginning, end,...)."""
 
@@ -374,6 +382,9 @@ class Milestone(Taggable, models.Model):
                                help_text='The person of this milestone.')
 
 
+# TODO razmisli kako bomo to uredili
+# želimo imeti možnost, da je v eni bazi
+# več sklicev
 class Mandate(models.Model):
     """Mandate"""
 
@@ -759,6 +770,7 @@ class Question(Timestampable, models.Model):
         return ' '.join(self.authors.all().values_list('name', flat=True))
 
 
+# TODO kill this (this is parser stuff)
 class tmp_votelinks(Timestampable, models.Model):
     session_id = models.CharField(max_length=255,
                                   blank=True,
@@ -776,6 +788,7 @@ class tmp_votelinks(Timestampable, models.Model):
         return self.session_id
 
 
+# TODO kill this (this is parser stuff)
 class session_deleted(Timestampable, models.Model):
     mandate_id = models.IntegerField(blank=True,
                                      null=True)
@@ -808,6 +821,7 @@ class session_deleted(Timestampable, models.Model):
         return self.name
 
 
+# TODO kill this (this is parser stuff)
 class Ignore(Timestampable, Taggable, models.Model):
     """
     id's for ignore
