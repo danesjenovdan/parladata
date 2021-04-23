@@ -108,6 +108,27 @@ class OrganizationView(viewsets.ModelViewSet):
     filter_class = OrganizationsFilterSet
     search_fields = ('name_parser', '_name')
 
+    def create(self, request, *args, **kwargs):
+        name = request.data.get('name', '')
+        acronym = request.data.get('acronym', '')
+
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        serializer.save()
+        instance = serializer.instance
+        orgName = OrganizationName(
+            name=name,
+            acronym=acronym,
+            organization=instance
+        )
+        orgName.save()
+
+        headers = self.get_success_headers(serializer.data)
+
+        data = self.get_serializer(instance).data
+        return Response(data, status=status.HTTP_201_CREATED, headers=headers)
+
 
 class SpeechView(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]

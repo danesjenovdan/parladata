@@ -4,7 +4,7 @@ from django.conf import settings
 from django.contrib.auth.models import User
 
 from parladata.models import (
-    Organization, OrganizationMembership, Person, Membership, Speech, Question, Motion, Vote, Ballot, Area, Session, Law
+    Organization, OrganizationName, OrganizationMembership, Person, Membership, Speech, Question, Motion, Vote, Ballot, Area, Session, Law
 )
 
 from oauth2_provider.models import Application
@@ -29,39 +29,59 @@ class Command(BaseCommand):
         area.save()
 
         dz = Organization(
-            _name='DZ',
             classification='dz')
         dz.save()
+        OrganizationName(
+            name='DZ',
+            acronym='DZ',
+            organization=dz
+        ).save()
 
         coalition = Organization(
-            _name='Coalition',
             classification='coalition',
-            _acronym='coal',
-            is_coalition=1)
+        )
         coalition.save()
+        OrganizationName(
+            name='Coalition',
+            acronym='coal',
+            organization=coalition
+        ).save()
 
         opposition = Organization(
-            _name='Opposition',
             classification='opposition',
-            _acronym='oppo',
-            is_coalition=-1)
+        )
         opposition.save()
+        OrganizationName(
+            name='Opposition',
+            acronym='oppo',
+            organization=opposition
+        ).save()
 
         coal_party = Organization(
-            _name='Party from coalition',
-            name_parser='Party from coalition',
             gov_id='13',
             classification='pg',
-            _acronym='PFC')
+        )
         coal_party.save()
+        org_name = OrganizationName(
+            name='Party from coalition',
+            acronym='PFC',
+            organization=coal_party
+        )
+        org_name.save()
+        org_name.add_parser_name('Party from coalition')
 
         oppo_party = Organization(
-            _name='Party from opposition',
-            name_parser='Party from opposition',
             gov_id='12',
             classification='pg',
-            _acronym='PFO')
+        )
         oppo_party.save()
+        org_name = OrganizationName(
+            name='Party from opposition',
+            acronym='PFO',
+            organization=oppo_party
+        )
+        org_name.save()
+        org_name.add_parser_name('Party from opposition')
 
         OrganizationMembership(
             organization=coalition,
@@ -77,45 +97,42 @@ class Command(BaseCommand):
 
         person_pfc_1 = Person(
             name='Ivan Coalition',
-            name_parser='Ivan Coalition',
             previous_occupation='CEO',
             education='Master of economics',
             education_level=8,
-            mandates=3,
+            number_of_mandates=3,
             preferred_pronoun='he',
             date_of_birth=bd,
-            gov_id='1',
             number_of_voters=100)
         person_pfc_1.save()
         person_pfc_1.districts.add(area)
+        person_pfc_1.add_parser_name('Ivan Coalition')
 
         person_pfc_2 = Person(
             name='Marjeta Coalition',
-            name_parser='Marjeta Coalition',
             previous_occupation='CTO',
             education='PhD',
             education_level=9,
-            mandates=1,
+            number_of_mandates=1,
             preferred_pronoun='she',
             date_of_birth=bd,
-            gov_id='2',
             number_of_voters=200)
         person_pfc_2.save()
         person_pfc_2.districts.add(area)
+        person_pfc_2.add_parser_name('Marjeta Coalition')
 
         person_pfo_1 = Person(
             name='Maja Oppostion',
-            name_parser='Maja Oppostion',
             previous_occupation='MTM',
             education='???',
             education_level=7,
-            mandates=1,
+            number_of_mandates=1,
             preferred_pronoun='she',
             date_of_birth=bd,
-            gov_id='3',
             number_of_voters=300)
         person_pfo_1.save()
         person_pfo_1.districts.add(area)
+        person_pfo_1.add_parser_name('Maja Oppostion')
 
         Membership(
             role='voter',
@@ -270,7 +287,7 @@ class Command(BaseCommand):
             procedure_ended=False
         ).save()
 
-        user = models.User(
+        user = User(
             first_name='parlauser',
             username='parlauser',
             email='test@test.com',

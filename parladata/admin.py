@@ -197,7 +197,7 @@ class PersonAdmin(admin.ModelAdmin):
         SourcePersonInline,
         MilestonePersonInline,
     ]
-    list_display = ('name', 'gov_image')
+    list_display = ('name',)
     list_filter = ('name',)
 
 
@@ -446,9 +446,9 @@ class PersonEducation(Person):
 
 class PersonEducationAdmin(admin.ModelAdmin):
     #form = PersonForm
-    list_display = ['name', 'education', 'mandates', 'education_level']
-    search_fields = ['name', 'mandates']
-    list_filter = ['education', 'mandates']
+    list_display = ['name', 'education', 'number_of_mandates', 'education_level']
+    search_fields = ['name', 'number_of_mandates']
+    list_filter = ['education', 'number_of_mandates']
     fields = ('name', 'education', 'education_level')
 
 
@@ -459,7 +459,7 @@ class ParliamentMember(Person):
 
 class MPAdmin(admin.ModelAdmin):
     #form = PersonForm
-    list_display = ('name', 'gov_image')
+    list_display = ('name',)
     list_filter = ('name',)
 
     def get_queryset(self, request):
