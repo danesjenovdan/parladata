@@ -66,7 +66,7 @@ class UntaggedVotesFilter(filters.BaseFilterBackend):
 
 
 class OrganizationsFilterSet(FilterSet):
-    classifications = MultiValueKeyFilter(field_name='id')
+    classifications = MultiValueKeyFilter(field_name='classification')
     class Meta:
         model = Organization
         fields = ('classifications',)
