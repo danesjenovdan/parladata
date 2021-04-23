@@ -19,6 +19,12 @@ class SessionSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+class OrganizationNameSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = OrganizationName
+        fields = '__all__'
+
+
 class OrganizationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Organization

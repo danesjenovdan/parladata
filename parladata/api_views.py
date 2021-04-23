@@ -100,6 +100,14 @@ class SessionView(viewsets.ModelViewSet):
     ordering_fields = ('-start_time',)
 
 
+class OrganizationNameView(viewsets.ModelViewSet):
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    serializer_class = OrganizationNameSerializer
+    queryset = OrganizationName.objects.all().order_by('id')
+    filter_backends = (DjangoFilterBackend,)
+    filter_fields = ('organization',)
+
+
 class OrganizationView(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     serializer_class = OrganizationSerializer
