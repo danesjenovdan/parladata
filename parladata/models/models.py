@@ -77,6 +77,9 @@ class OrganizationMembership(Timestampable, models.Model):
     end_time = models.DateTimeField(blank=True, null=True,
                                    help_text='End time')
 
+    def __str__(self):
+        return f'{self.organization} in {self.parent}'
+
 
 # TODO think about this
 class Link(Timestampable, Taggable, models.Model):

@@ -29,6 +29,9 @@ class OrganizationName(Timestampable, Parsable):
     end_time = models.DateTimeField(blank=True, null=True,
                                    help_text='End time')
 
+    def __str__(self):
+        return f'{self.name}'
+
 class Organization(Timestampable, Taggable, models.Model):
     """A group with a common purpose or reason
     for existence that goes beyond the set of people belonging to it.
@@ -60,7 +63,7 @@ class Organization(Timestampable, Taggable, models.Model):
                                    help_text='Organization description')
 
     def __str__(self):
-        return self.name + " " + str(self.id) + " " + (self._acronym if self._acronym else '')
+        return self.name + " " + str(self.id) + " " + (self.acronym if self.acronym else '')
 
     def name_at_time(self, from_date_time=datetime.now()):
         name_instance = self.names.filter(models.Q(start_time__lte=from_date_time) |

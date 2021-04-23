@@ -49,12 +49,14 @@ class CountVoteInline(admin.TabularInline):
 
 class SpeechSessionInline(admin.TabularInline):
     model = Speech
+    autocomplete_fields = ['speaker', 'agenda_items', 'debate', 'party']
     fk_name = 'session'
     extra = 0
 
 
 class MotionSessionInline(admin.TabularInline):
     model = Motion
+    autocomplete_fields = ['person', 'organization', 'party']
     fk_name = 'session'
     extra = 0
 
@@ -66,15 +68,38 @@ class PersonAdmin(admin.ModelAdmin):
     ]
     list_display = ('name',)
     list_filter = ('name',)
+    search_fields = ('name',)
+
+
+class MandateAdmin(admin.ModelAdmin):
+    list_display = ('description',)
+    list_filter = ('description',)
+    search_fields = ('description',)
+
+
+class DebateAdmin(admin.ModelAdmin):
+    list_display = ('session', 'order')
+    list_filter = ('session__name',)
+    search_fields = ('name', 'order',)
+
+
+class OrganizationNameInline(admin.TabularInline):
+    model = OrganizationName
+    fk_name = 'organization'
+    #exclude = ['person', 'organization', 'motion', 'session', 'membership']
+    extra = 0
 
 
 class OrganizationAdmin(admin.ModelAdmin):
     inlines = [
-        # LinkOrganizationInline,
+        OrganizationNameInline,
     ]
     autocomplete_fields = ['parent']
-    search_fields = ['_name']
+    search_fields = ['name']
 
+class OrganizationNameAdmin(admin.ModelAdmin):
+    autocomplete_fields = ['organization']
+    search_fields = ['name']
 
 class MembershipAdmin(admin.ModelAdmin):
     inlines = [
@@ -85,6 +110,7 @@ class MembershipAdmin(admin.ModelAdmin):
 
 
 class SessionAdmin(admin.ModelAdmin):
+    autocomplete_fields = ['mandate', 'organization', 'organizations']
     inlines = [
         SpeechSessionInline,
         MotionSessionInline,
@@ -155,7 +181,6 @@ class MotionAdmin(admin.ModelAdmin):
 
 
 class VoteAdmin(admin.ModelAdmin):
-    #form = VoteForm
     list_display = ('id', 'name', 'the_tags', )
 
     list_filter = ('tags',)
@@ -170,122 +195,9 @@ class VoteAdmin(admin.ModelAdmin):
 
 
 class ContactAdmin(admin.ModelAdmin):
-    #form = ContactForm
     list_display = ('id', 'value')
 
     search_fields = ['value']
-
-
-# class PersonAutocomplete(autocomplete.Select2QuerySetView):
-#     def get_queryset(self):
-#         # Don't forget to filter out results depending on the visitor !
-#         if not self.request.user.is_authenticated():
-#             return Person.objects.none()
-
-#         qs = Person.objects.all()
-
-#         if self.q:
-#             qs = qs.filter(name__icontains=self.q)
-
-#         return qs
-
-
-# class PostAutocomplete(autocomplete.Select2QuerySetView):
-#     def get_queryset(self):
-#         # Don't forget to filter out results depending on the visitor !
-#         if not self.request.user.is_authenticated():
-#             return Post.objects.none()
-
-#         qs = Post.objects.all()
-
-#         if self.q:
-#             qs = qs.filter(organization__name__icontains=self.q)
-
-#         return qs
-
-
-# class MembershipAutocomplete(autocomplete.Select2QuerySetView):
-#     def get_queryset(self):
-#         # Don't forget to filter out results depending on the visitor !
-#         if not self.request.user.is_authenticated():
-#             return Membership.objects.none()
-
-#         qs = Membership.objects.all()
-
-#         if self.q:
-#             qs = qs.filter(person__name__icontains=self.q)
-
-#         return qs
-
-
-# class OrganizationAutocomplete(autocomplete.Select2QuerySetView):
-#     def get_queryset(self):
-#         # Don't forget to filter out results depending on the visitor !
-#         if not self.request.user.is_authenticated():
-#             return Organization.objects.none()
-
-#         qs = Organization.objects.all()
-
-#         if self.q:
-#             qs = qs.filter(Q(_name__icontains=self.q) | Q(_acronym__icontains=self.q))
-
-#         return qs
-
-
-# class LinkAutocomplete(autocomplete.Select2QuerySetView):
-#     def get_queryset(self):
-#         # Don't forget to filter out results depending on the visitor !
-#         if not self.request.user.is_authenticated():
-#             return Link.objects.none()
-
-#         qs = Link.objects.all()
-
-#         if self.q:
-#             qs = qs.filter(url__icontains=self.q)
-
-#         return qs
-
-
-# class AreaAutocomplete(autocomplete.Select2QuerySetView):
-#     def get_queryset(self):
-#         # Don't forget to filter out results depending on the visitor !
-#         if not self.request.user.is_authenticated():
-#             return Area.objects.none()
-
-#         qs = Area.objects.all()
-
-#         if self.q:
-#             qs = qs.filter(name__icontains=self.q)
-
-#         return qs
-
-
-# class SessionAutocomplete(autocomplete.Select2QuerySetView):
-#     def get_queryset(self):
-#         # Don't forget to filter out results depending on the visitor !
-#         if not self.request.user.is_authenticated():
-#             return Session.objects.none()
-
-#         qs = Session.objects.all()
-
-#         if self.q:
-#             qs = qs.filter(name__icontains=self.q)
-
-#         return qs
-
-
-# class MotionAutocomplete(autocomplete.Select2QuerySetView):
-#     def get_queryset(self):
-#         # Don't forget to filter out results depending on the visitor !
-#         if not self.request.user.is_authenticated():
-#             return Motion.objects.none()
-
-#         qs = Motion.objects.all()
-
-#         if self.q:
-#             qs = qs.filter(text__icontains=self.q)
-
-#         return qs
 
 
 class PersonEducation(Person):
@@ -293,7 +205,6 @@ class PersonEducation(Person):
         proxy = True
 
 class PersonEducationAdmin(admin.ModelAdmin):
-    #form = PersonForm
     list_display = ['name', 'education', 'number_of_mandates', 'education_level']
     search_fields = ['name', 'number_of_mandates']
     list_filter = ['education', 'number_of_mandates']
@@ -306,12 +217,11 @@ class ParliamentMember(Person):
 
 
 class MPAdmin(admin.ModelAdmin):
-    #form = PersonForm
     list_display = ('name',)
     list_filter = ('name',)
 
     def get_queryset(self, request):
-        MPs_ids = Membership.objects.filter(role='voter').values_list('person', flat=True)
+        MPs_ids = PersonMembership.objects.filter(role='voter').values_list('person', flat=True)
         qs = Person.objects.filter(id__in=MPs_ids)
         if request.user.is_superuser:
             return qs
@@ -320,6 +230,12 @@ class LawAdmin(admin.ModelAdmin):
     list_display = ('text', 'session', 'status', 'epa', 'classification', 'procedure_ended')
     list_filter = ('session',)
     search_fields = ['text']
+
+
+class AgendaItemAdmin(admin.ModelAdmin):
+    list_display = ('name', 'session',)
+    list_filter = ('name', 'session')
+    search_fields = ['name']
 
 admin.site.register(Person, PersonAdmin)
 admin.site.register(PersonEducation, PersonEducationAdmin)
@@ -334,7 +250,9 @@ admin.site.register(Vote, VoteAdmin)
 admin.site.register(Link)
 admin.site.register(Ballot)
 admin.site.register(Question, QuestionAdmin)
-admin.site.register(OrganizationName)
-admin.site.register(AgendaItem)
+admin.site.register(OrganizationName, OrganizationNameAdmin)
+admin.site.register(AgendaItem, AgendaItemAdmin)
 admin.site.register(Law, LawAdmin)
 admin.site.register(OrganizationMembership)
+admin.site.register(Mandate, MandateAdmin)
+admin.site.register(Debate, DebateAdmin)

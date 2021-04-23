@@ -84,14 +84,14 @@ class Command(BaseCommand):
         org_name.add_parser_name('Party from opposition')
 
         OrganizationMembership(
-            organization=coalition,
-            parent=coal_party,
+            organization=coal_party,
+            parent=coalition,
             start_time=start_time
         ).save()
 
         OrganizationMembership(
-            organization=opposition,
-            parent=oppo_party,
+            organization=oppo_party,
+            parent=opposition,
             start_time=start_time
         ).save()
 
