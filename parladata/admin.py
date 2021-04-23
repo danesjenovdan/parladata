@@ -5,19 +5,6 @@ from .models import *
 from django.conf import settings
 from django.db.models import Q
 
-class OtherNamePersonInline(admin.TabularInline):
-    model = OtherName
-    fk_name = 'person'
-    exclude = ['organization']
-    extra = 0
-
-
-class OtherNameOrganizationInline(admin.TabularInline):
-    model = OtherName
-    fk_name = 'organization'
-    exclude = ['person']
-    extra = 0
-
 
 class LinkPersonInline(admin.TabularInline):
     model = Link
@@ -54,20 +41,6 @@ class LinkQuestionInline(admin.TabularInline):
     extra = 0
 
 
-class IdentifierPersonInline(admin.TabularInline):
-    model = Identifier
-    fk_name = 'person'
-    exclude = ['organization']
-    extra = 0
-
-
-class IdentifierOrganizationInline(admin.TabularInline):
-    model = Identifier
-    fk_name = 'organization'
-    exclude = ['person']
-    extra = 0
-
-
 class CountVoteInline(admin.TabularInline):
     model = Count
     fk_name = 'vote'
@@ -89,9 +62,7 @@ class MotionSessionInline(admin.TabularInline):
 class PersonAdmin(admin.ModelAdmin):
     #form = PersonForm
     inlines = [
-        OtherNamePersonInline,
         LinkPersonInline,
-        IdentifierPersonInline,
     ]
     list_display = ('name',)
     list_filter = ('name',)

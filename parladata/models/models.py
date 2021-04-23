@@ -78,59 +78,6 @@ class OrganizationMembership(Timestampable, models.Model):
                                    help_text='End time')
 
 
-# TODO kill this
-class OtherName(models.Model):
-    """An alternate or former name."""
-
-    name = models.CharField(_('name'),
-                            max_length=128,
-                            help_text=_('An alternate or former name'))
-
-    note = models.CharField(_('note'),
-                            max_length=256,
-                            blank=True, null=True,
-                            help_text=_('A note, e.g. \'Birth name\''))
-
-    person = models.ForeignKey('Person',
-                               blank=True, null=True,
-                               on_delete=models.CASCADE,
-                               help_text='The person this name belongs to')
-    organization = models.ForeignKey('Organization',
-                                     blank=True, null=True,
-                                     on_delete=models.CASCADE,
-                                     help_text='The organization this name belongs to')
-
-    def __str__(self):
-        return self.name
-
-
-# TODO kill this
-class Identifier(models.Model):
-    """An issued identifier."""
-
-    identifier = models.CharField(_('identifier'),
-                                  max_length=128,
-                                  help_text=_('An issued identifier, e.g. a DUNS number'))
-
-    scheme = models.CharField(_('scheme'),
-                              max_length=128,
-                              blank=True, null=True,
-                              help_text=_('An identifier scheme, e.g. DUNS'))
-
-    person = models.ForeignKey('Person',
-                               blank=True, null=True,
-                               on_delete=models.CASCADE,
-                               help_text='The person this identifier belongs to')
-
-    organization = models.ForeignKey('Organization',
-                                     blank=True, null=True,
-                                     on_delete=models.CASCADE,
-                                     help_text='The organization this identifier belongs to')
-
-    def __str__(self):
-        return '{0}: {1}'.format(self.scheme, self.identifier)
-
-
 # TODO think about this
 class Link(Timestampable, Taggable, models.Model):
     """
@@ -273,9 +220,11 @@ class Session(Timestampable, Taggable, models.Model):
         else:
           return "Session"
 
+
 class SpeechQuerySet(models.QuerySet):
     def getValidSpeeches(self, date_):
         return Speech.objects.filter(valid_from__lt=date_, valid_to__gt=date_)
+
 
 class Speech(Versionable, Timestampable, Taggable, models.Model):
     """Speeches that happened in parlament."""
@@ -569,67 +518,6 @@ class Question(Timestampable, models.Model):
 
     def __str__(self):
         return ' '.join(self.authors.all().values_list('name', flat=True))
-
-
-# TODO kill this (this is parser stuff)
-class tmp_votelinks(Timestampable, models.Model):
-    session_id = models.CharField(max_length=255,
-                                  blank=True,
-                                  null=True)
-
-    gov_id = models.CharField(max_length=255,
-                              blank=True,
-                              null=True)
-
-    votedoc_url = models.CharField(max_length=255,
-                                   blank=True,
-                                   null=True)
-
-    def __str__(self):
-        return self.session_id
-
-
-# TODO kill this (this is parser stuff)
-class session_deleted(Timestampable, models.Model):
-    mandate_id = models.IntegerField(blank=True,
-                                     null=True)
-
-    name = models.CharField(max_length=255,
-                            blank=True, null=True,
-                            help_text='Session name')
-
-    gov_id = models.CharField(max_length=255,
-                              blank=True, null=True,
-                              help_text='Gov website ID.')
-
-    start_time = models.DateTimeField(blank=True, null=True,
-                                     help_text='Start time')
-
-    end_time = models.DateTimeField(blank=True, null=True,
-                                   help_text='End time')
-
-    organization_id = models.IntegerField(blank=True,
-                                          null=True)
-
-    classification = models.CharField(max_length=128,
-                                      blank=True, null=True,
-                                      help_text='Session classification')
-
-    in_review = models.BooleanField(default=False,
-                                    help_text='Is session in review?')
-
-    def __str__(self):
-        return self.name
-
-
-# TODO kill this (this is parser stuff)
-class Ignore(Timestampable, Taggable, models.Model):
-    """
-    id's for ignore
-    """
-    uid = models.CharField(max_length=64,
-                           blank=True, null=True,
-                           help_text='motions uid from DZ page')
 
 
 class Law(Timestampable, Taggable, models.Model):
