@@ -26,6 +26,7 @@ INSTALLED_APPS = (
     'rest_framework',
     'taggit_serializer',
     'django_filters',
+    'drf_spectacular',
 )
 
 """MIDDLEWARE = (
@@ -121,7 +122,7 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.SessionAuthentication',
         'rest_framework.authentication.BasicAuthentication',
     ),
-    'DEFAULT_SCHEMA_CLASS': 'rest_framework.schemas.coreapi.AutoSchema'
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
 }
 
 OAUTH2_PROVIDER = {
