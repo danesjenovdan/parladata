@@ -14,9 +14,16 @@ spec:
       labels:
         app: parladata
     spec:
+      volumes:
+        - name: parladata-persistent-storage
+          persistentVolumeClaim:
+            claimName: parladata-pvc
       initContainers:
         - name: collectstatic
           image: parladata
+          volumeMounts:
+            - name: parladata-persistent-storage
+              mountPath: /pvc
           command:
             - python
             - manage.py
@@ -25,6 +32,9 @@ spec:
           env:
             - name: DJANGO_SETTINGS_MODULE
               value: parladata_project.settings.k8s
+          envFrom:
+            - secretRef:
+                name: parladata-credentials
         - name: migrate
           image: parladata
           command:
@@ -40,6 +50,9 @@ spec:
       containers:
         - name: parladata
           image: parladata
+          volumeMounts:
+            - name: parladata-persistent-storage
+              mountPath: /pvc
           command:
             - gunicorn
             - parladata_project.wsgi:application
@@ -55,3 +68,12 @@ spec:
           env:
             - name: DJANGO_SETTINGS_MODULE
               value: parladata_project.settings.k8s
+        - name: parladata-nginx
+          ports:
+            - name: http
+              containerPort: 80
+              protocol: TCP
+          image: nginx:alpine
+          volumeMounts:
+            - name: parladata-persistent-storage
+              mountPath: /usr/share/nginx/html
