@@ -51,27 +51,6 @@ class Tokeniser:
 
 tokeniser = Tokeniser()
 
-def count_versions():
-    parties = Organization.objects.filter(classification__in=settings.settings.PS_NP)
-    mems = Membership.objects.filter(organization__in=parties)
-    people = [mem.person_id for mem in mems.distinct('person')]
-    speeches = Speech.getValidSpeeches(datetime.now())
-    counts = {}
-    items = speeches.count()
-    visited = 0
-    dates = []
-    for speech in speeches:
-        visited += 1
-        versions = get_version_of_speech_distinct_count(speech)
-        counts[str(speech.id)] = versions
-        if versions > 1:
-            dates.append(speech.create)
-
-        if visited % 100 == 0:
-            printProgressBar(iteration=visited, total=items)
-    print(min(dates), max(dates))
-    return counts
-
 def get_version_of_speech(speech):
     if speech.version_con:
         versions = Speech.objects.filter(version_con=speech.version_con,
@@ -264,46 +243,6 @@ def run_speeches_on_method(speeches, method, **kwargs):
             printProgressBar(iteration=visited, total=items)
     f.close()
     return output
-
-
-def get_():
-    counts = count_versions()
-    speech_ids = ([i if j>1 else None for i, j in list(counts.items())])
-    while None in speech_ids:
-        speech_ids.remove(None)
-
-    speeches = Speech.objects.filter(id__in=speech_ids)
-
-    all_speeches = Speech.getValidSpeeches(datetime.now())
-
-    partys = Counter(speeches.values_list('party___name', flat=True))
-    orgs = Counter(speeches.values_list('session__organization___name', flat=True))
-
-    partys_all = Counter(all_speeches.values_list('party___name', flat=True))
-    orgs_all = Counter(all_speeches.values_list('session__organization___name', flat=True))
-
-
-
-def count_versions():
-    parties = Organization.objects.filter(classification__in=settings.PS_NP)
-    mems = Membership.objects.filter(organization__in=parties)
-    people = [mem.person_id for mem in mems.distinct('person')]
-    speeches = Speech.getValidSpeeches(datetime.now())
-    counts = {}
-    items = speeches.count()
-    visited = 0
-    dates = []
-    for speech in speeches:
-        visited += 1
-        versions = get_version_of_speech(speech)
-        if versions.count() > 1:
-            dates.append(versions.earliest('updated_at').updated_at)
-
-        if visited % 100 == 0:
-            print('trenutno je povprecno: ' + str(float(sum(counts.values()))/visited) + ' verzij na govor')
-            printProgressBar(iteration=visited, total=items)
-    print(min(dates), max(dates))
-    return counts
 
 
 def is_equal_content(i, j):

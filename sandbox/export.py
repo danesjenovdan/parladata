@@ -122,13 +122,13 @@ def export_people():
             person.previous_occupation,
             person.education,
             person.education_level,
-            person.mandates,
+            person.number_of_mandates,
             person.email,
-            person.gender,
-            person.birth_date,
+            person.preferred_pronoun,
+            person.date_of_birth,
             person.gov_id,
             list(person.districts.all().values_list("name", flat=True)),
-            person.voters,
+            person.number_of_voters,
             mem[0].organization.acronym if mem else '',
         ])
 

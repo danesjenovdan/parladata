@@ -12,7 +12,6 @@ from django.utils.encoding import smart_str
 from django.db.models import Count
 import re
 import operator
-from django.core.mail import send_mail
 from django.core.exceptions import PermissionDenied
 
 
@@ -21,11 +20,6 @@ from django.core.paginator import Paginator
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from functools import reduce
 import importlib
-
-
-DZ_ID = settings.DZ_ID
-PS_NP = ['poslanska skupina', 'nepovezani poslanec']
-PS = 'poslanska skupina'
 
 
 def AverageList(list):
@@ -47,23 +41,6 @@ def MaxListOfDic(list, key):
     data = [i[key] for i in list]
     return max(data)
 
-
-def getMPObjects(date_=None):
-    """Return objects of all parlament members.
-       MP = Members of parlament
-       Function: git config
-    """
-
-    if not date_:
-        date_ = datetime.now()
-    parliamentary_group = Organization.objects.filter(classification__in=settings.PS_NP)
-    members = Membership.objects.filter(organization__in=parliamentary_group)
-    members = members.filter(Q(start_time__lte=date_) |
-                             Q(start_time=None),
-                             Q(end_time__gte=date_) |
-                             Q(end_time=None)).prefetch_related('person')
-
-    return [i.person for i in members]
 
 def getMPVoteObjects(date_=None):
     """Return objects of all parlament memberships with voting ability.
@@ -88,29 +65,6 @@ def getCurrentMandate():
     return Mandate.objects.all()[-1]
 
 
-def getVotesDict(date=None):
-    """Returns all voters in a dictionary."""
-
-    parliamentary_group = Organization.objects.filter(id=settings.DZ_ID)
-    members = Membership.objects.filter(organization=parliamentary_group, role='voter').exclude(on_behalf_of=None)
-
-    votes = dict()
-    for m in list(set(members.values_list("person", flat=True))):
-        if date:
-            date2 = datetime.strptime(date, settings.API_DATE_FORMAT) + timedelta(days=1) - timedelta(seconds=1)
-            ballots = list(Ballot.objects.filter(voter__id=m,
-                                                 vote__start_time__lte=date2).order_by('vote__start_time').values_list('option', 'vote_id'))
-        else:
-            ballots = list(Ballot.objects.filter(voter__id=m).order_by('vote__start_time').values_list('option', 'vote_id'))
-
-        if ballots:
-            votes[str(m)] = {ballot[1]: ballot[0] for ballot in ballots}
-        # Work around if ther is no ballots for member
-        else:
-            votes[str(m)] = {}
-    return votes
-
-
 def voteToLogical(vote):
     """Returns 1 instead of 'za' and 0 of 'proti'."""
 
@@ -122,11 +76,11 @@ def voteToLogical(vote):
         return -1
 
 
-def getFails():
+# TODO this should be changed into a test
+def getFails(organization):
     """Function for finding MPs membersihp date issues."""
 
-    parliamentary_group = Organization.objects.filter(id=settings.DZ_ID)
-    members = Membership.objects.filter(organization=parliamentary_group, role='voter').exclude(on_behalf_of=None)
+    members = Membership.objects.filter(organization=organization, role='voter').exclude(on_behalf_of=None)
 
     start = Vote.objects.all().order_by("start_time")[0].start_time
     out = {}
@@ -152,180 +106,11 @@ def getFails():
     print(out)
 
 
-def getMembershipDuplications(request):
-    """
-    Debug method:
-        - check if person has membership in more than one party at time
-        - check if person has more than one membership per organization
-        - organization role chacher
-        - chack members in DZ
-        - members without votres
-        - check if person has more than one post per organization
-    """
-
-    context = {}
-    start_time = datetime(day=1, month=8, year=2014)
-    end_time = datetime.now()
-    parliamentary_groups = Organization.objects.filter(classification__in=settings.PS_NP)
-
-    members = Membership.objects.filter(organization__in=parliamentary_groups)
-
-    out = []
-    checked = []
-    for membership in members:
-
-        mem_start = membership.start_time if membership.start_time else start_time
-        mem_end = membership.end_time if membership.end_time else end_time
-        checked.append(membership.id)
-
-        for chk_mem in members.filter(person=membership.person).exclude(id__in=checked):
-
-            chk_start = chk_mem.start_time if chk_mem.start_time else start_time
-            chk_end = chk_mem.end_time if chk_mem.end_time else end_time
-
-            if chk_start <= mem_start:
-                # preverji da je chk_mem pred membershipom
-                if chk_end >= mem_start:
-                    # FAIL
-                    out.append({"member": membership.person,
-                                "mem1": membership,
-                                "mem2": chk_mem})
-
-            elif chk_start >= mem_start:
-                # preverji da je chk_mem pred membershipom
-                if mem_end >= chk_start:
-                    # FAIL
-                    out.append({"member": membership.person,
-                                "mem1": membership,
-                                "mem2": chk_mem})
-
-            else:
-                print("WTF enaka sta?")
-
-    context["data"] = out
-
-    # check if one person have more then one membership per organization
-    members_list = list(members.values_list("person", flat=True))
-    org_per_person = []
-    added_mems = []
-    for member in members_list:
-        temp = dict(Counter(list(members.filter(person__id=member).values_list("organization", flat=True))))
-        print(temp)
-        for key, val in list(temp.items()):
-            if val > 1 and not Membership.objects.filter(person__id=member,
-                                                         organization__id=key)[0].id in added_mems:
-                print(val)
-                added_mems.append(Membership.objects.filter(person__id=member,
-                                                            organization__id=key)[0].id)
-                org_per_person.append({"member": Person.objects.get(id=member),
-                                       "organization": Organization.objects.get(id=key),
-                                       "mem1": list(Membership.objects.filter(person__id=member, organization__id=key))[0],
-                                       "mem2": list(Membership.objects.filter(person__id=member, organization__id=key))[1]})
-
-    context["orgs_per_person"] = org_per_person
-
-    context["roles"] = []
-    orgs = members.values_list("organization", flat=True)
-    orgs = list(set(list(members.values_list("organization", flat=True))))
-    for org in orgs:
-        org_ = Organization.objects.get(id=org)
-        posts = [membership.memberships.all().values_list("role", flat=True) for membership in org_.memberships.all()]
-        roles = dict(Counter([role for post in posts for role in post]))
-        context["roles"].append({"org": org_, "roles": [{"role": role, "count": count}for role, count in list(roles.items())]})
-
-
-    context["count_of_persons"] = []
-    pgRanges = requests.get("https://data.parlameter.si/v1/getMembersOfPGsRanges/"+datetime.now().strftime("%d.%m.%Y")).json()
-    for pgRange in pgRanges:
-        count = len([member for pg in list(pgRange["members"].values()) for member in pg])
-        members_ids = [member for pg in list(pgRange["members"].values()) for member in pg]
-        context["count_of_persons"].append({"count": {"count": count, "start_date": pgRange["start_date"], "end_date": pgRange["end_date"]}, "members": [member for pg in list(pgRange["members"].values()) for member in pg]})
-        if len(context["count_of_persons"])>1:
-            context["count_of_persons"][-1]["added"] = [{"name": Person.objects.get(id=x).name, "membership": Membership.objects.filter(organization__in=parliamentary_groups, person__id=x, start_time=(datetime.strptime(context["count_of_persons"][-1]["count"]["start_date"], "%d.%m.%Y")).strftime("%Y-%m-%d %H:%M"))[0] if Membership.objects.filter(organization__in=parliamentary_groups, person__id=x, start_time=(datetime.strptime(context["count_of_persons"][-1]["count"]["start_date"], "%d.%m.%Y")).strftime("%Y-%m-%d %H:%M")) else ""} for x in context["count_of_persons"][-1]["members"] if x not in context["count_of_persons"][-2]["members"]]
-            context["count_of_persons"][-1]["removed"] = [{"name": Person.objects.get(id=x).name, "membership": Membership.objects.filter(organization__in=parliamentary_groups, person__id=x, end_time=(datetime.strptime(context["count_of_persons"][-1]["count"]["start_date"], "%d.%m.%Y")-timedelta(days=1)).strftime("%Y-%m-%d %H:%M"))[0] if Membership.objects.filter(organization__in=parliamentary_groups, person__id=x, end_time=(datetime.strptime(context["count_of_persons"][-1]["count"]["start_date"], "%d.%m.%Y")-timedelta(days=1)).strftime("%Y-%m-%d %H:%M")) else None} for x in context["count_of_persons"][-2]["members"] if x not in context["count_of_persons"][-1]["members"]]
-            context["allMps"] = [{"name": Person.objects.get(id=x).name, "membership": Membership.objects.filter(organization__in=parliamentary_groups, person__id=x, start_time=(datetime.strptime(context["count_of_persons"][-1]["count"]["start_date"], "%d.%m.%Y")).strftime("%Y-%m-%d %H:%M"))[0] if Membership.objects.filter(organization__in=parliamentary_groups, person__id=x, start_time=(datetime.strptime(context["count_of_persons"][-1]["count"]["start_date"], "%d.%m.%Y")).strftime("%Y-%m-%d %H:%M")) else x} for x in context["count_of_persons"][-1]["members"]]
-        else:
-            context["count_of_persons"][-1]["added"] = [{"name": Person.objects.get(id=x).name, "person_id": x} for x in context["count_of_persons"][-1]["members"]]
-
-
-    context["voters_counts"] = []
-    person_ids = set(list(members.values_list("person", flat=True)))
-    for person in person_ids:
-        prs = Person.objects.get(id=person)
-        if prs.voters == None or prs.voters == 0:
-            context["voters_counts"].append(prs)
-
-    #membership duration vs. post duration
-    context["post_dupl"] = []
-    members = Membership.objects.all()
-    for membership in members:
-        posts = membership.memberships.all()
-
-        mem_start = membership.start_time
-        mem_end = membership.end_time
-
-        start_time = datetime(day=1, month=8, year=2014)
-        end_time = datetime.now()
-
-        checked = []
-        print("count postov", posts.count())
-        for post in posts:
-            post_start = post.start_time if post.start_time else start_time
-            post_end = post.end_time if post.end_time else end_time
-            checked.append(post.id)
-            for chk_post in posts.exclude(id__in=checked):
-                print(post)
-                print(chk_post)
-                chk_start = chk_post.start_time if chk_post.start_time else start_time
-                chk_end = chk_post.end_time if chk_post.end_time else end_time
-                #check here
-                if chk_start < post_start:
-                    #preverji da je chk_mem pred membershipom
-                    if chk_end > post_start:
-                        #FAIL
-                        context["post_dupl"].append({"member": post.membership.person, "post1": post, "post2": chk_post})
-
-                elif chk_start > post_start:
-                    #preverji da je chk_mem pred membershipom
-                    if post_end > chk_start:
-                        #FAIL
-                        context["post_dupl"].append({"member": post.membership.person, "post1": post, "post2": chk_post})
-
-                if chk_start == post_start:
-                    context["post_dupl"].append({"member": post.membership.person, "post1": post, "post2": chk_post})
-                elif chk_end == post_end:
-                    context["post_dupl"].append({"member": post.membership.person, "post1": post, "post2": chk_post})
-
-    print(context["post_dupl"])
-
-    return render(request, "debug_memberships.html", context)
-
-
-def getBlindVotes():
-    """Checks if memberships of PGs are ok."""
-
-    context = {}
-    parliamentary_groups = Organization.objects.filter(classification__in=settings.PS_NP)
-    context["vote_without_membership"] = []
-    with open('zombie_votes.csv', 'wb') as csvfile:
-        csvwriter = csv.writer(csvfile, delimiter=',',
-                                        quotechar='|', quoting=csv.QUOTE_MINIMAL)
-        for ballot in Ballot.objects.all():
-            member = ballot.voter.memberships.filter(Q(start_time__lte=ballot.vote.start_time) |
-                                                     Q(start_time=None),
-                                                     Q(end_time__gte=ballot.vote.start_time) |
-                                                     Q(end_time=None), organization__in=parliamentary_groups)
-            if not member:
-                csvwriter.writerow([ballot.vote.start_time,
-                                    ballot.voter.id,
-                                    ballot.voter.name.encode("utf-8")])
-
-
-def getPersonWithoutVotes():
+# TODO this should be changed into a test
+def getPersonWithoutVotes(organization):
     """Returns all MPs without votes."""
 
-    parliamentary_group = Organization.objects.filter(id=settings.DZ_ID)
-    members = Membership.objects.filter(organization=parliamentary_group, role='voter').exclude(on_behalf_of=None)
+    members = Membership.objects.filter(organization=organization, role='voter').exclude(on_behalf_of=None)
 
     with open('poor_voters.csv', 'wb') as csvfile:
         csvwriter = csv.writer(csvfile, delimiter=',',
@@ -466,53 +251,6 @@ def membersFlowInPGs(request):
             context["orgs"].append({"name": "ID: "+str(org_id), "flow":flow, "allMps": context["allMps"]})
     return render(request, "org_memberships.html", context)
 
-def membersFlowInDZ(request):
-    """
-    Debug method which shows when members joins and leave DZ.
-    """
-    parliamentary_groups = Organization.objects.filter(classification__in=settings.PS_NP)
-
-    context = {}
-    context["orgs"]=[]
-    context["count_of_persons"] = []
-    pgRanges = requests.get("https://data.parlameter.si/v1/getMembersOfPGsRanges/"+datetime.now().strftime("%d.%m.%Y")).json()
-    for pgRange in pgRanges:
-        count = len([member for pg in list(pgRange["members"].values()) for member in pg])
-        members_ids = [member for pg in list(pgRange["members"].values()) for member in pg]
-        context["count_of_persons"].append({"count": {"count": count, "start_date": pgRange["start_date"], "end_date": pgRange["end_date"]}, "members": [member for pg in list(pgRange["members"].values()) for member in pg]})
-        if len(context["count_of_persons"])>1:
-            context["count_of_persons"][-1]["added"] = [{"name": Person.objects.get(id=x).name, "membership": Membership.objects.filter(organization__in=parliamentary_groups, person__id=x, start_time=(datetime.strptime(context["count_of_persons"][-1]["count"]["start_date"], "%d.%m.%Y")).strftime("%Y-%m-%d %H:%M"))[0] if Membership.objects.filter(organization__in=parliamentary_groups, person__id=x, start_time=(datetime.strptime(context["count_of_persons"][-1]["count"]["start_date"], "%d.%m.%Y")).strftime("%Y-%m-%d %H:%M")) else ""} for x in context["count_of_persons"][-1]["members"] if x not in context["count_of_persons"][-2]["members"]]
-            context["count_of_persons"][-1]["removed"] = [{"name": Person.objects.get(id=x).name, "membership": Membership.objects.filter(organization__in=parliamentary_groups, person__id=x, end_time=(datetime.strptime(context["count_of_persons"][-1]["count"]["start_date"], "%d.%m.%Y")-timedelta(days=1)).strftime("%Y-%m-%d %H:%M"))[0] if Membership.objects.filter(organization__in=parliamentary_groups, person__id=x, end_time=(datetime.strptime(context["count_of_persons"][-1]["count"]["start_date"], "%d.%m.%Y")-timedelta(days=1)).strftime("%Y-%m-%d %H:%M")) else None} for x in context["count_of_persons"][-2]["members"] if x not in context["count_of_persons"][-1]["members"]]
-            context["allMps"] = [{"name": Person.objects.get(id=x).name, "membership": Membership.objects.filter(organization__in=parliamentary_groups, person__id=x, start_time=(datetime.strptime(context["count_of_persons"][-1]["count"]["start_date"], "%d.%m.%Y")).strftime("%Y-%m-%d %H:%M"))[0] if Membership.objects.filter(organization__in=parliamentary_groups, person__id=x, start_time=(datetime.strptime(context["count_of_persons"][-1]["count"]["start_date"], "%d.%m.%Y")).strftime("%Y-%m-%d %H:%M")) else x} for x in context["count_of_persons"][-1]["members"]]
-        else:
-            context["count_of_persons"][-1]["added"] = [{"name": Person.objects.get(id=x).name, "person_id": x} for x in context["count_of_persons"][-1]["members"]]
-    context["orgs"].append({"name": "DZ:", "flow":context["count_of_persons"],  "allMps": context["allMps"]})
-    return render(request, "org_memberships.html", context)
-
-
-def getMPsOrganizationsByClassification():
-    """
-    CSV export memberships of all DZ members grouped by classification
-    """
-
-    classes = settings.PS_NP + settings.WBS + settings.FRIENDSHIP_GROUP + settings.DELEGATION + ['']
-    with open('members_orgs.csv', 'w') as csvfile:
-        csvwriter = csv.writer(csvfile,
-                               delimiter=';',
-                               quotechar='|',
-                               quoting=csv.QUOTE_MINIMAL)
-        csvwriter.writerow(["Person"]+[clas for clas in classes])
-        parliamentary_group = Organization.objects.filter(classification__in=settings.PS_NP)
-        pgs = Membership.objects.filter(organization__in=parliamentary_group)
-        for person_mps in pgs:
-            memberships = person_mps.person.memberships.all()
-            counter = {cl: [] for cl in classes}
-            for mem in memberships:
-                c_obj = counter[mem.organization.classification]
-                c_obj.append(smart_str(mem.organization.name))
-            data = [smart_str(person_mps.person.name)]
-            data = data + [",".join(counter[clas]) for clas in classes]
-            csvwriter.writerow(data)
 
 def updateSpeechOrg():
     """Updates all speeches."""
@@ -528,25 +266,6 @@ def updateSpeechOrg():
                 if spee.speaker.id in ids:
                     spee.party = Organization.objects.get(id=int(m))
                     spee.save()
-
-
-def getNonPGSpeekers():
-    """Return speakers that are not in PG."""
-
-    parliamentary_group = Organization.objects.filter(classification__in=settings.PS_NP)
-    memberships = Membership.objects.filter(organization=parliamentary_group).values_list("person__id", flat=True)
-    ids = list(memberships)
-    Speech.objects.all().exclude(speaker__id__in=ids)
-    nonPgSpeakers = Speech.objects.all().exclude(speaker__id__in=ids).values_list("speaker__id", flat=True)
-    nonPGspeekers = {speaker: {"name": Person.objects.get(id=speaker).name,
-                                "id": Person.objects.get(id=speaker).id,
-                                "count": Speech.objects.filter(speaker__id=speaker).count()} for speaker in nonPgSpeakers}
-    data = sorted(list(nonPGspeekers.values()), key=lambda k: k["count"], reverse=True)
-    with open('non_pg_speakers.csv', 'w') as csvfile:
-        svwriter = csv.writer(csvfile, delimiter=',',quotechar='|',
-                                       quoting=csv.QUOTE_MINIMAL)
-        for person in data:
-            csvwriter.writerow([person["id"], smart_str(person["name"]), person["count"]])
 
 
 def updateMotins():
@@ -723,56 +442,6 @@ def deleteMotionsWithoutText():
     Motion.objects.filter(text="").delete()
 
 
-def sendMailForEditVotes(votes):
-    """
-    Send mail to data admin to for tag votes and set votes results
-    """
-    api_key = '/?key=' + settings.PARLALIZE_API_KEY
-    motionAdmin = 'https://data.parlameter.si/admin/parladata/motion/'
-    setMotionsUrl = 'https://analize.parlameter.si/v1/s/setMotionOfSession/'
-    tagsUrl = 'https://data.parlameter.si/tags/'
-    pageVotes = 'https://parlameter.si/seja/glasovanja/'
-    pageGraph = 'https://parlameter.si/seja/glasovanje/'
-    reNavigatePage = 'https://parlameter.si/fetch/sps?t=vkSzv8Nu4eDkLBk7kUw4BBhyLjysJm'
-    reLastSession = 'https://analize.parlameter.si/v1/utils/recacheLastSession' + api_key
-    dashboard = 'https://dashboard.parlameter.si/'
-
-    updated_votes = Vote.objects.filter(id__in=list(votes.keys()))
-    motionUrls = []
-    updateUrls = []
-    sesUpdateUrls = []
-    graphUpdateUrls = []
-    for session in list(set(votes.values())):
-        url = setMotionsUrl + str(session) + api_key
-        updateUrls.append(url)
-        url = pageVotes + str(session) + '?forceRender=true'
-        sesUpdateUrls.append(url)
-    for vote, session in list(votes.items()):
-        url = pageGraph + str(session) + '/' + str(vote) + '?forceRender=true'
-        graphUpdateUrls.append(url)
-
-    pre = 'Na naslednji povezavi najdes glasovanja, ki jih je potrebno poupdejtat: \n'
-    content = dashboard + '\n'
-    #content = pre + "\n " + motionAdmin
-    #content += '\n \n nato jih potagaj: \n' + tagsUrl
-    #content += "\n \n Ko vse to uredis poklikaj naslednje linke, da vse to spravis na parlalize: \n"
-    #content += "\n".join(updateUrls)
-    #content += "\n Pozen se to: \n"
-    #content += reNavigatePage
-    #content += "\n \n Zdj spremembe dodaj na sezname glasovanj od sej: \n"
-    #content += "\n".join(sesUpdateUrls)
-    #content += "\n \n Pa se grafe glasovanj: \n"
-    #content += "\n".join(graphUpdateUrls)
-    #content += "\n \n Dj se refreshi zadno sejo ;): \n"
-    #content += reLastSession
-    #content += "\n \n Lep dan ti zelim ;)"
-    send_mail('Nekaj novih glasovanj je za pottagat :)',
-              content,
-              'test@parlameter.si',
-              [admin[1] for admin in settings.ADMINS + settings.DATA_ADMINS],
-              fail_silently=True,)
-
-
 def parseRecipient(text, date_of):
     # set utf-8 encoding
     import sys
@@ -845,18 +514,6 @@ def parseRecipient(text, date_of):
     return out
 
 
-def lockSetter(function):
-    def wrap(request, *args, **kwargs):
-        if request:
-            setterKey = request.GET.get('key')
-            if str(setterKey) == str(settings.SETTER_KEY):
-                return function(request, *args, **kwargs)
-            else:
-                raise PermissionDenied
-        else:
-            return function(*args, **kwargs)
-    return wrap
-
 def parsePager(request, objs, default_per_page=1000):
     if request.GET:
         page = int(request.GET.get('page', 1))
@@ -875,84 +532,6 @@ def parsePager(request, objs, default_per_page=1000):
     except EmptyPage:
         out = paginator.page(paginator.num_pages)
     return out, {'page': page, 'per_page': per_page, 'pages': paginator.num_pages}
-
-
-def getOwnersOfAmendment(motion):
-    orgs_ids = []
-    people_ids = []
-    amendment_words = ['AMANDMANI', 'AMANDMAN']
-    if settings.COUNTRY == 'SI':
-        if 'Amandma' in motion.text:
-            acronyms = re.findall('\; \s*(\w+)|\[\s*(\w+)', motion.text)
-            acronyms = [pg[0] + ',' if pg[0] else pg[1] + ',' for pg in acronyms]
-            if acronyms:
-                query = reduce(operator.or_, (Q(name_parser__icontains=item) for item in acronyms))
-                orgs = Organization.objects.filter(query)
-                s_time = motion.vote.all()[0].start_time
-                orgs = orgs.filter(Q(founding_date__lte=s_time) |
-                                   Q(founding_date=None),
-                                   Q(dissolution_date__gte=s_time) |
-                                   Q(dissolution_date=None))
-                org_ids = list(orgs.values_list('id', flat=True))
-            else:
-                org_ids = []
-        else:
-            org_ids = []
-        return {'orgs': org_ids, 'people': []}
-    elif settings.COUNTRY == 'HR':
-        links = motion.links.all()
-        orgs = Organization.objects.filter(classification__in=settings.PS_NP)
-        acronyms = {}
-        for org in orgs:
-            acronyms[' '.join(org.acronym.split(', '))]= org.id
-        vlada_id = Organization.objects.get(_name='Vlada').id
-        acronyms['Vlada VladaRH']= vlada_id
-        for link in links:
-            tokens = link.name.replace(" ", '_').replace("-", '_').split('_')
-            print((link.name))
-            if 'AMANDMAN' in link.name:
-                for acronym, i in list(acronyms.items()):
-                    # find orgs
-                    for splited_acr in acronym.split(' '):
-                        if splited_acr in link.name:
-                            orgs_ids.append(i)
-                            break
-                num_ids = [hasNumbersOrPdfOrEndWord(token) for token in tokens]
-                if True in num_ids:
-                    tokens = tokens[:num_ids.index(True)]
-                has_amendment = [token in amendment_words for token in tokens]
-                if True in has_amendment:
-                    tokens = tokens[has_amendment.index(True)+1:]
-                # find proposers
-                #if tokens[0].lower() == 'vlada' or tokens[0].lower() == 'vladarh':
-                    # vlada
-                elif tokens[0].lower() == 'klub':
-                    tokens = tokens[1:]
-
-                n_tokens = len(tokens)
-                for i in range(n_tokens):
-                    d_tokens = [[tokens[i]]]
-                    if i + 1 < n_tokens:
-                        d_tokens.append([tokens[i], tokens[i+1]])
-                    for d_token in d_tokens:
-                        n_tokens = len(tokens)
-                        for i in range(n_tokens):
-                            d_tokens = [[tokens[i]]]
-                            if i + 1 < n_tokens:
-                                d_tokens.append([tokens[i], tokens[i+1]])
-                            for d_token in d_tokens:
-                                person = Person.objects.filter(name_parser__icontains=' '.join(d_token))
-                                if person.count() == 1:
-                                    people_ids.append(person[0].id)
-                                    break
-                                if person.count() > 0:
-                                    names = person.values('id', 'name_parser')
-                                    for name in names:
-                                        if re.search("\\b" + ' '.join(d_token) + "\\b", name['name_parser']):
-                                            people_ids.append(name['id'])
-                                            break
-        print(acronyms)
-    return {'orgs': orgs_ids, 'people': list(set(people_ids))}
 
 
 def hasNumbersOrPdfOrEndWord(inputString):

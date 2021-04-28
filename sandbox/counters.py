@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from parladata.models import Organization, Speech, Membership, Session, Vote, Ballot
+from parladata.models import Organization, Speech, PersonMembership, Session, Vote, Ballot
 from django.db.models import Q
 import lemmagen.lemmatizer
 from lemmagen.lemmatizer import Lemmatizer
@@ -92,7 +92,7 @@ def getWordsCounter(text):
 def getMembers():
     pos = ['poslanska skupina', 'nepovezani poslanec']
     parliamentaryGroups = Organization.objects.filter(classification__in=pos)
-    mems = Membership.objects.filter(Q(start_time__lte=datetime.now()) |
+    mems = PersonMembership.objects.filter(Q(start_time__lte=datetime.now()) |
                                      Q(start_time=None),
                                      Q(end_time__gte=datetime.now()) |
                                      Q(end_time=None),

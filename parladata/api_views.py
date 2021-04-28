@@ -66,7 +66,7 @@ class UntaggedVotesFilter(filters.BaseFilterBackend):
 
 
 class OrganizationsFilterSet(FilterSet):
-    classifications = MultiValueKeyFilter(field_name='id')
+    classifications = MultiValueKeyFilter(field_name='classification')
     class Meta:
         model = Organization
         fields = ('classifications',)
@@ -100,6 +100,14 @@ class SessionView(viewsets.ModelViewSet):
     ordering_fields = ('-start_time',)
 
 
+class OrganizationNameView(viewsets.ModelViewSet):
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    serializer_class = OrganizationNameSerializer
+    queryset = OrganizationName.objects.all().order_by('id')
+    filter_backends = (DjangoFilterBackend,)
+    filter_fields = ('organization',)
+
+
 class OrganizationView(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     serializer_class = OrganizationSerializer
@@ -107,6 +115,27 @@ class OrganizationView(viewsets.ModelViewSet):
     filter_backends = (DjangoFilterBackend, filters.SearchFilter)
     filter_class = OrganizationsFilterSet
     search_fields = ('name_parser', '_name')
+
+    def create(self, request, *args, **kwargs):
+        name = request.data.get('name', '')
+        acronym = request.data.get('acronym', '')
+
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        serializer.save()
+        instance = serializer.instance
+        orgName = OrganizationName(
+            name=name,
+            acronym=acronym,
+            organization=instance
+        )
+        orgName.save()
+
+        headers = self.get_success_headers(serializer.data)
+
+        data = self.get_serializer(instance).data
+        return Response(data, status=status.HTTP_201_CREATED, headers=headers)
 
 
 class SpeechView(viewsets.ModelViewSet):
@@ -167,20 +196,12 @@ class LinkView(viewsets.ModelViewSet):
     filter_fields = ('person', 'tags__name', 'organization', 'question')
 
 
-class MembershipView(viewsets.ModelViewSet):
+class PersonMembershipView(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
-    queryset = Membership.objects.all().order_by('id')
-    serializer_class = MembershipSerializer
+    queryset = PersonMembership.objects.all().order_by('id')
+    serializer_class = PersonMembershipSerializer
     filter_backends = (DjangoFilterBackend,)
     filter_fields = ('person', 'organization', 'role', 'on_behalf_of')
-
-
-class PostView(viewsets.ModelViewSet):
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
-    queryset = Post.objects.all().order_by('id')
-    serializer_class = PostSerializer
-    filter_backends = (DjangoFilterBackend,)
-    filter_fields = ('membership__person', 'organization', 'role')
 
 
 class AreaView(viewsets.ModelViewSet):
@@ -191,9 +212,9 @@ class AreaView(viewsets.ModelViewSet):
     filter_fields = ('calssification',)
 
 
-class LawView(viewsets.ModelViewSet):
+class LegislationView(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
-    queryset = Law.objects.all().order_by('-date')
+    queryset = Law.objects.all().order_by('-id')
     serializer_class = LawSerializer
     fields = '__all__'
     filter_backends = (DjangoFilterBackend,)
@@ -225,14 +246,6 @@ class QuestionView(viewsets.ModelViewSet):
     filter_backends = (DjangoFilterBackend, filters.OrderingFilter)
     filter_fields = ('authors',)
     ordering_fields = ('date',)
-
-
-class ContactDetailView(viewsets.ModelViewSet):
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
-    queryset = ContactDetail.objects.all().order_by('id')
-    serializer_class = ContactDetailSerializer
-    filter_backends = (DjangoFilterBackend, filters.OrderingFilter)
-    filter_fields = ('person', 'contact_type', 'organization')
 
 
 class OrganizationMembershipsViewSet(viewsets.ModelViewSet):

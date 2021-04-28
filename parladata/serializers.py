@@ -19,6 +19,12 @@ class SessionSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+class OrganizationNameSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = OrganizationName
+        fields = '__all__'
+
+
 class OrganizationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Organization
@@ -26,16 +32,13 @@ class OrganizationSerializer(serializers.ModelSerializer):
             "id",
             "created_at",
             "updated_at",
-            "_name",
-            "name_parser",
-            "_acronym",
+            "name",
+            "acronym",
             "gov_id",
             "classification",
             "dissolution_date",
             "founding_date",
             "description",
-            "is_coalition",
-            "voters",
             "parent",
             "has_voters",
             "name",
@@ -137,20 +140,10 @@ class AreaSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class MembershipSerializer(serializers.ModelSerializer):
+class PersonMembershipSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Membership
+        model = PersonMembership
         fields = '__all__'
-
-
-class PostSerializer(serializers.ModelSerializer):
-    person = serializers.SerializerMethodField()
-    class Meta:
-        model = Post
-        exclude = ()
-
-    def get_person(self, obj):
-        return obj.membership.person_id
 
 
 class LawSerializer(serializers.ModelSerializer):
@@ -178,12 +171,6 @@ class EpaSerializer(serializers.ModelSerializer):
 class TagsSerializer(serializers.ModelSerializer):
     class Meta:
         model = Tag
-        fields = '__all__'
-
-
-class ContactDetailSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = ContactDetail
         fields = '__all__'
 
 
