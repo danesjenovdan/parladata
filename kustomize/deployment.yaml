@@ -39,7 +39,7 @@ spec:
                 name: parladata-credentials
       containers:
         - name: parladata
-          image: rg.fr-par.scw.cloud/djnd/parladata:latest
+          image: parladata
           command:
             - gunicorn
             - parladata_project.wsgi:application
