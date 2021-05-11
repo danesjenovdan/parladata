@@ -46,7 +46,6 @@ class SpeechSerializer(serializers.ModelSerializer):
             "start_time",
             "end_time",
             "speaker",
-            "party",
             "session",
             "agenda_item",
             "agenda_items",
