@@ -357,8 +357,8 @@ def change_international_classes():
         orgs = Organization.objects.filter(classification=old)
         orgs.update(classification=new)
 
-    areas = Area.objects.filter(calssification='okraj')
-    areas.update(calssification='district')
+    areas = Area.objects.filter(classification='okraj')
+    areas.update(classification='district')
 
     Membership
 
@@ -384,7 +384,7 @@ def importPersonData(file_name):
                 if area:
                     area = area[0]
                 else:
-                    area = Area(name=area_str, calssification='district')
+                    area = Area(name=area_str, classification='district')
                     area.save()
                 p.district.add(area)
 

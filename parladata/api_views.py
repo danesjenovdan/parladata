@@ -96,16 +96,16 @@ class SessionView(viewsets.ModelViewSet):
     queryset = Session.objects.all().order_by('id')
     serializer_class = SessionSerializer
     filter_backends = (DjangoFilterBackend, filters.OrderingFilter)
-    filter_fields = ('organization',)
+    filter_fields = ('organizations',)
     ordering_fields = ('-start_time',)
 
 
-class OrganizationNameView(viewsets.ModelViewSet):
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
-    serializer_class = OrganizationNameSerializer
-    queryset = OrganizationName.objects.all().order_by('id')
-    filter_backends = (DjangoFilterBackend,)
-    filter_fields = ('organization',)
+# class OrganizationNameView(viewsets.ModelViewSet):
+#     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+#     serializer_class = OrganizationNameSerializer
+#     queryset = OrganizationName.objects.all().order_by('id')
+#     filter_backends = (DjangoFilterBackend,)
+#     filter_fields = ('organization',)
 
 
 class OrganizationView(viewsets.ModelViewSet):
@@ -209,7 +209,7 @@ class AreaView(viewsets.ModelViewSet):
     queryset = Area.objects.all().order_by('id')
     serializer_class = AreaSerializer
     filter_backends = (DjangoFilterBackend,)
-    filter_fields = ('calssification',)
+    filter_fields = ('classification',)
 
 
 class LegislationView(viewsets.ModelViewSet):

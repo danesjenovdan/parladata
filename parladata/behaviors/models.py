@@ -1,3 +1,5 @@
+from importlib import import_module
+
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
@@ -6,6 +8,8 @@ from django.db import models
 from django.utils.translation import ugettext_lazy as _
 from autoslug import AutoSlugField
 from datetime import datetime
+from django.utils.text import slugify
+import uuid
 
 from taggit.managers import TaggableManager
 
@@ -62,6 +66,41 @@ class Versionable(models.Model):
     class Meta:
         abstract = True
 
+class VersionableProperty(Versionable):
+    owner = None
+    value = models.TextField(blank=False, null=False)
+
+    def __str__(self):
+        return str(self.value)
+
+    class Meta:
+        abstract = True
+
+class VersionableFieldsOwner(models.Model):
+    @staticmethod
+    def versionable_property_on_date(owner, property_model_name, datetime):
+        versionable_properties_module = import_module('parladata.models.versionable_properties')
+        PropertyModel = getattr(versionable_properties_module, property_model_name)
+        active_properties = PropertyModel.objects.filter(
+            models.Q(owner=owner),
+            models.Q(valid_from__lte=datetime) | models.Q(valid_from__isnull=True),
+            models.Q(valid_to__gte=datetime) | models.Q(valid_to__isnull=True),
+        )
+
+        if active_properties.count() > 1:
+            # TODO maybe a more descriptive exception is appropriate
+            raise Exception(f'More than one active {property_model_name} at {datetime}. Check your data.')
+        
+        active_property = active_properties.first()
+
+        if not active_property:
+            return None
+        
+        return active_property.value
+    
+    class Meta:
+        abstract = True
+
 
 class Taggable(models.Model):
     tags = TaggableManager()
@@ -69,3 +108,11 @@ class Taggable(models.Model):
     class Meta:
         abstract = True
 
+class Sluggable(models.Model):
+    def slug(self):
+        if self.name:
+            return slugify(f'{self.id}-{self.name}')
+        return str(self.id)
+
+    class Meta:
+        abstract = True

@@ -110,7 +110,7 @@ def add_or_get_district(obj):
     except:
         area = Area(
             name=obj['data']['sejm_mps.constituency_name'],
-            calssification='district',
+            classification='district',
             )
         area.save()
     return area
