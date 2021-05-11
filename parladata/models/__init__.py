@@ -11,6 +11,5 @@ from parladata.models.vote import Vote
 from parladata.models.ballot import Ballot
 from parladata.models.legislation import Law
 from parladata.models.agenda_item import AgendaItem
-from parladata.models.debate import Debate
 from parladata.models.question import Question
 from parladata.models.link import Link

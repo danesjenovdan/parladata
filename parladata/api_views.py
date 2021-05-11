@@ -85,12 +85,6 @@ class AgendaItemView(viewsets.ModelViewSet):
     serializer_class = AgendaItemSerializer
 
 
-class DebateView(viewsets.ModelViewSet):
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
-    queryset = Debate.objects.all().order_by('id')
-    serializer_class = DebateSerializer
-
-
 class SessionView(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     queryset = Session.objects.all().order_by('id')
@@ -221,15 +215,16 @@ class LegislationView(viewsets.ModelViewSet):
     filter_fields = ('session', 'epa',)
 
 
-class AllUniqueEpas(viewsets.ModelViewSet):
-    end_laws = Law.objects.filter(procedure_ended=True).distinct('epa')
-    end_epas = end_laws.values_list('epa', flat=True)
-    queryset = Motion.objects.exclude(epa__in=end_epas).distinct('epa').order_by('id')
-    serializer_class = EpaSerializer
-    pagination.PageNumberPagination.page_size = 100
-    fields = 'epa'
-    filter_backends = (DjangoFilterBackend,)
-    filter_fields = ('session',)
+# TODO rewrite this so it works
+# class AllUniqueEpas(viewsets.ModelViewSet):
+#     end_laws = Law.objects.filter(procedure_ended=True).distinct('epa')
+#     end_epas = end_laws.values_list('epa', flat=True)
+#     queryset = Motion.objects.exclude(epa__in=end_epas).distinct('epa').order_by('id')
+#     serializer_class = EpaSerializer
+#     pagination.PageNumberPagination.page_size = 100
+#     fields = 'epa'
+#     filter_backends = (DjangoFilterBackend,)
+#     filter_fields = ('session',)
 
 
 class TagsView(viewsets.ModelViewSet):

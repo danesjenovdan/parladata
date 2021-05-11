@@ -49,7 +49,6 @@ class SpeechSerializer(serializers.ModelSerializer):
             "party",
             "session",
             "agenda_item",
-            "debate",
             "agenda_items",
             "agenda_item_order"
         ]
@@ -57,22 +56,13 @@ class SpeechSerializer(serializers.ModelSerializer):
     def get_agenda_item_order(self, obj):
         if obj.agenda_items.first():
             return obj.agenda_items.first().order
-        elif obj.debate and obj.debate.order:
-            return obj.debate.order
-        else:
-            return 0
+        return 0
 
 
 class AgendaItemSerializer(TaggitSerializer, serializers.ModelSerializer):
     tags = TagListSerializerField(required=False)
     class Meta:
         model = AgendaItem
-        fields = '__all__'
-
-
-class DebateSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Debate
         fields = '__all__'
 
 

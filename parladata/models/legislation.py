@@ -35,32 +35,20 @@ class Law(Timestampable, Taggable):
                                on_delete=models.CASCADE,
                                help_text='Working body obj')
 
-    # TODO this is weird, compare with result
-    status = models.CharField(blank=True, null=True,
-                             max_length=255,
+    status = models.TextField(blank=True, null=True,
                              help_text='result of law')
 
-    # TODO this is weird, compare with status
-    result = models.CharField(blank=True, null=True,
-                              max_length=255,
-                              help_text='result of law')
+    passed = models.BooleanField(blank=True, null=True)
 
     proposer_text = models.TextField(blank=True, null=True,
                                      help_text='Proposer of law')
 
-    # TODO this is weird, compare with procedure
-    procedure_phase = models.CharField(blank=True, null=True,
-                                       max_length=255,
-                                       help_text='Procedure phase of law')
-
-    # TODO this is weird, compare with procedure_phase
-    procedure = models.CharField(blank=True, null=True,
+    procedure_type = models.TextField(blank=True, null=True,
                                  max_length=255,
-                                 help_text='Procedure of law')
+                                 help_text='Skrajšani, normalni, hitri postopek...')
 
-    # TODO is this necessary, if we have tags? maybe we don't need tags
-    type_of_law = models.CharField(blank=True, null=True,
-                                   max_length=255,
+    # TODO maybe this can be a choice field
+    law_type = models.TextField(blank=True, null=True,
                                    help_text='Type of law')
 
     abstract = HTMLField(blank=True,
@@ -69,14 +57,6 @@ class Law(Timestampable, Taggable):
     datetime = models.DateTimeField(blank=True,
                                null=True,
                                help_text='Date of the law.')
-
-    classification = models.TextField(blank=True, null=True,
-                                      help_text='Type of law')
-
-    # TODO maybe transform into a functional property
-    procedure_ended = models.BooleanField(default=False,
-                                          max_length=255,
-                                          help_text='Procedure phase of law')
 
     def __str__(self):
         return (self.session.name if self.session else '') + ' -> ' + self.text
