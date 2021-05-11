@@ -19,36 +19,16 @@ class SessionSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class OrganizationNameSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = OrganizationName
-        fields = '__all__'
+# class OrganizationNameSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = OrganizationName
+#         fields = '__all__'
 
 
 class OrganizationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Organization
-        fields = [
-            "id",
-            "created_at",
-            "updated_at",
-            "name",
-            "acronym",
-            "gov_id",
-            "classification",
-            "dissolution_date",
-            "founding_date",
-            "description",
-            "parent",
-            "has_voters",
-            "name",
-            "acronym"
-        ]
-    def get_name(self, obj):
-        return obj.name
-
-    def get_acronym(self, obj):
-        return obj.acronym
+        fields = '__all__'
 
 
 class SpeechSerializer(serializers.ModelSerializer):
@@ -65,7 +45,6 @@ class SpeechSerializer(serializers.ModelSerializer):
             "order",
             "start_time",
             "end_time",
-            "version_con",
             "speaker",
             "party",
             "session",
@@ -108,7 +87,7 @@ class VoteSerializer(TaggitSerializer, serializers.ModelSerializer):
     def get_results(self, obj):
         if obj.counter:
             return json.loads(obj.counter)
-        return obj.getResult()
+        return obj.getBallotCounts()
 
     def get_has_ballots(self, obj):
         return bool(obj.ballot_set.count())
@@ -179,8 +158,8 @@ class OrganizationMembershipSerializer(serializers.ModelSerializer):
         model = OrganizationMembership
         fields = (
             'id',
+            'member',
             'organization',
-            'parent',
             'start_time',
             'end_time'
         )

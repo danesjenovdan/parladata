@@ -1,17 +1,11 @@
 from django.contrib import admin
 from collections import Counter
 from django.urls import reverse
-from .models import *
+from parladata.models import *
 from django.conf import settings
 from django.db.models import Q
 
-
-class LinkPersonInline(admin.TabularInline):
-    model = Link
-    fk_name = 'person'
-    exclude = ['organization', 'membership', 'motion', 'session', 'question']
-    extra = 0
-
+from parladata.models.versionable_properties import *
 
 class LinkOrganizationInline(admin.TabularInline):
     model = Link
@@ -41,10 +35,10 @@ class LinkQuestionInline(admin.TabularInline):
     extra = 0
 
 
-class CountVoteInline(admin.TabularInline):
-    model = Count
-    fk_name = 'vote'
-    extra = 0
+# class CountVoteInline(admin.TabularInline):
+#     model = Count
+#     fk_name = 'vote'
+#     extra = 0
 
 
 class SpeechSessionInline(admin.TabularInline):
@@ -54,21 +48,11 @@ class SpeechSessionInline(admin.TabularInline):
     extra = 0
 
 
-class MotionSessionInline(admin.TabularInline):
-    model = Motion
-    autocomplete_fields = ['person', 'organization', 'party']
-    fk_name = 'session'
-    extra = 0
-
-
-class PersonAdmin(admin.ModelAdmin):
-    #form = PersonForm
-    inlines = [
-        LinkPersonInline,
-    ]
-    list_display = ('name',)
-    list_filter = ('name',)
-    search_fields = ('name',)
+# class MotionSessionInline(admin.TabularInline):
+#     model = Motion
+#     autocomplete_fields = ['person', 'organization', 'party']
+#     fk_name = 'session'
+#     extra = 0
 
 
 class MandateAdmin(admin.ModelAdmin):
@@ -83,37 +67,37 @@ class DebateAdmin(admin.ModelAdmin):
     search_fields = ('name', 'order',)
 
 
-class OrganizationNameInline(admin.TabularInline):
-    model = OrganizationName
-    fk_name = 'organization'
-    #exclude = ['person', 'organization', 'motion', 'session', 'membership']
-    extra = 0
+# class OrganizationNameInline(admin.TabularInline):
+#     model = OrganizationName
+#     fk_name = 'organization'
+#     #exclude = ['person', 'organization', 'motion', 'session', 'membership']
+#     extra = 0
 
 
-class OrganizationAdmin(admin.ModelAdmin):
-    inlines = [
-        OrganizationNameInline,
-    ]
-    autocomplete_fields = ['parent']
-    search_fields = ['name']
+# class OrganizationAdmin(admin.ModelAdmin):
+#     inlines = [
+#         OrganizationNameInline,
+#     ]
+#     autocomplete_fields = ['parent']
+#     search_fields = ['name']
 
-class OrganizationNameAdmin(admin.ModelAdmin):
-    autocomplete_fields = ['organization']
-    search_fields = ['name']
+# class OrganizationNameAdmin(admin.ModelAdmin):
+#     autocomplete_fields = ['organization']
+#     search_fields = ['name']
 
 class MembershipAdmin(admin.ModelAdmin):
     inlines = [
         LinkMembershipInline,
     ]
-    list_filter = ['organization']
+    # list_filter = ['organization']
     search_fields = ['person__name', 'organization___name']
 
 
 class SessionAdmin(admin.ModelAdmin):
-    autocomplete_fields = ['mandate', 'organization', 'organizations']
+    # autocomplete_fields = ['mandate', 'organization', 'organizations']
     inlines = [
-        SpeechSessionInline,
-        MotionSessionInline,
+        # SpeechSessionInline,
+        # MotionSessionInline,
     ]
     search_fields = ['name']
 
@@ -135,7 +119,7 @@ class MotionAdmin(admin.ModelAdmin):
     #form = MotionForm
     list_display = ('id',
                     'text',
-                    'date',
+                    'datetime',
                     'epa',
                     'result',
                     'requirement',
@@ -146,7 +130,7 @@ class MotionAdmin(admin.ModelAdmin):
                     'link_to_vote')
 
     list_editable = ('result',)
-    list_filter = ('result', 'date', 'session')
+    list_filter = ('result', 'datetime', 'session')
     search_fields = ['text']
     inlines = [
         LinkMotionInline,
@@ -185,7 +169,7 @@ class VoteAdmin(admin.ModelAdmin):
 
     list_filter = ('tags',)
     inlines = [
-        CountVoteInline,
+        # CountVoteInline,
     ]
     search_fields = ['name']
 
@@ -200,15 +184,15 @@ class ContactAdmin(admin.ModelAdmin):
     search_fields = ['value']
 
 
-class PersonEducation(Person):
-    class Meta:
-        proxy = True
+# class PersonEducation(Person):
+#     class Meta:
+#         proxy = True
 
-class PersonEducationAdmin(admin.ModelAdmin):
-    list_display = ['name', 'education', 'number_of_mandates', 'education_level']
-    search_fields = ['name', 'number_of_mandates']
-    list_filter = ['education', 'number_of_mandates']
-    fields = ('name', 'education', 'education_level')
+# class PersonEducationAdmin(admin.ModelAdmin):
+#     list_display = ['name', 'education', 'number_of_mandates', 'education_level']
+#     search_fields = ['name', 'number_of_mandates']
+#     list_filter = ['education', 'number_of_mandates']
+#     fields = ('name', 'education', 'education_level')
 
 
 class ParliamentMember(Person):
@@ -217,11 +201,12 @@ class ParliamentMember(Person):
 
 
 class MPAdmin(admin.ModelAdmin):
-    list_display = ('name',)
-    list_filter = ('name',)
+    # TODO bring back name
+    # list_display = ('name',)
+    # list_filter = ('name',)
 
     def get_queryset(self, request):
-        MPs_ids = PersonMembership.objects.filter(role='voter').values_list('person', flat=True)
+        MPs_ids = PersonMembership.objects.filter(role='voter').values_list('member', flat=True)
         qs = Person.objects.filter(id__in=MPs_ids)
         if request.user.is_superuser:
             return qs
@@ -237,10 +222,9 @@ class AgendaItemAdmin(admin.ModelAdmin):
     list_filter = ('name', 'session')
     search_fields = ['name']
 
-admin.site.register(Person, PersonAdmin)
-admin.site.register(PersonEducation, PersonEducationAdmin)
+# admin.site.register(PersonEducation, PersonEducationAdmin)
 admin.site.register(ParliamentMember, MPAdmin)
-admin.site.register(Organization, OrganizationAdmin)
+# admin.site.register(Organization, OrganizationAdmin)
 admin.site.register(PersonMembership, MembershipAdmin)
 admin.site.register(Session, SessionAdmin)
 admin.site.register(Speech, SpeechAdmin)
@@ -250,9 +234,9 @@ admin.site.register(Vote, VoteAdmin)
 admin.site.register(Link)
 admin.site.register(Ballot)
 admin.site.register(Question, QuestionAdmin)
-admin.site.register(OrganizationName, OrganizationNameAdmin)
+# admin.site.register(OrganizationName, OrganizationNameAdmin)
 admin.site.register(AgendaItem, AgendaItemAdmin)
 admin.site.register(Law, LawAdmin)
-admin.site.register(OrganizationMembership)
+# admin.site.register(OrganizationMembership)
 admin.site.register(Mandate, MandateAdmin)
 admin.site.register(Debate, DebateAdmin)

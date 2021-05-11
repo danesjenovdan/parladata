@@ -27,6 +27,7 @@ INSTALLED_APPS = (
     'taggit_serializer',
     'django_filters',
     'drf_spectacular',
+    'parlacards',
 )
 
 """MIDDLEWARE = (
