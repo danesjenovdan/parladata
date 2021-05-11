@@ -14,11 +14,8 @@ class Vote(Timestampable, Taggable):
                                on_delete=models.CASCADE,
                                help_text='The motion for which the vote took place')
 
-    # TODO should we just have a single datetime?
-    start_time = models.DateTimeField(blank=True, null=True,
-                                     help_text='Start time')
-    end_time = models.DateTimeField(blank=True, null=True,
-                                   help_text='End time')
+    datetime = models.DateTimeField(blank=True, null=True,
+                                     help_text='Vote time')
 
     # TODO maybe rework this into a choice field
     result = models.TextField(blank=True, null=True,

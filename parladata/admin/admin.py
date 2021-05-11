@@ -43,7 +43,7 @@ class LinkQuestionInline(admin.TabularInline):
 
 class SpeechSessionInline(admin.TabularInline):
     model = Speech
-    autocomplete_fields = ['speaker', 'agenda_items', 'debate', 'party']
+    autocomplete_fields = ['speaker', 'agenda_items', 'party']
     fk_name = 'session'
     extra = 0
 
@@ -59,12 +59,6 @@ class MandateAdmin(admin.ModelAdmin):
     list_display = ('description',)
     list_filter = ('description',)
     search_fields = ('description',)
-
-
-class DebateAdmin(admin.ModelAdmin):
-    list_display = ('session', 'order')
-    list_filter = ('session__name',)
-    search_fields = ('name', 'order',)
 
 
 # class OrganizationNameInline(admin.TabularInline):
@@ -120,7 +114,6 @@ class MotionAdmin(admin.ModelAdmin):
     list_display = ('id',
                     'text',
                     'datetime',
-                    'epa',
                     'result',
                     'requirement',
                     'get_for',
@@ -212,7 +205,7 @@ class MPAdmin(admin.ModelAdmin):
             return qs
 
 class LawAdmin(admin.ModelAdmin):
-    list_display = ('text', 'session', 'status', 'epa', 'classification', 'procedure_ended')
+    list_display = ('text', 'session', 'status', 'epa')
     list_filter = ('session',)
     search_fields = ['text']
 
@@ -239,4 +232,3 @@ admin.site.register(AgendaItem, AgendaItemAdmin)
 admin.site.register(Law, LawAdmin)
 # admin.site.register(OrganizationMembership)
 admin.site.register(Mandate, MandateAdmin)
-admin.site.register(Debate, DebateAdmin)

@@ -36,10 +36,6 @@ class Speech(Versionable, Timestampable):
     agenda_items = models.ManyToManyField('AgendaItem', blank=True,
                                           help_text='Agenda items', related_name='speeches')
 
-    debate = models.ForeignKey('Debate', blank=True, null=True,
-                                help_text='Debates', related_name='speeches',
-                                on_delete=models.CASCADE,)
-
     objects = models.Manager()
     valid_speeches = ValidSpeechesManager()
 
@@ -53,7 +49,6 @@ class Speech(Versionable, Timestampable):
         
         return self.agenda_items.first()
 
-    # TODO rename to parliamentary_group
     @property
-    def party(self):
+    def parliamentary_group(self):
         return self.speaker.parliamentary_group_on_date(datetime=self.start_time)

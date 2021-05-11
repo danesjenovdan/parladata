@@ -382,13 +382,12 @@ class Command(BaseCommand):
             datetime=start_time,
             session=session,
             result='1',
-            epa='EPA-1'
         )
         motion.save()
         vote = Vote(
             name='Voting for president',
             motion=motion,
-            start_time=start_time + timedelta(minutes=35),
+            datetime=start_time + timedelta(minutes=35),
             result='1',
         )
         vote.save()
@@ -423,19 +422,17 @@ class Command(BaseCommand):
             session=session,
             text='Voting for president',
             epa='EPA-1',
-            classification='act',
-            result='enacted',
+            law_type='act',
+            status='enacted',
+            passed=True,
             datetime=start_time,
-            procedure_ended=True
         ).save()
         Law(
             session=session,
             text='Voting for dinner.',
             epa='EPA-1',
-            classification='act',
-            result='',
-            status='in_procedure',
-            procedure_ended=False
+            law_type='act',
+            status='in_procedure'
         ).save()
 
         user = User(
