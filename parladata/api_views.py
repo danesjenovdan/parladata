@@ -137,7 +137,7 @@ class SpeechView(viewsets.ModelViewSet):
     queryset = Speech.objects.all().order_by('id')
     serializer_class = SpeechSerializer
     filter_backends = (DjangoFilterBackend, filters.SearchFilter, ValidSpeechesFilter)
-    filter_fields = ('party', 'speaker', 'session')
+    filter_fields = ('speaker', 'session')
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data, many=isinstance(request.data,list))
@@ -162,9 +162,9 @@ class VoteView(viewsets.ModelViewSet):
     queryset = Vote.objects.all().order_by("id")
     serializer_class = VoteSerializer
     filter_backends = (DjangoFilterBackend, filters.SearchFilter, UntaggedVotesFilter)
-    filter_fields = ('session', 'tags__name')
+    filter_fields = ('tags__name',)
     ordering_fields = ('start_time',)
-    search_fields = ('name', 'tags__name')
+    search_fields = ('name', 'tags__name',)
 
 
 class BallotView(viewsets.ModelViewSet):
@@ -172,7 +172,7 @@ class BallotView(viewsets.ModelViewSet):
     queryset = Ballot.objects.all().order_by('id')
     serializer_class = BallotSerializer
     filter_backends = (DjangoFilterBackend, filters.SearchFilter,)
-    filter_fields = ('vote', 'voter', 'vote__session')
+    filter_fields = ('vote', 'personvoter')
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data, many=isinstance(request.data,list))
@@ -195,7 +195,7 @@ class PersonMembershipView(viewsets.ModelViewSet):
     queryset = PersonMembership.objects.all().order_by('id')
     serializer_class = PersonMembershipSerializer
     filter_backends = (DjangoFilterBackend,)
-    filter_fields = ('person', 'organization', 'role', 'on_behalf_of')
+    filter_fields = ('member', 'organization', 'role', 'on_behalf_of')
 
 
 class AreaView(viewsets.ModelViewSet):
