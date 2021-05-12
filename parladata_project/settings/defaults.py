@@ -50,6 +50,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'parlacards.middleware.ParlacardsMiddleware',
 ]
 
 ROOT_URLCONF = 'parladata_project.urls'

@@ -5,7 +5,6 @@ from django.utils.translation import ugettext_lazy as _
 
 from parladata.behaviors.models import Timestampable, Parsable, Sluggable, VersionableFieldsOwner
 
-from parladata.models.organization import Organization
 from parladata.models.memberships import PersonMembership
 
 

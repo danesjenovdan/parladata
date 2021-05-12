@@ -1,7 +1,7 @@
-from rest_framework.serializers import CharField
+from rest_framework import serializers
 
 from parlacards.serializers.common import CardSerializer
 
 class AreaSerializer(CardSerializer):
-    name = CharField()
-    classification = CharField()
+    name = serializers.CharField()
+    classification = serializers.CharField()

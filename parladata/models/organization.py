@@ -3,7 +3,16 @@ from datetime import datetime
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 
-from parladata.behaviors.models import Timestampable, Taggable, Parsable, Sluggable, VersionableFieldsOwner
+from parladata.models.link import Link
+from parladata.models.person import Person
+from parladata.models.memberships import PersonMembership, OrganizationMembership
+from parladata.behaviors.models import (
+    Timestampable,
+    Taggable,
+    Parsable,
+    Sluggable,
+    VersionableFieldsOwner
+)
 
 class Organization(Timestampable, Taggable, Parsable, Sluggable, VersionableFieldsOwner):
     """A group with a common purpose or reason
@@ -30,12 +39,8 @@ class Organization(Timestampable, Taggable, Parsable, Sluggable, VersionableFiel
     dissolution_date = models.DateTimeField(blank=True, null=True,
                                            help_text=_('A date of dissolution'))
 
-    # array of items referencing "http://popoloproject.com/schemas/contact_detail.json#"
     description = models.TextField(blank=True, null=True,
                                    help_text='Organization description')
-
-    def __str__(self):
-        return self.name + " " + str(self.id) + " " + (self.acronym if self.acronym else '')
 
     @property
     def name(self):
@@ -54,8 +59,44 @@ class Organization(Timestampable, Taggable, Parsable, Sluggable, VersionableFiel
         )
 
     @property
+    def email(self):
+        return Link.objects.filter(
+            organization=self,
+            note='email'
+        ).first()
+    
+    @property
+    def number_of_members(self):
+        return PersonMembership.objects.filter(organization=self).distinct('member').count()
+    
+    @property
+    def number_of_organization_members(self):
+        return OrganizationMembership.objects.filter(organization=self).distinct('member').count()
+    
+    @property
+    def number_of_voters(self):
+        return PersonMembership.objects.filter(organization=self, role='voter').distinct('member').count()
+    
+    @property
+    def number_of_organization_voters(self):
+        return OrganizationMembership.objects.filter(organization=self, role='voter').distinct('member').count()
+
+    @property
     def has_voters(self):
-        if self.memberships.filter(role='voter'):
-            return True
-        else:
-            return False
+        return bool(self.memberships.filter(role='voter'))
+
+    @property
+    def members(self):
+        member_ids = PersonMembership.objects.filter(organization=self).values_list('member', flat=True)
+        return Person.objects.filter(
+            id__in=member_ids
+        )
+
+    def query_people_by_role(self, role=None):    
+        member_ids = PersonMembership.objects.filter(organization=self, role=role).values_list('member', flat=True)
+        return Person.objects.filter(
+            id__in=member_ids
+        )
+
+    def __str__(self):
+        return self.name + " " + str(self.id) + " " + (self.acronym if self.acronym else '')
