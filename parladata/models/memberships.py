@@ -31,7 +31,8 @@ class PersonMembership(Membership):
                                help_text=_('The person who is a party to the relationship'))
 
     role = models.TextField(_('role'),
-                            blank=True, null=True,
+                            blank=False, null=False,
+                            default='member',
                             help_text=_('The role that the person fulfills in the organization'))
 
     on_behalf_of = models.ForeignKey('Organization',
