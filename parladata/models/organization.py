@@ -64,37 +64,59 @@ class Organization(Timestampable, Taggable, Parsable, Sluggable, VersionableFiel
             organization=self,
             note='email'
         ).first()
+
+    # TODO make all membership queries depend on a date
+    def number_of_members_at(self, date=datetime.now()):
+        return PersonMembership.valid_at(date).filter(organization=self).distinct('member').count()
     
-    @property
-    def number_of_members(self):
-        return PersonMembership.objects.filter(organization=self).distinct('member').count()
+    def number_of_organization_members_at(self, date=datetime.now()):
+        return OrganizationMembership.valid_at(date).filter(organization=self).distinct('member').count()
     
-    @property
-    def number_of_organization_members(self):
-        return OrganizationMembership.objects.filter(organization=self).distinct('member').count()
+    def number_of_voters_at(self, date=datetime.now()):
+        return PersonMembership.valid_at(date).filter(organization=self, role='voter').distinct('member').count()
     
-    @property
-    def number_of_voters(self):
-        return PersonMembership.objects.filter(organization=self, role='voter').distinct('member').count()
-    
-    @property
-    def number_of_organization_voters(self):
-        return OrganizationMembership.objects.filter(organization=self, role='voter').distinct('member').count()
+    def number_of_organization_voters_at(self, date=datetime.now()):
+        return OrganizationMembership.valid_at(date).filter(organization=self, role='voter').distinct('member').count()
 
     @property
     def has_voters(self):
         return bool(self.memberships.filter(role='voter'))
 
-    @property
-    def members(self):
-        member_ids = PersonMembership.objects.filter(organization=self).values_list('member', flat=True)
+    def query_members(self, date=datetime.now()):
+        member_ids = PersonMembership.valid_at(date).filter(organization=self).values_list('member', flat=True)
         return Person.objects.filter(
             id__in=member_ids
         )
+    
+    def query_organization_members(self, date=datetime.now()):
+        member_ids = OrganizationMembership.valid_at(date).filter(organization=self).values_list('member', flat=True)
+        return Organization.objects.filter(
+            id__in=member_ids
+        )
+    
+    def query_parliamentary_groups(self, date=datetime.now()):
+        return self.query_organization_members(date).filter(classification='pg') # TODO rename to parliamentary_group
 
-    def query_people_by_role(self, role=None):    
-        member_ids = PersonMembership.objects.filter(organization=self, role=role).values_list('member', flat=True)
+    def query_voters(self, date=datetime.now()):
+        return self.query_members_by_role('voter', date)
+
+    def query_members_by_role(self, role, date=datetime.now()):
+        member_ids = PersonMembership.valid_at(date).filter(
+            organization=self,
+            role=role
+        ).values_list('member', flat=True)
+
         return Person.objects.filter(
+            id__in=member_ids
+        )
+    
+    def query_organizations_by_role(self, role, date=datetime.now()):    
+        member_ids = OrganizationMembership.valid_at(date).filter(
+            organization=self,
+            role=role
+        ).values_list('member', flat=True)
+
+        return Organization.objects.filter(
             id__in=member_ids
         )
 

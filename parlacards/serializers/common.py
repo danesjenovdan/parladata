@@ -20,7 +20,7 @@ class VersionableSerializerField(serializers.Field):
     
     def to_representation(self, value):
         if 'date' not in self.context.keys():
-            raise Exception(f'You need to provide date in the serializer context.')
+            raise Exception(f'You need to provide a date in the serializer context.')
 
         object_to_serialize = value
         return object_to_serialize.versionable_property_on_date(

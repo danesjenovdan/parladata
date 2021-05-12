@@ -1,7 +1,10 @@
+from datetime import datetime
+
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 
 from parladata.behaviors.models import Timestampable
+
 
 class Membership(Timestampable):
     start_time = models.DateTimeField(blank=True, null=True,
@@ -14,7 +17,7 @@ class Membership(Timestampable):
                                      blank=False, null=False,
                                      on_delete=models.CASCADE,
                                      help_text=_('The organization that the member belongs to.'))
-    
+
     def __str__(self):
         return f'Member: {self.member}, Org: {self.organization}, StartTime: {self.start_time}'
     
@@ -41,6 +44,13 @@ class PersonMembership(Membership):
                                      related_name='representatives',
                                      help_text=_('The organization on whose behalf the person is a party to the relationship'))
 
+    @staticmethod
+    def valid_at(date):
+        return PersonMembership.objects.filter(
+            models.Q(start_time__lte=date) | models.Q(start_time__isnull=True),
+            models.Q(end_time__gte=date) | models.Q(end_time__isnull=True),
+        )
+
 
 class OrganizationMembership(Membership):
     member = models.ForeignKey('Organization',
@@ -49,3 +59,10 @@ class OrganizationMembership(Membership):
         related_name='organization_memberships',
         help_text=_('The organization that is a party to the relationship')
     )
+
+    @staticmethod
+    def valid_at(date=datetime.now()):
+        return OrganizationMembership.objects.filter(
+            models.Q(start_time__lte=date) | models.Q(start_time__isnull=True),
+            models.Q(end_time__gte=date) | models.Q(end_time__isnull=True),
+        )
