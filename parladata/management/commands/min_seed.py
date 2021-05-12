@@ -114,6 +114,17 @@ class Command(BaseCommand):
 
         OrganizationMembership(
             member=coal_party,
+            organization=dz,
+            start_time=start_time
+        ).save()
+        OrganizationMembership(
+            member=oppo_party,
+            organization=dz,
+            start_time=start_time
+        ).save()
+
+        OrganizationMembership(
+            member=coal_party,
             organization=coalition,
             start_time=start_time
         ).save()
