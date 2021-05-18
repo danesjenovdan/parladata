@@ -36,6 +36,7 @@ class OrganizationSerializer(serializers.ModelSerializer):
             "acronym",
             "gov_id",
             "classification",
+            "parser_names",
             "dissolution_date",
             "founding_date",
             "description",

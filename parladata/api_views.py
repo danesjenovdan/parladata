@@ -119,6 +119,7 @@ class OrganizationView(viewsets.ModelViewSet):
     def create(self, request, *args, **kwargs):
         name = request.data.get('name', '')
         acronym = request.data.get('acronym', '')
+        parser_names = request.data.get('parser_names', '')
 
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -127,6 +128,7 @@ class OrganizationView(viewsets.ModelViewSet):
         instance = serializer.instance
         orgName = OrganizationName(
             name=name,
+            parser_names=parser_names,
             acronym=acronym,
             organization=instance
         )

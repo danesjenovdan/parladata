@@ -193,7 +193,7 @@ class Command(BaseCommand):
             start_time=start_time + timedelta(minutes=5),
             order=1,
             session=session
-        )
+        ).save()
         Speech(
             content="Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.",
             speaker=person_pfc_2,
@@ -201,7 +201,7 @@ class Command(BaseCommand):
             start_time=start_time + timedelta(minutes=15),
             order=2,
             session=session
-        )
+        ).save()
         Speech(
             content="Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.",
             speaker=person_pfc_1,
@@ -209,7 +209,7 @@ class Command(BaseCommand):
             start_time=start_time + timedelta(minutes=25),
             order=3,
             session=session
-        )
+        ).save()
         Speech(
             content="Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.",
             speaker=person_pfo_1,
@@ -217,7 +217,7 @@ class Command(BaseCommand):
             start_time=start_time + timedelta(minutes=35),
             order=4,
             session=session
-        )
+        ).save()
 
         motion = Motion(
             text='Voting for president',

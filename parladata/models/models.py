@@ -313,7 +313,7 @@ class Motion(Timestampable, Taggable, models.Model):
                               help_text='The party of the person who proposed the motion.',
                               related_name='motion_party',
                               on_delete=models.CASCADE,
-                              default=2)
+                              null=True, blank=True)
 
     recap = models.TextField(blank=True, null=True,
                              help_text='Motion summary')
@@ -351,7 +351,7 @@ class Motion(Timestampable, Taggable, models.Model):
                                 help_text='Debates', related_name='motions')
 
     def __str__(self):
-        return self.text[:100] + ' --> ' + self.session.name if self.session else ''
+        return self.text[:100] if self.text else '' + ' --> ' + self.session.name if self.session else ''
 
 
 class Vote(Timestampable, Taggable, models.Model):
@@ -448,7 +448,7 @@ class Ballot(Timestampable, models.Model):
                                    help_text='The party of the voter.',
                                    related_name='party',
                                    on_delete=models.CASCADE,
-                                   default=2)
+                                   null=True, blank=True)
 
     orgvoter = models.ForeignKey('Organization',
                                  blank=True,

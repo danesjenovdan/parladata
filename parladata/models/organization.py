@@ -32,7 +32,7 @@ class OrganizationName(Timestampable, Parsable):
     def __str__(self):
         return f'{self.name}'
 
-class Organization(Timestampable, Taggable, models.Model):
+class Organization(Timestampable, Taggable, Parsable):
     """A group with a common purpose or reason
     for existence that goes beyond the set of people belonging to it.
     """
