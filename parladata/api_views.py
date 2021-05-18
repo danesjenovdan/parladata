@@ -85,27 +85,21 @@ class AgendaItemView(viewsets.ModelViewSet):
     serializer_class = AgendaItemSerializer
 
 
-class DebateView(viewsets.ModelViewSet):
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
-    queryset = Debate.objects.all().order_by('id')
-    serializer_class = DebateSerializer
-
-
 class SessionView(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     queryset = Session.objects.all().order_by('id')
     serializer_class = SessionSerializer
     filter_backends = (DjangoFilterBackend, filters.OrderingFilter)
-    filter_fields = ('organization',)
+    filter_fields = ('organizations',)
     ordering_fields = ('-start_time',)
 
 
-class OrganizationNameView(viewsets.ModelViewSet):
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
-    serializer_class = OrganizationNameSerializer
-    queryset = OrganizationName.objects.all().order_by('id')
-    filter_backends = (DjangoFilterBackend,)
-    filter_fields = ('organization',)
+# class OrganizationNameView(viewsets.ModelViewSet):
+#     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+#     serializer_class = OrganizationNameSerializer
+#     queryset = OrganizationName.objects.all().order_by('id')
+#     filter_backends = (DjangoFilterBackend,)
+#     filter_fields = ('organization',)
 
 
 class OrganizationView(viewsets.ModelViewSet):
@@ -145,7 +139,7 @@ class SpeechView(viewsets.ModelViewSet):
     queryset = Speech.objects.all().order_by('id')
     serializer_class = SpeechSerializer
     filter_backends = (DjangoFilterBackend, filters.SearchFilter, ValidSpeechesFilter)
-    filter_fields = ('party', 'speaker', 'session')
+    filter_fields = ('speaker', 'session')
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data, many=isinstance(request.data,list))
@@ -170,9 +164,9 @@ class VoteView(viewsets.ModelViewSet):
     queryset = Vote.objects.all().order_by("id")
     serializer_class = VoteSerializer
     filter_backends = (DjangoFilterBackend, filters.SearchFilter, UntaggedVotesFilter)
-    filter_fields = ('session', 'tags__name')
+    filter_fields = ('tags__name',)
     ordering_fields = ('start_time',)
-    search_fields = ('name', 'tags__name')
+    search_fields = ('name', 'tags__name',)
 
 
 class BallotView(viewsets.ModelViewSet):
@@ -180,7 +174,7 @@ class BallotView(viewsets.ModelViewSet):
     queryset = Ballot.objects.all().order_by('id')
     serializer_class = BallotSerializer
     filter_backends = (DjangoFilterBackend, filters.SearchFilter,)
-    filter_fields = ('vote', 'voter', 'vote__session')
+    filter_fields = ('vote', 'personvoter')
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data, many=isinstance(request.data,list))
@@ -203,7 +197,7 @@ class PersonMembershipView(viewsets.ModelViewSet):
     queryset = PersonMembership.objects.all().order_by('id')
     serializer_class = PersonMembershipSerializer
     filter_backends = (DjangoFilterBackend,)
-    filter_fields = ('person', 'organization', 'role', 'on_behalf_of')
+    filter_fields = ('member', 'organization', 'role', 'on_behalf_of')
 
 
 class AreaView(viewsets.ModelViewSet):
@@ -211,7 +205,7 @@ class AreaView(viewsets.ModelViewSet):
     queryset = Area.objects.all().order_by('id')
     serializer_class = AreaSerializer
     filter_backends = (DjangoFilterBackend,)
-    filter_fields = ('calssification',)
+    filter_fields = ('classification',)
 
 
 class LegislationView(viewsets.ModelViewSet):
@@ -223,15 +217,16 @@ class LegislationView(viewsets.ModelViewSet):
     filter_fields = ('session', 'epa',)
 
 
-class AllUniqueEpas(viewsets.ModelViewSet):
-    end_laws = Law.objects.filter(procedure_ended=True).distinct('epa')
-    end_epas = end_laws.values_list('epa', flat=True)
-    queryset = Motion.objects.exclude(epa__in=end_epas).distinct('epa').order_by('id')
-    serializer_class = EpaSerializer
-    pagination.PageNumberPagination.page_size = 100
-    fields = 'epa'
-    filter_backends = (DjangoFilterBackend,)
-    filter_fields = ('session',)
+# TODO rewrite this so it works
+# class AllUniqueEpas(viewsets.ModelViewSet):
+#     end_laws = Law.objects.filter(procedure_ended=True).distinct('epa')
+#     end_epas = end_laws.values_list('epa', flat=True)
+#     queryset = Motion.objects.exclude(epa__in=end_epas).distinct('epa').order_by('id')
+#     serializer_class = EpaSerializer
+#     pagination.PageNumberPagination.page_size = 100
+#     fields = 'epa'
+#     filter_backends = (DjangoFilterBackend,)
+#     filter_fields = ('session',)
 
 
 class TagsView(viewsets.ModelViewSet):

@@ -27,6 +27,7 @@ INSTALLED_APPS = (
     'taggit_serializer',
     'django_filters',
     'drf_spectacular',
+    'parlacards',
 )
 
 """MIDDLEWARE = (
@@ -49,6 +50,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'parlacards.middleware.ParlacardsMiddleware',
 ]
 
 ROOT_URLCONF = 'parladata_project.urls'

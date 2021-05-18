@@ -1,0 +1,53 @@
+from django.db import models
+
+from parladata.behaviors.models import Timestampable, Taggable, Parsable
+
+class Motion(Timestampable, Taggable, Parsable):
+    """Votings which taken place in parlament."""
+    datetime = models.DateTimeField(blank=True, null=True,
+                               help_text='The date and time when the motion was proposed')
+
+    session = models.ForeignKey('Session',
+                                blank=True, null=True,
+                                on_delete=models.CASCADE,
+                                help_text='The legislative session in which the motion was proposed')
+
+    # TODO this should be reworked possibly by allowing organizations as champions
+    champions = models.ManyToManyField(
+        'Person',
+        help_text='The people who proposed the motion.'
+    )
+
+    summary = models.TextField(blank=True, null=True,
+                             help_text='Motion summary')
+
+    text = models.TextField(blank=True, null=True,
+                            help_text='The text of the motion')
+
+    classification = models.TextField(blank=True, null=True,
+                                      help_text='Motion classification')
+
+    title = models.TextField(blank=True, null=True,
+                             help_text='Title of the motion')
+
+    # TODO rework this into a choice field
+    requirement = models.TextField(blank=True, null=True,
+                                   help_text='The requirement for the motion to pass')
+
+    # TODO rework this into a choice field
+    result = models.TextField(blank=True, null=True,
+                              help_text='Did the motion pass?')
+
+    agenda_items = models.ManyToManyField('AgendaItem', blank=True,
+                                         help_text='Agenda items', related_name='motions')
+
+    law = models.ForeignKey(
+        'Law',
+        blank=True,
+        null=True,
+        on_delete=models.CASCADE,
+        help_text='Piece of legislation this motion is about'
+    )
+
+    def __str__(self):
+        return self.text[:100] + ' --> ' + self.session.name if self.session else ''

@@ -2883,7 +2883,7 @@
 #     """
 
 #     out = [{"id": area.id,
-#             "name": area.name} for area in Area.objects.filter(calssification="district")]
+#             "name": area.name} for area in Area.objects.filter(classification="district")]
 
 #     return JsonResponse(out, safe=False)
 

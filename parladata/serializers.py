@@ -19,10 +19,10 @@ class SessionSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class OrganizationNameSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = OrganizationName
-        fields = '__all__'
+# class OrganizationNameSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = OrganizationName
+#         fields = '__all__'
 
 
 class OrganizationSerializer(serializers.ModelSerializer):
@@ -48,9 +48,6 @@ class OrganizationSerializer(serializers.ModelSerializer):
     def get_name(self, obj):
         return obj.name
 
-    def get_acronym(self, obj):
-        return obj.acronym
-
 
 class SpeechSerializer(serializers.ModelSerializer):
     agenda_item_order = serializers.SerializerMethodField()
@@ -66,12 +63,9 @@ class SpeechSerializer(serializers.ModelSerializer):
             "order",
             "start_time",
             "end_time",
-            "version_con",
             "speaker",
-            "party",
             "session",
             "agenda_item",
-            "debate",
             "agenda_items",
             "agenda_item_order"
         ]
@@ -79,22 +73,13 @@ class SpeechSerializer(serializers.ModelSerializer):
     def get_agenda_item_order(self, obj):
         if obj.agenda_items.first():
             return obj.agenda_items.first().order
-        elif obj.debate and obj.debate.order:
-            return obj.debate.order
-        else:
-            return 0
+        return 0
 
 
 class AgendaItemSerializer(TaggitSerializer, serializers.ModelSerializer):
     tags = TagListSerializerField(required=False)
     class Meta:
         model = AgendaItem
-        fields = '__all__'
-
-
-class DebateSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Debate
         fields = '__all__'
 
 
@@ -109,7 +94,7 @@ class VoteSerializer(TaggitSerializer, serializers.ModelSerializer):
     def get_results(self, obj):
         if obj.counter:
             return json.loads(obj.counter)
-        return obj.getResult()
+        return obj.getBallotCounts()
 
     def get_has_ballots(self, obj):
         return bool(obj.ballot_set.count())
@@ -180,8 +165,8 @@ class OrganizationMembershipSerializer(serializers.ModelSerializer):
         model = OrganizationMembership
         fields = (
             'id',
+            'member',
             'organization',
-            'parent',
             'start_time',
             'end_time'
         )
