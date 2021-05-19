@@ -121,4 +121,4 @@ class Organization(Timestampable, Taggable, Parsable, Sluggable, VersionableFiel
         )
 
     def __str__(self):
-        return self.name + " " + str(self.id) + " " + (self.acronym if self.acronym else '')
+        return f'{self.name} {self.id} {self.acronym}'

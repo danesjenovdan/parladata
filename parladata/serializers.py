@@ -10,7 +10,13 @@ import json
 class PersonSerializer(serializers.ModelSerializer):
     class Meta:
         model = Person
-        fields = '__all__'
+        fields = [
+            'id',
+            'created_at',
+            'updated_at',
+            'name',
+            'parser_names',
+        ]
 
 
 class SessionSerializer(serializers.ModelSerializer):
@@ -92,8 +98,6 @@ class VoteSerializer(TaggitSerializer, serializers.ModelSerializer):
         fields = '__all__'
 
     def get_results(self, obj):
-        if obj.counter:
-            return json.loads(obj.counter)
         return obj.getBallotCounts()
 
     def get_has_ballots(self, obj):
