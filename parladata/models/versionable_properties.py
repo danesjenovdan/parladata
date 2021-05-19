@@ -6,7 +6,7 @@ class PersonVersionableProperty(VersionableProperty):
     owner = models.ForeignKey(
         'parladata.Person',
         on_delete=models.CASCADE)
-    
+
     class Meta:
         abstract = True
 
@@ -53,7 +53,7 @@ class OrganizationVersionableProperty(VersionableProperty):
     owner = models.ForeignKey(
         'parladata.Organization',
         on_delete=models.CASCADE)
-    
+
     class Meta:
         abstract = True
 

@@ -1,5 +1,6 @@
 from parladata.models import *
 from parladata.serializers import *
+from parladata.models.versionable_properties import OrganizationName, OrganizationAcronym, PersonName
 from taggit.models import Tag
 from rest_framework import (viewsets, pagination, permissions,
                             mixins, filters, generics, views)
@@ -78,6 +79,25 @@ class PersonView(viewsets.ModelViewSet):
     queryset = Person.objects.all().order_by('id')
     serializer_class = PersonSerializer
 
+    def create(self, request, *args, **kwargs):
+        logging.warning(request.data)
+        name = request.data.pop('name', '')
+
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        serializer.save()
+        instance = serializer.instance
+        PersonName(
+            value=name,
+            owner=instance
+        ).save()
+
+        headers = self.get_success_headers(serializer.data)
+
+        data = self.get_serializer(instance).data
+        return Response(data, status=status.HTTP_201_CREATED, headers=headers)
+
 
 class AgendaItemView(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
@@ -111,20 +131,24 @@ class OrganizationView(viewsets.ModelViewSet):
     search_fields = ('name_parser', '_name')
 
     def create(self, request, *args, **kwargs):
-        name = request.data.get('name', '')
-        acronym = request.data.get('acronym', '')
+        logging.warning(request.data)
+        name = request.data.pop('name', '')
+        acronym = request.data.pop('acronym', '')
+        #parser_names = request.data.get('parser_names', '')
 
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
         serializer.save()
         instance = serializer.instance
-        orgName = OrganizationName(
-            name=name,
-            acronym=acronym,
-            organization=instance
-        )
-        orgName.save()
+        OrganizationName(
+            value=name,
+            owner=instance
+        ).save()
+        OrganizationAcronym(
+            value=acronym,
+            owner=instance
+        ).save()
 
         headers = self.get_success_headers(serializer.data)
 

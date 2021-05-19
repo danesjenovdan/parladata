@@ -15,7 +15,9 @@ class Motion(Timestampable, Taggable, Parsable):
     # TODO this should be reworked possibly by allowing organizations as champions
     champions = models.ManyToManyField(
         'Person',
-        help_text='The people who proposed the motion.'
+        help_text='The people who proposed the motion.',
+        null=True,
+        blank=True
     )
 
     summary = models.TextField(blank=True, null=True,

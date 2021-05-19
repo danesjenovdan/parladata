@@ -60,25 +60,6 @@ class MandateAdmin(admin.ModelAdmin):
     list_filter = ('description',)
     search_fields = ('description',)
 
-
-# class OrganizationNameInline(admin.TabularInline):
-#     model = OrganizationName
-#     fk_name = 'organization'
-#     #exclude = ['person', 'organization', 'motion', 'session', 'membership']
-#     extra = 0
-
-
-# class OrganizationAdmin(admin.ModelAdmin):
-#     inlines = [
-#         OrganizationNameInline,
-#     ]
-#     autocomplete_fields = ['parent']
-#     search_fields = ['name']
-
-# class OrganizationNameAdmin(admin.ModelAdmin):
-#     autocomplete_fields = ['organization']
-#     search_fields = ['name']
-
 class MembershipAdmin(admin.ModelAdmin):
     inlines = [
         LinkMembershipInline,
