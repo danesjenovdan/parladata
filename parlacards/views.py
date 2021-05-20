@@ -10,7 +10,7 @@ from parladata.models.person import Person
 from parlacards.serializers.person import PersonSerializer
 
 from parladata.models.organization import Organization
-from parlacards.serializers.organization import OrganizationSerializer, OrganizationMembersSerializer
+from parlacards.serializers.organization import OrganizationSerializer, OrganizationMembersSerializer, OrganizationVocabularySizeSerializer
 
 from parladata.models.common import Mandate
 from parlacards.serializers.session import SessionSerializer
@@ -163,6 +163,23 @@ class VocabularySize(APIView):
 
         serializer = PersonVocabularySizeSerializer(
             person,
+            context={'date': request.card_date},
+        )
+        return Response(serializer.data)
+
+
+class OrganizationVocabularySize(APIView):
+    '''
+    A person's vocabulary size.
+    '''
+    def get(self, request, format=None):
+        # find the person and if none were found return
+        organization = Organization.objects.filter(id=request.card_id).first()
+        if not organization:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
+        serializer = OrganizationVocabularySizeSerializer(
+            organization,
             context={'date': request.card_date},
         )
         return Response(serializer.data)
