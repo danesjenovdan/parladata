@@ -18,7 +18,12 @@ from parlacards.serializers.session import SessionSerializer
 from parladata.models.legislation import Law
 from parlacards.serializers.legislation import LegislationSerializer
 
-from parlacards.serializers.person import PersonVocabularySizeSerializer, PersonBallotSerializer
+from parlacards.serializers.person import (
+    PersonVocabularySizeSerializer,
+    PersonBallotSerializer,
+    PersonMostEqualVoterSerializer,
+    PersonLeastEqualVoterSerializer,
+)
 
 from parlacards.serializers.common import CommonPersonSerializer, CommonOrganizationSerializer
 
@@ -196,6 +201,40 @@ class Ballots(APIView):
             return Response(status=status.HTTP_404_NOT_FOUND)
         
         serializer = PersonBallotSerializer(
+            person,
+            context={'date': request.card_date},
+        )
+        return Response(serializer.data)
+
+
+class PersonMostEqualVoters(APIView):
+    '''
+    A person's most equal voters.
+    '''
+    def get(self, request, format=None):
+        # find the person and if none were found return
+        person = Person.objects.filter(id=request.card_id).first()
+        if not person:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+        
+        serializer = PersonMostEqualVoterSerializer(
+            person,
+            context={'date': request.card_date},
+        )
+        return Response(serializer.data)
+
+
+class PersonLeastEqualVoters(APIView):
+    '''
+    A person's most equal voters.
+    '''
+    def get(self, request, format=None):
+        # find the person and if none were found return
+        person = Person.objects.filter(id=request.card_id).first()
+        if not person:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+        
+        serializer = PersonLeastEqualVoterSerializer(
             person,
             context={'date': request.card_date},
         )
