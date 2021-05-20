@@ -2,6 +2,7 @@ from django.db import models
 
 from parladata.behaviors.models import Versionable, Timestampable
 
+# TODO ne vem kako točno naj bi to delalo
 class ValidSpeechesManager(models.Manager):
     def get_queryset(self):
         return super().get_queryset().filter(

@@ -10,6 +10,9 @@ urlpatterns = [
     path('organization/', OrganizationInfo.as_view()),
     path('organization-members/', OrganizationMembers.as_view()),
     path('parties/', ParliamentaryGroups.as_view()),
+    path('sessions/', Sessions.as_view()),
+    path('legislation/', Legislation.as_view()),
+    path('vocabulary-size/', VocabularySize.as_view()),
 ]
 
 

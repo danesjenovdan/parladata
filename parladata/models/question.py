@@ -46,4 +46,5 @@ class Question(Timestampable):
                                    null=True)
 
     def __str__(self):
-        return ' '.join(self.authors.all().values_list('name', flat=True))
+        author_names = [author.name for author in self.authors.all()]
+        return ' '.join(author_names)

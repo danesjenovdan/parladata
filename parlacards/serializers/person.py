@@ -1,9 +1,20 @@
 from rest_framework import serializers
 
 from parladata.models.link import Link
+from parladata.models.person import Person
+from parladata.models.organization import Organization
 
-from parlacards.serializers.common import CardSerializer, VersionableSerializerField, CommonPersonSerializer, CommonOrganizationSerializer
+from parlacards.serializers.common import (
+    CardSerializer,
+    PersonScoreSerializer,
+    PersonScoreSerializerField,
+    VersionableSerializerField,
+    CommonPersonSerializer,
+    CommonOrganizationSerializer
+)
 from parlacards.serializers.area import AreaSerializer
+
+from parlacards.models import PersonVocabularySize
 
 
 class PersonSerializer(CommonPersonSerializer):
@@ -23,3 +34,7 @@ class PersonSerializer(CommonPersonSerializer):
     number_of_voters = VersionableSerializerField(property_model_name='PersonNumberOfVoters')
     districts = AreaSerializer(many=True)
     social_networks = serializers.SerializerMethodField()
+
+
+class PersonVocabularySizeSerializer(PersonScoreSerializer):
+    results = PersonScoreSerializerField(property_model_name='PersonVocabularySize')
