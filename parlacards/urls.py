@@ -15,6 +15,8 @@ urlpatterns = [
     path('vocabulary-size/', VocabularySize.as_view()),
     path('organization-vocabulary-size/', OrganizationVocabularySize.as_view()),
     path('ballots/', Ballots.as_view()),
+    path('most-equal-voters/', PersonMostEqualVoters.as_view()),
+    path('least-equal-voters/', PersonLeastEqualVoters.as_view()),
 ]
 
 
