@@ -14,6 +14,7 @@ urlpatterns = [
     path('legislation/', Legislation.as_view()),
     path('vocabulary-size/', VocabularySize.as_view()),
     path('organization-vocabulary-size/', OrganizationVocabularySize.as_view()),
+    path('ballots/', Ballots.as_view()),
 ]
 
 

@@ -3,6 +3,7 @@ from rest_framework import serializers
 from parladata.models.link import Link
 from parladata.models.person import Person
 from parladata.models.organization import Organization
+from parladata.models.ballot import Ballot
 
 from parlacards.serializers.common import (
     CardSerializer,
@@ -13,6 +14,7 @@ from parlacards.serializers.common import (
     CommonOrganizationSerializer,
 )
 from parlacards.serializers.area import AreaSerializer
+from parlacards.serializers.ballot import BallotSerializer
 
 from parlacards.models import PersonVocabularySize
 
@@ -38,3 +40,15 @@ class PersonSerializer(CommonPersonSerializer):
 
 class PersonVocabularySizeSerializer(PersonScoreSerializer):
     results = ScoreSerializerField(property_model_name='PersonVocabularySize')
+
+
+class PersonBallotSerializer(PersonScoreSerializer):
+    def get_results(self, obj):
+        ballots = Ballot.objects.filter(
+            personvoter=obj,
+            vote__timestamp__lte=self.context['date']
+        )
+        ballot_serializer = BallotSerializer(ballots, many=True)
+        return ballot_serializer.data
+
+    results = serializers.SerializerMethodField()

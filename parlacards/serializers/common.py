@@ -14,8 +14,8 @@ class CommonSerializer(serializers.Serializer):
 
 
 class CardSerializer(serializers.Serializer):
-    created_at = serializers.DateTimeField()
-    updated_at = serializers.DateTimeField()
+    # created_at = serializers.DateTimeField()
+    # updated_at = serializers.DateTimeField()
 
     def get_fields(self, *args, **kwargs):
         fields = super().get_fields(*args, **kwargs)
