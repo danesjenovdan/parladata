@@ -49,3 +49,11 @@ class PersonVocabularySize(PersonScore):
 
 class OrganizationVocabularySize(OrganizationScore):
     pass
+
+
+class VotingDistance(PersonScore):
+    target = models.ForeignKey(
+        'parladata.Person',
+        related_name='target',
+        on_delete=models.CASCADE
+    )

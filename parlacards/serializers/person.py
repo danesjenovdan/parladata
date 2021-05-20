@@ -15,8 +15,10 @@ from parlacards.serializers.common import (
 )
 from parlacards.serializers.area import AreaSerializer
 from parlacards.serializers.ballot import BallotSerializer
+from parlacards.serializers.voting_distance import VotingDistanceSerializer
 
 from parlacards.models import PersonVocabularySize
+from parlacards.models import VotingDistance
 
 
 class PersonSerializer(CommonPersonSerializer):
@@ -50,5 +52,43 @@ class PersonBallotSerializer(PersonScoreSerializer):
         )
         ballot_serializer = BallotSerializer(ballots, many=True)
         return ballot_serializer.data
+
+    results = serializers.SerializerMethodField()
+
+
+class PersonMostEqualVoterSerializer(PersonScoreSerializer):
+    def get_results(self, obj):
+        lowest_distances = VotingDistance.objects.filter(
+            timestamp__lte=self.context['date']
+        ).order_by(
+            'target',
+            'value'
+        ).distinct('target')[:5]
+        distances_serializer = VotingDistanceSerializer(
+            lowest_distances,
+            many=True,
+            context=self.context
+        )
+        
+        return distances_serializer.data
+
+    results = serializers.SerializerMethodField()
+
+
+class PersonLeastEqualVoterSerializer(PersonScoreSerializer):
+    def get_results(self, obj):
+        highest_distances = VotingDistance.objects.filter(
+            timestamp__lte=self.context['date']
+        ).order_by(
+            'target',
+            '-value'
+        ).distinct('target')[:5]
+        distances_serializer = VotingDistanceSerializer(
+            highest_distances,
+            many=True,
+            context=self.context
+        )
+        
+        return distances_serializer.data
 
     results = serializers.SerializerMethodField()
