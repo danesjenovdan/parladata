@@ -18,7 +18,7 @@ from parlacards.serializers.session import SessionSerializer
 from parladata.models.legislation import Law
 from parlacards.serializers.legislation import LegislationSerializer
 
-from parlacards.serializers.person import PersonVocabularySizeSerializer
+from parlacards.serializers.person import PersonVocabularySizeSerializer, PersonBallotSerializer
 
 from parlacards.serializers.common import CommonPersonSerializer, CommonOrganizationSerializer
 
@@ -170,16 +170,33 @@ class VocabularySize(APIView):
 
 class OrganizationVocabularySize(APIView):
     '''
-    A person's vocabulary size.
+    An organization's vocabulary size.
     '''
     def get(self, request, format=None):
-        # find the person and if none were found return
+        # find the organization and if none were found return
         organization = Organization.objects.filter(id=request.card_id).first()
         if not organization:
             return Response(status=status.HTTP_404_NOT_FOUND)
 
         serializer = OrganizationVocabularySizeSerializer(
             organization,
+            context={'date': request.card_date},
+        )
+        return Response(serializer.data)
+
+
+class Ballots(APIView):
+    '''
+    A person's ballots.
+    '''
+    def get(self, request, format=None):
+        # find the person and if none were found return
+        person = Person.objects.filter(id=request.card_id).first()
+        if not person:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+        
+        serializer = PersonBallotSerializer(
+            person,
             context={'date': request.card_date},
         )
         return Response(serializer.data)

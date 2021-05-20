@@ -14,7 +14,7 @@ class Vote(Timestampable, Taggable):
                                on_delete=models.CASCADE,
                                help_text='The motion for which the vote took place')
 
-    datetime = models.DateTimeField(blank=True, null=True,
+    timestamp = models.DateTimeField(blank=True, null=True,
                                      help_text='Vote time')
 
     # TODO maybe rework this into a choice field
