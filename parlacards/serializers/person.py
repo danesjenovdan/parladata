@@ -7,10 +7,10 @@ from parladata.models.organization import Organization
 from parlacards.serializers.common import (
     CardSerializer,
     PersonScoreSerializer,
-    PersonScoreSerializerField,
+    ScoreSerializerField,
     VersionableSerializerField,
     CommonPersonSerializer,
-    CommonOrganizationSerializer
+    CommonOrganizationSerializer,
 )
 from parlacards.serializers.area import AreaSerializer
 
@@ -37,4 +37,4 @@ class PersonSerializer(CommonPersonSerializer):
 
 
 class PersonVocabularySizeSerializer(PersonScoreSerializer):
-    results = PersonScoreSerializerField(property_model_name='PersonVocabularySize')
+    results = ScoreSerializerField(property_model_name='PersonVocabularySize')
