@@ -7,6 +7,7 @@ class Session(Timestampable):
 
     mandate = models.ForeignKey('Mandate',
                                 blank=False, null=False,
+                                related_name='sessions',
                                 on_delete=models.CASCADE,
                                 help_text='The mandate of this session.')
 

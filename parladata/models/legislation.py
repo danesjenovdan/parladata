@@ -60,3 +60,12 @@ class Law(Timestampable, Taggable):
 
     def __str__(self):
         return (self.session.name if self.session else '') + ' -> ' + self.text
+
+    @property
+    def has_votes(self):
+        # TODO
+        return True
+    
+    @property
+    def has_abstract(self):
+        return bool(self.abstract)
