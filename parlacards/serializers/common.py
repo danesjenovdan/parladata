@@ -214,7 +214,7 @@ class OrganizationScoreSerializerField(serializers.Field):
             'average': average_score,
             'maximum': {
                 'score': maximum_score,
-                'mps': organizations_serializer.data
+                'organizations': organizations_serializer.data
             }
         }
 
