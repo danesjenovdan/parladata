@@ -1,3 +1,5 @@
+import math
+
 from importlib import import_module
 
 from django.db.models import Avg, Max
@@ -28,6 +30,11 @@ class PersonScoreSerializerField(serializers.Field):
         kwargs['source'] = '*'
         kwargs['read_only'] = True
         super().__init__(**kwargs)
+    
+    @staticmethod
+    def truncate_score(score):
+        trunc_factor = 10 ** 5
+        return math.trunc(score * trunc_factor) / trunc_factor
     
     def to_representation(self, value):
         # value is going to be the person we're
@@ -87,7 +94,7 @@ class PersonScoreSerializerField(serializers.Field):
 
         # find out who the people with maximum scores are
         winner_ids = relevant_scores.filter(
-            value=maximum_score
+            value__gte=self.truncate_score(maximum_score)
         ).values_list('person__id', flat=True)
 
         maximum_people = Person.objects.filter(id__in=winner_ids)
