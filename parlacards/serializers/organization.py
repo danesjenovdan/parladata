@@ -7,8 +7,8 @@ from parlacards.serializers.common import (
     VersionableSerializerField,
     CommonPersonSerializer,
     CommonOrganizationSerializer,
+    ScoreSerializerField,
     OrganizationScoreSerializer,
-    OrganizationScoreSerializerField
 )
 
 
@@ -49,4 +49,4 @@ class OrganizationMembersSerializer(CommonOrganizationSerializer):
 
 
 class OrganizationVocabularySizeSerializer(OrganizationScoreSerializer):
-    results = OrganizationScoreSerializerField(property_model_name='OrganizationVocabularySize')
+    results = ScoreSerializerField(property_model_name='OrganizationVocabularySize')
