@@ -13,6 +13,7 @@ urlpatterns = [
     path('sessions/', Sessions.as_view()),
     path('legislation/', Legislation.as_view()),
     path('vocabulary-size/', VocabularySize.as_view()),
+    path('organization-vocabulary-size/', OrganizationVocabularySize.as_view()),
 ]
 
 

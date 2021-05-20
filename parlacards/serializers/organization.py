@@ -2,7 +2,14 @@ from rest_framework import serializers
 
 from parladata.models.link import Link
 
-from parlacards.serializers.common import CardSerializer, VersionableSerializerField, CommonPersonSerializer, CommonOrganizationSerializer
+from parlacards.serializers.common import (
+    CardSerializer,
+    VersionableSerializerField,
+    CommonPersonSerializer,
+    CommonOrganizationSerializer,
+    OrganizationScoreSerializer,
+    OrganizationScoreSerializerField
+)
 
 
 class OrganizationSerializer(CommonOrganizationSerializer):
@@ -28,8 +35,10 @@ class OrganizationSerializer(CommonOrganizationSerializer):
 
     number_of_members = serializers.SerializerMethodField()
     social_networks = serializers.SerializerMethodField()
+    email = serializers.CharField()
     presidents = serializers.SerializerMethodField()
     deputies = serializers.SerializerMethodField()
+
 
 class OrganizationMembersSerializer(CommonOrganizationSerializer):
     def get_members(self, obj):
@@ -37,3 +46,7 @@ class OrganizationMembersSerializer(CommonOrganizationSerializer):
         return serializer.data
 
     members = serializers.SerializerMethodField()
+
+
+class OrganizationVocabularySizeSerializer(OrganizationScoreSerializer):
+    results = OrganizationScoreSerializerField(property_model_name='OrganizationVocabularySize')

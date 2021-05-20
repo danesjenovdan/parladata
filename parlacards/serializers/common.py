@@ -7,7 +7,7 @@ from django.db.models import Avg, Max
 from rest_framework import serializers
 
 from parladata.models.person import Person
-
+from parladata.models.organization import Organization
 
 class CommonSerializer(serializers.Serializer):
     pass
@@ -126,6 +126,111 @@ class PersonScoreSerializer(CardSerializer):
     results = serializers.SerializerMethodField()
 
 
+class OrganizationScoreSerializerField(serializers.Field):
+    def __init__(self, property_model_name, **kwargs):
+        self.property_model_name = property_model_name
+        kwargs['source'] = '*'
+        kwargs['read_only'] = True
+        super().__init__(**kwargs)
+    
+    @staticmethod
+    def truncate_score(score):
+        trunc_factor = 10 ** 5
+        return math.trunc(score * trunc_factor) / trunc_factor
+    
+    def to_representation(self, value):
+        # value is going to be the organization
+        # we're serializing the score for
+        organization_to_serialize = value
+
+        if 'date' not in self.context.keys():
+            raise Exception(f'You need to provide a date in the serializer context.')
+
+        # TODO move score serializers to separate file or use fully qualified name
+        # get the score model
+        scores_module = import_module('parlacards.models')
+        ScoreModel = getattr(scores_module, self.property_model_name)
+
+        # get most recent score from this organization
+        # that is older than the date in the context
+        score_object = ScoreModel.objects.filter(
+            timestamp__lte=self.context['date'],
+            organization=organization_to_serialize,
+        ).order_by('-timestamp').first()
+
+        # if something was found update the score
+        if not score_object:
+            return {
+                'error': 'No score matches your criteria.'
+            }
+
+        score = score_object.value
+
+        # get ids of all the organization who are currently
+        # in the same playing field (organization which we're
+        # calculating values for)
+        competition_ids = score_object.playing_field.query_parliamentary_groups(self.context['date']).values_list('id', flat=True)
+
+        # iterate through the IDs and get their "latest" score ids
+        relevant_scores_querysets = []
+        for organization_id in competition_ids:
+            score_queryset = ScoreModel.objects.filter(
+                timestamp__lte=self.context['date'],
+                organization__id=organization_id
+            ).order_by('-timestamp')[:1]
+
+            relevant_scores_querysets.append(score_queryset)
+
+        relevant_score_ids = ScoreModel.objects.none().union(*relevant_scores_querysets).values_list('id', flat=True)
+
+        relevant_scores = ScoreModel.objects.filter(id__in=relevant_score_ids)
+
+        # aggregate max and avg
+        aggregations = relevant_scores.aggregate(
+            Avg('value'),
+            Max('value'),
+        )
+
+        average_score = aggregations['value__avg']
+        maximum_score = aggregations['value__max']
+        # TODO
+        if not maximum_score:
+            maximum_score = 0
+
+        # find out who the organizations with maximum scores are
+        winner_ids = relevant_scores.filter(
+            value__gte=self.truncate_score(maximum_score)
+        ).values_list('organization__id', flat=True)
+
+        maximum_organizations = Organization.objects.filter(id__in=winner_ids)
+        organizations_serializer = CommonOrganizationSerializer(
+            maximum_organizations,
+            many=True,
+            context=self.context
+        )
+
+        return {
+            'score': score,
+            'average': average_score,
+            'maximum': {
+                'score': maximum_score,
+                'mps': organizations_serializer.data
+            }
+        }
+
+
+class OrganizationScoreSerializer(CardSerializer):
+    def get_organization(self, obj):
+        serializer = CommonOrganizationSerializer(obj, context=self.context)
+        return serializer.data
+
+    def get_results(self, obj):
+        raise NotImplementedError('You need to extend this serializer to return the results.')
+
+    organization = serializers.SerializerMethodField()
+    results = serializers.SerializerMethodField()
+
+
 class VersionableSerializerField(serializers.Field):
     def __init__(self, property_model_name, **kwargs):
         self.property_model_name = property_model_name
@@ -165,5 +270,4 @@ class CommonPersonSerializer(CommonSerializer):
 class CommonOrganizationSerializer(CommonSerializer):
     name = VersionableSerializerField(property_model_name='OrganizationName')
     acronym = VersionableSerializerField(property_model_name='OrganizationAcronym')
-    email = serializers.CharField()
     slug = serializers.CharField()

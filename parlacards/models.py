@@ -29,5 +29,23 @@ class PersonScore(Score):
         abstract = True
 
 
+class OrganizationScore(Score):
+    organization = models.ForeignKey(
+        'parladata.Organization',
+        related_name='scores',
+        on_delete=models.CASCADE
+    )
+
+    def __str__(self):
+        return f'{self.organization.name}: {self.value}'
+
+    class Meta:
+        abstract = True
+
+
 class PersonVocabularySize(PersonScore):
+    pass
+
+
+class OrganizationVocabularySize(OrganizationScore):
     pass
