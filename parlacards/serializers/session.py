@@ -1,8 +1,8 @@
 from rest_framework import serializers
 
-from parlacards.serializers.common import CardSerializer, CommonOrganizationSerializer
+from parlacards.serializers.common import CommonSerializer, CommonOrganizationSerializer
 
-class SessionSerializer(CardSerializer):
+class SessionSerializer(CommonSerializer):
     name = serializers.CharField()
     gov_id = serializers.CharField()
     start_time = serializers.DateTimeField()

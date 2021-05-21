@@ -1,8 +1,8 @@
 from rest_framework import serializers
 
-from parlacards.serializers.common import CardSerializer
+from parlacards.serializers.common import CommonSerializer
 
-class LegislationSerializer(CardSerializer):
+class LegislationSerializer(CommonSerializer):
     uid = serializers.CharField()
     text = serializers.CharField()
     epa = serializers.CharField()

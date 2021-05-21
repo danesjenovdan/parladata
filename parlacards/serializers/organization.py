@@ -3,12 +3,8 @@ from rest_framework import serializers
 from parladata.models.link import Link
 
 from parlacards.serializers.common import (
-    CardSerializer,
-    VersionableSerializerField,
     CommonPersonSerializer,
     CommonOrganizationSerializer,
-    ScoreSerializerField,
-    OrganizationScoreSerializer,
 )
 
 
@@ -40,13 +36,9 @@ class OrganizationSerializer(CommonOrganizationSerializer):
     deputies = serializers.SerializerMethodField()
 
 
-class OrganizationMembersSerializer(CommonOrganizationSerializer):
+class MembersSerializer(CommonOrganizationSerializer):
     def get_members(self, obj):
         serializer = CommonPersonSerializer(obj.query_members(date=self.context['date']), many=True, context=self.context)
         return serializer.data
 
     members = serializers.SerializerMethodField()
-
-
-class OrganizationVocabularySizeSerializer(OrganizationScoreSerializer):
-    results = ScoreSerializerField(property_model_name='OrganizationVocabularySize')

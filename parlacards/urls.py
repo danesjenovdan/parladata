@@ -5,18 +5,16 @@ from rest_framework import routers
 from parlacards.views import *
 
 urlpatterns = [
-    path('person/', PersonInfo.as_view()),
-    path('mps/', Voters.as_view()),
-    path('organization/', OrganizationInfo.as_view()),
-    path('organization-members/', OrganizationMembers.as_view()),
-    path('parties/', ParliamentaryGroups.as_view()),
-    path('sessions/', Sessions.as_view()),
-    path('legislation/', Legislation.as_view()),
-    path('vocabulary-size/', VocabularySize.as_view()),
-    path('organization-vocabulary-size/', OrganizationVocabularySize.as_view()),
-    path('ballots/', Ballots.as_view()),
-    path('most-equal-voters/', PersonMostEqualVoters.as_view()),
-    path('least-equal-voters/', PersonLeastEqualVoters.as_view()),
+    path('person/basic-information/', PersonInfo.as_view()),
+    path('misc/members/', Voters.as_view()),
+    path('group/basic-information/', OrganizationInfo.as_view()),
+    path('group/members/', OrganizationMembers.as_view()),
+    path('misc/groups/', ParliamentaryGroups.as_view()),
+    path('misc/sessions/', Sessions.as_view()),
+    path('misc/legislation/', Legislation.as_view()),
+    path('person/vocabulary-size/', VocabularySize.as_view()),
+    path('organization/vocabulary-size/', OrganizationVocabularySize.as_view()),
+    path('person/votes/', Ballots.as_view()),
+    path('person/most-votes-in-common/', MostVotesInCommon.as_view()),
+    path('person/least-votes-in-common/', LeastVotesInCommon.as_view()),
 ]
-
-
