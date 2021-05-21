@@ -9,19 +9,23 @@ from rest_framework import serializers
 from parladata.models.person import Person
 from parladata.models.organization import Organization
 
-class CommonSerializer(serializers.Serializer):
-    pass
+class VersionableSerializerField(serializers.Field):
+    def __init__(self, property_model_name, **kwargs):
+        self.property_model_name = property_model_name
+        kwargs['source'] = '*'
+        kwargs['read_only'] = True
+        super().__init__(**kwargs)
+    
+    def to_representation(self, value):
+        if 'date' not in self.context.keys():
+            raise Exception(f'You need to provide a date in the serializer context.')
 
-
-class CardSerializer(serializers.Serializer):
-    # created_at = serializers.DateTimeField()
-    # updated_at = serializers.DateTimeField()
-
-    def get_fields(self, *args, **kwargs):
-        fields = super().get_fields(*args, **kwargs)
-        for field in fields:
-            fields[field].read_only = True
-        return fields
+        object_to_serialize = value
+        return object_to_serialize.versionable_property_on_date(
+            owner=object_to_serialize,
+            property_model_name=self.property_model_name,
+            datetime=self.context['date'],
+        )
 
 
 class ScoreSerializerField(serializers.Field):
@@ -136,14 +140,25 @@ class ScoreSerializerField(serializers.Field):
         }
 
 
-class ScoreSerializer(CardSerializer):
+class CommonSerializer(serializers.Serializer):
+    def get_fields(self, *args, **kwargs):
+        fields = super().get_fields(*args, **kwargs)
+        for field in fields:
+            fields[field].read_only = True
+        return fields
+
+
+class CardSerializer(serializers.Serializer):
+    # created_at = serializers.DateTimeField()
+    # updated_at = serializers.DateTimeField()
+
     def get_results(self, obj):
         raise NotImplementedError('You need to extend this serializer to return the results.')
 
     results = serializers.SerializerMethodField()
 
 
-class PersonScoreSerializer(ScoreSerializer):
+class PersonScoreCardSerializer(CardSerializer):
     def get_person(self, obj):
         serializer = CommonPersonSerializer(obj, context=self.context)
         return serializer.data
@@ -151,31 +166,12 @@ class PersonScoreSerializer(ScoreSerializer):
     person = serializers.SerializerMethodField()
 
 
-class OrganizationScoreSerializer(ScoreSerializer):
+class OrganizationScoreCardSerializer(CardSerializer):
     def get_organization(self, obj):
         serializer = CommonOrganizationSerializer(obj, context=self.context)
         return serializer.data
 
     organization = serializers.SerializerMethodField()
-
-
-class VersionableSerializerField(serializers.Field):
-    def __init__(self, property_model_name, **kwargs):
-        self.property_model_name = property_model_name
-        kwargs['source'] = '*'
-        kwargs['read_only'] = True
-        super().__init__(**kwargs)
-    
-    def to_representation(self, value):
-        if 'date' not in self.context.keys():
-            raise Exception(f'You need to provide a date in the serializer context.')
-
-        object_to_serialize = value
-        return object_to_serialize.versionable_property_on_date(
-            owner=object_to_serialize,
-            property_model_name=self.property_model_name,
-            datetime=self.context['date'],
-        )
 
 
 class CommonPersonSerializer(CommonSerializer):
@@ -193,6 +189,8 @@ class CommonPersonSerializer(CommonSerializer):
     honorific_suffix = VersionableSerializerField(property_model_name='PersonHonorificSuffix')
     preferred_pronoun = VersionableSerializerField(property_model_name='PersonPreferredPronoun')
     party = serializers.SerializerMethodField()
+    # TODO check if this works
+    image = serializers.ImageField()
 
 
 class CommonOrganizationSerializer(CommonSerializer):

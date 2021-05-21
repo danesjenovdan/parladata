@@ -7,235 +7,145 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from parladata.models.person import Person
-from parlacards.serializers.person import PersonSerializer
-
 from parladata.models.organization import Organization
-from parlacards.serializers.organization import OrganizationSerializer, OrganizationMembersSerializer, OrganizationVocabularySizeSerializer
-
 from parladata.models.common import Mandate
-from parlacards.serializers.session import SessionSerializer
-
 from parladata.models.legislation import Law
-from parlacards.serializers.legislation import LegislationSerializer
 
-from parlacards.serializers.person import (
-    PersonVocabularySizeSerializer,
-    PersonBallotSerializer,
-    PersonMostEqualVoterSerializer,
-    PersonLeastEqualVoterSerializer,
+from parlacards.serializers.cards import (
+    PersonCardSerializer,
+    OrganizationMembersCardSerializer,
+    VotersCardSerializer,
+    GroupsCardSerializer,
+    OrganizationCardSerializer,
+    SessionsCardSerializer,
+    LegislationCardSerializer,
+    PersonVocabularySizeCardSerializer,
+    OrganizationVocabularySizeCardSerializer,
+    PersonBallotCardSerializer,
+    MostVotesInCommonCardSerializer,
+    LeastVotesInCommonCardSerializer,
 )
 
-from parlacards.serializers.common import CommonPersonSerializer, CommonOrganizationSerializer
+class CardView(APIView):
+    """
+    A view meant to be extended.
+    It checks if the thing exists and
+    returns 404 if it can't find it.
+    """
+    thing = None
+    card_serializer = None
+
+    def get(self, request, format=None):
+        if not self.thing:
+            raise NotImplementedError('You should define a thing to serialize.')
+        
+        if not self.card_serializer:
+            raise NotImplementedError('You should define a serializer to use.')
+
+        # find the person and if no people were found return
+        the_thing = self.thing.objects.filter(id=request.card_id).first()
+        if not the_thing:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+        
+        # serialize the results and return
+        serializer = self.card_serializer(
+            the_thing,
+            context={'date': request.card_date}
+        )
+        return Response(serializer.data)
 
 
-class PersonInfo(APIView):
+class PersonInfo(CardView):
     """
     Show basic person info.
     """
-    def get(self, request, format=None):
-        # find the person and if no people were found return
-        person = Person.objects.filter(id=request.card_id).first()
-        if not person:
-            return Response(status=status.HTTP_404_NOT_FOUND)
-        
-        # serialize the results and return
-        serializer = PersonSerializer(
-            person,
-            context={'date': request.card_date}
-        )
-        return Response(serializer.data)
+    thing = Person
+    card_serializer = PersonCardSerializer
 
 
-class Voters(APIView):
+class Voters(CardView):
     '''
     Show a list of all MPs belonging to an organization.
     '''
+    thing = Organization
+    card_serializer = VotersCardSerializer
 
-    def get(self, request, format=None):
-        organization = Organization.objects.filter(id=request.card_id).first()
-        if not organization:
-            return Response(status=status.HTTP_404_NOT_FOUND)
-        
-        serializer = PersonSerializer(
-            organization.query_voters(date=request.card_date),
-            many=True,
-            context={'date': request.card_date}
-        )
-        return Response(serializer.data)
 
-class OrganizationInfo(APIView):
+class OrganizationInfo(CardView):
     """
     Show basic info of organization.
     """
-    def get(self, request, format=None):
-        # find the organization and if none were found return
-        organization = Organization.objects.filter(id=request.card_id).first()
-        if not organization:
-            return Response(status=status.HTTP_404_NOT_FOUND)
-        
-        # serialize the results and return
-        serializer = OrganizationSerializer(
-            organization,
-            context={'date': request.card_date}
-        )
-        return Response(serializer.data)
+    thing = Organization
+    card_serializer = OrganizationCardSerializer
 
 
-class OrganizationMembers(APIView):
+class OrganizationMembers(CardView):
     """
-    Show basic info of organization.
+    Show organization members.
     """
-    def get(self, request, format=None):
-        # find the organization and if none were found return
-        organization = Organization.objects.filter(id=request.card_id).first()
-        if not organization:
-            return Response(status=status.HTTP_404_NOT_FOUND)
-        
-        # serialize the results and return
-        serializer = OrganizationMembersSerializer(
-            organization,
-            context={'date': request.card_date}
-        )
-        return Response(serializer.data)
+    thing = Organization
+    card_serializer = OrganizationMembersCardSerializer
 
 
-class ParliamentaryGroups(APIView):
+class ParliamentaryGroups(CardView):
     '''
     List parties in an organization.
     '''
-    def get(self, request, format=None):
-        # find the organization and if none were found return
-        organization = Organization.objects.filter(id=request.card_id).first()
-        if not organization:
-            return Response(status=status.HTTP_404_NOT_FOUND)
-        
-        serializer = CommonOrganizationSerializer(
-            organization.query_parliamentary_groups(date=request.card_date),
-            many=True,
-            context={'date': request.card_date}
-        )
-        return Response(serializer.data)
+    thing = Organization
+    card_serializer = GroupsCardSerializer
 
 
-class Sessions(APIView):
+class Sessions(CardView):
     '''
     List sessions in a mandate.
     '''
-    def get(self, request, format=None):
-        # find the mandate and if none were found return
-        mandate = Mandate.objects.filter(id=request.card_id).first()
-        if not mandate:
-            return Response(status=status.HTTP_404_NOT_FOUND)
-        
-        serializer = SessionSerializer(
-            mandate.sessions.filter(
-                Q(start_time__lte=request.card_date) | Q(start_time__isnull=True)
-            ),
-            many=True,
-            context={'date': request.card_date})
-        return Response(serializer.data)
+    thing = Mandate
+    card_serializer = SessionsCardSerializer
 
 
-class Legislation(APIView):
+class Legislation(CardView):
     '''
     List legislation in a mandate.
     '''
-    def get(self, request, format=None):
-        # find the mandate and if none were found return
-        mandate = Mandate.objects.filter(id=request.card_id).first()
-        if not mandate:
-            return Response(status=status.HTTP_404_NOT_FOUND)
-        
-        serializer = LegislationSerializer(
-            Law.objects.filter(
-                Q(datetime__lte=request.card_date) | Q(datetime__isnull=True),
-                session__mandate=mandate,
-            ),
-            many=True,
-            context={'date': request.card_date})
-        return Response(serializer.data)
+    thing = Mandate
+    card_serializer = LegislationCardSerializer
 
 
-class VocabularySize(APIView):
+class VocabularySize(CardView):
     '''
     A person's vocabulary size.
     '''
-    def get(self, request, format=None):
-        # find the person and if none were found return
-        person = Person.objects.filter(id=request.card_id).first()
-        if not person:
-            return Response(status=status.HTTP_404_NOT_FOUND)
-
-        serializer = PersonVocabularySizeSerializer(
-            person,
-            context={'date': request.card_date},
-        )
-        return Response(serializer.data)
+    thing = Person
+    card_serializer = PersonVocabularySizeCardSerializer
 
 
-class OrganizationVocabularySize(APIView):
+class OrganizationVocabularySize(CardView):
     '''
     An organization's vocabulary size.
     '''
-    def get(self, request, format=None):
-        # find the organization and if none were found return
-        organization = Organization.objects.filter(id=request.card_id).first()
-        if not organization:
-            return Response(status=status.HTTP_404_NOT_FOUND)
-
-        serializer = OrganizationVocabularySizeSerializer(
-            organization,
-            context={'date': request.card_date},
-        )
-        return Response(serializer.data)
+    thing = Organization
+    card_serializer = OrganizationVocabularySizeCardSerializer
 
 
-class Ballots(APIView):
+class Ballots(CardView):
     '''
     A person's ballots.
     '''
-    def get(self, request, format=None):
-        # find the person and if none were found return
-        person = Person.objects.filter(id=request.card_id).first()
-        if not person:
-            return Response(status=status.HTTP_404_NOT_FOUND)
-        
-        serializer = PersonBallotSerializer(
-            person,
-            context={'date': request.card_date},
-        )
-        return Response(serializer.data)
+    thing = Person
+    card_serializer = PersonBallotCardSerializer
 
 
-class PersonMostEqualVoters(APIView):
+class MostVotesInCommon(CardView):
     '''
     A person's most equal voters.
     '''
-    def get(self, request, format=None):
-        # find the person and if none were found return
-        person = Person.objects.filter(id=request.card_id).first()
-        if not person:
-            return Response(status=status.HTTP_404_NOT_FOUND)
-        
-        serializer = PersonMostEqualVoterSerializer(
-            person,
-            context={'date': request.card_date},
-        )
-        return Response(serializer.data)
+    thing = Person
+    card_serializer = MostVotesInCommonCardSerializer
 
 
-class PersonLeastEqualVoters(APIView):
+class LeastVotesInCommon(CardView):
     '''
-    A person's most equal voters.
+    A person's least equal voters.
     '''
-    def get(self, request, format=None):
-        # find the person and if none were found return
-        person = Person.objects.filter(id=request.card_id).first()
-        if not person:
-            return Response(status=status.HTTP_404_NOT_FOUND)
-        
-        serializer = PersonLeastEqualVoterSerializer(
-            person,
-            context={'date': request.card_date},
-        )
-        return Response(serializer.data)
+    thing = Person
+    card_serializer = LeastVotesInCommonCardSerializer

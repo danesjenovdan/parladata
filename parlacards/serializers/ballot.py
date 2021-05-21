@@ -2,9 +2,9 @@ from rest_framework import serializers
 
 from parlacards.serializers.motion import MotionSerializer
 
-from parlacards.serializers.common import CardSerializer
+from parlacards.serializers.common import CommonSerializer
 
-class BallotSerializer(CardSerializer):
+class BallotSerializer(CommonSerializer):
     def get_motion(self, obj):
         motion_serializer = MotionSerializer(obj.vote.motion)
         return motion_serializer.data
