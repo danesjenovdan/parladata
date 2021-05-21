@@ -57,14 +57,18 @@ class PersonBallotCardSerializer(PersonScoreCardSerializer):
 class MostVotesInCommonCardSerializer(PersonScoreCardSerializer):
     def get_results(self, obj):
         # obj is the person
-        # TODO you need to get latest, not biggest
         lowest_distances = VotingDistance.objects.filter(
+            person=obj,
             timestamp__lte=self.context['date']
+        ).exclude(
+            target=obj
         ).order_by(
             'target',
             '-timestamp',
             'value'
-        ).distinct('target')[:5]
+        ).distinct(
+            'target'
+        )[:5]
         distances_serializer = VotingDistanceSerializer(
             lowest_distances,
             many=True,
@@ -79,13 +83,18 @@ class MostVotesInCommonCardSerializer(PersonScoreCardSerializer):
 class LeastVotesInCommonCardSerializer(PersonScoreCardSerializer):
     def get_results(self, obj):
         # obj is the person
-        # TODO you need to get latest, not biggest
         highest_distances = VotingDistance.objects.filter(
+            person=obj,
             timestamp__lte=self.context['date']
+        ).exclude(
+            target=obj
         ).order_by(
             'target',
+            '-timestamp',
             '-value'
-        ).distinct('target')[:5]
+        ).distinct(
+            'target'
+        )[:5]
         distances_serializer = VotingDistanceSerializer(
             highest_distances,
             many=True,
