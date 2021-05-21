@@ -175,7 +175,7 @@ class OrganizationScoreCardSerializer(CardSerializer):
 
 
 class CommonPersonSerializer(CommonSerializer):
-    def get_party(self, obj):
+    def get_group(self, obj):
         active_parliamentary_group_membership = obj.parliamentary_group_on_date(self.context['date'])
         if not active_parliamentary_group_membership:
             return None
@@ -188,7 +188,7 @@ class CommonPersonSerializer(CommonSerializer):
     honorific_prefix = VersionableSerializerField(property_model_name='PersonHonorificPrefix')
     honorific_suffix = VersionableSerializerField(property_model_name='PersonHonorificSuffix')
     preferred_pronoun = VersionableSerializerField(property_model_name='PersonPreferredPronoun')
-    party = serializers.SerializerMethodField()
+    group = serializers.SerializerMethodField()
     # TODO check if this works
     image = serializers.ImageField()
 
