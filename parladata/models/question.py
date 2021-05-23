@@ -11,11 +11,11 @@ class Question(Timestampable):
                                 on_delete=models.CASCADE,
                                 help_text='The session this question belongs to.')
 
-    datetime = models.DateTimeField(blank=True,
+    timestamp = models.DateTimeField(blank=True,
                                null=True,
                                help_text='Date of the question.')
 
-    answer_datetime = models.DateTimeField(blank=True,
+    answer_timestamp = models.DateTimeField(blank=True,
                                          null=True,
                                          help_text='Date of answer the question.')
 

@@ -3,6 +3,7 @@ from django.db.models import Q
 from rest_framework import serializers
 
 from parladata.models.ballot import Ballot
+from parladata.models.question import Question
 from parladata.models.legislation import Law
 from parlacards.models import VotingDistance
 
@@ -11,6 +12,7 @@ from parlacards.serializers.organization import OrganizationSerializer, MembersS
 from parlacards.serializers.session import SessionSerializer
 from parlacards.serializers.legislation import LegislationSerializer
 from parlacards.serializers.ballot import BallotSerializer
+from parlacards.serializers.question import QuestionSerializer
 from parlacards.serializers.voting_distance import VotingDistanceSerializer
 
 from parlacards.serializers.common import (
@@ -52,6 +54,17 @@ class PersonBallotCardSerializer(PersonScoreCardSerializer):
         )
         ballot_serializer = BallotSerializer(ballots, many=True)
         return ballot_serializer.data
+
+
+class PersonQuestionCardSerializer(PersonScoreCardSerializer):
+    def get_results(self, obj):
+        # obj is the person
+        questions = Question.objects.filter(
+            authors=obj,
+            timestamp__lte=self.context['date']
+        )
+        question_serializer = QuestionSerializer(questions, context=self.context, many=True)
+        return question_serializer.data
 
 
 class MostVotesInCommonCardSerializer(PersonScoreCardSerializer):

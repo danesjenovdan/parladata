@@ -22,6 +22,7 @@ from parlacards.serializers.cards import (
     PersonVocabularySizeCardSerializer,
     OrganizationVocabularySizeCardSerializer,
     PersonBallotCardSerializer,
+    PersonQuestionCardSerializer,
     MostVotesInCommonCardSerializer,
     LeastVotesInCommonCardSerializer,
 )
@@ -133,6 +134,14 @@ class Ballots(CardView):
     '''
     thing = Person
     card_serializer = PersonBallotCardSerializer
+
+
+class Questions(CardView):
+    '''
+    A person's questions.
+    '''
+    thing = Person
+    card_serializer = PersonQuestionCardSerializer
 
 
 class MostVotesInCommon(CardView):
