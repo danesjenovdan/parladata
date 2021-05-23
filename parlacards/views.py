@@ -25,6 +25,7 @@ from parlacards.serializers.cards import (
     PersonQuestionCardSerializer,
     MostVotesInCommonCardSerializer,
     LeastVotesInCommonCardSerializer,
+    PersonMembershipCardSerializer,
 )
 
 class CardView(APIView):
@@ -158,3 +159,11 @@ class LeastVotesInCommon(CardView):
     '''
     thing = Person
     card_serializer = LeastVotesInCommonCardSerializer
+
+
+class PersonMembership(CardView):
+    '''
+    A person's memberships.
+    '''
+    thing = Person
+    card_serializer = PersonMembershipCardSerializer

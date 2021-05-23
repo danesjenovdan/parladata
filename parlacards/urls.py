@@ -16,6 +16,7 @@ urlpatterns = [
     path('organization/vocabulary-size/', OrganizationVocabularySize.as_view()),
     path('person/votes/', Ballots.as_view()),
     path('person/questions/', Questions.as_view()),
+    path('person/memberships/', PersonMembership.as_view()),
     path('person/most-votes-in-common/', MostVotesInCommon.as_view()),
     path('person/least-votes-in-common/', LeastVotesInCommon.as_view()),
 ]

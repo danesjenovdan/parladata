@@ -4,6 +4,7 @@ from rest_framework import serializers
 
 from parladata.models.ballot import Ballot
 from parladata.models.question import Question
+from parladata.models.memberships import PersonMembership
 from parladata.models.legislation import Law
 from parlacards.models import VotingDistance
 
@@ -14,6 +15,7 @@ from parlacards.serializers.legislation import LegislationSerializer
 from parlacards.serializers.ballot import BallotSerializer
 from parlacards.serializers.question import QuestionSerializer
 from parlacards.serializers.voting_distance import VotingDistanceSerializer
+from parlacards.serializers.membership import MembershipSerializer
 
 from parlacards.serializers.common import (
     CardSerializer,
@@ -65,6 +67,16 @@ class PersonQuestionCardSerializer(PersonScoreCardSerializer):
         )
         question_serializer = QuestionSerializer(questions, context=self.context, many=True)
         return question_serializer.data
+
+
+class PersonMembershipCardSerializer(PersonScoreCardSerializer):
+    def get_results(self, obj):
+        # obj is the person
+        memberships = PersonMembership.valid_at(self.context['date']).filter(
+            member=obj,
+        )
+        membership_serializer = MembershipSerializer(memberships, context=self.context, many=True)
+        return membership_serializer.data
 
 
 class MostVotesInCommonCardSerializer(PersonScoreCardSerializer):
