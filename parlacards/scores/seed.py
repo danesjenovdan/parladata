@@ -7,6 +7,7 @@ from parlacards.scores.vocabulary_size import (
     save_sparse_organizations_vocabulary_sizes_between
 )
 from parlacards.scores.voting_distance import save_sparse_voting_distances_between
+from parlacards.scores.deviation_from_group import save_sparse_people_deviations_from_group_between
 
 def calculate_sparse_scores(playing_field):
     datetime_to = datetime.now()
@@ -18,4 +19,6 @@ def calculate_sparse_scores(playing_field):
     save_sparse_organizations_vocabulary_sizes_between(playing_field, datetime_from, datetime_to)
     print('Calculating voting distances ...')
     save_sparse_voting_distances_between(playing_field, datetime_from, datetime_to)
+    print('Calculating deviations from group ...')
+    save_sparse_people_deviations_from_group_between(playing_field, datetime_from, datetime_to)
     print('Done.')

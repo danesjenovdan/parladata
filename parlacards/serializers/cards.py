@@ -134,6 +134,11 @@ class LeastVotesInCommonCardSerializer(PersonScoreCardSerializer):
 
     results = serializers.SerializerMethodField()
 
+
+class DeviationFromGroupCardSerializer(PersonScoreCardSerializer):
+    results = ScoreSerializerField(property_model_name='DeviationFromGroup')
+
+
 #
 # MISC
 #
@@ -208,4 +213,3 @@ class OrganizationMembersCardSerializer(CardSerializer):
             context=self.context
         )
         return serializer.data
-

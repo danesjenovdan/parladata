@@ -27,6 +27,7 @@ from parlacards.serializers.cards import (
     LeastVotesInCommonCardSerializer,
     PersonMembershipCardSerializer,
     PersonAvgSpeechesPerSessionCardSerializer
+    DeviationFromGroupCardSerializer,
 )
 
 class CardView(APIView):
@@ -176,3 +177,11 @@ class PersonAvgSpeechesPerSession(CardView):
     '''
     thing = Person
     card_serializer = PersonAvgSpeechesPerSessionCardSerializer
+
+
+class DeviationFromGroup(CardView):
+    '''
+    A person's deviation from group voting.
+    '''
+    thing = Person
+    card_serializer = DeviationFromGroupCardSerializer
