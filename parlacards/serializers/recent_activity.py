@@ -25,7 +25,6 @@ class EventSerializer(CommonSerializer):
                 obj,
                 context=self.context
             )
-            print('SPEECH')
         elif isinstance(obj, Ballot):
             event_type = 'ballot'
             serializer = BallotSerializer(
