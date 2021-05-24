@@ -8,8 +8,10 @@ from parlacards.scores.common import get_dates_between, get_fortnights_between
 
 
 def calculate_number_of_questions_from_person(person, timestamp=datetime.now()):
-    person_question = Question.objects.filter(authors=person, timestamp__lte=timestamp)
-    return person_question.count()
+    return Question.objects.filter(
+        authors=person,
+        timestamp__lte=timestamp
+    ).count()
 
 def save_number_of_questions_from_person(person, playing_field, timestamp=datetime.now()):
     PersonNumberOfQuestions(

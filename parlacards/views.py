@@ -174,7 +174,7 @@ class PersonMembership(CardView):
 
 class PersonAvgSpeechesPerSession(CardView):
     '''
-    A person's speeches per session.
+    A person's averaga number of speeches per session.
     '''
     thing = Person
     card_serializer = PersonAvgSpeechesPerSessionCardSerializer
