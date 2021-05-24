@@ -23,4 +23,5 @@ urlpatterns = [
     path('person/average-number-of-speeches-per-session/', PersonAvgSpeechesPerSession.as_view()),
     path('person/number-of-questions/', PersonNumberOfQuestions.as_view()),
     path('person/presence-on-votes/', PersonPresenceOnVotes.as_view()),
+    path('person/recent-activity/', RecentActivity.as_view()),
 ]

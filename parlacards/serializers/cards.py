@@ -1,4 +1,10 @@
+from itertools import chain
+from operator import attrgetter
+
+from datetime import datetime, timedelta
+
 from django.db.models import Q
+from django.db.models.functions import TruncDay
 
 from rest_framework import serializers
 
@@ -6,6 +12,8 @@ from parladata.models.ballot import Ballot
 from parladata.models.question import Question
 from parladata.models.memberships import PersonMembership
 from parladata.models.legislation import Law
+from parladata.models.question import Question
+from parladata.models.speech import Speech
 from parlacards.models import VotingDistance
 
 from parlacards.serializers.person import PersonSerializer
@@ -16,6 +24,7 @@ from parlacards.serializers.ballot import BallotSerializer
 from parlacards.serializers.question import QuestionSerializer
 from parlacards.serializers.voting_distance import VotingDistanceSerializer
 from parlacards.serializers.membership import MembershipSerializer
+from parlacards.serializers.recent_activity import RecentActivitySerializer, DailyEventsSerializer
 
 from parlacards.serializers.common import (
     CardSerializer,
@@ -145,6 +154,79 @@ class LeastVotesInCommonCardSerializer(PersonScoreCardSerializer):
 
 class DeviationFromGroupCardSerializer(PersonScoreCardSerializer):
     results = ScoreSerializerField(property_model_name='DeviationFromGroup')
+
+
+class RecentActivityCardSerializer(PersonScoreCardSerializer):
+    '''
+    Serializes recent activity since 30 days in the past.
+    '''
+
+    def get_results(self, obj):
+        # obj is the person
+        from_datetime = self.context['date'] - timedelta(days=30)
+
+        ballots = Ballot.objects.filter(
+            personvoter=obj,
+            vote__timestamp__lte=self.context['date'],
+            vote__timestamp__gte=from_datetime
+        ).order_by(
+            '-vote__timestamp'
+        ).annotate(
+            date=TruncDay('vote__timestamp')
+        )
+
+        questions = Question.objects.filter(
+            authors__in=[obj],
+            datetime__lte=self.context['date'],
+            datetime__gte=from_datetime
+            # TODO
+            # timestamp__lte=self.context['date'],
+            # timestamp__gte=from_datetime
+        ).order_by(
+            '-datetime'
+            # TODO
+            # '-timestamp'
+        ).annotate(
+            date=TruncDay('datetime')
+            # TODO
+            # date=TruncDay('timestamp')
+        )
+
+        # TODO valid speeches only
+        speeches = Speech.objects.filter(
+            speaker=obj,
+            start_time__lte=self.context['date'],
+            start_time__gte=from_datetime
+        ).order_by(
+            '-start_time'
+        ).annotate(
+            date=TruncDay('start_time')
+        )
+
+        dates_to_serialize = set([
+            *ballots.values_list('date', flat=True),
+            *questions.values_list('date', flat=True),
+            *speeches.values_list('date', flat=True)
+        ])
+
+        events_to_serialize = sorted(
+            chain(ballots, questions, speeches),
+            key=attrgetter('date')
+        )
+
+        grouped_events_to_serialize = [
+            {
+                'date': date,
+                'events': filter(lambda event: event.date == date, events_to_serialize)
+            } for date in dates_to_serialize
+        ]
+
+        serializer = DailyEventsSerializer(
+            grouped_events_to_serialize,
+            many=True,
+            context=self.context
+        )
+        return serializer.data
 
 
 #
