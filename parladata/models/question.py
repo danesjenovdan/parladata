@@ -27,12 +27,12 @@ class Question(Timestampable):
                                      blank=True,
                                      help_text='The persons (MP) who asked the question.')
 
-    recipient_person = models.ManyToManyField('Person',
+    recipient_people = models.ManyToManyField('Person',
                                               blank=True,
                                               help_text='Recipient person (if it\'s a person).',
                                               related_name='questions')
 
-    recipient_organization = models.ManyToManyField('Organization',
+    recipient_organizations = models.ManyToManyField('Organization',
                                                     blank=True,
                                                     help_text='Recipient organization (if it\'s an organization).',
                                                     related_name='questions_org')

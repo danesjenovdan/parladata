@@ -2,9 +2,9 @@ from django.db import models
 
 from parladata.behaviors.models import Versionable, Timestampable
 
-# TODO ne vem kako točno naj bi to delalo
+
 class ValidSpeechesManager(models.Manager):
-    def get_queryset(self):
+    def filter_valid_speeches(self, date_):
         return super().get_queryset().filter(
             models.Q(valid_from__lt=date_) | models.Q(valid_from__isnull=True),
             models.Q(valid_to__gt=date_) | models.Q(valid_to__isnull=True)
@@ -37,8 +37,7 @@ class Speech(Versionable, Timestampable):
     agenda_items = models.ManyToManyField('AgendaItem', blank=True,
                                           help_text='Agenda items', related_name='speeches')
 
-    objects = models.Manager()
-    valid_speeches = ValidSpeechesManager()
+    objects = ValidSpeechesManager()
 
     def __str__(self):
         return f'{self.speaker.name} @ {self.session.name}:{self.order}'

@@ -19,4 +19,5 @@ urlpatterns = [
     path('person/memberships/', PersonMembership.as_view()),
     path('person/most-votes-in-common/', MostVotesInCommon.as_view()),
     path('person/least-votes-in-common/', LeastVotesInCommon.as_view()),
+    path('person/average-number-of-speeches-per-session/', PersonAvgSpeechesPerSession.as_view()),
 ]
