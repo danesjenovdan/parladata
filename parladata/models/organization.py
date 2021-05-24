@@ -82,8 +82,9 @@ class Organization(Timestampable, Taggable, Parsable, Sluggable, VersionableFiel
     def has_voters(self):
         return bool(self.memberships.filter(role='voter'))
 
-    def query_members(self, date=datetime.now()):
-        member_ids = PersonMembership.valid_at(date).filter(organization=self).values_list('member', flat=True)
+    # TODO maybe we need to run distinct here
+    def query_members(self, timestamp=datetime.now()):
+        member_ids = PersonMembership.valid_at(timestamp).filter(organization=self).values_list('member', flat=True)
         return Person.objects.filter(
             id__in=member_ids
         )

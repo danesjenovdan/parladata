@@ -24,6 +24,7 @@ from parlacards.serializers.cards import (
     PersonBallotCardSerializer,
     MostVotesInCommonCardSerializer,
     LeastVotesInCommonCardSerializer,
+    DeviationFromGroupCardSerializer,
 )
 
 class CardView(APIView):
@@ -149,3 +150,11 @@ class LeastVotesInCommon(CardView):
     '''
     thing = Person
     card_serializer = LeastVotesInCommonCardSerializer
+
+
+class DeviationFromGroup(CardView):
+    '''
+    A person's deviation from group voting.
+    '''
+    thing = Person
+    card_serializer = DeviationFromGroupCardSerializer

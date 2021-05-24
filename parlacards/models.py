@@ -57,3 +57,7 @@ class VotingDistance(PersonScore):
         related_name='target',
         on_delete=models.CASCADE
     )
+
+
+class DeviationFromGroup(PersonScore):
+    pass
