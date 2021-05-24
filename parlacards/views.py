@@ -28,6 +28,7 @@ from parlacards.serializers.cards import (
     PersonMembershipCardSerializer,
     PersonAvgSpeechesPerSessionCardSerializer,
     DeviationFromGroupCardSerializer,
+    PersonNumberOfQuestionsCardSerializer,
 )
 
 class CardView(APIView):
@@ -173,7 +174,7 @@ class PersonMembership(CardView):
 
 class PersonAvgSpeechesPerSession(CardView):
     '''
-    A person's vocabulary size.
+    A person's speeches per session.
     '''
     thing = Person
     card_serializer = PersonAvgSpeechesPerSessionCardSerializer
@@ -185,3 +186,11 @@ class DeviationFromGroup(CardView):
     '''
     thing = Person
     card_serializer = DeviationFromGroupCardSerializer
+
+
+class PersonNumberOfQuestions(CardView):
+    '''
+    A person's number of questions.
+    '''
+    thing = Person
+    card_serializer = PersonNumberOfQuestionsCardSerializer

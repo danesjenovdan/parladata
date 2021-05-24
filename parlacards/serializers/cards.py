@@ -47,6 +47,10 @@ class PersonAvgSpeechesPerSessionCardSerializer(PersonScoreCardSerializer):
     results = ScoreSerializerField(property_model_name='PersonAvgSpeechesPerSession')
 
 
+class PersonNumberOfQuestionsCardSerializer(PersonScoreCardSerializer):
+    results = ScoreSerializerField(property_model_name='PersonNumberOfQuestions')
+
+
 class OrganizationVocabularySizeCardSerializer(OrganizationScoreCardSerializer):
     results = ScoreSerializerField(property_model_name='OrganizationVocabularySize')
 
