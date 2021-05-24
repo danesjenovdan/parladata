@@ -24,7 +24,7 @@ from parlacards.serializers.ballot import BallotSerializer
 from parlacards.serializers.question import QuestionSerializer
 from parlacards.serializers.voting_distance import VotingDistanceSerializer
 from parlacards.serializers.membership import MembershipSerializer
-from parlacards.serializers.recent_activity import RecentActivitySerializer, DailyEventsSerializer
+from parlacards.serializers.recent_activity import DailyActivitySerializer
 
 from parlacards.serializers.common import (
     CardSerializer,
@@ -163,6 +163,8 @@ class RecentActivityCardSerializer(PersonScoreCardSerializer):
 
     def get_results(self, obj):
         # obj is the person
+
+        # we're getting events for the past 30 days
         from_datetime = self.context['date'] - timedelta(days=30)
 
         ballots = Ballot.objects.filter(
@@ -177,23 +179,17 @@ class RecentActivityCardSerializer(PersonScoreCardSerializer):
 
         questions = Question.objects.filter(
             authors__in=[obj],
-            datetime__lte=self.context['date'],
-            datetime__gte=from_datetime
-            # TODO
-            # timestamp__lte=self.context['date'],
-            # timestamp__gte=from_datetime
+            timestamp__lte=self.context['date'],
+            timestamp__gte=from_datetime
         ).order_by(
-            '-datetime'
-            # TODO
-            # '-timestamp'
+            '-timestamp'
         ).annotate(
-            date=TruncDay('datetime')
-            # TODO
-            # date=TruncDay('timestamp')
+            date=TruncDay('timestamp')
         )
 
-        # TODO valid speeches only
-        speeches = Speech.objects.filter(
+        speeches = Speech.objects.filter_valid_speeches(
+            self.context['date']
+        ).filter(
             speaker=obj,
             start_time__lte=self.context['date'],
             start_time__gte=from_datetime
@@ -209,11 +205,11 @@ class RecentActivityCardSerializer(PersonScoreCardSerializer):
             *speeches.values_list('date', flat=True)
         ])
 
-        events_to_serialize = sorted(
-            chain(ballots, questions, speeches),
-            key=attrgetter('date')
-        )
+        events_to_serialize = chain(ballots, questions, speeches)
 
+        # this is ripe for optimization
+        # currently iterates over all events
+        # for every date
         grouped_events_to_serialize = [
             {
                 'date': date,
@@ -221,7 +217,7 @@ class RecentActivityCardSerializer(PersonScoreCardSerializer):
             } for date in dates_to_serialize
         ]
 
-        serializer = DailyEventsSerializer(
+        serializer = DailyActivitySerializer(
             grouped_events_to_serialize,
             many=True,
             context=self.context

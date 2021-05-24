@@ -4,14 +4,16 @@ from parladata.models.speech import Speech
 from parladata.models.ballot import Ballot
 from parladata.models.question import Question
 
-from parlacards.serializers.speech import SpeechSerializer
 from parlacards.serializers.ballot import BallotSerializer
-# TODO
-# from parlacards.serializers.question import QuestionSerializer
+from parlacards.serializers.question import QuestionSerializer
 from parlacards.serializers.common import CommonSerializer
+from parlacards.serializers.session import SessionSerializer
 
-class RecentActivitySerializer(CommonSerializer):
-    pass
+
+class RecentActivitySpeechSerializer(CommonSerializer):
+    speech_id = serializers.IntegerField(source='id')
+    start_time = serializers.DateTimeField()
+    session = SessionSerializer()
 
 
 class EventSerializer(CommonSerializer):
@@ -19,10 +21,11 @@ class EventSerializer(CommonSerializer):
         # figure out which event type we're dealing with
         if isinstance(obj, Speech):
             event_type = 'speech'
-            serializer = SpeechSerializer(
+            serializer = RecentActivitySpeechSerializer(
                 obj,
                 context=self.context
             )
+            print('SPEECH')
         elif isinstance(obj, Ballot):
             event_type = 'ballot'
             serializer = BallotSerializer(
@@ -31,8 +34,10 @@ class EventSerializer(CommonSerializer):
             )
         elif isinstance(obj, Question):
             event_type = 'question'
-            # TODO
-            return event_type
+            serializer = QuestionSerializer(
+                obj,
+                context=self.context
+            )
         else:
             raise ValueError(f'Cannot serialize {obj} as activity.')
 
@@ -42,6 +47,6 @@ class EventSerializer(CommonSerializer):
         }
 
 
-class DailyEventsSerializer(CommonSerializer):
+class DailyActivitySerializer(CommonSerializer):
     date = serializers.DateTimeField()
     events = EventSerializer(many=True)
