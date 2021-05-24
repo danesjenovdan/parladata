@@ -34,7 +34,7 @@ def calculate_person_avg_number_of_speeches(person, timestamp=datetime.now()):
     )
 
     no_of_sessions_with_activity = len(
-        set(ballot_session_ids).intersection(
+        set(ballot_session_ids).union(
             set(speech_session_ids)
         )
     )
