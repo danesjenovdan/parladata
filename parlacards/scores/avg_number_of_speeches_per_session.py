@@ -60,8 +60,8 @@ def save_people_avg_number_of_speeches_per_session(playing_field, timestamp=date
 
 def save_people_avg_number_of_speeches_per_session_between(playing_field, datetime_from=datetime.now(), datetime_to=datetime.now()):
     for day in get_dates_between(datetime_from, datetime_to):
-        save_person_avg_number_of_speeches_per_session(playing_field, timestamp=day)
+        save_people_avg_number_of_speeches_per_session(playing_field, timestamp=day)
 
 def save_sparse_people_avg_number_of_speeches_per_session_between(playing_field, datetime_from=datetime.now(), datetime_to=datetime.now()):
     for day in get_fortnights_between(datetime_from, datetime_to):
-        save_person_avg_number_of_speeches_per_session(playing_field, timestamp=day)
+        save_people_avg_number_of_speeches_per_session(playing_field, timestamp=day)

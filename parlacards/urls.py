@@ -22,4 +22,5 @@ urlpatterns = [
     path('person/deviation-from-group/', DeviationFromGroup.as_view()),
     path('person/average-number-of-speeches-per-session/', PersonAvgSpeechesPerSession.as_view()),
     path('person/number-of-questions/', PersonNumberOfQuestions.as_view()),
+    path('person/presence-on-votes/', PersonPresenceOnVotes.as_view()),
 ]
