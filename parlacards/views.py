@@ -26,7 +26,7 @@ from parlacards.serializers.cards import (
     MostVotesInCommonCardSerializer,
     LeastVotesInCommonCardSerializer,
     PersonMembershipCardSerializer,
-    PersonAvgSpeechesPerSessionCardSerializer
+    PersonAvgSpeechesPerSessionCardSerializer,
     DeviationFromGroupCardSerializer,
 )
 
