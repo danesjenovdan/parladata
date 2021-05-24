@@ -59,5 +59,12 @@ class VotingDistance(PersonScore):
     )
 
 
+class PersonAvgSpeechesPerSession(PersonScore):
+    pass
+
+
 class DeviationFromGroup(PersonScore):
+    pass
+
+class PersonNumberOfQuestions(PersonScore):
     pass
