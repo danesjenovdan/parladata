@@ -43,7 +43,6 @@ def calculate_vocabulary_size(speeches):
 # PERSON
 #
 def save_person_vocabulary_size(person, playing_field, timestamp=datetime.now()):
-    # TODO maybe get valid speeches
     # get speeches that started before the timestamp
     speeches = Speech.objects.filter_valid_speeches(timestamp).filter(
         speaker=person,

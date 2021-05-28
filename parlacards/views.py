@@ -30,6 +30,7 @@ from parlacards.serializers.cards import (
     DeviationFromGroupCardSerializer,
     PersonNumberOfQuestionsCardSerializer,
     PersonPresenceOnVotesCardSerializer,
+    RecentActivityCardSerializer,
 )
 
 class CardView(APIView):
@@ -203,3 +204,11 @@ class PersonPresenceOnVotes(CardView):
     '''
     thing = Person
     card_serializer = PersonPresenceOnVotesCardSerializer
+
+
+class RecentActivity(CardView):
+    '''
+    A person's recent activity.
+    '''
+    thing = Person
+    card_serializer = RecentActivityCardSerializer
