@@ -1,10 +1,11 @@
 from datetime import datetime
 
-from django.db.models import Count, Max
+from django.db.models import Count, Max, Q
 
 from parladata.models.person import Person
 from parladata.models.ballot import Ballot
 from parladata.models.vote import Vote
+from parladata.models.memberships import PersonMembership
 
 from parlacards.models import DeviationFromGroup
 
@@ -24,12 +25,12 @@ def deviation_percentage_between_two_lists(list1, list2):
     
     return mismatches / len(list1) * 100
 
-def get_group_ballot(vote, people, exclude_absent=True):
+def get_group_ballot(vote, people_ids, exclude_absent=True):
     # vote can be a Vote object
     # or an int representing the object id
     ballots = Ballot.objects.filter(
         vote=vote,
-        personvoter__in=people
+        personvoter__id__in=people_ids
     )
 
     if exclude_absent:
@@ -46,7 +47,7 @@ def get_group_ballot(vote, people, exclude_absent=True):
 
     return options_aggregated['option__max']
 
-def calculate_deviation_from_group(person, timestamp=datetime.now(), exclude_absent=True):
+def calculate_deviation_from_group(person, playing_field, timestamp=datetime.now(), exclude_absent=True):
     personal_ballots = Ballot.objects.filter(
         personvoter=person,
         vote__timestamp__lte=timestamp
@@ -67,12 +68,34 @@ def calculate_deviation_from_group(person, timestamp=datetime.now(), exclude_abs
     )
 
     # TODO check this
-    parliamentary_group = person.parliamentary_group_on_date(timestamp)
-    if not parliamentary_group:
-        raise ValueError(f'{person} has no parliamentary group at {timestamp}')
+    voter_membership = PersonMembership.objects.filter(
+        Q(start_time__lte=timestamp) | Q(start_time__isnull=True),
+        Q(end_time__gte=timestamp) | Q(end_time__isnull=True),
+        Q(member=person),
+        Q(organization=playing_field),
+        Q(role='voter')
+    ).first()
+    # parliamentary_group = person.parliamentary_group_on_date(timestamp)
+    if not voter_membership:
+        raise ValueError(f'{person} has no voter membership in {playing_field} at {timestamp}')
         # relevant_people = Person.objects.none()
 
-    relevant_people = person.parliamentary_group_on_date(timestamp).query_members(timestamp)
+    parliamentary_group = voter_membership.on_behalf_of
+
+    if not parliamentary_group:
+        raise ValueError(f'{voter_membership} is missing `on_behalf_of` at {timestamp}.')
+
+    relevant_people_ids = PersonMembership.objects.filter(
+        Q(start_time__lte=timestamp) | Q(start_time__isnull=True),
+        Q(end_time__gte=timestamp) | Q(end_time__isnull=True),
+        Q(organization=playing_field),
+        Q(on_behalf_of=parliamentary_group),
+        Q(role='voter')
+    ).exclude(
+        member=person
+    ).values_list(
+        'member__id'
+    )
 
     personal_options = [
         option_string for
@@ -82,7 +105,7 @@ def calculate_deviation_from_group(person, timestamp=datetime.now(), exclude_abs
         )
     ]
     group_options = [
-        get_group_ballot(vote_id, relevant_people) for
+        get_group_ballot(vote_id, relevant_people_ids) for
         vote_id in relevant_vote_ids
     ]
 
@@ -93,7 +116,7 @@ def save_deviation_from_group(person, playing_field, timestamp=datetime.now()):
         person=person,
         playing_field=playing_field,
         timestamp=timestamp,
-        value=calculate_deviation_from_group(person, timestamp)
+        value=calculate_deviation_from_group(person, playing_field, timestamp)
     ).save()
 
 def save_people_deviations_from_group(playing_field, timestamp=datetime.now()):
