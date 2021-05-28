@@ -1,6 +1,5 @@
 from collections import Counter
 from datetime import datetime
-from string import punctuation
 
 from django.db.models import Q
 
@@ -9,14 +8,15 @@ from parladata.models.speech import Speech
 
 from parlacards.models import PersonVocabularySize, GroupVocabularySize
 
-from parlacards.scores.common import get_dates_between, get_fortnights_between
+from parlacards.scores.common import (
+    get_dates_between,
+    get_fortnights_between,
+    remove_punctuation,
+    tokenize,
+    lemmatize_many
+)
 
-def remove_punctuation(text):
-    return text.translate(str.maketrans('', '', punctuation))
-
-def tokenize(text):
-    return [s for s in text.split(' ') if s != '']
-
+# TODO we should lemmatize speeches at import time
 def calculate_vocabulary_size(speeches):
     # if there are no speeches return 0
     if speeches.count() == 0:
@@ -25,8 +25,11 @@ def calculate_vocabulary_size(speeches):
     word_counter = Counter()
 
     for speech in speeches:
-        for token in tokenize(remove_punctuation(speech.strip().lower())):
-            word_counter[token] += 1
+        # TODO what if there is no lemmatized_content
+        if not speech:
+            raise ValueError('Lemmatized speech is missing.')
+        for lemmatized_token in lemmatize_many(tokenize(remove_punctuation(speech.strip().lower()))):
+            word_counter[lemmatized_token] += 1
 
     number_of_unique_words = len(word_counter.keys())
 
@@ -49,7 +52,8 @@ def save_person_vocabulary_size(person, playing_field, timestamp=datetime.now())
     speeches = Speech.objects.filter_valid_speeches(timestamp).filter(
         speaker=person,
         start_time__lte=timestamp
-    ).values_list('content', flat=True)
+    ).values_list('lemmatized_content', flat=True)
+    # TODO what if there is no lemmatized content
 
     PersonVocabularySize(
         person=person,
