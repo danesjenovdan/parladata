@@ -22,6 +22,7 @@ urlpatterns = [
     path('person/vote-attendance/', PersonVoteAttendance.as_view()),
     path('person/recent-activity/', RecentActivity.as_view()),
     path('person/monthly-vote-attendance/', PersonMonthlyVoteAttendance.as_view()),
+    path('person/style-scores', PersonStyleScores.as_view()),
 
     path('group/basic-information/', GroupInfo.as_view()),
     path('group/members/', GroupMembers.as_view()),
