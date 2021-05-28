@@ -1,9 +1,19 @@
+from itertools import chain
+from operator import attrgetter
+
+from datetime import datetime, timedelta
+
 from django.db.models import Q
+from django.db.models.functions import TruncDay
 
 from rest_framework import serializers
 
 from parladata.models.ballot import Ballot
+from parladata.models.question import Question
+from parladata.models.memberships import PersonMembership
 from parladata.models.legislation import Law
+from parladata.models.question import Question
+from parladata.models.speech import Speech
 from parlacards.models import VotingDistance
 
 from parlacards.serializers.person import PersonSerializer
@@ -11,7 +21,10 @@ from parlacards.serializers.organization import OrganizationSerializer, MembersS
 from parlacards.serializers.session import SessionSerializer
 from parlacards.serializers.legislation import LegislationSerializer
 from parlacards.serializers.ballot import BallotSerializer
+from parlacards.serializers.question import QuestionSerializer
 from parlacards.serializers.voting_distance import VotingDistanceSerializer
+from parlacards.serializers.membership import MembershipSerializer
+from parlacards.serializers.recent_activity import DailyActivitySerializer
 
 from parlacards.serializers.common import (
     CardSerializer,
@@ -39,6 +52,18 @@ class PersonVocabularySizeCardSerializer(PersonScoreCardSerializer):
     results = ScoreSerializerField(property_model_name='PersonVocabularySize')
 
 
+class PersonAvgSpeechesPerSessionCardSerializer(PersonScoreCardSerializer):
+    results = ScoreSerializerField(property_model_name='PersonAvgSpeechesPerSession')
+
+
+class PersonPresenceOnVotesCardSerializer(PersonScoreCardSerializer):
+    results = ScoreSerializerField(property_model_name='PersonPresenceOnVotes')
+
+
+class PersonNumberOfQuestionsCardSerializer(PersonScoreCardSerializer):
+    results = ScoreSerializerField(property_model_name='PersonNumberOfQuestions')
+
+
 class OrganizationVocabularySizeCardSerializer(OrganizationScoreCardSerializer):
     results = ScoreSerializerField(property_model_name='OrganizationVocabularySize')
 
@@ -52,6 +77,27 @@ class PersonBallotCardSerializer(PersonScoreCardSerializer):
         )
         ballot_serializer = BallotSerializer(ballots, many=True)
         return ballot_serializer.data
+
+
+class PersonQuestionCardSerializer(PersonScoreCardSerializer):
+    def get_results(self, obj):
+        # obj is the person
+        questions = Question.objects.filter(
+            authors=obj,
+            timestamp__lte=self.context['date']
+        )
+        question_serializer = QuestionSerializer(questions, context=self.context, many=True)
+        return question_serializer.data
+
+
+class PersonMembershipCardSerializer(PersonScoreCardSerializer):
+    def get_results(self, obj):
+        # obj is the person
+        memberships = PersonMembership.valid_at(self.context['date']).filter(
+            member=obj,
+        )
+        membership_serializer = MembershipSerializer(memberships, context=self.context, many=True)
+        return membership_serializer.data
 
 
 class MostVotesInCommonCardSerializer(PersonScoreCardSerializer):
@@ -104,6 +150,80 @@ class LeastVotesInCommonCardSerializer(PersonScoreCardSerializer):
         return distances_serializer.data
 
     results = serializers.SerializerMethodField()
+
+
+class DeviationFromGroupCardSerializer(PersonScoreCardSerializer):
+    results = ScoreSerializerField(property_model_name='DeviationFromGroup')
+
+
+class RecentActivityCardSerializer(PersonScoreCardSerializer):
+    '''
+    Serializes recent activity since 30 days in the past.
+    '''
+
+    def get_results(self, obj):
+        # obj is the person
+
+        # we're getting events for the past 30 days
+        from_datetime = self.context['date'] - timedelta(days=30)
+
+        ballots = Ballot.objects.filter(
+            personvoter=obj,
+            vote__timestamp__lte=self.context['date'],
+            vote__timestamp__gte=from_datetime
+        ).order_by(
+            '-vote__timestamp'
+        ).annotate(
+            date=TruncDay('vote__timestamp')
+        )
+
+        questions = Question.objects.filter(
+            authors__in=[obj],
+            timestamp__lte=self.context['date'],
+            timestamp__gte=from_datetime
+        ).order_by(
+            '-timestamp'
+        ).annotate(
+            date=TruncDay('timestamp')
+        )
+
+        speeches = Speech.objects.filter_valid_speeches(
+            self.context['date']
+        ).filter(
+            speaker=obj,
+            start_time__lte=self.context['date'],
+            start_time__gte=from_datetime
+        ).order_by(
+            '-start_time'
+        ).annotate(
+            date=TruncDay('start_time')
+        )
+
+        dates_to_serialize = set([
+            *ballots.values_list('date', flat=True),
+            *questions.values_list('date', flat=True),
+            *speeches.values_list('date', flat=True)
+        ])
+
+        events_to_serialize = chain(ballots, questions, speeches)
+
+        # this is ripe for optimization
+        # currently iterates over all events
+        # for every date
+        grouped_events_to_serialize = [
+            {
+                'date': date,
+                'events': filter(lambda event: event.date == date, events_to_serialize)
+            } for date in dates_to_serialize
+        ]
+
+        serializer = DailyActivitySerializer(
+            grouped_events_to_serialize,
+            many=True,
+            context=self.context
+        )
+        return serializer.data
+
 
 #
 # MISC
@@ -179,4 +299,3 @@ class OrganizationMembersCardSerializer(CardSerializer):
             context=self.context
         )
         return serializer.data
-

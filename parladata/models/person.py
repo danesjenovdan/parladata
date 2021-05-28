@@ -108,11 +108,11 @@ class Person(Timestampable, Parsable, Sluggable, VersionableFieldsOwner):
             datetime=datetime.now()
         )
 
-    def parliamentary_group_on_date(self, datetime=datetime.now()):
+    def parliamentary_group_on_date(self, timestamp=datetime.now()):
         active_memberships = PersonMembership.objects.filter(
             models.Q(member=self),
-            models.Q(start_time__lte=datetime),
-            models.Q(end_time__gte=datetime) | models.Q(end_time__isnull=True),
+            models.Q(start_time__lte=timestamp) | models.Q(start_time__isnull=True),
+            models.Q(end_time__gte=timestamp) | models.Q(end_time__isnull=True),
             models.Q(organization__classification='pg'), # TODO change to parliamentary_group
         )
 

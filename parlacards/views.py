@@ -22,8 +22,15 @@ from parlacards.serializers.cards import (
     PersonVocabularySizeCardSerializer,
     OrganizationVocabularySizeCardSerializer,
     PersonBallotCardSerializer,
+    PersonQuestionCardSerializer,
     MostVotesInCommonCardSerializer,
     LeastVotesInCommonCardSerializer,
+    PersonMembershipCardSerializer,
+    PersonAvgSpeechesPerSessionCardSerializer,
+    DeviationFromGroupCardSerializer,
+    PersonNumberOfQuestionsCardSerializer,
+    PersonPresenceOnVotesCardSerializer,
+    RecentActivityCardSerializer,
 )
 
 class CardView(APIView):
@@ -135,6 +142,14 @@ class Ballots(CardView):
     card_serializer = PersonBallotCardSerializer
 
 
+class Questions(CardView):
+    '''
+    A person's questions.
+    '''
+    thing = Person
+    card_serializer = PersonQuestionCardSerializer
+
+
 class MostVotesInCommon(CardView):
     '''
     A person's most equal voters.
@@ -149,3 +164,51 @@ class LeastVotesInCommon(CardView):
     '''
     thing = Person
     card_serializer = LeastVotesInCommonCardSerializer
+
+
+class PersonMembership(CardView):
+    '''
+    A person's memberships.
+    '''
+    thing = Person
+    card_serializer = PersonMembershipCardSerializer
+
+
+class PersonAvgSpeechesPerSession(CardView):
+    '''
+    A person's averaga number of speeches per session.
+    '''
+    thing = Person
+    card_serializer = PersonAvgSpeechesPerSessionCardSerializer
+
+
+class DeviationFromGroup(CardView):
+    '''
+    A person's deviation from group voting.
+    '''
+    thing = Person
+    card_serializer = DeviationFromGroupCardSerializer
+
+
+class PersonNumberOfQuestions(CardView):
+    '''
+    A person's number of questions.
+    '''
+    thing = Person
+    card_serializer = PersonNumberOfQuestionsCardSerializer
+
+
+class PersonPresenceOnVotes(CardView):
+    '''
+    A person's presence on votes.
+    '''
+    thing = Person
+    card_serializer = PersonPresenceOnVotesCardSerializer
+
+
+class RecentActivity(CardView):
+    '''
+    A person's recent activity.
+    '''
+    thing = Person
+    card_serializer = RecentActivityCardSerializer

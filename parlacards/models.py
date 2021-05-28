@@ -57,3 +57,19 @@ class VotingDistance(PersonScore):
         related_name='target',
         on_delete=models.CASCADE
     )
+
+
+class PersonAvgSpeechesPerSession(PersonScore):
+    pass
+
+
+class DeviationFromGroup(PersonScore):
+    pass
+
+
+class PersonNumberOfQuestions(PersonScore):
+    pass
+
+
+class PersonPresenceOnVotes(PersonScore):
+    pass

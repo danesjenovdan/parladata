@@ -25,7 +25,7 @@ def calculate_vocabulary_size(speeches):
     for speech in speeches:
         for token in tokenize(remove_punctuation(speech.strip().lower())):
             word_counter[token] += 1
-    
+
     number_of_unique_words = len(word_counter.keys())
 
     frequency_counter = Counter()
@@ -43,9 +43,8 @@ def calculate_vocabulary_size(speeches):
 # PERSON
 #
 def save_person_vocabulary_size(person, playing_field, timestamp=datetime.now()):
-    # TODO maybe get valid speeches
     # get speeches that started before the timestamp
-    speeches = Speech.objects.filter(
+    speeches = Speech.objects.filter_valid_speeches(timestamp).filter(
         speaker=person,
         start_time__lte=timestamp
     ).values_list('content', flat=True)
@@ -76,7 +75,7 @@ def save_sparse_people_vocabulary_sizes_between(playing_field, datetime_from=dat
 #
 def save_organization_vocabulary_size(organization, playing_field, timestamp=datetime.now()):
     members = organization.query_members(timestamp)
-    speeches = Speech.objects.filter(
+    speeches = Speech.objects.filter_valid_speeches(timestamp).filter(
         speaker__in=members,
         start_time__lte=timestamp
     ).values_list('content', flat=True)

@@ -11,11 +11,11 @@ class Question(Timestampable):
                                 on_delete=models.CASCADE,
                                 help_text='The session this question belongs to.')
 
-    datetime = models.DateTimeField(blank=True,
+    timestamp = models.DateTimeField(blank=True,
                                null=True,
                                help_text='Date of the question.')
 
-    answer_datetime = models.DateTimeField(blank=True,
+    answer_timestamp = models.DateTimeField(blank=True,
                                          null=True,
                                          help_text='Date of answer the question.')
 
@@ -27,12 +27,12 @@ class Question(Timestampable):
                                      blank=True,
                                      help_text='The persons (MP) who asked the question.')
 
-    recipient_person = models.ManyToManyField('Person',
+    recipient_people = models.ManyToManyField('Person',
                                               blank=True,
                                               help_text='Recipient person (if it\'s a person).',
                                               related_name='questions')
 
-    recipient_organization = models.ManyToManyField('Organization',
+    recipient_organizations = models.ManyToManyField('Organization',
                                                     blank=True,
                                                     help_text='Recipient organization (if it\'s an organization).',
                                                     related_name='questions_org')

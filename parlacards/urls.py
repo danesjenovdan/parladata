@@ -15,6 +15,13 @@ urlpatterns = [
     path('person/vocabulary-size/', VocabularySize.as_view()),
     path('organization/vocabulary-size/', OrganizationVocabularySize.as_view()),
     path('person/votes/', Ballots.as_view()),
+    path('person/questions/', Questions.as_view()),
+    path('person/memberships/', PersonMembership.as_view()),
     path('person/most-votes-in-common/', MostVotesInCommon.as_view()),
     path('person/least-votes-in-common/', LeastVotesInCommon.as_view()),
+    path('person/deviation-from-group/', DeviationFromGroup.as_view()),
+    path('person/average-number-of-speeches-per-session/', PersonAvgSpeechesPerSession.as_view()),
+    path('person/number-of-questions/', PersonNumberOfQuestions.as_view()),
+    path('person/presence-on-votes/', PersonPresenceOnVotes.as_view()),
+    path('person/recent-activity/', RecentActivity.as_view()),
 ]

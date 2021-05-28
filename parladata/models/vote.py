@@ -17,6 +17,11 @@ class Vote(Timestampable, Taggable):
     timestamp = models.DateTimeField(blank=True, null=True,
                                      help_text='Vote time')
 
+    needs_editing = models.BooleanField(
+        "Is vote needs editing",
+        default=False
+    )
+
     # TODO maybe rework this into a choice field
     result = models.TextField(blank=True, null=True,
                               help_text='The result of the vote')
