@@ -66,5 +66,10 @@ class PersonAvgSpeechesPerSession(PersonScore):
 class DeviationFromGroup(PersonScore):
     pass
 
+
 class PersonNumberOfQuestions(PersonScore):
+    pass
+
+
+class PersonPresenceOnVotes(PersonScore):
     pass
