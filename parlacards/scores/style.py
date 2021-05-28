@@ -1,11 +1,17 @@
+from datetime import datetime
+
 from collections import Counter
+
+from parladata.models.speech import Speech
+
+from parlacards.models import PersonStyleScore
 
 from parlacards.scores.common import (
     get_dates_between,
     get_fortnights_between,
     remove_punctuation,
     tokenize,
-    lemmatize
+    lemmatize_many
 )
 
 def get_styled_lemmas(style):
@@ -25,7 +31,7 @@ def calculate_style_score(speeches, styled_lemmas):
         # TODO what if there is no lemmatized_content
         if not speech:
             raise ValueError('Lemmatized speech is missing.')
-        for token in lemmatize(tokenize(remove_punctuation(speech.strip().lower()))):
+        for token in lemmatize_many(tokenize(remove_punctuation(speech.strip().lower()))):
             word_counter[token] += 1
             if token in styled_lemmas:
                 styled_words_counter[token] += 1

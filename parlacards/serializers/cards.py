@@ -25,7 +25,7 @@ from parlacards.serializers.question import QuestionSerializer
 from parlacards.serializers.voting_distance import VotingDistanceSerializer
 from parlacards.serializers.membership import MembershipSerializer
 from parlacards.serializers.recent_activity import DailyActivitySerializer
-from parlacards.serializer.style_scores import StyleScoresSerializer
+from parlacards.serializers.style_scores import StyleScoresSerializer
 
 from parlacards.serializers.common import (
     CardSerializer,
@@ -239,7 +239,8 @@ class RecentActivityCardSerializer(PersonScoreCardSerializer):
 class StyleScoresCardSerializer(PersonScoreCardSerializer):
     def get_results(self, obj):
         # obj is person
-        return StyleScoresSerializer(obj, context=self.context)
+        serializer = StyleScoresSerializer(obj, context=self.context)
+        return serializer.data
 
 #
 # MISC

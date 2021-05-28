@@ -5,7 +5,7 @@ from parlacards.serializers.common import CommonSerializer
 from parlacards.models import PersonStyleScore
 
 class StyleScoresSerializer(CommonSerializer):
-    def get_style_score(person, style):
+    def get_style_score(self, person, style):
         score = PersonStyleScore.objects.filter(
             person=person,
             style=style,
