@@ -71,5 +71,9 @@ class PersonNumberOfQuestions(PersonScore):
     pass
 
 
+class PersonMonthlyPresenceOnVote(PersonScore):
+    no_mandate = models.FloatField(blank=False, null=False)
+
+
 class PersonPresenceOnVotes(PersonScore):
     pass

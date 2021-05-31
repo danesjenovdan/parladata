@@ -21,6 +21,7 @@ lib/
 lib64/
 parts/
 sdist/
+postgres-data/
 var/
 *.egg-info/
 .installed.cfg
