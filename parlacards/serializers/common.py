@@ -197,3 +197,12 @@ class CommonOrganizationSerializer(CommonSerializer):
     name = VersionableSerializerField(property_model_name='OrganizationName')
     acronym = VersionableSerializerField(property_model_name='OrganizationAcronym')
     slug = serializers.CharField()
+
+
+class MonthlyAttendanceSerializer(serializers.Serializer):
+    present = serializers.FloatField(source='value')
+    no_mandate = serializers.FloatField()
+    absent = serializers.SerializerMethodField()
+
+    def get_absent(self, obj):
+        return 100 - obj.value - obj.no_mandate

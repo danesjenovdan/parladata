@@ -14,7 +14,7 @@ from parladata.models.memberships import PersonMembership
 from parladata.models.legislation import Law
 from parladata.models.question import Question
 from parladata.models.speech import Speech
-from parlacards.models import VotingDistance
+from parlacards.models import VotingDistance, PersonMonthlyVoteAttendance
 
 from parlacards.serializers.person import PersonSerializer
 from parlacards.serializers.organization import OrganizationSerializer, MembersSerializer
@@ -33,6 +33,7 @@ from parlacards.serializers.common import (
     ScoreSerializerField,
     CommonPersonSerializer,
     CommonOrganizationSerializer,
+    MonthlyAttendanceSerializer,
 )
 
 #
@@ -56,8 +57,17 @@ class PersonAvgSpeechesPerSessionCardSerializer(PersonScoreCardSerializer):
     results = ScoreSerializerField(property_model_name='PersonAvgSpeechesPerSession')
 
 
-class PersonPresenceOnVotesCardSerializer(PersonScoreCardSerializer):
-    results = ScoreSerializerField(property_model_name='PersonPresenceOnVotes')
+class PersonVoteAttendanceCardSerializer(PersonScoreCardSerializer):
+    results = ScoreSerializerField(property_model_name='PersonVoteAttendance')
+
+
+class PersonMonthlyVoteAttendanceCardSerializer(PersonScoreCardSerializer):
+    def get_results(self, obj):
+        monthly_attendance = PersonMonthlyVoteAttendance.objects.filter(
+            person=obj,
+            timestamp__lte=self.context['date']
+        )
+        return MonthlyAttendanceSerializer(monthly_attendance, many=True).data
 
 
 class PersonNumberOfQuestionsCardSerializer(PersonScoreCardSerializer):
