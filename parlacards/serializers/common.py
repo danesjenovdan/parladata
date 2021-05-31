@@ -166,12 +166,12 @@ class PersonScoreCardSerializer(CardSerializer):
     person = serializers.SerializerMethodField()
 
 
-class OrganizationScoreCardSerializer(CardSerializer):
-    def get_organization(self, obj):
+class GroupScoreCardSerializer(CardSerializer):
+    def get_group(self, obj):
         serializer = CommonOrganizationSerializer(obj, context=self.context)
         return serializer.data
 
-    organization = serializers.SerializerMethodField()
+    group = serializers.SerializerMethodField()
 
 
 class CommonPersonSerializer(CommonSerializer):

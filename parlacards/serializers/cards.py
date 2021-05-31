@@ -29,7 +29,7 @@ from parlacards.serializers.recent_activity import DailyActivitySerializer
 from parlacards.serializers.common import (
     CardSerializer,
     PersonScoreCardSerializer,
-    OrganizationScoreCardSerializer,
+    GroupScoreCardSerializer,
     ScoreSerializerField,
     CommonPersonSerializer,
     CommonOrganizationSerializer,
@@ -64,8 +64,8 @@ class PersonNumberOfQuestionsCardSerializer(PersonScoreCardSerializer):
     results = ScoreSerializerField(property_model_name='PersonNumberOfQuestions')
 
 
-class OrganizationVocabularySizeCardSerializer(OrganizationScoreCardSerializer):
-    results = ScoreSerializerField(property_model_name='OrganizationVocabularySize')
+class GroupVocabularySizeCardSerializer(GroupScoreCardSerializer):
+    results = ScoreSerializerField(property_model_name='GroupVocabularySize')
 
 
 class PersonBallotCardSerializer(PersonScoreCardSerializer):
@@ -281,7 +281,7 @@ class LegislationCardSerializer(CardSerializer):
 #
 # ORGANIZATION
 #
-class OrganizationCardSerializer(CardSerializer):
+class GroupCardSerializer(CardSerializer):
     def get_results(self, obj):
         # obj is the organization
         serializer = OrganizationSerializer(
@@ -291,7 +291,7 @@ class OrganizationCardSerializer(CardSerializer):
         return serializer.data
 
 
-class OrganizationMembersCardSerializer(CardSerializer):
+class GroupMembersCardSerializer(CardSerializer):
     def get_results(self, obj):
         # obj is the organization
         serializer = MembersSerializer(

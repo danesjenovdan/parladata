@@ -13,14 +13,14 @@ from parladata.models.legislation import Law
 
 from parlacards.serializers.cards import (
     PersonCardSerializer,
-    OrganizationMembersCardSerializer,
+    GroupMembersCardSerializer,
     VotersCardSerializer,
     GroupsCardSerializer,
-    OrganizationCardSerializer,
+    GroupCardSerializer,
     SessionsCardSerializer,
     LegislationCardSerializer,
     PersonVocabularySizeCardSerializer,
-    OrganizationVocabularySizeCardSerializer,
+    GroupVocabularySizeCardSerializer,
     PersonBallotCardSerializer,
     PersonQuestionCardSerializer,
     MostVotesInCommonCardSerializer,
@@ -78,20 +78,20 @@ class Voters(CardView):
     card_serializer = VotersCardSerializer
 
 
-class OrganizationInfo(CardView):
+class GroupInfo(CardView):
     """
     Show basic info of organization.
     """
     thing = Organization
-    card_serializer = OrganizationCardSerializer
+    card_serializer = GroupCardSerializer
 
 
-class OrganizationMembers(CardView):
+class GroupMembers(CardView):
     """
     Show organization members.
     """
     thing = Organization
-    card_serializer = OrganizationMembersCardSerializer
+    card_serializer = GroupMembersCardSerializer
 
 
 class ParliamentaryGroups(CardView):
@@ -126,12 +126,12 @@ class VocabularySize(CardView):
     card_serializer = PersonVocabularySizeCardSerializer
 
 
-class OrganizationVocabularySize(CardView):
+class GroupVocabularySize(CardView):
     '''
     An organization's vocabulary size.
     '''
     thing = Organization
-    card_serializer = OrganizationVocabularySizeCardSerializer
+    card_serializer = GroupVocabularySizeCardSerializer
 
 
 class Ballots(CardView):
