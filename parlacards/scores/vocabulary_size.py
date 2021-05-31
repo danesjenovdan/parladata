@@ -96,8 +96,6 @@ def save_group_vocabulary_size(group, playing_field, timestamp=datetime.now()):
             'end_time'
         )
 
-        # set up q objects in a way that fails
-        # if nothing is ORed to it
         q_objects = Q()
 
         for membership in member_memberships:
