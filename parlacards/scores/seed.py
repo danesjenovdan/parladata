@@ -11,7 +11,7 @@ from parlacards.scores.deviation_from_group import save_sparse_people_deviations
 from parlacards.scores.avg_number_of_speeches_per_session import save_sparse_people_avg_number_of_speeches_per_session_between
 from parlacards.scores.number_of_questions import save_sparse_people_number_of_questions_between
 from parlacards.scores.presence import save_sparse_people_presence_on_votes_between
-from parlacards.scores.monthly_presence import save_people_monthly_presence_on_votes
+from parlacards.scores.monthly_presence import save_sparse_people_monthly_presence_on_votes_between
 
 def calculate_sparse_scores(playing_field):
     datetime_to = datetime.now()
@@ -32,5 +32,5 @@ def calculate_sparse_scores(playing_field):
     print('Calculating presence on votes ...')
     save_sparse_people_presence_on_votes_between(playing_field, datetime_from, datetime_to)
     print('Calculating monthly presence on votes ...')
-    save_people_monthly_presence_on_votes(playing_field, datetime_to)
+    save_sparse_people_monthly_presence_on_votes_between(playing_field, datetime_from, datetime_to)
     print('Done.')
