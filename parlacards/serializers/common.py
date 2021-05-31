@@ -47,7 +47,7 @@ class ScoreSerializerField(serializers.Field):
         if isinstance(value, Person):
             score_type = 'person'
         elif isinstance(value, Organization):
-            score_type = 'organization'
+            score_type = 'group'
         else:
             raise Exception(f'You should supply a person or an organization. Instead you supplied {value}.')
 
@@ -128,7 +128,7 @@ class ScoreSerializerField(serializers.Field):
                 context=self.context
             )
 
-        maximum_dict_key = 'mps' if score_type == 'person' else 'organizations'
+        maximum_dict_key = 'mps' if score_type == 'person' else 'groups'
 
         return {
             'score': score,

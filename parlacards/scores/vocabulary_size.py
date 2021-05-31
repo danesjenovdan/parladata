@@ -71,32 +71,32 @@ def save_sparse_people_vocabulary_sizes_between(playing_field, datetime_from=dat
         save_people_vocabulary_sizes(playing_field, timestamp=day)
 
 #
-# ORGANIZATION
+# GROUP
 #
-def save_organization_vocabulary_size(organization, playing_field, timestamp=datetime.now()):
-    members = organization.query_members(timestamp)
+def save_group_vocabulary_size(group, playing_field, timestamp=datetime.now()):
+    members = group.query_members(timestamp)
     speeches = Speech.objects.filter_valid_speeches(timestamp).filter(
         speaker__in=members,
         start_time__lte=timestamp
     ).values_list('content', flat=True)
 
     GroupVocabularySize(
-        organization=organization,
+        group=group,
         value=calculate_vocabulary_size(speeches),
         timestamp=timestamp,
         playing_field=playing_field,
     ).save()
 
-def save_organizations_vocabulary_sizes(playing_field, timestamp=datetime.now()):
-    organizations = playing_field.query_parliamentary_groups(timestamp)
+def save_groups_vocabulary_sizes(playing_field, timestamp=datetime.now()):
+    groups = playing_field.query_parliamentary_groups(timestamp)
 
-    for organization in organizations:
-        save_organization_vocabulary_size(organization, playing_field, timestamp)
+    for group in groups:
+        save_group_vocabulary_size(group, playing_field, timestamp)
 
-def save_organizations_vocabulary_sizes_between(playing_field, datetime_from=datetime.now(), datetime_to=datetime.now()):
+def save_groups_vocabulary_sizes_between(playing_field, datetime_from=datetime.now(), datetime_to=datetime.now()):
     for day in get_dates_between(datetime_from, datetime_to):
-        save_organizations_vocabulary_sizes(playing_field, timestamp=day)
+        save_groups_vocabulary_sizes(playing_field, timestamp=day)
 
-def save_sparse_organizations_vocabulary_sizes_between(playing_field, datetime_from=datetime.now(), datetime_to=datetime.now()):
+def save_sparse_groups_vocabulary_sizes_between(playing_field, datetime_from=datetime.now(), datetime_to=datetime.now()):
     for day in get_fortnights_between(datetime_from, datetime_to):
-        save_organizations_vocabulary_sizes(playing_field, timestamp=day)
+        save_groups_vocabulary_sizes(playing_field, timestamp=day)
