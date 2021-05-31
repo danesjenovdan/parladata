@@ -5,7 +5,7 @@ from string import punctuation
 from parladata.models.person import Person
 from parladata.models.speech import Speech
 
-from parlacards.models import PersonVocabularySize, OrganizationVocabularySize
+from parlacards.models import PersonVocabularySize, GroupVocabularySize
 
 from parlacards.scores.common import get_dates_between, get_fortnights_between
 
@@ -80,7 +80,7 @@ def save_organization_vocabulary_size(organization, playing_field, timestamp=dat
         start_time__lte=timestamp
     ).values_list('content', flat=True)
 
-    OrganizationVocabularySize(
+    GroupVocabularySize(
         organization=organization,
         value=calculate_vocabulary_size(speeches),
         timestamp=timestamp,
