@@ -6,11 +6,11 @@ from django.db.models import Count
 from parladata.models.ballot import Ballot
 from parladata.models.vote import Vote
 
-from parlacards.models import PersonMonthlyPresenceOnVote
+from parlacards.models import PersonMonthlyVoteAttendance
 
 from parlacards.scores.common import get_dates_between, get_fortnights_between
 
-def calculate_person_monthly_presence_on_votes(person, playing_field, timestamp=datetime.now()):
+def calculate_person_monthly_vote_attendance(person, playing_field, timestamp=datetime.now()):
     """
     Returns monthly ballots count of voter
     """
@@ -62,8 +62,8 @@ def calculate_person_monthly_presence_on_votes(person, playing_field, timestamp=
 
     return data
 
-def save_person_monthly_presence_on_votes(person, playing_field, timestamp=datetime.now()):
-    monthly_results = calculate_person_monthly_presence_on_votes(person, playing_field, timestamp)
+def save_person_monthly_vote_attendance(person, playing_field, timestamp=datetime.now()):
+    monthly_results = calculate_person_monthly_vote_attendance(person, playing_field, timestamp)
     for result in monthly_results:
         if result['total'] > 0:
             present_count = result['for'] + result['abstain'] + result['against']
@@ -72,7 +72,7 @@ def save_person_monthly_presence_on_votes(person, playing_field, timestamp=datet
             no_mandate = (result['total'] - person_votes_count) * 100 / result['total']
             present = present_count * 100 / result['total']
 
-            score = PersonMonthlyPresenceOnVote.objects.filter(
+            score = PersonMonthlyVoteAttendance.objects.filter(
                 person=person,
                 timestamp=result['timestamp'],
                 playing_field=playing_field
@@ -83,7 +83,7 @@ def save_person_monthly_presence_on_votes(person, playing_field, timestamp=datet
                 score.present=present
                 score.save()
             else:
-                PersonMonthlyPresenceOnVote(
+                PersonMonthlyVoteAttendance(
                     person=person,
                     value=present,
                     no_mandate=no_mandate,
@@ -91,16 +91,16 @@ def save_person_monthly_presence_on_votes(person, playing_field, timestamp=datet
                     playing_field=playing_field,
                 ).save()
 
-def save_people_monthly_presence_on_votes(playing_field, timestamp=datetime.now()):
+def save_people_monthly_vote_attendance(playing_field, timestamp=datetime.now()):
     people = playing_field.query_voters(timestamp)
 
     for person in people:
-        save_person_monthly_presence_on_votes(person, playing_field, timestamp)
+        save_person_monthly_vote_attendance(person, playing_field, timestamp)
 
-def save_people_monthly_presence_on_votes_between(playing_field, datetime_from=datetime.now(), datetime_to=datetime.now()):
+def save_people_monthly_vote_attendance_between(playing_field, datetime_from=datetime.now(), datetime_to=datetime.now()):
     for day in get_dates_between(datetime_from, datetime_to):
-        save_people_monthly_presence_on_votes(playing_field, timestamp=day)
+        save_people_monthly_vote_attendance(playing_field, timestamp=day)
 
-def save_sparse_people_monthly_presence_on_votes_between(playing_field, datetime_from=datetime.now(), datetime_to=datetime.now()):
+def save_sparse_people_monthly_vote_attendance_between(playing_field, datetime_from=datetime.now(), datetime_to=datetime.now()):
     for day in get_fortnights_between(datetime_from, datetime_to):
-        save_people_monthly_presence_on_votes(playing_field, timestamp=day)
+        save_people_monthly_vote_attendance(playing_field, timestamp=day)

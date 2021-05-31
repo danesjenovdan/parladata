@@ -22,7 +22,7 @@ urlpatterns = [
     path('person/deviation-from-group/', DeviationFromGroup.as_view()),
     path('person/average-number-of-speeches-per-session/', PersonAvgSpeechesPerSession.as_view()),
     path('person/number-of-questions/', PersonNumberOfQuestions.as_view()),
-    path('person/presence-on-votes/', PersonPresenceOnVotes.as_view()),
+    path('person/vote-attendance/', PersonVoteAttendance.as_view()),
     path('person/recent-activity/', RecentActivity.as_view()),
-    path('person/monthly-presence-on-votes/', PersonMonthlyPresenceOnVotes.as_view()),
+    path('person/monthly-vote-attendance/', PersonMonthlyVoteAttendance.as_view()),
 ]

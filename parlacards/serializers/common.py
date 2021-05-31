@@ -199,7 +199,7 @@ class CommonOrganizationSerializer(CommonSerializer):
     slug = serializers.CharField()
 
 
-class MonthlyPresenceSerializer(serializers.Serializer):
+class MonthlyAttendanceSerializer(serializers.Serializer):
     present = serializers.FloatField(source='value')
     no_mandate = serializers.FloatField()
     absent = serializers.SerializerMethodField()

@@ -10,8 +10,8 @@ from parlacards.scores.voting_distance import save_sparse_voting_distances_betwe
 from parlacards.scores.deviation_from_group import save_sparse_people_deviations_from_group_between
 from parlacards.scores.avg_number_of_speeches_per_session import save_sparse_people_avg_number_of_speeches_per_session_between
 from parlacards.scores.number_of_questions import save_sparse_people_number_of_questions_between
-from parlacards.scores.presence import save_sparse_people_presence_on_votes_between
-from parlacards.scores.monthly_presence import save_sparse_people_monthly_presence_on_votes_between
+from parlacards.scores.attendance import save_sparse_people_vote_attendance_between
+from parlacards.scores.monthly_attendance import save_sparse_people_monthly_vote_attendance_between
 
 def calculate_sparse_scores(playing_field):
     datetime_to = datetime.now()
@@ -29,8 +29,8 @@ def calculate_sparse_scores(playing_field):
     save_sparse_people_avg_number_of_speeches_per_session_between(playing_field, datetime_from, datetime_to)
     print('Calculating number of questions ...')
     save_sparse_people_number_of_questions_between(playing_field, datetime_from, datetime_to)
-    print('Calculating presence on votes ...')
-    save_sparse_people_presence_on_votes_between(playing_field, datetime_from, datetime_to)
-    print('Calculating monthly presence on votes ...')
-    save_sparse_people_monthly_presence_on_votes_between(playing_field, datetime_from, datetime_to)
+    print('Calculating vote attendance ...')
+    save_sparse_people_vote_attendance_between(playing_field, datetime_from, datetime_to)
+    print('Calculating monthly vote attendance ...')
+    save_sparse_people_monthly_vote_attendance_between(playing_field, datetime_from, datetime_to)
     print('Done.')
