@@ -2,6 +2,8 @@ from collections import Counter
 from datetime import datetime
 from string import punctuation
 
+from django.db.models import Q
+
 from parladata.models.person import Person
 from parladata.models.speech import Speech
 
@@ -74,11 +76,44 @@ def save_sparse_people_vocabulary_sizes_between(playing_field, datetime_from=dat
 # GROUP
 #
 def save_group_vocabulary_size(group, playing_field, timestamp=datetime.now()):
-    members = group.query_members(timestamp)
-    speeches = Speech.objects.filter_valid_speeches(timestamp).filter(
-        speaker__in=members,
-        start_time__lte=timestamp
-    ).values_list('content', flat=True)
+    member_ids = group.query_members(timestamp).values_list('id', flat=True)
+    memberships = group.query_memberships_before(timestamp)
+
+    speeches = Speech.objects.none()
+
+    for member_id in member_ids:
+        member_speeches = Speech.objects.filter_valid_speeches(
+            timestamp
+        ).filter(
+            speaker__id=member_id,
+            start_time__lte=timestamp,
+        )
+
+        member_memberships = memberships.filter(
+            member__id=member_id
+        ).values(
+            'start_time',
+            'end_time'
+        )
+
+        # set up q objects in a way that fails
+        # if nothing is ORed to it
+        q_objects = Q()
+
+        for membership in member_memberships:
+            q_params = {}
+            if membership['start_time']:
+                q_params['start_time__gte'] = membership['start_time']
+            if membership['end_time']:
+                q_params['start_time__lte'] = membership['end_time']
+            q_objects.add(
+                Q(**q_params),
+                Q.OR
+            )
+        member_speeches.filter(q_objects)
+        speeches.union(member_speeches)
+
+    speech_contents = speeches.values_list('content', flat=True)
 
     GroupVocabularySize(
         group=group,

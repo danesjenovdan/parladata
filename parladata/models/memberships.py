@@ -45,10 +45,16 @@ class PersonMembership(Membership):
                                      help_text=_('The organization on whose behalf the person is a party to the relationship'))
 
     @staticmethod
-    def valid_at(date):
+    def valid_at(timestamp):
         return PersonMembership.objects.filter(
-            models.Q(start_time__lte=date) | models.Q(start_time__isnull=True),
-            models.Q(end_time__gte=date) | models.Q(end_time__isnull=True),
+            models.Q(start_time__lte=timestamp) | models.Q(start_time__isnull=True),
+            models.Q(end_time__gte=timestamp) | models.Q(end_time__isnull=True),
+        )
+    
+    @staticmethod
+    def valid_before(timestamp):
+        return PersonMembership.objects.filter(
+            models.Q(start_time__lte=timestamp) | models.Q(start_time__isnull=True)
         )
 
 
