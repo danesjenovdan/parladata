@@ -31,7 +31,7 @@ def calculate_style_score(speeches, styled_lemmas):
         # TODO what if there is no lemmatized_content
         if not speech:
             raise ValueError('Lemmatized speech is missing.')
-        for token in lemmatize_many(tokenize(remove_punctuation(speech.strip().lower()))):
+        for token in speech.strip().lower().split(' '):
             word_counter[token] += 1
             if token in styled_lemmas:
                 styled_words_counter[token] += 1

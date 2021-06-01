@@ -53,7 +53,7 @@ class Speech(Versionable, Timestampable):
             [lemmatized_token for lemmatized_token in lemmatize_many(
                 tokenize(
                     remove_punctuation(
-                        self.content.strip().lower()
+                        self.content.strip()
                     )
                 )
             )]
