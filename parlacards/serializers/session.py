@@ -4,7 +4,7 @@ from parlacards.serializers.common import CommonSerializer, CommonOrganizationSe
 
 class SessionSerializer(CommonSerializer):
     name = serializers.CharField()
-    gov_id = serializers.CharField()
+    id = serializers.IntegerField()
     start_time = serializers.DateTimeField()
     end_time = serializers.DateTimeField()
     organizations = CommonOrganizationSerializer(many=True)
