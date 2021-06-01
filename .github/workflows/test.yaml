@@ -34,6 +34,10 @@ jobs:
       env:
         DJANGO_SETTINGS_MODULE: parladata_project.settings.k8s
       run: python manage.py migrate
+    - name: Load data
+      env:
+        DJANGO_SETTINGS_MODULE: parladata_project.settings.k8s
+      run: python manage.py loaddata tests/fixtures/test_db.json
     - name: Test with pytest
       env:
         DJANGO_SETTINGS_MODULE: parladata_project.settings.k8s
