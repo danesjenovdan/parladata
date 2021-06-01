@@ -13,19 +13,19 @@ def django_db_setup(django_db_setup, django_db_blocker):
 @pytest.fixture(scope='session')
 def main_org(django_db_blocker):
     with django_db_blocker.unblock():
-        return Organization.objects.first()
+        return Organization.objects.order_by('id').first()
 
 @pytest.fixture(scope='session')
 def first_person(main_org, django_db_blocker):
     with django_db_blocker.unblock():
-        return main_org.query_voters().first()
+        return main_org.query_voters().order_by('id').first()
 
 @pytest.fixture(scope='session')
 def second_person(main_org, django_db_blocker):
     with django_db_blocker.unblock():
-        return main_org.query_voters()[2]
+        return main_org.query_voters().order_by('id')[2]
 
 @pytest.fixture(scope='session')
 def last_person(main_org, django_db_blocker):
     with django_db_blocker.unblock():
-        return main_org.query_voters().last()
+        return main_org.query_voters().order_by('id').last()
