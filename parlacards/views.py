@@ -235,7 +235,7 @@ class GroupMonthlyVoteAttendance(CardView):
 
 class GroupNumberOfQuestions(CardView):
     '''
-    A group's monthly presence on votes.
+    A group's number of questions.
     '''
     thing = Organization
     card_serializer = GroupNumberOfQuestionsCardSerializer
