@@ -319,3 +319,7 @@ class GroupMonthlyVoteAttendanceCardSerializer(GroupScoreCardSerializer):
             timestamp__lte=self.context['date']
         )
         return MonthlyAttendanceSerializer(monthly_attendance, many=True).data
+
+
+class GroupNumberOfQuestionsCardSerializer(GroupScoreCardSerializer):
+    results = ScoreSerializerField(property_model_name='GroupNumberOfQuestions')

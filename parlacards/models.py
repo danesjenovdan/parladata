@@ -79,5 +79,9 @@ class GroupMonthlyVoteAttendance(GroupScore):
     no_mandate = models.FloatField(blank=False, null=False)
 
 
+class GroupNumberOfQuestions(GroupScore):
+    pass
+
+
 class PersonVoteAttendance(PersonScore):
     pass
