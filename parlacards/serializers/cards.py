@@ -66,7 +66,7 @@ class PersonMonthlyVoteAttendanceCardSerializer(PersonScoreCardSerializer):
         monthly_attendance = PersonMonthlyVoteAttendance.objects.filter(
             person=obj,
             timestamp__lte=self.context['date']
-        )
+        ).order_by('timestamp')
         return MonthlyAttendanceSerializer(monthly_attendance, many=True).data
 
 
@@ -317,5 +317,5 @@ class GroupMonthlyVoteAttendanceCardSerializer(GroupScoreCardSerializer):
         monthly_attendance = GroupMonthlyVoteAttendance.objects.filter(
             group=obj,
             timestamp__lte=self.context['date']
-        )
+        ).order_by('timestamp')
         return MonthlyAttendanceSerializer(monthly_attendance, many=True).data
