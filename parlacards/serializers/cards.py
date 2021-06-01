@@ -319,3 +319,46 @@ class GroupMonthlyVoteAttendanceCardSerializer(GroupScoreCardSerializer):
             timestamp__lte=self.context['date']
         ).order_by('timestamp')
         return MonthlyAttendanceSerializer(monthly_attendance, many=True).data
+
+
+class GroupNumberOfQuestionsCardSerializer(GroupScoreCardSerializer):
+    results = ScoreSerializerField(property_model_name='GroupNumberOfQuestions')
+
+
+class GroupQuestionCardSerializer(GroupScoreCardSerializer):
+    def get_results(self, obj):
+        # obj is the group
+        timestamp = self.context['date']
+        member_ids = obj.query_members(timestamp).values_list('id', flat=True)
+        memberships = obj.query_memberships_before(timestamp)
+
+        questions = Question.objects.none()
+
+        for member_id in member_ids:
+            member_questions = Question.objects.filter(
+                timestamp__lte=timestamp,
+                authors__id=member_id,
+            )
+
+            member_memberships = memberships.filter(
+                member__id=member_id
+            ).values(
+                'start_time',
+                'end_time'
+            )
+            q_objects = Q()
+            for membership in member_memberships:
+                q_params = {}
+                if membership['start_time']:
+                    q_params['timestamp__gte'] = membership['start_time']
+                if membership['end_time']:
+                    q_params['timestamp__lte'] = membership['end_time']
+                q_objects.add(
+                    Q(**q_params),
+                    Q.OR
+                )
+
+            questions = questions.union(member_questions.filter(q_objects))
+
+        question_serializer = QuestionSerializer(questions, context=self.context, many=True)
+        return question_serializer.data

@@ -33,6 +33,8 @@ from parlacards.serializers.cards import (
     RecentActivityCardSerializer,
     PersonMonthlyVoteAttendanceCardSerializer,
     GroupMonthlyVoteAttendanceCardSerializer,
+    GroupNumberOfQuestionsCardSerializer,
+    GroupQuestionCardSerializer,
 )
 
 class CardView(APIView):
@@ -223,6 +225,7 @@ class RecentActivity(CardView):
     thing = Person
     card_serializer = RecentActivityCardSerializer
 
+
 class GroupMonthlyVoteAttendance(CardView):
     '''
     A group's monthly presence on votes.
@@ -231,3 +234,17 @@ class GroupMonthlyVoteAttendance(CardView):
     card_serializer = GroupMonthlyVoteAttendanceCardSerializer
 
 
+class GroupNumberOfQuestions(CardView):
+    '''
+    A group's number of questions.
+    '''
+    thing = Organization
+    card_serializer = GroupNumberOfQuestionsCardSerializer
+
+
+class GroupQuestions(CardView):
+    '''
+    A group's questions.
+    '''
+    thing = Organization
+    card_serializer = GroupQuestionCardSerializer

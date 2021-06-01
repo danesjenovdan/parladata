@@ -1,0 +1,19 @@
+import pytest
+
+from parlacards.scores.deviation_from_group import calculate_deviation_from_group
+
+@pytest.mark.django_db
+def test_calculate_deviation_from_group(
+    first_person,
+    second_person,
+    last_person,
+    main_org
+):
+    deviation = calculate_deviation_from_group(first_person, main_org)
+    assert deviation == 100.0
+
+    deviation = calculate_deviation_from_group(second_person, main_org)
+    assert deviation == 61.53846153846154
+
+    deviation = calculate_deviation_from_group(last_person, main_org)
+    assert deviation == 3.8461538461538463

@@ -26,3 +26,5 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: parladata
+    ports:
+      - 5432:5432

@@ -21,4 +21,6 @@ slugify
 django-storages
 Pillow
 pytest
+pytest-django
+pytest-cov
 drf-spectacular
