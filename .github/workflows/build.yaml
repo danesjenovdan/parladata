@@ -11,11 +11,9 @@ jobs:
       -
         name: Check out the repo
         uses: actions/checkout@v2
-        with:
-          lfs: true
       -
-        name: Pull LFS objects
-        run: git lfs pull
+        name: Unzip models
+        run: unzip tagger/model.zip -d tagger/
       -
         name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
