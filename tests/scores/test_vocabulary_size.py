@@ -17,23 +17,23 @@ def test_calculate_vocabulary_size(
     first_person_speeches = Speech.objects.filter_valid_speeches(timestamp).filter(
         speaker=first_person,
         start_time__lte=timestamp
-    ).values_list('content', flat=True)
+    ).values_list('lemmatized_content', flat=True)
 
     second_person_speeches = Speech.objects.filter_valid_speeches(timestamp).filter(
         speaker=second_person,
         start_time__lte=timestamp
-    ).values_list('content', flat=True)
+    ).values_list('lemmatized_content', flat=True)
 
     last_person_speeches = Speech.objects.filter_valid_speeches(timestamp).filter(
         speaker=last_person,
         start_time__lte=timestamp
-    ).values_list('content', flat=True)
+    ).values_list('lemmatized_content', flat=True)
 
     vocabulary_size = calculate_vocabulary_size(first_person_speeches)
     assert vocabulary_size == 0
 
     vocabulary_size = calculate_vocabulary_size(second_person_speeches)
-    assert vocabulary_size == 0.054439616299089943
+    assert vocabulary_size == 0.01550261096605744
 
-    vocabulary_size = calculate_vocabulary_size(second_person_speeches)
-    assert vocabulary_size == 0.054439616299089943
+    vocabulary_size = calculate_vocabulary_size(last_person_speeches)
+    assert vocabulary_size == 0.2112676056338028
