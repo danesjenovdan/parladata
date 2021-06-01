@@ -28,4 +28,5 @@ urlpatterns = [
     path('group/vocabulary-size/', GroupVocabularySize.as_view()),
     path('group/number-of-questions/', GroupNumberOfQuestions.as_view()),
     path('group/monthly-vote-attendance/', GroupMonthlyVoteAttendance.as_view()),
+    path('group/questions/', GroupQuestions.as_view()),
 ]
