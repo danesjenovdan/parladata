@@ -24,5 +24,3 @@ router.register(r'organization-memberships', OrganizationMembershipsViewSet)
 urlpatterns = [
     url(r'^', include(router.urls)),
 ]
-
-
