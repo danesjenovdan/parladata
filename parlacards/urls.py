@@ -7,13 +7,10 @@ from parlacards.views import *
 urlpatterns = [
     path('person/basic-information/', PersonInfo.as_view()),
     path('misc/members/', Voters.as_view()),
-    path('group/basic-information/', GroupInfo.as_view()),
-    path('group/members/', GroupMembers.as_view()),
     path('misc/groups/', ParliamentaryGroups.as_view()),
     path('misc/sessions/', Sessions.as_view()),
     path('misc/legislation/', Legislation.as_view()),
     path('person/vocabulary-size/', VocabularySize.as_view()),
-    path('group/vocabulary-size/', GroupVocabularySize.as_view()),
     path('person/votes/', Ballots.as_view()),
     path('person/questions/', Questions.as_view()),
     path('person/memberships/', PersonMembership.as_view()),
@@ -25,4 +22,9 @@ urlpatterns = [
     path('person/vote-attendance/', PersonVoteAttendance.as_view()),
     path('person/recent-activity/', RecentActivity.as_view()),
     path('person/monthly-vote-attendance/', PersonMonthlyVoteAttendance.as_view()),
+
+    path('group/basic-information/', GroupInfo.as_view()),
+    path('group/members/', GroupMembers.as_view()),
+    path('group/vocabulary-size/', GroupVocabularySize.as_view()),
+    path('group/monthly-vote-attendance/', GroupMonthlyVoteAttendance.as_view()),
 ]

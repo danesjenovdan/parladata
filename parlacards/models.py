@@ -32,7 +32,7 @@ class PersonScore(Score):
 class GroupScore(Score):
     group = models.ForeignKey(
         'parladata.Organization',
-        related_name='scores',
+        related_name="%(class)s_related",
         on_delete=models.CASCADE
     )
 
@@ -72,6 +72,10 @@ class PersonNumberOfQuestions(PersonScore):
 
 
 class PersonMonthlyVoteAttendance(PersonScore):
+    no_mandate = models.FloatField(blank=False, null=False)
+
+
+class GroupMonthlyVoteAttendance(GroupScore):
     no_mandate = models.FloatField(blank=False, null=False)
 
 

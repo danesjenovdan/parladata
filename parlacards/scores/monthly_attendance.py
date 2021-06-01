@@ -1,12 +1,12 @@
 from datetime import datetime
 
 from django.db.models.functions import TruncMonth
-from django.db.models import Count
+from django.db.models import Count, Q
 
 from parladata.models.ballot import Ballot
 from parladata.models.vote import Vote
 
-from parlacards.models import PersonMonthlyVoteAttendance
+from parlacards.models import PersonMonthlyVoteAttendance, GroupMonthlyVoteAttendance
 
 from parlacards.scores.common import get_dates_between, get_fortnights_between
 
@@ -104,3 +104,106 @@ def save_people_monthly_vote_attendance_between(playing_field, datetime_from=dat
 def save_sparse_people_monthly_vote_attendance_between(playing_field, datetime_from=datetime.now(), datetime_to=datetime.now()):
     for day in get_fortnights_between(datetime_from, datetime_to):
         save_people_monthly_vote_attendance(playing_field, timestamp=day)
+
+
+# GROUPS
+
+def calculate_group_monthly_vote_attendance(group, playing_field, timestamp=datetime.now()):
+    """
+    Returns monthly ballots count of voter
+    """
+    member_ids = group.query_members(timestamp).values_list('id', flat=True)
+    memberships = group.query_memberships_before(timestamp)
+
+    ballots = Ballot.objects.none()
+
+    for member_id in member_ids:
+        member_ballots = Ballot.objects.filter(
+            vote__timestamp__lte=timestamp,
+            personvoter__id=member_id,
+        )
+
+        member_memberships = memberships.filter(
+            member__id=member_id
+        ).values(
+            'start_time',
+            'end_time'
+        )
+        q_objects = Q()
+        for membership in member_memberships:
+            q_params = {}
+            if membership['start_time']:
+                q_params['vote__timestamp__gte'] = membership['start_time']
+            if membership['end_time']:
+                q_params['vote__timestamp__lte'] = membership['end_time']
+            q_objects.add(
+                Q(**q_params),
+                Q.OR
+            )
+
+        all_valid_ballots = ballots.union(member_ballots.filter(q_objects))
+
+        annotated_ballots = all_valid_ballots.annotate(
+            month=TruncMonth('vote__timestamp')
+        ).values(
+            'month',
+            'option'
+        ).annotate(
+            ballot_count=Count('option')
+        ).order_by(
+            'month'
+        )
+    data = {}
+    for annotated_ballot in annotated_ballots:
+        if not annotated_ballot['month'].isoformat() in data.keys():
+            data[annotated_ballot['month'].isoformat()] = {
+                'absent': 0,
+                'abstain': 0,
+                'for': 0,
+                'against': 0,
+            }
+        data[annotated_ballot['month'].isoformat()][annotated_ballot['option']] = annotated_ballot['ballot_count']
+
+    return data
+
+def save_group_monthly_vote_attendance(group, playing_field, timestamp=datetime.now()):
+    monthly_results = calculate_group_monthly_vote_attendance(group, playing_field, timestamp)
+    for month, result in monthly_results.items():
+        present_count = result['for'] + result['abstain'] + result['against']
+        group_votes_count = present_count + result['absent']
+
+        no_mandate = 0
+        present = present_count * 100 / group_votes_count
+
+        score = GroupMonthlyVoteAttendance.objects.filter(
+            group=group,
+            timestamp=month,
+            playing_field=playing_field
+        ).first()
+
+        if score:
+            score.no_mandate=no_mandate
+            score.present=present
+            score.save()
+        else:
+            GroupMonthlyVoteAttendance(
+                group=group,
+                value=present,
+                no_mandate=no_mandate,
+                timestamp=month,
+                playing_field=playing_field,
+            ).save()
+
+def save_groups_monthly_vote_attendance(playing_field, timestamp=datetime.now()):
+    groups = playing_field.query_parliamentary_groups(timestamp)
+
+    for group in groups:
+        save_group_monthly_vote_attendance(group, playing_field, timestamp)
+
+def save_groups_monthly_vote_attendance_between(playing_field, datetime_from=datetime.now(), datetime_to=datetime.now()):
+    for day in get_dates_between(datetime_from, datetime_to):
+        save_groups_monthly_vote_attendance(playing_field, timestamp=day)
+
+def save_sparse_groups_monthly_vote_attendance_between(playing_field, datetime_from=datetime.now(), datetime_to=datetime.now()):
+    for day in get_fortnights_between(datetime_from, datetime_to):
+        save_groups_monthly_vote_attendance(playing_field, timestamp=day)
