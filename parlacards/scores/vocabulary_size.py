@@ -28,7 +28,7 @@ def calculate_vocabulary_size(speeches):
         # TODO what if there is no lemmatized_content
         if not speech:
             raise ValueError('Lemmatized speech is missing.')
-        for lemmatized_token in lemmatize_many(tokenize(remove_punctuation(speech.strip().lower()))):
+        for lemmatized_token in speech.strip().lower().split(' '):
             word_counter[lemmatized_token] += 1
 
     number_of_unique_words = len(word_counter.keys())

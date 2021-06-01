@@ -18,7 +18,8 @@ class Lemmatiser:
                   'lexicon': pickle.load(open('tagger/sl.lexicon', 'rb'), encoding="bytes")}
 
     def __init__(self):
-        print('Tagger initialised.')
+        # print('Tagger initialised.')
+        pass
 
     def tag_sent(self, sent):
         return self.tagger.tag(extract_features_msd(sent, self.trie))
