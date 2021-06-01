@@ -20,7 +20,7 @@ jobs:
         uses: actions/checkout@v2
       -
         name: Unzip models
-        run: unzip tagger/model.zip -d tagger/
+        run: unzip -o tagger/model.zip -d tagger/
       -
         name: Set up PostgreSQL
         uses: harmon758/postgresql-action@v1
