@@ -108,14 +108,14 @@ def save_group_vocabulary_size(group, playing_field, timestamp=datetime.now()):
                 Q(**q_params),
                 Q.OR
             )
-        member_speeches.filter(q_objects)
-        speeches.union(member_speeches)
+
+        speeches = speeches.union(member_speeches.filter(q_objects))
 
     speech_contents = speeches.values_list('content', flat=True)
 
     GroupVocabularySize(
         group=group,
-        value=calculate_vocabulary_size(speeches),
+        value=calculate_vocabulary_size(speech_contents),
         timestamp=timestamp,
         playing_field=playing_field,
     ).save()
