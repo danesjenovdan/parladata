@@ -14,7 +14,7 @@ from parladata.models.memberships import PersonMembership
 from parladata.models.legislation import Law
 from parladata.models.question import Question
 from parladata.models.speech import Speech
-from parlacards.models import VotingDistance, PersonMonthlyVoteAttendance
+from parlacards.models import VotingDistance, PersonMonthlyVoteAttendance, GroupMonthlyVoteAttendance
 
 from parlacards.serializers.person import PersonSerializer
 from parlacards.serializers.organization import OrganizationSerializer, MembersSerializer
@@ -293,7 +293,7 @@ class LegislationCardSerializer(CardSerializer):
 #
 class GroupCardSerializer(CardSerializer):
     def get_results(self, obj):
-        # obj is the organization
+        # obj is the group
         serializer = OrganizationSerializer(
             obj,
             context=self.context
@@ -303,9 +303,19 @@ class GroupCardSerializer(CardSerializer):
 
 class GroupMembersCardSerializer(CardSerializer):
     def get_results(self, obj):
-        # obj is the organization
+        # obj is the group
         serializer = MembersSerializer(
             obj,
             context=self.context
         )
         return serializer.data
+
+
+class GroupMonthlyVoteAttendanceCardSerializer(GroupScoreCardSerializer):
+    def get_results(self, obj):
+        # obj is the group
+        monthly_attendance = GroupMonthlyVoteAttendance.objects.filter(
+            group=obj,
+            timestamp__lte=self.context['date']
+        )
+        return MonthlyAttendanceSerializer(monthly_attendance, many=True).data
