@@ -24,6 +24,7 @@ urlpatterns = [
     path('person/monthly-vote-attendance/', PersonMonthlyVoteAttendance.as_view()),
     path('person/style-scores/', PersonStyleScores.as_view()),
     path('person/number-of-spoken-words/', PersonNumberOfSpokenWords.as_view()),
+    path('person/tfidf/', PersonTfidfView.as_view()),
 
     path('group/basic-information/', GroupInfo.as_view()),
     path('group/members/', GroupMembers.as_view()),

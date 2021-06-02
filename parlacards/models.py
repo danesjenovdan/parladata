@@ -95,3 +95,10 @@ class PersonStyleScore(PersonScore):
 
 class PersonNumberOfSpokenWords(PersonScore):
     pass
+
+
+class PersonTfidf(PersonScore):
+    token = models.TextField(
+        blank=False,
+        null=False
+    )
