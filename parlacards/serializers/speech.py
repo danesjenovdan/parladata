@@ -2,7 +2,7 @@ from rest_framework import serializers
 
 from parlacards.serializers.session import SessionSerializer
 
-from parlacards.serializers.common import CommonSerializer
+from parlacards.serializers.common import CommonSerializer, CommonPersonSerializer
 
 class SpeechSerializer(CommonSerializer):
     def get_the_order(self, obj):
@@ -31,3 +31,4 @@ class SpeechSerializer(CommonSerializer):
     start_idx = serializers.SerializerMethodField()
     end_idx = serializers.SerializerMethodField()
     quote_id = serializers.SerializerMethodField()
+    person = CommonPersonSerializer(source='speaker')
