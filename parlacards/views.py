@@ -303,7 +303,7 @@ class SessionSpeeches(APIView):
         )
 
         page = request.GET.get('page', 1)
-        per_page = request.GET.get('per_page', 150)
+        per_page = request.GET.get('per_page', 10)
 
         paginator = Paginator(speeches, per_page)
         paged_speeches = paginator.page(page)
