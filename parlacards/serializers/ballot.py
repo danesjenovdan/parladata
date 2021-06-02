@@ -7,14 +7,20 @@ from parlacards.serializers.common import CommonSerializer
 
 class BallotSerializer(CommonSerializer):
     def get_motion(self, obj):
-        motion_serializer = MotionSerializer(obj.vote.motion)
+        motion_serializer = MotionSerializer(
+            obj.vote.motion,
+            context=self.context
+        )
         return motion_serializer.data
     
     def get_timestamp(self, obj):
         return obj.vote.timestamp
     
     def get_session(self, obj):
-        session_serializer = SessionSerializer(obj.vote.motion.session)
+        session_serializer = SessionSerializer(
+            obj.vote.motion.session,
+            context=self.context
+        )
         return session_serializer.data
 
     motion = serializers.SerializerMethodField()
