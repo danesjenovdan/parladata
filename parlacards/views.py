@@ -36,6 +36,7 @@ from parlacards.serializers.cards import (
     GroupNumberOfQuestionsCardSerializer,
     GroupQuestionCardSerializer,
     StyleScoresCardSerializer,
+    NumberOfSpokenWordsCardSerializer,
 )
 
 class CardView(APIView):
@@ -249,9 +250,19 @@ class GroupQuestions(CardView):
     '''
     thing = Organization
     card_serializer = GroupQuestionCardSerializer
+
+
 class PersonStyleScores(CardView):
     '''
     A person's style scores.
     '''
     thing = Person
     card_serializer = StyleScoresCardSerializer
+
+
+class PersonNumberOfSpokenWords(CardView):
+    '''
+    A person's style scores.
+    '''
+    thing = Person
+    card_serializer = NumberOfSpokenWordsCardSerializer

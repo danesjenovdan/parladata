@@ -91,3 +91,7 @@ class PersonStyleScore(PersonScore):
         blank=False,
         null=False
     )
+
+
+class PersonNumberOfSpokenWords(PersonScore):
+    pass

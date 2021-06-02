@@ -122,12 +122,17 @@ class MostVotesInCommonCardSerializer(PersonScoreCardSerializer):
         ).order_by(
             'target',
             '-timestamp',
-            'value'
+            'value',
         ).distinct(
             'target'
-        )[:5]
+        )
+
+        # sorting in place is slightly more efficient
+        sorted_distances = list(lowest_distances)
+        sorted_distances.sort(key=lambda distance: distance.value, reverse=False)
+
         distances_serializer = VotingDistanceSerializer(
-            lowest_distances,
+            sorted_distances[:5],
             many=True,
             context=self.context
         )
@@ -148,12 +153,17 @@ class LeastVotesInCommonCardSerializer(PersonScoreCardSerializer):
         ).order_by(
             'target',
             '-timestamp',
-            '-value'
+            '-value',
         ).distinct(
             'target'
-        )[:5]
+        )
+
+        # sorting in place is slightly more efficient
+        sorted_distances = list(highest_distances)
+        sorted_distances.sort(key=lambda distance: distance.value, reverse=True)
+
         distances_serializer = VotingDistanceSerializer(
-            highest_distances,
+            sorted_distances[:5],
             many=True,
             context=self.context
         )
@@ -242,6 +252,9 @@ class StyleScoresCardSerializer(PersonScoreCardSerializer):
         # obj is person
         serializer = StyleScoresSerializer(obj, context=self.context)
         return serializer.data
+
+class NumberOfSpokenWordsCardSerializer(PersonScoreCardSerializer):
+    results = ScoreSerializerField(property_model_name='PersonNumberOfSpokenWords')
 
 #
 # MISC

@@ -11,21 +11,21 @@ def django_db_setup(django_db_setup, django_db_blocker):
         call_command('loaddata', 'tests/fixtures/test_db.json')
 
 @pytest.fixture(scope='session')
-def main_org(django_db_blocker):
+def main_organization(django_db_blocker):
     with django_db_blocker.unblock():
         return Organization.objects.order_by('id').first()
 
 @pytest.fixture(scope='session')
-def first_person(main_org, django_db_blocker):
+def first_person(main_organization, django_db_blocker):
     with django_db_blocker.unblock():
-        return main_org.query_voters().order_by('id').first()
+        return main_organization.query_voters().order_by('id').first()
 
 @pytest.fixture(scope='session')
-def second_person(main_org, django_db_blocker):
+def second_person(main_organization, django_db_blocker):
     with django_db_blocker.unblock():
-        return main_org.query_voters().order_by('id')[2]
+        return main_organization.query_voters().order_by('id')[2]
 
 @pytest.fixture(scope='session')
-def last_person(main_org, django_db_blocker):
+def last_person(main_organization, django_db_blocker):
     with django_db_blocker.unblock():
-        return main_org.query_voters().order_by('id').last()
+        return main_organization.query_voters().order_by('id').last()
