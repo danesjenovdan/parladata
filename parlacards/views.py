@@ -320,11 +320,11 @@ class SessionSpeeches(APIView):
         })
 
 
-class Speech(CardView):
+class SingleSpeech(CardView):
     thing = Speech
     card_serializer = SpeechCardSerializer
 
 
-class Vote(CardView):
+class SingleVote(CardView):
     thing = Vote
     card_serializer = VoteCardSerializer

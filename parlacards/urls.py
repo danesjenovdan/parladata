@@ -35,7 +35,7 @@ urlpatterns = [
     path('session/legislation/', SessionLegislation.as_view()),
     path('session/speeches/', SessionSpeeches.as_view()),
 
-    path('speech/single/', Speech.as_view()),
+    path('speech/single/', SingleSpeech.as_view()),
 
-    path('vote/single/', Vote.as_view()),
+    path('vote/single/', SingleVote.as_view()),
 ]
