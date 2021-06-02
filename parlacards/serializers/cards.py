@@ -88,7 +88,11 @@ class PersonBallotCardSerializer(PersonScoreCardSerializer):
             personvoter=obj,
             vote__timestamp__lte=self.context['date']
         )
-        ballot_serializer = BallotSerializer(ballots, many=True)
+        ballot_serializer = BallotSerializer(
+            ballots,
+            many=True,
+            context=self.context
+        )
         return ballot_serializer.data
 
 
