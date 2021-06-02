@@ -26,6 +26,8 @@ from parlacards.serializers.voting_distance import VotingDistanceSerializer
 from parlacards.serializers.membership import MembershipSerializer
 from parlacards.serializers.recent_activity import DailyActivitySerializer
 from parlacards.serializers.style_scores import StyleScoresSerializer
+from parlacards.serializers.speech import SpeechSerializer
+from parlacards.serializers.vote import VoteSerializer
 
 from parlacards.serializers.common import (
     CardSerializer,
@@ -407,3 +409,23 @@ class SessionLegislationCardSerializer(CardSerializer):
         return serializer.data
 
     session = serializers.SerializerMethodField()
+
+
+class SpeechCardSerializer(CardSerializer):
+    def get_results(self, obj):
+        # obj is the speech
+        serializer = SpeechSerializer(
+            obj,
+            context=self.context
+        )
+        return serializer.data
+
+
+class VoteCardSerializer(CardSerializer):
+    def get_results(self, obj):
+        # obj is the vote
+        serializer = VoteSerializer(
+            obj,
+            context=self.context
+        )
+        return serializer.data
