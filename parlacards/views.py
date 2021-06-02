@@ -317,6 +317,10 @@ class SessionSpeeches(APIView):
         return Response({
             'session': session_serializer.data,
             'results': speeches_serializer.data,
+            'count': paginator.count,
+            'pages': paginator.num_pages,
+            'page': page,
+            'per_page': paginator.per_page
         })
 
 
