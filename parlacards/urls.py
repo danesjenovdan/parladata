@@ -33,4 +33,5 @@ urlpatterns = [
     path('group/questions/', GroupQuestions.as_view()),
 
     path('session/legislation/', SessionLegislation.as_view()),
+    path('session/speeches/', SessionSpeeches.as_view()),
 ]

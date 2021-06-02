@@ -1,6 +1,7 @@
 from datetime import datetime
 
 from django.db.models import Q
+from django.core.paginator import Paginator
 
 from rest_framework import status
 from rest_framework.response import Response
@@ -10,6 +11,7 @@ from parladata.models.person import Person
 from parladata.models.organization import Organization
 from parladata.models.common import Mandate
 from parladata.models.session import Session
+from parladata.models.speech import Speech
 
 from parlacards.serializers.cards import (
     PersonCardSerializer,
@@ -39,6 +41,9 @@ from parlacards.serializers.cards import (
     NumberOfSpokenWordsCardSerializer,
     SessionLegislationCardSerializer,
 )
+
+from parlacards.serializers.speech import SpeechSerializer
+from parlacards.serializers.session import SessionSerializer
 
 class CardView(APIView):
     """
@@ -272,3 +277,41 @@ class PersonNumberOfSpokenWords(CardView):
 class SessionLegislation(CardView):
     thing = Session
     card_serializer = SessionLegislationCardSerializer
+
+
+class SessionSpeeches(APIView):
+    def get(self, request, format=None):
+        # find the session and if no people were found return
+        session = Session.objects.filter(id=request.card_id).first()
+        if not session:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+        
+        # serialize the session
+        session_serializer = SessionSerializer(
+            session,
+            context={'date': request.card_date}
+        )
+
+        speeches = Speech.objects.filter_valid_speeches(request.card_date).filter(
+            session=session
+        ).order_by(
+            'order',
+            'id' # fallback ordering
+        )
+
+        page = request.GET.get('page', 1)
+        per_page = request.GET.get('per_page', 150)
+
+        paginator = Paginator(speeches, per_page)
+        paged_speeches = paginator.page(page)
+        
+        # serialize speeches
+        speeches_serializer = SpeechSerializer(
+            paged_speeches,
+            many=True,
+            context={'date': request.card_date}
+        )
+        return Response({
+            'session': session_serializer.data,
+            'results': speeches_serializer.data,
+        })
