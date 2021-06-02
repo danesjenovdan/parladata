@@ -42,7 +42,8 @@ from parlacards.serializers.cards import (
     NumberOfSpokenWordsCardSerializer,
     SessionLegislationCardSerializer,
     SpeechCardSerializer,
-    VoteCardSerializer
+    VoteCardSerializer,
+    PersonTfidfCardSerializer
 )
 
 from parlacards.serializers.speech import SpeechSerializer
@@ -332,3 +333,8 @@ class SingleSpeech(CardView):
 class SingleVote(CardView):
     thing = Vote
     card_serializer = VoteCardSerializer
+
+
+class PersonTfidfView(CardView):
+    thing = Person
+    card_serializer = PersonTfidfCardSerializer

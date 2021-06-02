@@ -14,7 +14,13 @@ from parladata.models.memberships import PersonMembership
 from parladata.models.legislation import Law
 from parladata.models.question import Question
 from parladata.models.speech import Speech
-from parlacards.models import VotingDistance, PersonMonthlyVoteAttendance, GroupMonthlyVoteAttendance
+
+from parlacards.models import (
+    VotingDistance,
+    PersonMonthlyVoteAttendance,
+    GroupMonthlyVoteAttendance,
+    PersonTfidf
+)
 
 from parlacards.serializers.person import PersonSerializer
 from parlacards.serializers.organization import OrganizationSerializer, MembersSerializer
@@ -28,6 +34,7 @@ from parlacards.serializers.recent_activity import DailyActivitySerializer
 from parlacards.serializers.style_scores import StyleScoresSerializer
 from parlacards.serializers.speech import SpeechSerializer
 from parlacards.serializers.vote import VoteSerializer
+from parlacards.serializers.tfidf import TfidfSerializer
 
 from parlacards.serializers.common import (
     CardSerializer,
@@ -261,6 +268,30 @@ class StyleScoresCardSerializer(PersonScoreCardSerializer):
 
 class NumberOfSpokenWordsCardSerializer(PersonScoreCardSerializer):
     results = ScoreSerializerField(property_model_name='PersonNumberOfSpokenWords')
+
+
+class PersonTfidfCardSerializer(PersonScoreCardSerializer):
+    def get_results(self, obj):
+        # obj is person
+        latest_score = PersonTfidf.objects.filter(
+            person=obj,
+            timestamp__lte=self.context['date'],
+        ).order_by(
+            '-timestamp'
+        ).first()
+
+        tfidf_scores = PersonTfidf.objects.filter(
+            person=obj,
+            timestamp=latest_score.timestamp,
+        )
+        serializer = TfidfSerializer(
+            tfidf_scores,
+            many=True,
+            context=self.context
+        )
+
+        return serializer.data
+
 
 #
 # MISC
