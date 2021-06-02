@@ -253,6 +253,9 @@ class StyleScoresCardSerializer(PersonScoreCardSerializer):
         serializer = StyleScoresSerializer(obj, context=self.context)
         return serializer.data
 
+class NumberOfSpokenWordsCardSerializer(PersonScoreCardSerializer):
+    results = ScoreSerializerField(property_model_name='PersonNumberOfSpokenWords')
+
 #
 # MISC
 #
