@@ -1,3 +1,5 @@
+from django.db.models import Count
+
 from rest_framework import serializers
 
 from parladata.models.person import Person
@@ -8,40 +10,12 @@ from parlacards.serializers.session import SessionSerializer
 from parlacards.serializers.common import CommonSerializer, CommonPersonSerializer, CommonOrganizationSerializer
 
 class VoteBallotSerializer(CommonSerializer):
-    def get_person(self, obj):
-        # obj is the ballot
-        serializer = CommonPersonSerializer(
-            obj.personvoter,
-            context=self.context
-        )
-        return serializer.data
-
-    person = serializers.SerializerMethodField()
+    person = CommonPersonSerializer(source='personvoter')
     outlier = serializers.BooleanField()
     option = serializers.CharField()
 
 
 class VoteGroupSerializer(CommonSerializer):
-    def get_max(self, obj):
-        # obj is group
-        return {
-            "max_opt": "against",
-            "maxOptPerc": 92.0
-        } # TODO this is faked
-
-    def get_votes(self, obj):
-        # obj is group
-        return {
-            'absent': 2,
-            'abstain': 0,
-            'for': 0,
-            'against': 23,
-        } # TODO this is faked
-
-    def get_outliers(self, obj):
-        # obj is group
-        return [] # TODO this is faked
-    
     def get_group(self, obj):
         # obj is group
         serializer = CommonOrganizationSerializer(
@@ -50,9 +24,9 @@ class VoteGroupSerializer(CommonSerializer):
         )
         return serializer.data
 
-    max = serializers.SerializerMethodField()
-    votes = serializers.SerializerMethodField()
-    outliers = serializers.SerializerMethodField()
+    max = serializers.DictField()
+    votes = serializers.DictField()
+    outliers = CommonPersonSerializer(many=True)
     group = serializers.SerializerMethodField()
 
 
@@ -132,6 +106,43 @@ class VoteSerializer(CommonSerializer):
         )
 
         groups = obj.motion.session.organization.query_parliamentary_groups(self.context['date'])
+
+        # add data to groups
+        for group in groups:
+            group_ballots = vote_ballots.filter(
+                # TODO this should be reworked
+                # we need a special function
+                # that finds all members with voting
+                # rights in the playing field on a given date
+                personvoter__in=group.query_members(self.context['date']),
+            )
+            
+            annotated_group_ballots = group_ballots.values(
+                'option'
+            ).annotate(
+                option_count=Count('option')
+            ).order_by('-option_count')
+
+            # set group max dict
+            max_option_percentage = annotated_group_ballots.first()['option_count'] * 100 / sum(annotated_group_ballots.values_list('option_count', flat=True))
+            max_option = annotated_group_ballots.first()['option']
+            group.max = {
+                'max_option_percentage': max_option_percentage,
+                'max_option': max_option
+            }
+
+            # set group votes dict
+            group_votes_params = {
+                option_sum['option']: option_sum['option_count'] for option_sum in annotated_group_ballots
+            }
+            group.votes = {
+                key: group_votes_params.get(key, 0) for key in ['absent', 'abstain', 'for', 'agains']
+            }
+
+            # set group outliers
+            group.outliers = [
+                ballot.personvoter for ballot in group_ballots.exclude(option__in=['absent', max_option])
+            ]
         serializer = VoteGroupSerializer(
             groups,
             many=True,
