@@ -2,7 +2,7 @@ from django.core.management.base import BaseCommand, CommandError
 from parladata.models.speech import Speech
 
 class Command(BaseCommand):
-    help = 'Lemmatizses all speeches'
+    help = 'Lemmatizes all speeches'
 
     def handle(self, *args, **options):
         speeches = Speech.objects.all()
