@@ -9,7 +9,7 @@ from rest_framework.views import APIView
 from parladata.models.person import Person
 from parladata.models.organization import Organization
 from parladata.models.common import Mandate
-from parladata.models.legislation import Law
+from parladata.models.session import Session
 
 from parlacards.serializers.cards import (
     PersonCardSerializer,
@@ -37,6 +37,7 @@ from parlacards.serializers.cards import (
     GroupQuestionCardSerializer,
     StyleScoresCardSerializer,
     NumberOfSpokenWordsCardSerializer,
+    SessionLegislationCardSerializer,
 )
 
 class CardView(APIView):
@@ -266,3 +267,8 @@ class PersonNumberOfSpokenWords(CardView):
     '''
     thing = Person
     card_serializer = NumberOfSpokenWordsCardSerializer
+
+
+class SessionLegislation(CardView):
+    thing = Session
+    card_serializer = SessionLegislationCardSerializer

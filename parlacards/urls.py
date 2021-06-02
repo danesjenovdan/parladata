@@ -31,4 +31,6 @@ urlpatterns = [
     path('group/number-of-questions/', GroupNumberOfQuestions.as_view()),
     path('group/monthly-vote-attendance/', GroupMonthlyVoteAttendance.as_view()),
     path('group/questions/', GroupQuestions.as_view()),
+
+    path('session/legislation/', SessionLegislation.as_view()),
 ]
