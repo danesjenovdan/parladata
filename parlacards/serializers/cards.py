@@ -383,3 +383,27 @@ class GroupQuestionCardSerializer(GroupScoreCardSerializer):
 
         question_serializer = QuestionSerializer(questions, context=self.context, many=True)
         return question_serializer.data
+
+
+class SessionLegislationCardSerializer(CardSerializer):
+    def get_results(self, obj):
+        # obj is the session
+        serializer = LegislationSerializer(
+            Law.objects.filter(
+                Q(datetime__lte=self.context['date']) | Q(datetime__isnull=True),
+                session=obj,
+            ),
+            many=True,
+            context=self.context
+        )
+        return serializer.data
+
+    def get_session(self, obj):
+        # obj is the session
+        serializer = SessionSerializer(
+            obj,
+            context=self.context
+        )
+        return serializer.data
+
+    session = serializers.SerializerMethodField()
