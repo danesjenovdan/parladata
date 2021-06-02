@@ -13,7 +13,8 @@ env = dict(
     DATABASE_PASSWORD=os.getenv('DJANGO_DATABASE_PASSWORD', 'postgres'),
     STATIC_ROOT=os.getenv('DJANGO_STATIC_ROOT', os.path.join(BASE_DIR, '../static')),
     STATIC_URL=os.getenv('DJANGO_STATIC_URL_BASE', '/static/'),
-    MEDIA_ROOT=os.getenv('DJANGO_MEDIA_ROOT', '/media/')
+    MEDIA_ROOT=os.getenv('DJANGO_MEDIA_ROOT', '/media/'),
+    MEDIA_URL=os.getenv('DJANGO_MEDIA_URL_BASE', '/media/'),
 )
 
 
@@ -40,3 +41,6 @@ STATIC_ROOT = env['STATIC_ROOT']
 
 # static files for production
 STATIC_URL = env['STATIC_URL']
+
+MEDIA_ROOT = env['MEDIA_ROOT']
+MEDIA_URL = env['MEDIA_URL']
