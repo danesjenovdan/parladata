@@ -5,11 +5,12 @@ from rest_framework import routers
 from parlacards.views import *
 
 urlpatterns = [
-    path('person/basic-information/', PersonInfo.as_view()),
     path('misc/members/', Voters.as_view()),
     path('misc/groups/', ParliamentaryGroups.as_view()),
     path('misc/sessions/', Sessions.as_view()),
     path('misc/legislation/', Legislation.as_view()),
+
+    path('person/basic-information/', PersonInfo.as_view()),
     path('person/vocabulary-size/', VocabularySize.as_view()),
     path('person/votes/', Ballots.as_view()),
     path('person/questions/', Questions.as_view()),
