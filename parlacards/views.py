@@ -12,6 +12,7 @@ from parladata.models.organization import Organization
 from parladata.models.common import Mandate
 from parladata.models.session import Session
 from parladata.models.speech import Speech
+from parladata.models.vote import Vote
 
 from parlacards.serializers.cards import (
     PersonCardSerializer,
@@ -40,6 +41,8 @@ from parlacards.serializers.cards import (
     StyleScoresCardSerializer,
     NumberOfSpokenWordsCardSerializer,
     SessionLegislationCardSerializer,
+    SpeechCardSerializer,
+    VoteCardSerializer
 )
 
 from parlacards.serializers.speech import SpeechSerializer
@@ -315,3 +318,13 @@ class SessionSpeeches(APIView):
             'session': session_serializer.data,
             'results': speeches_serializer.data,
         })
+
+
+class Speech(CardView):
+    thing = Speech
+    card_serializer = SpeechCardSerializer
+
+
+class Vote(CardView):
+    thing = Vote
+    card_serializer = VoteCardSerializer
