@@ -2,7 +2,9 @@ import pytest
 
 from parlacards.scores.attendance import calculate_person_vote_attendance
 
-@pytest.mark.django_db
+from tests.fixtures.common import *
+
+@pytest.mark.django_db()
 def test_calculate_person_vote_attendance(
     first_person,
     second_person,

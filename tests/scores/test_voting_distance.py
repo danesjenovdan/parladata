@@ -2,7 +2,9 @@ import pytest
 
 from parlacards.scores.voting_distance import calculate_voting_distance
 
-@pytest.mark.django_db
+from tests.fixtures.common import *
+
+@pytest.mark.django_db()
 def test_calculate_voting_distance(
     first_person,
     second_person,

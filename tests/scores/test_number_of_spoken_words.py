@@ -6,7 +6,9 @@ from parladata.models.speech import Speech
 
 from parlacards.scores.number_of_spoken_words import calculate_number_of_spoken_words
 
-@pytest.mark.django_db
+from tests.fixtures.common import *
+
+@pytest.mark.django_db()
 def test_calculate_number_of_spoken_words(
     first_person,
     second_person,

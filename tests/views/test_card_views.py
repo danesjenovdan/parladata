@@ -15,7 +15,7 @@ def get_card_response(url, card_id, card_date=datetime.now()):
 
     return view(request)
 
-@pytest.mark.django_db
+@pytest.mark.django_db()
 def test_misc_views():
     response = get_card_response('/v3/cards/misc/members/', 1)
     assert response.status_code == 200
@@ -29,7 +29,7 @@ def test_misc_views():
     response = get_card_response('/v3/cards/misc/legislation/', 1)
     assert response.status_code == 200
 
-@pytest.mark.django_db
+@pytest.mark.django_db()
 def test_person_views():
     response = get_card_response('/v3/cards/person/basic-information/', 6)
     assert response.status_code == 200
@@ -79,7 +79,7 @@ def test_person_views():
     response = get_card_response('/v3/cards/person/tfidf/', 6)
     assert response.status_code == 200
 
-@pytest.mark.django_db
+@pytest.mark.django_db()
 def test_group_views():
     response = get_card_response('/v3/cards/group/basic-information/', 6)
     assert response.status_code == 200
@@ -99,7 +99,7 @@ def test_group_views():
     response = get_card_response('/v3/cards/group/questions/', 6)
     assert response.status_code == 200
 
-@pytest.mark.django_db
+@pytest.mark.django_db()
 def test_session_views():
     response = get_card_response('/v3/cards/session/legislation/', 1)
     assert response.status_code == 200
@@ -107,7 +107,7 @@ def test_session_views():
     response = get_card_response('/v3/cards/session/speeches/', 1)
     assert response.status_code == 200
 
-@pytest.mark.django_db
+@pytest.mark.django_db()
 def test_single_views():
     response = get_card_response('/v3/cards/speech/single/', 6)
     assert response.status_code == 200
