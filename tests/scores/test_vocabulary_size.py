@@ -6,7 +6,9 @@ from parladata.models.speech import Speech
 
 from parlacards.scores.vocabulary_size import calculate_vocabulary_size
 
-@pytest.mark.django_db
+from tests.fixtures.common import *
+
+@pytest.mark.django_db()
 def test_calculate_vocabulary_size(
     first_person,
     second_person,

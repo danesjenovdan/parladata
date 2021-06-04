@@ -2,7 +2,9 @@ import pytest
 
 from parlacards.scores.tfidf import calculate_people_tfidf
 
-@pytest.mark.django_db
+from tests.fixtures.common import *
+
+@pytest.mark.django_db()
 def test_calculate_people_tfidf(
     main_organization
 ):
