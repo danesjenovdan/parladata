@@ -44,6 +44,9 @@ class PersonMembership(Membership):
                                      related_name='representatives',
                                      help_text=_('The organization on whose behalf the person is a party to the relationship'))
 
+    def __str__(self):
+        return f'{self.role}: {self.member}, Org: {self.organization}, StartTime: {self.start_time}'
+
     @staticmethod
     def valid_at(timestamp):
         return PersonMembership.objects.filter(
