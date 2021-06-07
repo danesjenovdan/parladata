@@ -43,7 +43,8 @@ from parlacards.serializers.cards import (
     SessionLegislationCardSerializer,
     SpeechCardSerializer,
     VoteCardSerializer,
-    PersonTfidfCardSerializer
+    PersonTfidfCardSerializer,
+    GroupAvgSpeechesPerSessionCardSerializer
 )
 
 from parlacards.serializers.speech import SpeechSerializer
@@ -192,7 +193,7 @@ class PersonMembership(CardView):
 
 class PersonAvgSpeechesPerSession(CardView):
     '''
-    A person's averaga number of speeches per session.
+    A person's average number of speeches per session.
     '''
     thing = Person
     card_serializer = PersonAvgSpeechesPerSessionCardSerializer
@@ -260,6 +261,14 @@ class GroupQuestions(CardView):
     '''
     thing = Organization
     card_serializer = GroupQuestionCardSerializer
+
+
+class GroupAvgSpeechesPerSession(CardView):
+    '''
+    A group's average number of speeches per session.
+    '''
+    thing = Organization
+    card_serializer = GroupAvgSpeechesPerSessionCardSerializer
 
 
 class PersonStyleScores(CardView):

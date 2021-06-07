@@ -83,6 +83,10 @@ class GroupNumberOfQuestions(GroupScore):
     pass
 
 
+class GroupAvgSpeechesPerSession(GroupScore):
+    pass
+
+
 class PersonVoteAttendance(PersonScore):
     pass
 
