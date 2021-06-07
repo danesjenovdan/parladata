@@ -383,6 +383,10 @@ class GroupNumberOfQuestionsCardSerializer(GroupScoreCardSerializer):
     results = ScoreSerializerField(property_model_name='GroupNumberOfQuestions')
 
 
+class GroupVoteAttendanceCardSerializer(GroupScoreCardSerializer):
+    results = ScoreSerializerField(property_model_name='GroupVoteAttendance')
+
+
 class GroupQuestionCardSerializer(GroupScoreCardSerializer):
     def get_results(self, obj):
         # obj is the group

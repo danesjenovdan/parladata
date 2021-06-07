@@ -86,6 +86,11 @@ class GroupNumberOfQuestions(GroupScore):
 class PersonVoteAttendance(PersonScore):
     pass
 
+
+class GroupVoteAttendance(GroupScore):
+    pass
+
+
 class PersonStyleScore(PersonScore):
     style = models.TextField(
         blank=False,
