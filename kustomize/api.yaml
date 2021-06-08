@@ -60,10 +60,10 @@ metadata:
 spec:
   tls:
   - hosts:
-    - parlasearch.lb.djnd.si
+    - slovenija.parlasearch.lb.djnd.si
     secretName: parlasearch-tls
   rules:
-  - host: parlasearch.lb.djnd.si
+  - host: slovenija.parlasearch.lb.djnd.si
     http:
       paths:
       - path: /
