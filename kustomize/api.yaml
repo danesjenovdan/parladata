@@ -61,7 +61,7 @@ spec:
   tls:
   - hosts:
     - slovenija.parlasearch.lb.djnd.si
-    secretName: parlasearch-tls
+    secretName: slovenija-parlasearch-tls
   rules:
   - host: slovenija.parlasearch.lb.djnd.si
     http:
