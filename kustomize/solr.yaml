@@ -20,6 +20,13 @@ spec:
       containers:
       - name: parlasolr
         image: parlasolr # kustomize thing
+        resources:
+          requests:
+            memory: "1Gi"
+            cpu: "1000m"
+          limits:
+            memory: "1Gi"
+            cpu: "1000m"
         volumeMounts:
         - name: parlasolr-persistent-storage
           mountPath: /opt/solr/server/solr/mycores
@@ -85,25 +92,34 @@ spec:
       port: 8983
       targetPort: 8983
 ---
-# # This here ingress is for debugging purposes
-# # only. Make sure it's always commented out.
-# # Your SOLR instance should not accessible
-# # from the public internet.
-# apiVersion: networking.k8s.io/v1
-# kind: Ingress
-# metadata:
-#   name: parlasolr
-#   annotations:
-#     nginx.ingress.kubernetes.io/rewrite-target: /
-# spec:
-#   rules:
-#   - host: parlasolr.lb.djnd.si
-#     http:
-#       paths:
-#       - path: /
-#         pathType: Prefix
-#         backend:
-#           service:
-#             name: parlasolr
-#             port:
-#               number: 8983
+# This here ingress is for debugging purposes
+# only. Make sure it's always commented out.
+# Your SOLR instance should not accessible
+# from the public internet.
+# If you do uncomment this, make sure you set
+# the nginx.ingress.kubernetes.io/whitelist-source-range
+# annotation.
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: parlasolr
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-production"
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/whitelist-source-range: 91.236.1.209/32
+spec:
+  tls:
+    - hosts:
+        - slovenija.parlasolr.lb.djnd.si
+      secretName: slovenija-parlasolr-tls
+  rules:
+  - host: slovenija.parlasolr.lb.djnd.si
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: parlasolr
+            port:
+              number: 8983
