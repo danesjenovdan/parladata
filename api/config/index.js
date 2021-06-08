@@ -7,8 +7,8 @@ const defaultConfig = {
   port: 7003,
   serverTimeout: 30000,
   urls: {
-    cdn: 'https://cdn.parlameter.si/v1/parlassets',
-    analize: 'https://analize.parlameter.si/v1',
+    cdn: 'https://cdn.nov.parlameter.si/v1/parlassets',
+    analize: 'https://analize.nov.parlameter.si/v1',
     // data: 'https://data.parlameter.si/v1',
     // isci: 'https://isci.parlameter.si',
     // glej: 'https://glej.parlameter.si',
