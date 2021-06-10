@@ -2,7 +2,9 @@ import pytest
 
 from parlacards.scores.number_of_questions import calculate_number_of_questions_from_person
 
-@pytest.mark.django_db
+from tests.fixtures.common import *
+
+@pytest.mark.django_db()
 def test_calculate_number_of_questions_from_person(
     first_person,
     second_person,

@@ -38,7 +38,7 @@ class OrganizationSerializer(CommonOrganizationSerializer):
 
 class MembersSerializer(CommonOrganizationSerializer):
     def get_members(self, obj):
-        serializer = CommonPersonSerializer(obj.query_members(date=self.context['date']), many=True, context=self.context)
+        serializer = CommonPersonSerializer(obj.query_members(timestamp=self.context['date']), many=True, context=self.context)
         return serializer.data
 
     members = serializers.SerializerMethodField()

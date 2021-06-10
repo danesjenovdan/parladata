@@ -47,4 +47,4 @@ class Question(Timestampable):
 
     def __str__(self):
         author_names = [author.name for author in self.authors.all()]
-        return ' '.join(author_names)
+        return f'{self.type_of_question}: {self.title} - {" ".join(author_names)}'
