@@ -43,7 +43,8 @@ from parlacards.serializers.cards import (
     SessionLegislationCardSerializer,
     SpeechCardSerializer,
     VoteCardSerializer,
-    PersonTfidfCardSerializer
+    PersonTfidfCardSerializer,
+    GroupVoteAttendanceCardSerializer
 )
 
 from parlacards.serializers.speech import SpeechSerializer
@@ -116,6 +117,14 @@ class ParliamentaryGroups(CardView):
     '''
     thing = Organization
     card_serializer = GroupsCardSerializer
+
+
+class GroupVoteAttendance(CardView):
+    '''
+    Group's attendance on votes.
+    '''
+    thing = Organization
+    card_serializer = GroupVoteAttendanceCardSerializer
 
 
 class Sessions(CardView):

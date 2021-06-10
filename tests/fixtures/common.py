@@ -18,3 +18,11 @@ def second_person(main_organization):
 @pytest.fixture
 def last_person(main_organization):
     return main_organization.query_voters().order_by('id').last()
+
+@pytest.fixture
+def first_group(main_organization):
+    return main_organization.query_parliamentary_groups().order_by('id').first()
+
+@pytest.fixture
+def last_group(main_organization):
+    return main_organization.query_parliamentary_groups().order_by('id').last()
