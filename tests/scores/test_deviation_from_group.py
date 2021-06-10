@@ -2,7 +2,9 @@ import pytest
 
 from parlacards.scores.deviation_from_group import calculate_deviation_from_group
 
-@pytest.mark.django_db
+from tests.fixtures.common import *
+
+@pytest.mark.django_db()
 def test_calculate_deviation_from_group(
     first_person,
     second_person,
