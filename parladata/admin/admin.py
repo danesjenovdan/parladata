@@ -88,6 +88,7 @@ class QuestionAdmin(admin.ModelAdmin):
     inlines = [
         LinkQuestionInline
     ]
+    list_filter = ('type_of_question', 'session', 'authors')
 
 
 class MotionAdmin(admin.ModelAdmin):
