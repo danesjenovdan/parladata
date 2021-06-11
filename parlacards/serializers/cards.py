@@ -428,6 +428,10 @@ class GroupQuestionCardSerializer(GroupScoreCardSerializer):
 
 
 class GroupBallotCardSerializer(GroupScoreCardSerializer):
+    # TODO this is very similar to
+    # parlacards.scores.devaition_from_group.get_group_ballot
+    # consider refactoring one or both
+    # the difference is that this function needs all the ballots
     def get_results(self, group):
         votes = Vote.objects.filter(timestamp__lte=self.context['date']).order_by('-timestamp')
         data = []
