@@ -102,6 +102,9 @@ def test_group_views():
     response = get_card_response('/v3/cards/group/vote-attendance/', 6)
     assert response.status_code == 200
 
+    response = get_card_response('/v3/cards/group/ballots/', 6)
+    assert response.status_code == 200
+
 @pytest.mark.django_db()
 def test_session_views():
     response = get_card_response('/v3/cards/session/legislation/', 1)
