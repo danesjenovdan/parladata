@@ -1,5 +1,6 @@
 from itertools import chain
 from operator import attrgetter
+from importlib import import_module
 
 from datetime import datetime, timedelta
 
@@ -311,6 +312,33 @@ class VotersCardSerializer(CardSerializer):
             context=self.context
         )
         return serializer.data
+
+
+class GroupAnalysesSerializter(CommonOrganizationSerializer):
+    results = serializers.SerializerMethodField()
+
+    def get_group_value(self, group, property_model_name):
+        scores_module = import_module('parlacards.models')
+        ScoreModel = getattr(scores_module, property_model_name)
+
+        score_object = ScoreModel.objects.filter(
+            group_id=group.id,
+            timestamp__lte=self.context['date']
+        ).order_by('-timestamp').first()
+
+        if score_object:
+            return score_object.value
+        return None
+
+    def get_results(self, obj):
+        return {
+            'seat_count': obj.number_of_members_at(self.context['date']),
+            'intra_disunion': None,
+            'number_of_amendments': None,
+            'vocabulary_size': self.get_group_value(obj, 'GroupVocabularySize'),
+            'number_of_questions': self.get_group_value(obj, 'GroupNumberOfQuestions'),
+            'vote_attendance': self.get_group_value(obj, 'GroupVoteAttendance'),
+        }
 
 
 class GroupsCardSerializer(CardSerializer):
