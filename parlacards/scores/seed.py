@@ -9,7 +9,9 @@ from parlacards.scores.vocabulary_size import (
 from parlacards.scores.voting_distance import save_sparse_voting_distances_between
 from parlacards.scores.deviation_from_group import save_sparse_people_deviations_from_group_between
 from parlacards.scores.avg_number_of_speeches_per_session import save_sparse_people_avg_number_of_speeches_per_session_between
-from parlacards.scores.number_of_questions import save_sparse_people_number_of_questions_between
+from parlacards.scores.number_of_questions import (
+    save_sparse_people_number_of_questions_between,
+    save_sparse_group_number_of_questions_between)
 from parlacards.scores.attendance import (
     save_sparse_people_vote_attendance_between,
     save_sparse_groups_vote_attendance_between
@@ -36,8 +38,10 @@ def calculate_sparse_scores(playing_field):
     save_sparse_people_deviations_from_group_between(playing_field, datetime_from, datetime_to)
     print('Calculating average number of speeches for people...')
     save_sparse_people_avg_number_of_speeches_per_session_between(playing_field, datetime_from, datetime_to)
-    print('Calculating number of questions ...')
+    print('Calculating number of questions for people ...')
     save_sparse_people_number_of_questions_between(playing_field, datetime_from, datetime_to)
+    print('Calculating number of questions for groups ...')
+    save_sparse_group_number_of_questions_between(playing_field, datetime_from, datetime_to)
     print('Calculating vote attendance for people...')
     save_sparse_people_vote_attendance_between(playing_field, datetime_from, datetime_to)
     print('Calculating vote attendance for group...')

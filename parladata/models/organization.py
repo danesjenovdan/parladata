@@ -67,17 +67,17 @@ class Organization(Timestampable, Taggable, Parsable, Sluggable, VersionableFiel
         ).first()
 
     # TODO make all membership queries depend on a date
-    def number_of_members_at(self, date=datetime.now()):
-        return PersonMembership.valid_at(date).filter(organization=self).distinct('member').count()
+    def number_of_members_at(self, timestamp=datetime.now()):
+        return PersonMembership.valid_at(timestamp).filter(organization=self).distinct('member').count()
 
-    def number_of_organization_members_at(self, date=datetime.now()):
-        return OrganizationMembership.valid_at(date).filter(organization=self).distinct('member').count()
+    def number_of_organization_members_at(self, timestamp=datetime.now()):
+        return OrganizationMembership.valid_at(timestamp).filter(organization=self).distinct('member').count()
 
-    def number_of_voters_at(self, date=datetime.now()):
-        return PersonMembership.valid_at(date).filter(organization=self, role='voter').distinct('member').count()
+    def number_of_voters_at(self, timestamp=datetime.now()):
+        return PersonMembership.valid_at(timestamp).filter(organization=self, role='voter').distinct('member').count()
 
-    def number_of_organization_voters_at(self, date=datetime.now()):
-        return OrganizationMembership.valid_at(date).filter(organization=self, role='voter').distinct('member').count()
+    def number_of_organization_voters_at(self, timestamp=datetime.now()):
+        return OrganizationMembership.valid_at(timestamp).filter(organization=self, role='voter').distinct('member').count()
 
     @property
     def has_voters(self):
@@ -102,14 +102,14 @@ class Organization(Timestampable, Taggable, Parsable, Sluggable, VersionableFiel
             organization=self
         )
 
-    def query_organization_members(self, date=datetime.now()):
-        member_ids = OrganizationMembership.valid_at(date).filter(organization=self).values_list('member', flat=True)
+    def query_organization_members(self, timestamp=datetime.now()):
+        member_ids = OrganizationMembership.valid_at(timestamp).filter(organization=self).values_list('member', flat=True)
         return Organization.objects.filter(
             id__in=member_ids
         )
 
-    def query_parliamentary_groups(self, date=datetime.now()):
-        return self.query_organization_members(date).filter(classification='pg') # TODO rename to parliamentary_group
+    def query_parliamentary_groups(self, timestamp=datetime.now()):
+        return self.query_organization_members(timestamp).filter(classification='pg') # TODO rename to parliamentary_group
 
     def query_voters(self, timestamp=datetime.now()):
         return self.query_members_by_role('voter', timestamp)
@@ -125,7 +125,7 @@ class Organization(Timestampable, Taggable, Parsable, Sluggable, VersionableFiel
             id__in=member_ids
         )
 
-    def query_organizations_by_role(self, role, date=datetime.now()):    
+    def query_organizations_by_role(self, role, timestamp=datetime.now()):    
         member_ids = OrganizationMembership.valid_at(date).filter(
             organization=self,
             role=role
@@ -139,5 +139,5 @@ class Organization(Timestampable, Taggable, Parsable, Sluggable, VersionableFiel
         return f'{self.name} {self.id} {self.acronym}'
 
     def query_ballots_on_vote(self, vote):
-        voter_ids = self.query_voters(date=vote.timestamp)
+        voter_ids = self.query_voters(vote.timestamp)
         return Ballot.objects.filter(vote=vote, personvoter__in=voter_ids)

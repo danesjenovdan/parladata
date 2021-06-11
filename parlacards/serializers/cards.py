@@ -1,9 +1,10 @@
 from itertools import chain
 from operator import attrgetter
+from importlib import import_module
 
 from datetime import datetime, timedelta
 
-from django.db.models import Q
+from django.db.models import Q, Count, Max
 from django.db.models.functions import TruncDay
 
 from rest_framework import serializers
@@ -281,10 +282,14 @@ class PersonTfidfCardSerializer(PersonScoreCardSerializer):
             '-timestamp'
         ).first()
 
-        tfidf_scores = PersonTfidf.objects.filter(
-            person=obj,
-            timestamp=latest_score.timestamp,
-        )
+        if latest_score:
+            tfidf_scores = PersonTfidf.objects.filter(
+                person=obj,
+                timestamp=latest_score.timestamp,
+            )
+        else:
+            tfidf_scores = []
+
         serializer = TfidfSerializer(
             tfidf_scores,
             many=True,
@@ -300,7 +305,7 @@ class PersonTfidfCardSerializer(PersonScoreCardSerializer):
 class VotersCardSerializer(CardSerializer):
     def get_results(self, obj):
         # obj is the organization
-        people = obj.query_voters(date=self.context['date'])
+        people = obj.query_voters(self.context['date'])
         serializer = CommonPersonSerializer(
             people,
             many=True,
@@ -309,11 +314,38 @@ class VotersCardSerializer(CardSerializer):
         return serializer.data
 
 
+class GroupAnalysesSerializer(CommonOrganizationSerializer):
+    results = serializers.SerializerMethodField()
+
+    def get_group_value(self, group, property_model_name):
+        scores_module = import_module('parlacards.models')
+        ScoreModel = getattr(scores_module, property_model_name)
+
+        score_object = ScoreModel.objects.filter(
+            group_id=group.id,
+            timestamp__lte=self.context['date']
+        ).order_by('-timestamp').first()
+
+        if score_object:
+            return score_object.value
+        return None
+
+    def get_results(self, obj):
+        return {
+            'seat_count': obj.number_of_members_at(self.context['date']),
+            'intra_disunion': None, # TODO
+            'number_of_amendments': None, # TODO
+            'vocabulary_size': self.get_group_value(obj, 'GroupVocabularySize'),
+            'number_of_questions': self.get_group_value(obj, 'GroupNumberOfQuestions'),
+            'vote_attendance': self.get_group_value(obj, 'GroupVoteAttendance'),
+        }
+
+
 class GroupsCardSerializer(CardSerializer):
     def get_results(self, obj):
         # obj is the parent organization
-        serializer = CommonOrganizationSerializer(
-            obj.query_parliamentary_groups(date=self.context['date']),
+        serializer = GroupAnalysesSerializer(
+            obj.query_parliamentary_groups(self.context['date']),
             many=True,
             context=self.context
         )
@@ -434,7 +466,7 @@ class GroupBallotCardSerializer(GroupScoreCardSerializer):
     # the difference is that this function needs all the ballots
     def get_results(self, group):
         votes = Vote.objects.filter(timestamp__lte=self.context['date']).order_by('-timestamp')
-        data = []
+        party_ballots = []
 
         for vote in votes:
             voter_ids = PersonMembership.valid_at(vote.timestamp).filter(
@@ -442,16 +474,37 @@ class GroupBallotCardSerializer(GroupScoreCardSerializer):
                 role='voter'
             ).values_list('member_id', flat=True)
 
-            ballots = Ballot.objects.filter(vote=vote, personvoter__in=voter_ids)
+            ballots = Ballot.objects.filter(
+                vote=vote,
+                personvoter__in=voter_ids
+            ).exclude(
+                # TODO Filip would remove this
+                # because when everyone is absent
+                # this voting event will not have
+                # a max option but this needs
+                # consultation with product people
+                option='absent'
+            )
 
-            options = list(ballots.exclude(option='absent').values_list('option', flat=True))
-            max_option = max(options, key=options.count)
-            tmp = ballots[0]
-            tmp.option = max_option
-            data.append(tmp)
+            options_aggregated = ballots.values(
+                'option'
+            ).annotate(
+                dcount=Count('option')
+            ).order_by().aggregate(Max('option'))
+            # If you don't include the order_by(),
+            # you may get incorrect results if the
+            # default sorting is not what you expect.
+
+            # TODO this is lazy, possibly harmless
+            # but still smells -> using personal
+            # ballots as party ballots
+            party_ballot = ballots.first()
+            if party_ballot:
+                party_ballot.option = options_aggregated['option__max']
+                party_ballots.append(party_ballot)
 
         ballot_serializer = BallotSerializer(
-            data,
+            party_ballots,
             many=True,
             context=self.context
         )
