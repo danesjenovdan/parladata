@@ -111,15 +111,9 @@ class Organization(Timestampable, Taggable, Parsable, Sluggable, VersionableFiel
     def query_parliamentary_groups(self, date=datetime.now()):
         return self.query_organization_members(date).filter(classification='pg') # TODO rename to parliamentary_group
 
-    def query_voters(self, date=datetime.now()):
-        member_ids = PersonMembership.valid_at(date).filter(
-            on_behalf_of=self,
-            role='voter'
-        ).values_list('member', flat=True).distinct('member')
+    def query_voters(self, timestamp=datetime.now()):
+        return self.query_members_by_role('voter', timestamp)
 
-        return Person.objects.filter(
-            id__in=member_ids
-        )
 
     def query_members_by_role(self, role, date=datetime.now()):
         member_ids = PersonMembership.valid_at(date).filter(

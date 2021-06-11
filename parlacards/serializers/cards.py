@@ -104,27 +104,6 @@ class PersonBallotCardSerializer(PersonScoreCardSerializer):
         return ballot_serializer.data
 
 
-class GroupBallotCardSerializer(GroupScoreCardSerializer):
-    def get_results(self, group):
-        votes = Vote.objects.filter(timestamp__lte=self.context['date']).order_by('-timestamp')
-
-        data = []
-
-        for vote in votes:
-            ballots = group.query_ballots_on_vote(vote)
-            options = list(ballots.exclude(option='absent').values_list('option', flat=True))
-            max_option = max(options, key=options.count)
-            tmp = ballots[0]
-            tmp.option = max_option
-            data.append(tmp)
-
-        ballot_serializer = BallotSerializer(
-            data,
-            many=True,
-            context=self.context
-        )
-        return ballot_serializer.data
-
 class PersonQuestionCardSerializer(PersonScoreCardSerializer):
     def get_results(self, obj):
         # obj is the person
@@ -448,6 +427,35 @@ class GroupQuestionCardSerializer(GroupScoreCardSerializer):
         return question_serializer.data
 
 
+class GroupBallotCardSerializer(GroupScoreCardSerializer):
+    def get_results(self, group):
+        votes = Vote.objects.filter(timestamp__lte=self.context['date']).order_by('-timestamp')
+        data = []
+
+        for vote in votes:
+            voter_ids = PersonMembership.valid_at(vote.timestamp).filter(
+                on_behalf_of=group,
+                role='voter'
+            ).values_list('member_id', flat=True)
+
+            ballots = Ballot.objects.filter(vote=vote, personvoter__in=voter_ids)
+
+            options = list(ballots.exclude(option='absent').values_list('option', flat=True))
+            max_option = max(options, key=options.count)
+            tmp = ballots[0]
+            tmp.option = max_option
+            data.append(tmp)
+
+        ballot_serializer = BallotSerializer(
+            data,
+            many=True,
+            context=self.context
+        )
+        return ballot_serializer.data
+
+#
+# SESSION
+#
 class SessionLegislationCardSerializer(CardSerializer):
     def get_results(self, obj):
         # obj is the session
