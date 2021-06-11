@@ -2,121 +2,117 @@ from datetime import datetime
 
 import pytest
 
-from rest_framework.test import APIRequestFactory
+from rest_framework.test import APIClient
 
 from parlacards.views import *
 
-def get_card_response(url, card_id, card_date=datetime.now()):
-    factory = APIRequestFactory()
-    view = PersonInfo.as_view()
-    request = factory.get(url)
-    request.card_id = card_id
-    request.card_date = card_date
-
-    return view(request)
+client = APIClient()
 
 @pytest.mark.django_db()
 def test_misc_views():
-    response = get_card_response('/v3/cards/misc/members/', 1)
+    response = client.get('/v3/cards/misc/members/?id=1')
     assert response.status_code == 200
 
-    response = get_card_response('/v3/cards/misc/groups/', 1)
+    response = client.get('/v3/cards/misc/members/?id=1')
     assert response.status_code == 200
 
-    response = get_card_response('/v3/cards/misc/sessions/', 1)
+    response = client.get('/v3/cards/misc/groups/?id=1')
     assert response.status_code == 200
 
-    response = get_card_response('/v3/cards/misc/legislation/', 1)
+    response = client.get('/v3/cards/misc/sessions/?id=1')
+    assert response.status_code == 200
+
+    response = client.get('/v3/cards/misc/legislation/?id=1')
     assert response.status_code == 200
 
 @pytest.mark.django_db()
 def test_person_views():
-    response = get_card_response('/v3/cards/person/basic-information/', 6)
+    response = client.get('/v3/cards/person/basic-information/?id=6')
     assert response.status_code == 200
 
-    response = get_card_response('/v3/cards/person/vocabulary-size/', 6)
+    response = client.get('/v3/cards/person/vocabulary-size/?id=6')
     assert response.status_code == 200
 
-    response = get_card_response('/v3/cards/person/votes/', 6)
+    response = client.get('/v3/cards/person/votes/?id=6')
     assert response.status_code == 200
 
-    response = get_card_response('/v3/cards/person/questions/', 6)
+    response = client.get('/v3/cards/person/questions/?id=6')
     assert response.status_code == 200
 
-    response = get_card_response('/v3/cards/person/memberships/', 6)
+    response = client.get('/v3/cards/person/memberships/?id=6')
     assert response.status_code == 200
 
-    response = get_card_response('/v3/cards/person/most-votes-in-common/', 6)
+    response = client.get('/v3/cards/person/most-votes-in-common/?id=6')
     assert response.status_code == 200
 
-    response = get_card_response('/v3/cards/person/least-votes-in-common/', 6)
+    response = client.get('/v3/cards/person/least-votes-in-common/?id=6')
     assert response.status_code == 200
 
-    response = get_card_response('/v3/cards/person/deviation-from-group/', 6)
+    response = client.get('/v3/cards/person/deviation-from-group/?id=6')
     assert response.status_code == 200
 
-    response = get_card_response('/v3/cards/person/average-number-of-speeches-per-session/', 6)
+    response = client.get('/v3/cards/person/average-number-of-speeches-per-session/?id=6')
     assert response.status_code == 200
 
-    response = get_card_response('/v3/cards/person/number-of-questions/', 6)
+    response = client.get('/v3/cards/person/number-of-questions/?id=6')
     assert response.status_code == 200
 
-    response = get_card_response('/v3/cards/person/vote-attendance/', 6)
+    response = client.get('/v3/cards/person/vote-attendance/?id=6')
     assert response.status_code == 200
 
-    response = get_card_response('/v3/cards/person/recent-activity/', 6)
+    response = client.get('/v3/cards/person/recent-activity/?id=6')
     assert response.status_code == 200
 
-    response = get_card_response('/v3/cards/person/monthly-vote-attendance/', 6)
+    response = client.get('/v3/cards/person/monthly-vote-attendance/?id=6')
     assert response.status_code == 200
 
-    response = get_card_response('/v3/cards/person/style-scores/', 6)
+    response = client.get('/v3/cards/person/style-scores/?id=6')
     assert response.status_code == 200
 
-    response = get_card_response('/v3/cards/person/number-of-spoken-words/', 6)
+    response = client.get('/v3/cards/person/number-of-spoken-words/?id=6')
     assert response.status_code == 200
 
-    response = get_card_response('/v3/cards/person/tfidf/', 6)
+    response = client.get('/v3/cards/person/tfidf/?id=6')
     assert response.status_code == 200
 
 @pytest.mark.django_db()
 def test_group_views():
-    response = get_card_response('/v3/cards/group/basic-information/', 6)
+    response = client.get('/v3/cards/group/basic-information/?id=6')
     assert response.status_code == 200
 
-    response = get_card_response('/v3/cards/group/members/', 6)
+    response = client.get('/v3/cards/group/members/?id=6')
     assert response.status_code == 200
 
-    response = get_card_response('/v3/cards/group/vocabulary-size/', 6)
+    response = client.get('/v3/cards/group/vocabulary-size/?id=6')
     assert response.status_code == 200
 
-    response = get_card_response('/v3/cards/group/number-of-questions/', 6)
+    response = client.get('/v3/cards/group/number-of-questions/?id=6')
     assert response.status_code == 200
 
-    response = get_card_response('/v3/cards/group/monthly-vote-attendance/', 6)
+    response = client.get('/v3/cards/group/monthly-vote-attendance/?id=6')
     assert response.status_code == 200
 
-    response = get_card_response('/v3/cards/group/questions/', 6)
+    response = client.get('/v3/cards/group/questions/?id=6')
     assert response.status_code == 200
 
-    response = get_card_response('/v3/cards/group/vote-attendance/', 6)
+    response = client.get('/v3/cards/group/vote-attendance/?id=6')
     assert response.status_code == 200
 
-    response = get_card_response('/v3/cards/group/ballots/', 6)
+    response = client.get('/v3/cards/group/ballots/?id=6')
     assert response.status_code == 200
 
 @pytest.mark.django_db()
 def test_session_views():
-    response = get_card_response('/v3/cards/session/legislation/', 1)
+    response = client.get('/v3/cards/session/legislation/?id=1')
     assert response.status_code == 200
 
-    response = get_card_response('/v3/cards/session/speeches/', 1)
+    response = client.get('/v3/cards/session/speeches/?id=1')
     assert response.status_code == 200
 
 @pytest.mark.django_db()
 def test_single_views():
-    response = get_card_response('/v3/cards/speech/single/', 6)
+    response = client.get('/v3/cards/speech/single/?id=6')
     assert response.status_code == 200
 
-    response = get_card_response('/v3/cards/vote/single/', 6)
+    response = client.get('/v3/cards/vote/single/?id=6')
     assert response.status_code == 200
