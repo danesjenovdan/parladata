@@ -9,6 +9,7 @@ from django.db.models.functions import TruncDay
 from rest_framework import serializers
 
 from parladata.models.ballot import Ballot
+from parladata.models.vote import Vote
 from parladata.models.question import Question
 from parladata.models.memberships import PersonMembership
 from parladata.models.legislation import Law
@@ -426,6 +427,39 @@ class GroupQuestionCardSerializer(GroupScoreCardSerializer):
         return question_serializer.data
 
 
+class GroupBallotCardSerializer(GroupScoreCardSerializer):
+    # TODO this is very similar to
+    # parlacards.scores.devaition_from_group.get_group_ballot
+    # consider refactoring one or both
+    # the difference is that this function needs all the ballots
+    def get_results(self, group):
+        votes = Vote.objects.filter(timestamp__lte=self.context['date']).order_by('-timestamp')
+        data = []
+
+        for vote in votes:
+            voter_ids = PersonMembership.valid_at(vote.timestamp).filter(
+                on_behalf_of=group,
+                role='voter'
+            ).values_list('member_id', flat=True)
+
+            ballots = Ballot.objects.filter(vote=vote, personvoter__in=voter_ids)
+
+            options = list(ballots.exclude(option='absent').values_list('option', flat=True))
+            max_option = max(options, key=options.count)
+            tmp = ballots[0]
+            tmp.option = max_option
+            data.append(tmp)
+
+        ballot_serializer = BallotSerializer(
+            data,
+            many=True,
+            context=self.context
+        )
+        return ballot_serializer.data
+
+#
+# SESSION
+#
 class SessionLegislationCardSerializer(CardSerializer):
     def get_results(self, obj):
         # obj is the session
