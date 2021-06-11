@@ -314,7 +314,7 @@ class VotersCardSerializer(CardSerializer):
         return serializer.data
 
 
-class GroupAnalysesSerializter(CommonOrganizationSerializer):
+class GroupAnalysesSerializer(CommonOrganizationSerializer):
     results = serializers.SerializerMethodField()
 
     def get_group_value(self, group, property_model_name):
@@ -333,8 +333,8 @@ class GroupAnalysesSerializter(CommonOrganizationSerializer):
     def get_results(self, obj):
         return {
             'seat_count': obj.number_of_members_at(self.context['date']),
-            'intra_disunion': None,
-            'number_of_amendments': None,
+            'intra_disunion': None, # TODO
+            'number_of_amendments': None, # TODO
             'vocabulary_size': self.get_group_value(obj, 'GroupVocabularySize'),
             'number_of_questions': self.get_group_value(obj, 'GroupNumberOfQuestions'),
             'vote_attendance': self.get_group_value(obj, 'GroupVoteAttendance'),
@@ -344,7 +344,7 @@ class GroupAnalysesSerializter(CommonOrganizationSerializer):
 class GroupsCardSerializer(CardSerializer):
     def get_results(self, obj):
         # obj is the parent organization
-        serializer = CommonOrganizationSerializer(
+        serializer = GroupAnalysesSerializer(
             obj.query_parliamentary_groups(self.context['date']),
             many=True,
             context=self.context
