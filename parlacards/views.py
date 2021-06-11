@@ -45,6 +45,7 @@ from parlacards.serializers.cards import (
     VoteCardSerializer,
     PersonTfidfCardSerializer,
     GroupVoteAttendanceCardSerializer
+    GroupBallotCardSerializer
 )
 
 from parlacards.serializers.speech import SpeechSerializer
@@ -165,6 +166,14 @@ class Ballots(CardView):
     '''
     thing = Person
     card_serializer = PersonBallotCardSerializer
+
+
+class GroupBallots(CardView):
+    '''
+    A person's ballots.
+    '''
+    thing = Organization
+    card_serializer = GroupBallotCardSerializer
 
 
 class Questions(CardView):
