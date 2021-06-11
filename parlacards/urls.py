@@ -34,7 +34,8 @@ urlpatterns = [
     path('group/monthly-vote-attendance/', GroupMonthlyVoteAttendance.as_view()),
     path('group/questions/', GroupQuestions.as_view()),
     path('group/vote-attendance/', GroupVoteAttendance.as_view()),
-    
+    path('group/ballots/', GroupBallots.as_view()),
+
     path('session/legislation/', SessionLegislation.as_view()),
     path('session/speeches/', SessionSpeeches.as_view()),
 
