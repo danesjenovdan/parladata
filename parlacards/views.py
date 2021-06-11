@@ -44,7 +44,7 @@ from parlacards.serializers.cards import (
     SpeechCardSerializer,
     VoteCardSerializer,
     PersonTfidfCardSerializer,
-    GroupVoteAttendanceCardSerializer
+    GroupVoteAttendanceCardSerializer,
     GroupBallotCardSerializer
 )
 
