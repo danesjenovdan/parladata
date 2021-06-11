@@ -6,6 +6,7 @@ from django.utils.translation import ugettext_lazy as _
 from parladata.models.link import Link
 from parladata.models.person import Person
 from parladata.models.memberships import PersonMembership, OrganizationMembership
+from parladata.models.ballot import Ballot
 from parladata.behaviors.models import (
     Timestampable,
     Taggable,
@@ -110,8 +111,9 @@ class Organization(Timestampable, Taggable, Parsable, Sluggable, VersionableFiel
     def query_parliamentary_groups(self, date=datetime.now()):
         return self.query_organization_members(date).filter(classification='pg') # TODO rename to parliamentary_group
 
-    def query_voters(self, date=datetime.now()):
-        return self.query_members_by_role('voter', date)
+    def query_voters(self, timestamp=datetime.now()):
+        return self.query_members_by_role('voter', timestamp)
+
 
     def query_members_by_role(self, role, timestamp=datetime.now()):
         member_ids = PersonMembership.valid_at(timestamp).filter(
@@ -135,3 +137,7 @@ class Organization(Timestampable, Taggable, Parsable, Sluggable, VersionableFiel
 
     def __str__(self):
         return f'{self.name} {self.id} {self.acronym}'
+
+    def query_ballots_on_vote(self, vote):
+        voter_ids = self.query_voters(date=vote.timestamp)
+        return Ballot.objects.filter(vote=vote, personvoter__in=voter_ids)
