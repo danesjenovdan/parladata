@@ -77,7 +77,7 @@ def calculate_group_number_of_question(group, playing_field, timestamp=datetime.
 
     return questions.count()
 
-def save_group_number_of_question_for_group(group, playing_field, timestamp=datetime.now()):
+def save_group_number_of_questions_for_group(group, playing_field, timestamp=datetime.now()):
     questions_count = calculate_group_number_of_question(group, playing_field, timestamp)
 
     GroupNumberOfQuestions(
@@ -87,16 +87,16 @@ def save_group_number_of_question_for_group(group, playing_field, timestamp=date
         playing_field=playing_field,
     ).save()
 
-def save_group_number_of_question(playing_field, timestamp=datetime.now()):
+def save_group_number_of_questions(playing_field, timestamp=datetime.now()):
     groups = playing_field.query_parliamentary_groups(timestamp)
 
     for group in groups:
-        save_group_number_of_question_for_group(group, playing_field, timestamp)
+        save_group_number_of_questions_for_group(group, playing_field, timestamp)
 
-def save_group_number_of_question_between(playing_field, datetime_from=datetime.now(), datetime_to=datetime.now()):
+def save_group_number_of_questions_between(playing_field, datetime_from=datetime.now(), datetime_to=datetime.now()):
     for day in get_dates_between(datetime_from, datetime_to):
-        save_group_number_of_question(playing_field, timestamp=day)
+        save_group_number_of_questions(playing_field, timestamp=day)
 
-def save_sparse_group_number_of_question_between(playing_field, datetime_from=datetime.now(), datetime_to=datetime.now()):
+def save_sparse_group_number_of_questions_between(playing_field, datetime_from=datetime.now(), datetime_to=datetime.now()):
     for day in get_fortnights_between(datetime_from, datetime_to):
-        save_group_number_of_question(playing_field, timestamp=day)
+        save_group_number_of_questions(playing_field, timestamp=day)
