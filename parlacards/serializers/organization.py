@@ -29,11 +29,16 @@ class OrganizationSerializer(CommonOrganizationSerializer):
     def get_number_of_members(self, obj):
         return obj.number_of_members_at(self.context['date'])
 
+    def get_members(self, obj):
+        members = obj.query_members_by_role(role='member', timestamp=self.context['date'])
+        return CommonPersonSerializer(members, many=True, context=self.context).data
+
     number_of_members = serializers.SerializerMethodField()
     social_networks = serializers.SerializerMethodField()
     email = serializers.CharField()
     presidents = serializers.SerializerMethodField()
     deputies = serializers.SerializerMethodField()
+    members = serializers.SerializerMethodField()
 
 
 class MembersSerializer(CommonOrganizationSerializer):
