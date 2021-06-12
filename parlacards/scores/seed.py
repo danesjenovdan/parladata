@@ -25,7 +25,10 @@ from parlacards.scores.monthly_attendance import (
 )
 from parlacards.scores.style import save_sparse_people_style_scores_between
 from parlacards.scores.number_of_spoken_words import save_sparse_people_number_of_spoken_words_between
-from parlacards.scores.tfidf import save_sparse_people_tfidf_between
+from parlacards.scores.tfidf import (
+    save_sparse_people_tfidf_between,
+    save_sparse_groups_tfidf_between
+)
 
 def calculate_sparse_scores(playing_field):
     datetime_to = datetime.now()
@@ -59,6 +62,8 @@ def calculate_sparse_scores(playing_field):
     save_sparse_people_style_scores_between(playing_field, datetime_from, datetime_to)
     print('Calculating number of spoken words ...')
     save_sparse_people_number_of_spoken_words_between(playing_field, datetime_from, datetime_to)
-    print('Calculating TFIDF scores ...')
+    print('Calculating people TFIDF scores ...')
     save_sparse_people_tfidf_between(playing_field, datetime_from, datetime_to)
+    print('Calculating group TFIDF scores ...')
+    save_sparse_groups_tfidf_between(playing_field, datetime_from, datetime_to)
     print('Done.')
