@@ -85,25 +85,25 @@ spec:
       port: 8983
       targetPort: 8983
 ---
-# # This here ingress is for debugging purposes
-# # only. Make sure it's always commented out.
-# # Your SOLR instance should not accessible
-# # from the public internet.
-# apiVersion: networking.k8s.io/v1
-# kind: Ingress
-# metadata:
-#   name: parlasolr
-#   annotations:
-#     nginx.ingress.kubernetes.io/rewrite-target: /
-# spec:
-#   rules:
-#   - host: parlasolr.lb.djnd.si
-#     http:
-#       paths:
-#       - path: /
-#         pathType: Prefix
-#         backend:
-#           service:
-#             name: parlasolr
-#             port:
-#               number: 8983
+# This here ingress is for debugging purposes
+# only. Make sure it's always commented out.
+# Your SOLR instance should not accessible
+# from the public internet.
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: parlasolr
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  rules:
+  - host: parlasolr.lb.djnd.si
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: parlasolr
+            port:
+              number: 8983
