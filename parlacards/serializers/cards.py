@@ -22,7 +22,8 @@ from parlacards.models import (
     PersonMonthlyVoteAttendance,
     GroupMonthlyVoteAttendance,
     PersonTfidf,
-    GroupVotingDistance
+    GroupVotingDistance,
+    DeviationFromGroup
 )
 
 from parlacards.serializers.person import PersonSerializer
@@ -191,6 +192,47 @@ class LeastVotesInCommonCardSerializer(PersonScoreCardSerializer):
 
 class DeviationFromGroupCardSerializer(PersonScoreCardSerializer):
     results = ScoreSerializerField(property_model_name='DeviationFromGroup')
+
+
+class GroupDeviationFromGroupCardSerializer(GroupScoreCardSerializer):
+    def get_results(self, obj):
+        # TODO this is very similar to
+        # ScoreSerializerField - consider refactoring
+        # obj id the group
+        people = obj.query_members(self.context['date'])
+        deviation_scores = DeviationFromGroup.objects.filter(
+            timestamp__lte=self.context['date'],
+            person__in=people
+        ).order_by(
+            '-value'
+        )
+
+        relevant_deviation_querysets = [
+            DeviationFromGroup.objects.filter(
+                timestamp__lte=self.context['date'],
+                person=person
+            ).order_by(
+                '-timestamp'
+            )[:1] for person in people
+        ]
+        relevant_deviation_ids = DeviationFromGroup.objects.none().union(
+            *relevant_deviation_querysets
+        ).values(
+            'id'
+        )
+        relevant_deviations = DeviationFromGroup.objects.filter(
+            id__in=relevant_deviation_ids
+        )
+
+        return [
+            {
+                'person': CommonPersonSerializer(
+                    deviation_score.person,
+                    context=self.context
+                ).data,
+                'value': deviation_score.value
+            } for deviation_score in relevant_deviations
+        ]
 
 
 class RecentActivityCardSerializer(PersonScoreCardSerializer):
