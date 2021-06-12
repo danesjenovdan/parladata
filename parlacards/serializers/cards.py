@@ -312,6 +312,12 @@ class StyleScoresCardSerializer(PersonScoreCardSerializer):
         serializer = StyleScoresSerializer(obj, context=self.context)
         return serializer.data
 
+class GroupStyleScoresCardSerializer(GroupScoreCardSerializer):
+    def get_results(self, obj):
+        # obj is group
+        serializer = StyleScoresSerializer(obj, context=self.context)
+        return serializer.data
+
 class NumberOfSpokenWordsCardSerializer(PersonScoreCardSerializer):
     results = ScoreSerializerField(property_model_name='PersonNumberOfSpokenWords')
 

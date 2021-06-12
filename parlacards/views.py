@@ -40,6 +40,7 @@ from parlacards.serializers.cards import (
     GroupNumberOfQuestionsCardSerializer,
     GroupQuestionCardSerializer,
     StyleScoresCardSerializer,
+    GroupStyleScoresCardSerializer,
     NumberOfSpokenWordsCardSerializer,
     SessionLegislationCardSerializer,
     SpeechCardSerializer,
@@ -298,6 +299,14 @@ class PersonStyleScores(CardView):
     '''
     thing = Person
     card_serializer = StyleScoresCardSerializer
+
+
+class GroupStyleScores(CardView):
+    '''
+    A person's style scores.
+    '''
+    thing = Organization
+    card_serializer = GroupStyleScoresCardSerializer
 
 
 class PersonNumberOfSpokenWords(CardView):
