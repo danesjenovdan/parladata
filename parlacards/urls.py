@@ -38,6 +38,7 @@ urlpatterns = [
     path('group/most-votes-in-common/', GroupMostVotesInCommon.as_view()),
     path('group/least-votes-in-common/', GroupLeastVotesInCommon.as_view()),
     path('group/deviation-from-group/', GroupDeviationFromGroup.as_view()),
+    path('group/tfidf/', GroupTfidfView.as_view()),
 
     path('session/legislation/', SessionLegislation.as_view()),
     path('session/speeches/', SessionSpeeches.as_view()),

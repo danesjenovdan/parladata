@@ -115,3 +115,10 @@ class PersonTfidf(PersonScore):
         blank=False,
         null=False
     )
+
+
+class GroupTfidf(GroupScore):
+    token = models.TextField(
+        blank=False,
+        null=False
+    )

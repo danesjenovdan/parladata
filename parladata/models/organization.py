@@ -103,7 +103,14 @@ class Organization(Timestampable, Taggable, Parsable, Sluggable, VersionableFiel
         )
 
     def query_organization_members(self, timestamp=datetime.now()):
-        member_ids = OrganizationMembership.valid_at(timestamp).filter(organization=self).values_list('member', flat=True)
+        member_ids = OrganizationMembership.valid_at(
+            timestamp
+        ).filter(
+            organization=self
+        ).values(
+            'member'
+        )
+
         return Organization.objects.filter(
             id__in=member_ids
         )

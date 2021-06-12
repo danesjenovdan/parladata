@@ -22,6 +22,7 @@ from parlacards.models import (
     PersonMonthlyVoteAttendance,
     GroupMonthlyVoteAttendance,
     PersonTfidf,
+    GroupTfidf,
     GroupVotingDistance,
     DeviationFromGroup
 )
@@ -652,4 +653,31 @@ class VoteCardSerializer(CardSerializer):
             obj,
             context=self.context
         )
+        return serializer.data
+
+
+class GroupTfidfCardSerializer(GroupScoreCardSerializer):
+    def get_results(self, obj):
+        # obj is group
+        latest_score = GroupTfidf.objects.filter(
+            group=obj,
+            timestamp__lte=self.context['date'],
+        ).order_by(
+            '-timestamp'
+        ).first()
+
+        if latest_score:
+            tfidf_scores = GroupTfidf.objects.filter(
+                group=obj,
+                timestamp=latest_score.timestamp,
+            )
+        else:
+            tfidf_scores = []
+
+        serializer = TfidfSerializer(
+            tfidf_scores,
+            many=True,
+            context=self.context
+        )
+
         return serializer.data
