@@ -114,9 +114,30 @@ class PersonQuestionCardSerializer(PersonScoreCardSerializer):
         questions = Question.objects.filter(
             authors=obj,
             timestamp__lte=self.context['date']
+        ).order_by(
+            '-timestamp'
+        ).annotate(
+            date=TruncDay('timestamp')
         )
-        question_serializer = QuestionSerializer(questions, context=self.context, many=True)
-        return question_serializer.data
+
+        dates_to_serialize = set(questions.values_list('date', flat=True))
+
+        # this is ripe for optimization
+        # currently iterates over all questions
+        # for every date
+        grouped_questions_to_serialize = [
+            {
+                'date': date,
+                'events': filter(lambda question: question.date == date, questions)
+            } for date in dates_to_serialize
+        ]
+
+        serializer = DailyActivitySerializer(
+            grouped_questions_to_serialize,
+            many=True,
+            context=self.context
+        )
+        return serializer.data
 
 
 class PersonMembershipCardSerializer(PersonScoreCardSerializer):
@@ -504,9 +525,34 @@ class GroupQuestionCardSerializer(GroupScoreCardSerializer):
                 )
 
             questions = questions.union(member_questions.filter(q_objects))
+        
+        # annotate all the questions
+        questions = Question.objects.filter(
+            id__in=questions.values('id')
+        ).order_by(
+            '-timestamp'
+        ).annotate(
+            date=TruncDay('timestamp')
+        )
 
-        question_serializer = QuestionSerializer(questions, context=self.context, many=True)
-        return question_serializer.data
+        dates_to_serialize = set(questions.values_list('date', flat=True))
+
+        # this is ripe for optimization
+        # currently iterates over all questions
+        # for every date
+        grouped_questions_to_serialize = [
+            {
+                'date': date,
+                'events': filter(lambda question: question.date == date, questions)
+            } for date in dates_to_serialize
+        ]
+
+        serializer = DailyActivitySerializer(
+            grouped_questions_to_serialize,
+            many=True,
+            context=self.context
+        )
+        return serializer.data
 
 
 class GroupBallotCardSerializer(GroupScoreCardSerializer):
