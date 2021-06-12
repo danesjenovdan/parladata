@@ -45,7 +45,9 @@ from parlacards.serializers.cards import (
     VoteCardSerializer,
     PersonTfidfCardSerializer,
     GroupVoteAttendanceCardSerializer,
-    GroupBallotCardSerializer
+    GroupBallotCardSerializer,
+    GroupMostVotesInCommonCardSerializer,
+    GroupLeastVotesInCommonCardSerializer,
 )
 
 from parlacards.serializers.speech import SpeechSerializer
@@ -356,3 +358,19 @@ class SingleVote(CardView):
 class PersonTfidfView(CardView):
     thing = Person
     card_serializer = PersonTfidfCardSerializer
+
+
+class GroupMostVotesInCommon(CardView):
+    '''
+    A group's most equal voters.
+    '''
+    thing = Organization
+    card_serializer = GroupMostVotesInCommonCardSerializer
+
+
+class GroupLeastVotesInCommon(CardView):
+    '''
+    A group's least equal voters.
+    '''
+    thing = Organization
+    card_serializer = GroupLeastVotesInCommonCardSerializer

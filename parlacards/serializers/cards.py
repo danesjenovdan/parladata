@@ -21,7 +21,8 @@ from parlacards.models import (
     VotingDistance,
     PersonMonthlyVoteAttendance,
     GroupMonthlyVoteAttendance,
-    PersonTfidf
+    PersonTfidf,
+    GroupVotingDistance
 )
 
 from parlacards.serializers.person import PersonSerializer
@@ -30,7 +31,7 @@ from parlacards.serializers.session import SessionSerializer
 from parlacards.serializers.legislation import LegislationSerializer
 from parlacards.serializers.ballot import BallotSerializer
 from parlacards.serializers.question import QuestionSerializer
-from parlacards.serializers.voting_distance import VotingDistanceSerializer
+from parlacards.serializers.voting_distance import VotingDistanceSerializer, GroupVotingDistanceSerializer
 from parlacards.serializers.membership import MembershipSerializer
 from parlacards.serializers.recent_activity import DailyActivitySerializer
 from parlacards.serializers.style_scores import StyleScoresSerializer
@@ -509,6 +510,61 @@ class GroupBallotCardSerializer(GroupScoreCardSerializer):
             context=self.context
         )
         return ballot_serializer.data
+
+
+class GroupMostVotesInCommonCardSerializer(GroupScoreCardSerializer):
+    def get_results(self, obj):
+        # obj is the group
+        highest_distances = GroupVotingDistance.objects.filter(
+            group=obj,
+            timestamp__lte=self.context['date']
+        ).order_by(
+            'target',
+            '-timestamp',
+            'value',
+        ).distinct(
+            'target'
+        )
+
+        # sorting in place is slightly more efficient
+        sorted_distances = list(highest_distances)
+        sorted_distances.sort(key=lambda distance: distance.value, reverse=True)
+
+        distances_serializer = GroupVotingDistanceSerializer(
+            sorted_distances[:5],
+            many=True,
+            context=self.context
+        )
+        
+        return distances_serializer.data
+
+
+class GroupLeastVotesInCommonCardSerializer(GroupScoreCardSerializer):
+    def get_results(self, obj):
+        # obj is the group
+        highest_distances = GroupVotingDistance.objects.filter(
+            group=obj,
+            timestamp__lte=self.context['date']
+        ).order_by(
+            'target',
+            '-timestamp',
+            '-value',
+        ).distinct(
+            'target'
+        )
+
+        # sorting in place is slightly more efficient
+        sorted_distances = list(highest_distances)
+        sorted_distances.sort(key=lambda distance: distance.value, reverse=True)
+
+        distances_serializer = GroupVotingDistanceSerializer(
+            sorted_distances[:5],
+            many=True,
+            context=self.context
+        )
+        
+        return distances_serializer.data
+
 
 #
 # SESSION
