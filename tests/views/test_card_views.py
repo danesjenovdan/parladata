@@ -107,6 +107,9 @@ def test_group_views():
     response = client.get('/v3/cards/group/least-votes-in-common/?id=6')
     assert response.status_code == 200
 
+    response = client.get('/v3/cards/group/deviation-from-group/?id=6')
+    assert response.status_code == 200
+
 @pytest.mark.django_db()
 def test_session_views():
     response = client.get('/v3/cards/session/legislation/?id=1')

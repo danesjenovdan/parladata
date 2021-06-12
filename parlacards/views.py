@@ -31,6 +31,7 @@ from parlacards.serializers.cards import (
     PersonMembershipCardSerializer,
     PersonAvgSpeechesPerSessionCardSerializer,
     DeviationFromGroupCardSerializer,
+    GroupDeviationFromGroupCardSerializer,
     PersonNumberOfQuestionsCardSerializer,
     PersonVoteAttendanceCardSerializer,
     RecentActivityCardSerializer,
@@ -224,6 +225,14 @@ class DeviationFromGroup(CardView):
     '''
     thing = Person
     card_serializer = DeviationFromGroupCardSerializer
+
+
+class GroupDeviationFromGroup(CardView):
+    '''
+    A person's deviation from group voting.
+    '''
+    thing = Organization
+    card_serializer = GroupDeviationFromGroupCardSerializer
 
 
 class PersonNumberOfQuestions(CardView):
