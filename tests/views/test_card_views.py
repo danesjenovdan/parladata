@@ -36,6 +36,7 @@ def test_person_views():
     response = client.get('/v3/cards/person/votes/?id=6')
     assert response.status_code == 200
 
+    # TODO there are no questions in the test database
     response = client.get('/v3/cards/person/questions/?id=6')
     assert response.status_code == 200
 
@@ -54,6 +55,7 @@ def test_person_views():
     response = client.get('/v3/cards/person/average-number-of-speeches-per-session/?id=6')
     assert response.status_code == 200
 
+    # TODO there are no questions in the test database
     response = client.get('/v3/cards/person/number-of-questions/?id=6')
     assert response.status_code == 200
 
@@ -86,19 +88,36 @@ def test_group_views():
     response = client.get('/v3/cards/group/vocabulary-size/?id=6')
     assert response.status_code == 200
 
+    # TODO there are no questions in the test database
     response = client.get('/v3/cards/group/number-of-questions/?id=6')
     assert response.status_code == 200
 
     response = client.get('/v3/cards/group/monthly-vote-attendance/?id=6')
     assert response.status_code == 200
 
+    # TODO there are no questions in the test database
     response = client.get('/v3/cards/group/questions/?id=6')
     assert response.status_code == 200
 
     response = client.get('/v3/cards/group/vote-attendance/?id=6')
     assert response.status_code == 200
 
-    response = client.get('/v3/cards/group/ballots/?id=6')
+    response = client.get('/v3/cards/group/votes/?id=6')
+    assert response.status_code == 200
+
+    response = client.get('/v3/cards/group/most-votes-in-common/?id=6')
+    assert response.status_code == 200
+
+    response = client.get('/v3/cards/group/least-votes-in-common/?id=6')
+    assert response.status_code == 200
+
+    response = client.get('/v3/cards/group/deviation-from-group/?id=6')
+    assert response.status_code == 200
+
+    response = client.get('/v3/cards/group/tfidf/?id=6')
+    assert response.status_code == 200
+
+    response = client.get('/v3/cards/group/style-scores/?id=6')
     assert response.status_code == 200
 
 @pytest.mark.django_db()

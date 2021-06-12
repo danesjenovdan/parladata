@@ -34,7 +34,12 @@ urlpatterns = [
     path('group/monthly-vote-attendance/', GroupMonthlyVoteAttendance.as_view()),
     path('group/questions/', GroupQuestions.as_view()),
     path('group/vote-attendance/', GroupVoteAttendance.as_view()),
-    path('group/ballots/', GroupBallots.as_view()),
+    path('group/votes/', GroupBallots.as_view()),
+    path('group/most-votes-in-common/', GroupMostVotesInCommon.as_view()),
+    path('group/least-votes-in-common/', GroupLeastVotesInCommon.as_view()),
+    path('group/deviation-from-group/', GroupDeviationFromGroup.as_view()),
+    path('group/tfidf/', GroupTfidfView.as_view()),
+    path('group/style-scores/', GroupStyleScores.as_view()),
 
     path('session/legislation/', SessionLegislation.as_view()),
     path('session/speeches/', SessionSpeeches.as_view()),

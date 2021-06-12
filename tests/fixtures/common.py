@@ -24,5 +24,9 @@ def first_group(main_organization):
     return main_organization.query_parliamentary_groups().order_by('id').first()
 
 @pytest.fixture
+def second_group(main_organization):
+    return main_organization.query_parliamentary_groups().order_by('id')[2]
+
+@pytest.fixture
 def last_group(main_organization):
     return main_organization.query_parliamentary_groups().order_by('id').last()
