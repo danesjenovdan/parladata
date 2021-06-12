@@ -54,7 +54,15 @@ class GroupVocabularySize(GroupScore):
 class VotingDistance(PersonScore):
     target = models.ForeignKey(
         'parladata.Person',
-        related_name='target',
+        related_name='target_people',
+        on_delete=models.CASCADE
+    )
+
+
+class GroupVotingDistance(GroupScore):
+    target = models.ForeignKey(
+        'parladata.Person',
+        related_name='target_organizations',
         on_delete=models.CASCADE
     )
 

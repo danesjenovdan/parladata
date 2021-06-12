@@ -98,7 +98,13 @@ def test_group_views():
     response = client.get('/v3/cards/group/vote-attendance/?id=6')
     assert response.status_code == 200
 
-    response = client.get('/v3/cards/group/ballots/?id=6')
+    response = client.get('/v3/cards/group/votes/?id=6')
+    assert response.status_code == 200
+
+    response = client.get('/v3/cards/group/most-votes-in-common/?id=6')
+    assert response.status_code == 200
+
+    response = client.get('/v3/cards/group/least-votes-in-common/?id=6')
     assert response.status_code == 200
 
 @pytest.mark.django_db()
