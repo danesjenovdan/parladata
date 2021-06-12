@@ -65,7 +65,11 @@ class ScoreSerializerField(serializers.Field):
             'timestamp__lte': self.context['date'],
             score_type: value,
         }
-        score_object = ScoreModel.objects.filter(**score_object_kwargs).order_by('-timestamp').first()
+        score_object = ScoreModel.objects.filter(
+            **score_object_kwargs,
+        ).order_by(
+            '-timestamp'
+        ).first()
 
         # if something was found update the score
         if not score_object:
@@ -91,10 +95,20 @@ class ScoreSerializerField(serializers.Field):
                 'timestamp__lte': self.context['date'],
                 f'{score_type}__id': competitor_id
             }
-            score_queryset = ScoreModel.objects.filter(**score_queryset_kwargs).order_by('-timestamp')[:1]
+
+            score_queryset = ScoreModel.objects.filter(
+                **score_queryset_kwargs
+            ).order_by(
+                '-timestamp'
+            )[:1]
+
             relevant_scores_querysets.append(score_queryset)
 
-        relevant_score_ids = ScoreModel.objects.none().union(*relevant_scores_querysets).values_list('id', flat=True)
+        relevant_score_ids = ScoreModel.objects.none().union(
+            *relevant_scores_querysets
+        ).values(
+            'id'
+        )
 
         relevant_scores = ScoreModel.objects.filter(id__in=relevant_score_ids)
 

@@ -21,7 +21,10 @@ from parlacards.models import (
     VotingDistance,
     PersonMonthlyVoteAttendance,
     GroupMonthlyVoteAttendance,
-    PersonTfidf
+    PersonTfidf,
+    GroupTfidf,
+    GroupVotingDistance,
+    DeviationFromGroup
 )
 
 from parlacards.serializers.person import PersonSerializer
@@ -30,7 +33,7 @@ from parlacards.serializers.session import SessionSerializer
 from parlacards.serializers.legislation import LegislationSerializer
 from parlacards.serializers.ballot import BallotSerializer
 from parlacards.serializers.question import QuestionSerializer
-from parlacards.serializers.voting_distance import VotingDistanceSerializer
+from parlacards.serializers.voting_distance import VotingDistanceSerializer, GroupVotingDistanceSerializer
 from parlacards.serializers.membership import MembershipSerializer
 from parlacards.serializers.recent_activity import DailyActivitySerializer
 from parlacards.serializers.style_scores import StyleScoresSerializer
@@ -111,9 +114,30 @@ class PersonQuestionCardSerializer(PersonScoreCardSerializer):
         questions = Question.objects.filter(
             authors=obj,
             timestamp__lte=self.context['date']
+        ).order_by(
+            '-timestamp'
+        ).annotate(
+            date=TruncDay('timestamp')
         )
-        question_serializer = QuestionSerializer(questions, context=self.context, many=True)
-        return question_serializer.data
+
+        dates_to_serialize = set(questions.values_list('date', flat=True))
+
+        # this is ripe for optimization
+        # currently iterates over all questions
+        # for every date
+        grouped_questions_to_serialize = [
+            {
+                'date': date,
+                'events': filter(lambda question: question.date == date, questions)
+            } for date in dates_to_serialize
+        ]
+
+        serializer = DailyActivitySerializer(
+            grouped_questions_to_serialize,
+            many=True,
+            context=self.context
+        )
+        return serializer.data
 
 
 class PersonMembershipCardSerializer(PersonScoreCardSerializer):
@@ -192,6 +216,47 @@ class DeviationFromGroupCardSerializer(PersonScoreCardSerializer):
     results = ScoreSerializerField(property_model_name='DeviationFromGroup')
 
 
+class GroupDeviationFromGroupCardSerializer(GroupScoreCardSerializer):
+    def get_results(self, obj):
+        # TODO this is very similar to
+        # ScoreSerializerField - consider refactoring
+        # obj id the group
+        people = obj.query_members(self.context['date'])
+        deviation_scores = DeviationFromGroup.objects.filter(
+            timestamp__lte=self.context['date'],
+            person__in=people
+        ).order_by(
+            '-value'
+        )
+
+        relevant_deviation_querysets = [
+            DeviationFromGroup.objects.filter(
+                timestamp__lte=self.context['date'],
+                person=person
+            ).order_by(
+                '-timestamp'
+            )[:1] for person in people
+        ]
+        relevant_deviation_ids = DeviationFromGroup.objects.none().union(
+            *relevant_deviation_querysets
+        ).values(
+            'id'
+        )
+        relevant_deviations = DeviationFromGroup.objects.filter(
+            id__in=relevant_deviation_ids
+        )
+
+        return [
+            {
+                'person': CommonPersonSerializer(
+                    deviation_score.person,
+                    context=self.context
+                ).data,
+                'value': deviation_score.value
+            } for deviation_score in relevant_deviations
+        ]
+
+
 class RecentActivityCardSerializer(PersonScoreCardSerializer):
     '''
     Serializes recent activity since 30 days in the past.
@@ -265,6 +330,12 @@ class RecentActivityCardSerializer(PersonScoreCardSerializer):
 class StyleScoresCardSerializer(PersonScoreCardSerializer):
     def get_results(self, obj):
         # obj is person
+        serializer = StyleScoresSerializer(obj, context=self.context)
+        return serializer.data
+
+class GroupStyleScoresCardSerializer(GroupScoreCardSerializer):
+    def get_results(self, obj):
+        # obj is group
         serializer = StyleScoresSerializer(obj, context=self.context)
         return serializer.data
 
@@ -454,9 +525,34 @@ class GroupQuestionCardSerializer(GroupScoreCardSerializer):
                 )
 
             questions = questions.union(member_questions.filter(q_objects))
+        
+        # annotate all the questions
+        questions = Question.objects.filter(
+            id__in=questions.values('id')
+        ).order_by(
+            '-timestamp'
+        ).annotate(
+            date=TruncDay('timestamp')
+        )
 
-        question_serializer = QuestionSerializer(questions, context=self.context, many=True)
-        return question_serializer.data
+        dates_to_serialize = set(questions.values_list('date', flat=True))
+
+        # this is ripe for optimization
+        # currently iterates over all questions
+        # for every date
+        grouped_questions_to_serialize = [
+            {
+                'date': date,
+                'events': filter(lambda question: question.date == date, questions)
+            } for date in dates_to_serialize
+        ]
+
+        serializer = DailyActivitySerializer(
+            grouped_questions_to_serialize,
+            many=True,
+            context=self.context
+        )
+        return serializer.data
 
 
 class GroupBallotCardSerializer(GroupScoreCardSerializer):
@@ -510,6 +606,61 @@ class GroupBallotCardSerializer(GroupScoreCardSerializer):
         )
         return ballot_serializer.data
 
+
+class GroupMostVotesInCommonCardSerializer(GroupScoreCardSerializer):
+    def get_results(self, obj):
+        # obj is the group
+        highest_distances = GroupVotingDistance.objects.filter(
+            group=obj,
+            timestamp__lte=self.context['date']
+        ).order_by(
+            'target',
+            '-timestamp',
+            'value',
+        ).distinct(
+            'target'
+        )
+
+        # sorting in place is slightly more efficient
+        sorted_distances = list(highest_distances)
+        sorted_distances.sort(key=lambda distance: distance.value, reverse=True)
+
+        distances_serializer = GroupVotingDistanceSerializer(
+            sorted_distances[:5],
+            many=True,
+            context=self.context
+        )
+        
+        return distances_serializer.data
+
+
+class GroupLeastVotesInCommonCardSerializer(GroupScoreCardSerializer):
+    def get_results(self, obj):
+        # obj is the group
+        highest_distances = GroupVotingDistance.objects.filter(
+            group=obj,
+            timestamp__lte=self.context['date']
+        ).order_by(
+            'target',
+            '-timestamp',
+            '-value',
+        ).distinct(
+            'target'
+        )
+
+        # sorting in place is slightly more efficient
+        sorted_distances = list(highest_distances)
+        sorted_distances.sort(key=lambda distance: distance.value, reverse=True)
+
+        distances_serializer = GroupVotingDistanceSerializer(
+            sorted_distances[:5],
+            many=True,
+            context=self.context
+        )
+        
+        return distances_serializer.data
+
+
 #
 # SESSION
 #
@@ -554,4 +705,31 @@ class VoteCardSerializer(CardSerializer):
             obj,
             context=self.context
         )
+        return serializer.data
+
+
+class GroupTfidfCardSerializer(GroupScoreCardSerializer):
+    def get_results(self, obj):
+        # obj is group
+        latest_score = GroupTfidf.objects.filter(
+            group=obj,
+            timestamp__lte=self.context['date'],
+        ).order_by(
+            '-timestamp'
+        ).first()
+
+        if latest_score:
+            tfidf_scores = GroupTfidf.objects.filter(
+                group=obj,
+                timestamp=latest_score.timestamp,
+            )
+        else:
+            tfidf_scores = []
+
+        serializer = TfidfSerializer(
+            tfidf_scores,
+            many=True,
+            context=self.context
+        )
+
         return serializer.data

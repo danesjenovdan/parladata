@@ -54,7 +54,15 @@ class GroupVocabularySize(GroupScore):
 class VotingDistance(PersonScore):
     target = models.ForeignKey(
         'parladata.Person',
-        related_name='target',
+        related_name='target_people',
+        on_delete=models.CASCADE
+    )
+
+
+class GroupVotingDistance(GroupScore):
+    target = models.ForeignKey(
+        'parladata.Person',
+        related_name='target_organizations',
         on_delete=models.CASCADE
     )
 
@@ -98,11 +106,25 @@ class PersonStyleScore(PersonScore):
     )
 
 
+class GroupStyleScore(GroupScore):
+    style = models.TextField(
+        blank=False,
+        null=False
+    )
+
+
 class PersonNumberOfSpokenWords(PersonScore):
     pass
 
 
 class PersonTfidf(PersonScore):
+    token = models.TextField(
+        blank=False,
+        null=False
+    )
+
+
+class GroupTfidf(GroupScore):
     token = models.TextField(
         blank=False,
         null=False

@@ -31,6 +31,7 @@ from parlacards.serializers.cards import (
     PersonMembershipCardSerializer,
     PersonAvgSpeechesPerSessionCardSerializer,
     DeviationFromGroupCardSerializer,
+    GroupDeviationFromGroupCardSerializer,
     PersonNumberOfQuestionsCardSerializer,
     PersonVoteAttendanceCardSerializer,
     RecentActivityCardSerializer,
@@ -39,13 +40,17 @@ from parlacards.serializers.cards import (
     GroupNumberOfQuestionsCardSerializer,
     GroupQuestionCardSerializer,
     StyleScoresCardSerializer,
+    GroupStyleScoresCardSerializer,
     NumberOfSpokenWordsCardSerializer,
     SessionLegislationCardSerializer,
     SpeechCardSerializer,
     VoteCardSerializer,
     PersonTfidfCardSerializer,
+    GroupTfidfCardSerializer,
     GroupVoteAttendanceCardSerializer,
-    GroupBallotCardSerializer
+    GroupBallotCardSerializer,
+    GroupMostVotesInCommonCardSerializer,
+    GroupLeastVotesInCommonCardSerializer,
 )
 
 from parlacards.serializers.speech import SpeechSerializer
@@ -224,6 +229,14 @@ class DeviationFromGroup(CardView):
     card_serializer = DeviationFromGroupCardSerializer
 
 
+class GroupDeviationFromGroup(CardView):
+    '''
+    A person's deviation from group voting.
+    '''
+    thing = Organization
+    card_serializer = GroupDeviationFromGroupCardSerializer
+
+
 class PersonNumberOfQuestions(CardView):
     '''
     A person's number of questions.
@@ -286,6 +299,14 @@ class PersonStyleScores(CardView):
     '''
     thing = Person
     card_serializer = StyleScoresCardSerializer
+
+
+class GroupStyleScores(CardView):
+    '''
+    A person's style scores.
+    '''
+    thing = Organization
+    card_serializer = GroupStyleScoresCardSerializer
 
 
 class PersonNumberOfSpokenWords(CardView):
@@ -356,3 +377,24 @@ class SingleVote(CardView):
 class PersonTfidfView(CardView):
     thing = Person
     card_serializer = PersonTfidfCardSerializer
+
+
+class GroupTfidfView(CardView):
+    thing = Organization
+    card_serializer = GroupTfidfCardSerializer
+
+
+class GroupMostVotesInCommon(CardView):
+    '''
+    A group's most equal voters.
+    '''
+    thing = Organization
+    card_serializer = GroupMostVotesInCommonCardSerializer
+
+
+class GroupLeastVotesInCommon(CardView):
+    '''
+    A group's least equal voters.
+    '''
+    thing = Organization
+    card_serializer = GroupLeastVotesInCommonCardSerializer
