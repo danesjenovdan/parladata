@@ -106,6 +106,13 @@ class PersonStyleScore(PersonScore):
     )
 
 
+class GroupStyleScore(GroupScore):
+    style = models.TextField(
+        blank=False,
+        null=False
+    )
+
+
 class PersonNumberOfSpokenWords(PersonScore):
     pass
 
