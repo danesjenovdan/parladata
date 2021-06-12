@@ -36,6 +36,7 @@ def test_person_views():
     response = client.get('/v3/cards/person/votes/?id=6')
     assert response.status_code == 200
 
+    # TODO there are no questions in the test database
     response = client.get('/v3/cards/person/questions/?id=6')
     assert response.status_code == 200
 
@@ -54,6 +55,7 @@ def test_person_views():
     response = client.get('/v3/cards/person/average-number-of-speeches-per-session/?id=6')
     assert response.status_code == 200
 
+    # TODO there are no questions in the test database
     response = client.get('/v3/cards/person/number-of-questions/?id=6')
     assert response.status_code == 200
 
@@ -86,12 +88,14 @@ def test_group_views():
     response = client.get('/v3/cards/group/vocabulary-size/?id=6')
     assert response.status_code == 200
 
+    # TODO there are no questions in the test database
     response = client.get('/v3/cards/group/number-of-questions/?id=6')
     assert response.status_code == 200
 
     response = client.get('/v3/cards/group/monthly-vote-attendance/?id=6')
     assert response.status_code == 200
 
+    # TODO there are no questions in the test database
     response = client.get('/v3/cards/group/questions/?id=6')
     assert response.status_code == 200
 
