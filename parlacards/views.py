@@ -51,6 +51,8 @@ from parlacards.serializers.cards import (
     GroupBallotCardSerializer,
     GroupMostVotesInCommonCardSerializer,
     GroupLeastVotesInCommonCardSerializer,
+    PersonSpeechesCardSerializer,
+    GroupSpeechesCardSerializer,
 )
 
 from parlacards.serializers.speech import SpeechSerializer
@@ -80,7 +82,10 @@ class CardView(APIView):
         # serialize the results and return
         serializer = self.card_serializer(
             the_thing,
-            context={'date': request.card_date}
+            context={
+                'date': request.card_date,
+                'GET': request.GET
+            }
         )
         return Response(serializer.data)
 
@@ -398,3 +403,19 @@ class GroupLeastVotesInCommon(CardView):
     '''
     thing = Organization
     card_serializer = GroupLeastVotesInCommonCardSerializer
+
+
+class PersonSpeechesView(CardView):
+    '''
+    A person's speeches.
+    '''
+    thing = Person
+    card_serializer = PersonSpeechesCardSerializer
+
+
+class GroupSpeechesView(CardView):
+    '''
+    A person's speeches.
+    '''
+    thing = Organization
+    card_serializer = GroupSpeechesCardSerializer
