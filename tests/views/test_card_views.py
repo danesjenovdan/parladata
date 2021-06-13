@@ -131,6 +131,9 @@ def test_session_views():
     response = client.get('/v3/cards/session/speeches/?id=1')
     assert response.status_code == 200
 
+    response = client.get('/v3/cards/session/votes/?id=1')
+    assert response.status_code == 200
+
 @pytest.mark.django_db()
 def test_single_views():
     response = client.get('/v3/cards/speech/single/?id=6')

@@ -55,6 +55,7 @@ from parlacards.serializers.cards import (
     GroupSpeechesCardSerializer,
     GroupDiscordCardSerializer,
     SingleSessionCardSerializer,
+    SessionVotesCardSerializer,
 )
 
 from parlacards.serializers.speech import SpeechSerializer
@@ -369,6 +370,11 @@ class SessionSpeeches(APIView):
             'page': page,
             'per_page': paginator.per_page
         })
+
+
+class SessionVotes(CardView):
+    thing = Session
+    card_serializer = SessionVotesCardSerializer
 
 
 class SingleSpeech(CardView):
