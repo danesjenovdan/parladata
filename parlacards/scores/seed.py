@@ -32,6 +32,7 @@ from parlacards.scores.tfidf import (
     save_sparse_people_tfidf_between,
     save_sparse_groups_tfidf_between
 )
+from parlacards.scores.discord import save_sparse_groups_discords_between
 
 def calculate_sparse_scores(playing_field):
     datetime_to = datetime.now()
@@ -71,4 +72,6 @@ def calculate_sparse_scores(playing_field):
     save_sparse_people_tfidf_between(playing_field, datetime_from, datetime_to)
     print('Calculating group TFIDF scores ...')
     save_sparse_groups_tfidf_between(playing_field, datetime_from, datetime_to)
+    print('Calculating group discord ...')
+    save_sparse_groups_discords_between(playing_field, datetime_from, datetime_to)
     print('Done.')
