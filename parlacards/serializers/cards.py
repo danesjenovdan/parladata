@@ -473,7 +473,7 @@ class GroupAnalysesSerializer(CommonOrganizationSerializer):
     def get_results(self, obj):
         return {
             'seat_count': obj.number_of_members_at(self.context['date']),
-            'intra_disunion': None, # TODO
+            'intra_disunion': self.get_group_value(obj, 'GroupDiscord'),
             'number_of_amendments': None, # TODO
             'vocabulary_size': self.get_group_value(obj, 'GroupVocabularySize'),
             'number_of_questions': self.get_group_value(obj, 'GroupNumberOfQuestions'),
