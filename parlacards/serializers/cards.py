@@ -413,7 +413,7 @@ class GroupSpeechesCardSerializer(GroupScoreCardSerializer):
 class PersonAnalysesSerializer(CommonPersonSerializer):
     results = serializers.SerializerMethodField()
 
-    def get_group_value(self, person, property_model_name):
+    def get_person_value(self, person, property_model_name):
         scores_module = import_module('parlacards.models')
         ScoreModel = getattr(scores_module, property_model_name)
 
@@ -424,20 +424,21 @@ class PersonAnalysesSerializer(CommonPersonSerializer):
 
         if score_object:
             return score_object.value
+
         return None
 
     def get_results(self, person):
         return {
             'gender': person.preferred_pronoun,
             'mandates': person.number_of_mandates,
-            'speeches_per_session': self.get_group_value(person, 'PersonAvgSpeechesPerSession'),
-            'number_of_questions': self.get_group_value(person, 'PersonNumberOfQuestions'),
-            'mismatch_of_pg': self.get_group_value(person, 'DeviationFromGroup'),
-            'presence_votes': self.get_group_value(person, 'PersonVoteAttendance'),
+            'speeches_per_session': self.get_person_value(person, 'PersonAvgSpeechesPerSession'),
+            'number_of_questions': self.get_person_value(person, 'PersonNumberOfQuestions'),
+            'mismatch_of_pg': self.get_person_value(person, 'DeviationFromGroup'),
+            'presence_votes': self.get_person_value(person, 'PersonVoteAttendance'),
             'birth_date': person.date_of_birth.isoformat() if person.date_of_birth else None,
             'education': person.education_level,
-            'spoken_words': self.get_group_value(person, 'PersonNumberOfSpokenWords'),
-            'vocabulary_size': self.get_group_value(person, 'PersonVocabularySize'),
+            'spoken_words': self.get_person_value(person, 'PersonNumberOfSpokenWords'),
+            'vocabulary_size': self.get_person_value(person, 'PersonVocabularySize'),
         }
 
 
