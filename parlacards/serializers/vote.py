@@ -170,3 +170,68 @@ class VoteSerializer(CommonSerializer):
     documents = serializers.SerializerMethodField() # TODO this is faked
     name = serializers.CharField()
     legislation = serializers.SerializerMethodField() # TODO this is faked
+
+
+class SessionVoteSerializer(CommonSerializer):
+    def get_votes_abstain(self, obj):
+        # obj is the vote
+        return Ballot.objects.filter(
+            vote=obj,
+            option='abstain'
+        ).count()
+    
+    def get_votes_absent(self, obj):
+        # obj is the vote
+        return Ballot.objects.filter(
+            vote=obj,
+            option='absent'
+        ).count()
+    
+    def get_votes_for(self, obj):
+        # obj is the vote
+        return Ballot.objects.filter(
+            vote=obj,
+            option='for'
+        ).count()
+    
+    def get_votes_against(self, obj):
+        # obj is the vote
+        return Ballot.objects.filter(
+            vote=obj,
+            option='against'
+        ).count()
+    
+    def get_passed(self, obj):
+        return None
+    
+    def get_session_id(self, obj):
+        # obj is the vote
+        return obj.motion.session.id
+
+    def get_is_outlier(self, obj):
+        # TODO
+        return False
+    
+    def get_has_outliers(self, obj):
+        # TODO
+        return False
+    
+    def get_has_votes(self, obj):
+        # TODO
+        return True
+
+    def get_title(self, obj):
+        # TODO
+        return obj.motion.title
+
+    votes_abstain = serializers.SerializerMethodField()
+    votes_absent = serializers.SerializerMethodField()
+    votes_for = serializers.SerializerMethodField()
+    votes_against = serializers.SerializerMethodField()
+    passed = serializers.SerializerMethodField()
+    session_id = serializers.SerializerMethodField()
+    id = serializers.IntegerField()
+    is_outlier = serializers.SerializerMethodField()
+    has_outliers = serializers.SerializerMethodField()
+    has_votes = serializers.SerializerMethodField()
+    title = serializers.SerializerMethodField()
