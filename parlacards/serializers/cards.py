@@ -38,7 +38,7 @@ from parlacards.serializers.membership import MembershipSerializer
 from parlacards.serializers.recent_activity import DailyActivitySerializer
 from parlacards.serializers.style_scores import StyleScoresSerializer
 from parlacards.serializers.speech import SpeechSerializer
-from parlacards.serializers.vote import VoteSerializer
+from parlacards.serializers.vote import VoteSerializer, SessionVoteSerializer
 from parlacards.serializers.tfidf import TfidfSerializer
 
 from parlacards.serializers.common import (
@@ -815,3 +815,28 @@ class GroupTfidfCardSerializer(GroupScoreCardSerializer):
         )
 
         return serializer.data
+
+
+class SessionVotesCardSerializer(CardSerializer):
+    def get_results(self, obj):
+        # obj is the session
+        votes = Vote.objects.filter(
+            motion__session=obj
+        )
+
+        # serialize speeches
+        serializer = SessionVoteSerializer(
+            votes,
+            many=True,
+            context=self.context
+        )
+        return serializer.data
+
+    def get_session(self, obj):
+        serializer = SessionSerializer(
+            obj,
+            context=self.context
+        )
+        return serializer.data
+
+    session = serializers.SerializerMethodField()
