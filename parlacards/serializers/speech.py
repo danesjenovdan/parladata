@@ -32,3 +32,4 @@ class SpeechSerializer(CommonSerializer):
     end_idx = serializers.SerializerMethodField()
     quote_id = serializers.SerializerMethodField()
     person = CommonPersonSerializer(source='speaker')
+    start_time = serializers.DateTimeField()
