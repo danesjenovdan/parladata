@@ -15,6 +15,7 @@ env = dict(
     STATIC_URL=os.getenv('DJANGO_STATIC_URL_BASE', '/static/'),
     MEDIA_ROOT=os.getenv('DJANGO_MEDIA_ROOT', '/media/'),
     MEDIA_URL=os.getenv('DJANGO_MEDIA_URL_BASE', '/media/'),
+    SOLR_URL=os.getenv('PARLAMETER_SOLR_URL', ''),
 )
 
 
@@ -44,3 +45,5 @@ STATIC_URL = env['STATIC_URL']
 
 MEDIA_ROOT = env['MEDIA_ROOT']
 MEDIA_URL = env['MEDIA_URL']
+
+SOLR_URL = env['SOLR_URL']

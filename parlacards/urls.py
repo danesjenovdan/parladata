@@ -26,6 +26,7 @@ urlpatterns = [
     path('person/style-scores/', PersonStyleScores.as_view()),
     path('person/number-of-spoken-words/', PersonNumberOfSpokenWords.as_view()),
     path('person/tfidf/', PersonTfidfView.as_view()),
+    path('person/speeches/', PersonSpeechesView.as_view()),
 
     path('group/basic-information/', GroupInfo.as_view()),
     path('group/members/', GroupMembers.as_view()),
@@ -40,6 +41,7 @@ urlpatterns = [
     path('group/deviation-from-group/', GroupDeviationFromGroup.as_view()),
     path('group/tfidf/', GroupTfidfView.as_view()),
     path('group/style-scores/', GroupStyleScores.as_view()),
+    path('group/speeches/', GroupSpeechesView.as_view()),
 
     path('session/legislation/', SessionLegislation.as_view()),
     path('session/speeches/', SessionSpeeches.as_view()),
