@@ -53,6 +53,7 @@ from parlacards.serializers.cards import (
     GroupLeastVotesInCommonCardSerializer,
     PersonSpeechesCardSerializer,
     GroupSpeechesCardSerializer,
+    GroupDiscordCardSerializer,
 )
 
 from parlacards.serializers.speech import SpeechSerializer
@@ -419,3 +420,11 @@ class GroupSpeechesView(CardView):
     '''
     thing = Organization
     card_serializer = GroupSpeechesCardSerializer
+
+
+class GroupDiscordView(CardView):
+    '''
+    A group's discord score.
+    '''
+    thing = Organization
+    card_serializer = GroupDiscordCardSerializer

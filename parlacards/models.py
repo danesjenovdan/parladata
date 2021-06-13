@@ -129,3 +129,6 @@ class GroupTfidf(GroupScore):
         blank=False,
         null=False
     )
+
+class GroupDiscord(GroupScore):
+    pass
