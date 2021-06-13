@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from django.db import models
 
 from parladata.behaviors.models import Versionable, Timestampable
@@ -5,10 +7,10 @@ from parladata.behaviors.models import Versionable, Timestampable
 from parlacards.scores.common import tokenize, remove_punctuation, lemmatize_many
 
 class ValidSpeechesManager(models.Manager):
-    def filter_valid_speeches(self, date_):
+    def filter_valid_speeches(self, timestamp=datetime.now()):
         return super().get_queryset().filter(
-            models.Q(valid_from__lt=date_) | models.Q(valid_from__isnull=True),
-            models.Q(valid_to__gt=date_) | models.Q(valid_to__isnull=True)
+            models.Q(valid_from__lt=timestamp) | models.Q(valid_from__isnull=True),
+            models.Q(valid_to__gt=timestamp) | models.Q(valid_to__isnull=True)
         )
 
 

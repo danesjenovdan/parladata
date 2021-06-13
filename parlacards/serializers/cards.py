@@ -51,6 +51,8 @@ from parlacards.serializers.common import (
     MonthlyAttendanceSerializer,
 )
 
+from parlacards.solr import get_speeches_from_solr
+
 #
 # PERSON
 #
@@ -369,6 +371,41 @@ class PersonTfidfCardSerializer(PersonScoreCardSerializer):
 
         return serializer.data
 
+
+class PersonSpeechesCardSerializer(PersonScoreCardSerializer):
+    def get_results(self, obj):
+        # obj is the person
+        solr_params = {
+            'person_id': obj.id,
+            'highlight': True
+        }
+        if self.context['GET'].get('content', False):
+            solr_params['text_query'] = self.context['GET']['content']
+
+        serializer = SpeechSerializer(
+            get_speeches_from_solr(**solr_params),
+            many=True,
+            context=self.context
+        )
+        return serializer.data
+
+
+class GroupSpeechesCardSerializer(GroupScoreCardSerializer):
+    def get_results(self, obj):
+        # obj is the person
+        solr_params = {
+            'group_id': obj.id,
+            'highlight': True
+        }
+        if self.context['GET'].get('content', False):
+            solr_params['text_query'] = self.context['GET']['content']
+
+        serializer = SpeechSerializer(
+            get_speeches_from_solr(**solr_params),
+            many=True,
+            context=self.context
+        )
+        return serializer.data
 
 #
 # MISC
