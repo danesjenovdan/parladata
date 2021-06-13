@@ -138,3 +138,6 @@ def test_single_views():
 
     response = client.get('/v3/cards/vote/single/?id=6')
     assert response.status_code == 200
+
+    response = client.get('/v3/cards/session/single/?id=1')
+    assert response.status_code == 200

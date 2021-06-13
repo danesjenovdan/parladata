@@ -770,6 +770,16 @@ class SpeechCardSerializer(CardSerializer):
         return serializer.data
 
 
+class SingleSessionCardSerializer(CardSerializer):
+    def get_results(self, obj):
+        # obj is the session
+        serializer = SessionSerializer(
+            obj,
+            context=self.context
+        )
+        return serializer.data
+
+
 class VoteCardSerializer(CardSerializer):
     def get_results(self, obj):
         # obj is the vote
