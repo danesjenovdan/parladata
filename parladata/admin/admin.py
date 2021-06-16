@@ -82,6 +82,14 @@ class SpeechAdmin(admin.ModelAdmin):
     search_fields = ['speaker__name', 'content']
     inlines = [
     ]
+    list_display = ('id',
+                    'tag_list')
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).prefetch_related('tags')
+
+    def tag_list(self, obj):
+        return u", ".join(o.name for o in obj.tags.all())
 
 
 class QuestionAdmin(admin.ModelAdmin):

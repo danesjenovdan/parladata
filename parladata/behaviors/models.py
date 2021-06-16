@@ -102,7 +102,7 @@ class VersionableFieldsOwner(models.Model):
 
 
 class Taggable(models.Model):
-    tags = TaggableManager()
+    tags = TaggableManager(blank=True)
 
     class Meta:
         abstract = True
