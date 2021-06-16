@@ -37,6 +37,7 @@ def test_person_views():
     assert response.status_code == 200
 
     # TODO there are no questions in the test database
+    # TODO we should also test the questions aren't all the same
     response = client.get('/v3/cards/person/questions/?id=6')
     assert response.status_code == 200
 
@@ -96,6 +97,7 @@ def test_group_views():
     assert response.status_code == 200
 
     # TODO there are no questions in the test database
+    # TODO we should also test the questions aren't all the same
     response = client.get('/v3/cards/group/questions/?id=6')
     assert response.status_code == 200
 
