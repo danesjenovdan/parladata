@@ -130,7 +130,9 @@ class PersonQuestionCardSerializer(PersonScoreCardSerializer):
         grouped_questions_to_serialize = [
             {
                 'date': date,
-                'events': filter(lambda question: question.date == date, questions)
+                'events': questions.filter(
+                    date=date
+                )
             } for date in dates_to_serialize
         ]
 
@@ -612,7 +614,9 @@ class GroupQuestionCardSerializer(GroupScoreCardSerializer):
         grouped_questions_to_serialize = [
             {
                 'date': date,
-                'events': filter(lambda question: question.date == date, questions)
+                'events': questions.filter(
+                    date=date
+                )
             } for date in dates_to_serialize
         ]
 
