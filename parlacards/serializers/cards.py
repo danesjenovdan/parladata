@@ -528,7 +528,7 @@ class LegislationCardSerializer(CardSerializer):
 
 class LastSessionCardSerializer(CardSerializer):
     def get_results(self, obj):
-        # obj is the session
+        # obj is the group
         votes = Vote.objects.filter(
             motion__session__organizations=obj
         ).order_by('timestamp')
