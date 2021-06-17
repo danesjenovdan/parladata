@@ -6,8 +6,9 @@ from django.db import models
 class Mandate(models.Model):
     """Mandate"""
 
-    description = models.TextField(blank=True,
-                                   null=True)
+    description = models.TextField(blank=True, null=True)
+
+    beginning = models.DateTimeField(blank=True, null=True)
 
     def __str__(self):
         return self.description
