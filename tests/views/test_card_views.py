@@ -25,6 +25,9 @@ def test_misc_views():
     response = client.get('/v3/cards/misc/legislation/?id=1')
     assert response.status_code == 200
 
+    response = client.get('/v3/cards/misc/last-session/?id=1')
+    assert response.status_code == 200
+
 @pytest.mark.django_db()
 def test_person_views():
     response = client.get('/v3/cards/person/basic-information/?id=6')
