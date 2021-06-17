@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django import forms
 from collections import Counter
 from django.urls import reverse
 from parladata.models import *
@@ -76,10 +77,17 @@ class SessionAdmin(admin.ModelAdmin):
     ]
     search_fields = ['name']
 
+class SpeechForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['motions'].queryset = Motion.objects.filter(
+            session=self.instance.session)
 
 class SpeechAdmin(admin.ModelAdmin):
-    #form = SpeechForm
+    form = SpeechForm
+    fields = ['content', 'motions', 'speaker', 'order', 'tags']
     search_fields = ['speaker__name', 'content']
+    #autocomplete_fields = ['motion']
     inlines = [
     ]
     list_display = ('id',
@@ -114,7 +122,7 @@ class MotionAdmin(admin.ModelAdmin):
 
     list_editable = ('result',)
     list_filter = ('result', 'datetime', 'session')
-    search_fields = ['text']
+    search_fields = ['text', 'session__name']
     inlines = [
         LinkMotionInline,
     ]

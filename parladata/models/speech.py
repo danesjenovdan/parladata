@@ -42,10 +42,9 @@ class Speech(Versionable, Timestampable, Taggable):
     agenda_items = models.ManyToManyField('AgendaItem', blank=True,
                                           help_text='Agenda items', related_name='speeches')
 
-    motion = models.ForeignKey('Motion',
-                               blank=True, null=True,
-                               on_delete=models.CASCADE,
-                               help_text='Vote on speech')
+    motions = models.ManyToManyField('Motion',
+                                    blank=True,
+                                    help_text='Votes on speech')
 
     objects = ValidSpeechesManager()
 
