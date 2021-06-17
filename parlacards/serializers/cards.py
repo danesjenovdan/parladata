@@ -431,7 +431,6 @@ class PersonAnalysesSerializer(CommonPersonSerializer):
 
     def get_results(self, person):
         return {
-            'gender': person.preferred_pronoun,
             'mandates': person.number_of_mandates,
             'speeches_per_session': self.get_person_value(person, 'PersonAvgSpeechesPerSession'),
             'number_of_questions': self.get_person_value(person, 'PersonNumberOfQuestions'),
