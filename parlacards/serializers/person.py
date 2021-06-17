@@ -4,12 +4,12 @@ from parladata.models.link import Link
 
 from parlacards.serializers.common import (
     VersionableSerializerField,
-    CommonPersonSerializer,
+    CommonSerializer,
 )
 from parlacards.serializers.area import AreaSerializer
 
 
-class PersonSerializer(CommonPersonSerializer):
+class PersonSerializer(CommonSerializer):
     # TODO this will return all links they
     # should be filtered to only contain
     # social networks
