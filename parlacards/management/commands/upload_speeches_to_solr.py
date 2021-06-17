@@ -7,6 +7,7 @@ from django.conf import settings
 
 from parladata.models.speech import Speech
 
+# TODO move this out of here
 def commit_to_solr(commander, output):
     url = settings.SOLR_URL + '/update?commit=true'
     commander.stdout.write('About to commit %s speeches to %s' % (str(len(output)), url))
@@ -18,6 +19,7 @@ def commit_to_solr(commander, output):
         }
     )
 
+# TODO move this out of here
 def delete_invalid_speeches(speech_ids_in_solr):
     valid_speech_ids = Speech.objects.filter_valid_speeches().values_list(
         'id',
