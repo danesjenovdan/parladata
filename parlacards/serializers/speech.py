@@ -3,6 +3,7 @@ from rest_framework import serializers
 from parlacards.serializers.session import SessionSerializer
 
 from parlacards.serializers.common import CommonSerializer, CommonPersonSerializer
+from parlacards.serializers.motion import MotionSerializer
 
 class SpeechSerializer(CommonSerializer):
     def get_the_order(self, obj):
@@ -33,3 +34,4 @@ class SpeechSerializer(CommonSerializer):
     quote_id = serializers.SerializerMethodField()
     person = CommonPersonSerializer(source='speaker')
     start_time = serializers.DateTimeField()
+    motions = MotionSerializer(many=True)

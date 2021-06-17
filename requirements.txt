@@ -24,6 +24,7 @@ pytest
 pytest-django
 pytest-cov
 drf-spectacular
+pytest-xdist
 
 # tagger/lemmatizer
 sklearn

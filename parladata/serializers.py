@@ -55,8 +55,9 @@ class OrganizationSerializer(serializers.ModelSerializer):
         return obj.name
 
 
-class SpeechSerializer(serializers.ModelSerializer):
+class SpeechSerializer(TaggitSerializer, serializers.ModelSerializer):
     agenda_item_order = serializers.SerializerMethodField()
+    tags = TagListSerializerField(required=False)
     class Meta:
         model = Speech
         fields = [
@@ -73,7 +74,8 @@ class SpeechSerializer(serializers.ModelSerializer):
             "session",
             "agenda_item",
             "agenda_items",
-            "agenda_item_order"
+            "agenda_item_order",
+            "tags"
         ]
 
     def get_agenda_item_order(self, obj):

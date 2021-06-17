@@ -9,6 +9,7 @@ class Motion(Timestampable, Taggable, Parsable):
 
     session = models.ForeignKey('Session',
                                 blank=True, null=True,
+                                related_name='motions',
                                 on_delete=models.CASCADE,
                                 help_text='The legislative session in which the motion was proposed')
 

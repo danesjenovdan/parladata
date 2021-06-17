@@ -9,6 +9,7 @@ urlpatterns = [
     path('misc/groups/', ParliamentaryGroups.as_view()),
     path('misc/sessions/', Sessions.as_view()),
     path('misc/legislation/', Legislation.as_view()),
+    path('misc/last-session/', LastSession.as_view()),
 
     path('person/basic-information/', PersonInfo.as_view()),
     path('person/vocabulary-size/', VocabularySize.as_view()),
