@@ -2,7 +2,7 @@ from datetime import datetime
 
 from django.db import models
 
-from parladata.behaviors.models import Versionable, Timestampable
+from parladata.behaviors.models import Versionable, Timestampable, Taggable
 
 from parlacards.scores.common import tokenize, remove_punctuation, lemmatize_many
 
@@ -14,7 +14,7 @@ class ValidSpeechesManager(models.Manager):
         )
 
 
-class Speech(Versionable, Timestampable):
+class Speech(Versionable, Timestampable, Taggable):
     """Speeches that happened in parlament."""
 
     speaker = models.ForeignKey('Person',
@@ -41,6 +41,10 @@ class Speech(Versionable, Timestampable):
 
     agenda_items = models.ManyToManyField('AgendaItem', blank=True,
                                           help_text='Agenda items', related_name='speeches')
+
+    motions = models.ManyToManyField('Motion',
+                                    blank=True,
+                                    help_text='Votes on speech')
 
     objects = ValidSpeechesManager()
 
