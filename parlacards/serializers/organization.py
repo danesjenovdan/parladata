@@ -4,11 +4,12 @@ from parladata.models.link import Link
 
 from parlacards.serializers.common import (
     CommonPersonSerializer,
+    CommonSerializer,
     CommonOrganizationSerializer,
 )
 
 
-class OrganizationSerializer(CommonOrganizationSerializer):
+class OrganizationSerializer(CommonSerializer):
     # TODO this will return all links they
     # should be filtered to only contain
     # social networks

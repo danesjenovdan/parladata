@@ -52,4 +52,6 @@ urlpatterns = [
     path('speech/single/', SingleSpeech.as_view()),
 
     path('vote/single/', SingleVote.as_view()),
+
+    path('search/speeches/', MandateSpeeches.as_view()),
 ]

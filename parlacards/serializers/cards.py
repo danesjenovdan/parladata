@@ -56,7 +56,7 @@ from parlacards.solr import get_speeches_from_solr
 #
 # PERSON
 #
-class PersonCardSerializer(CardSerializer):
+class PersonCardSerializer(PersonScoreCardSerializer):
     def get_results(self, obj):
         # obj is the person
         person_serializer = PersonSerializer(
@@ -529,7 +529,7 @@ class LegislationCardSerializer(CardSerializer):
 #
 # ORGANIZATION
 #
-class GroupCardSerializer(CardSerializer):
+class GroupCardSerializer(GroupScoreCardSerializer):
     def get_results(self, obj):
         # obj is the group
         serializer = OrganizationSerializer(
@@ -849,3 +849,30 @@ class SessionVotesCardSerializer(CardSerializer):
         return serializer.data
 
     session = serializers.SerializerMethodField()
+
+#
+# SPEECHES
+#
+class MandateSpeechCardSerializer(CardSerializer):
+    # TODO
+    # filter by mandate
+    def get_results(self, obj):
+        # obj is the mandate
+        solr_params = {
+            'highlight': True
+        }
+        if self.context['GET'].get('text', False):
+            solr_params['text_query'] = self.context['GET']['text']
+        if self.context['GET'].get('people', False):
+            solr_params['people_ids'] = self.context['GET']['people'].split(',')
+        if self.context['GET'].get('groups', False):
+            solr_params['group_ids'] = self.context['GET']['groups'].split(',')
+        if self.context['GET'].get('months', False):
+            solr_params['months'] = self.context['GET']['months'].split(',')
+
+        serializer = SpeechSerializer(
+            get_speeches_from_solr(**solr_params),
+            many=True,
+            context=self.context
+        )
+        return serializer.data
