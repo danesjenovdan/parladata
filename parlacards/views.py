@@ -56,6 +56,7 @@ from parlacards.serializers.cards import (
     GroupDiscordCardSerializer,
     SingleSessionCardSerializer,
     SessionVotesCardSerializer,
+    MandateSpeechCardSerializer,
 )
 
 from parlacards.serializers.speech import SpeechSerializer
@@ -440,3 +441,11 @@ class GroupDiscordView(CardView):
     '''
     thing = Organization
     card_serializer = GroupDiscordCardSerializer
+
+
+class MandateSpeeches(CardView):
+    '''
+    Search speeches for a mandate.
+    '''
+    thing = Mandate
+    card_serializer = MandateSpeechCardSerializer
