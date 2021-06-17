@@ -378,11 +378,13 @@ class PersonSpeechesCardSerializer(PersonScoreCardSerializer):
     def get_results(self, obj):
         # obj is the person
         solr_params = {
-            'person_id': obj.id,
+            'people_ids': [obj.id],
             'highlight': True
         }
-        if self.context['GET'].get('content', False):
-            solr_params['text_query'] = self.context['GET']['content']
+        if self.context['GET'].get('text', False):
+            solr_params['text_query'] = self.context['GET']['text']
+        if self.context['GET'].get('months', False):
+            solr_params['months'] = self.context['GET']['months'].split(',')
 
         serializer = SpeechSerializer(
             get_speeches_from_solr(**solr_params),
@@ -396,11 +398,15 @@ class GroupSpeechesCardSerializer(GroupScoreCardSerializer):
     def get_results(self, obj):
         # obj is the person
         solr_params = {
-            'group_id': obj.id,
+            'group_ids': [obj.id],
             'highlight': True
         }
-        if self.context['GET'].get('content', False):
-            solr_params['text_query'] = self.context['GET']['content']
+        if self.context['GET'].get('text', False):
+            solr_params['text_query'] = self.context['GET']['text']
+        if self.context['GET'].get('people', False):
+            solr_params['people_ids'] = self.context['GET']['people'].split(',')
+        if self.context['GET'].get('months', False):
+            solr_params['months'] = self.context['GET']['months'].split(',')
 
         serializer = SpeechSerializer(
             get_speeches_from_solr(**solr_params),
@@ -431,7 +437,6 @@ class PersonAnalysesSerializer(CommonPersonSerializer):
 
     def get_results(self, person):
         return {
-            'gender': person.preferred_pronoun,
             'mandates': person.number_of_mandates,
             'speeches_per_session': self.get_person_value(person, 'PersonAvgSpeechesPerSession'),
             'number_of_questions': self.get_person_value(person, 'PersonNumberOfQuestions'),

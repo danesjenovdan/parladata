@@ -1,4 +1,5 @@
 import re
+from datetime import datetime, timedelta
 
 import requests
 
@@ -6,10 +7,45 @@ from django.conf import settings
 
 from parladata.models.speech import Speech
 
+def one_month_later(date, shorten_for=0):
+    # damn date math    
+    try:
+        end_date = date.replace(month=date.month+1) - timedelta(days=shorten_for)
+    except ValueError:
+        if date.month == 12:
+            end_date = date.replace(year=date.year+1, month=1) - timedelta(days=shorten_for)
+        else:
+            # next month is too short to have "same date"
+            # pick your own heuristic, or re-raise the exception:
+            one_month_later(date, shorten_for=(shorten_for + 1))
+
+    return end_date
+
+def process_month_string(month_string):
+    year, month = map(
+        lambda x: int(x),
+        month_string.split('-')
+    )
+
+    start_date = datetime(
+        year=year,
+        month=month,
+        day=1,
+        hour=0,
+        minute=0,
+        second=0,
+        microsecond=0
+    )
+
+    end_date = one_month_later(start_date) - timedelta(microseconds=1)
+
+    return f'[{start_date.isoformat()}Z TO {end_date.isoformat()}Z]'
+
 def solr_select(
     text_query='*',
-    person_id=None,
-    group_id=None,
+    people_ids=[],
+    group_ids=[],
+    months=[],
     highlight=False,
     facet=False,
     rows_per_page=20,
@@ -18,10 +54,12 @@ def solr_select(
     # TODO solr timeout
     # TODO solr offline
     q_params = f'{text_query} AND type:{document_type}'
-    if person_id:
-        q_params += f' AND person_id:{person_id}'
-    if group_id:
-        q_params += f' AND party_id:{group_id}' # TODO rename to group_id
+    if people_ids:
+        q_params += f' AND person_id:({" OR ".join(map(lambda x: str(x), people_ids))})'
+    if group_ids:
+        q_params += f' AND party_id:({" OR ".join(map(lambda x: str(x), group_ids))})' # TODO rename to group_id
+    if months:
+        q_params += f' AND start_time:({" OR ".join(map(lambda x: process_month_string(x), months))})'
 
     params = {
         'wt': 'json',
@@ -101,8 +139,9 @@ def shorten_highlighted_content(highlight, max_length=250):
 
 def get_speeches_from_solr(
     text_query='*',
-    person_id=None,
-    group_id=None,
+    people_ids=None,
+    group_ids=None,
+    months=[],
     highlight=False,
     facet=False,
     rows_per_page=20,
@@ -110,8 +149,9 @@ def get_speeches_from_solr(
 ):
     solr_response = solr_select(
         text_query=text_query,
-        person_id=person_id,
-        group_id=group_id,
+        people_ids=people_ids,
+        group_ids=group_ids,
+        months=months,
         highlight=highlight,
         facet=facet,
         rows_per_page=rows_per_page,

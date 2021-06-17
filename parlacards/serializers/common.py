@@ -8,6 +8,7 @@ from rest_framework import serializers
 
 from parladata.models.person import Person
 from parladata.models.organization import Organization
+from parladata.models.common import Mandate
 
 class VersionableSerializerField(serializers.Field):
     def __init__(self, property_model_name, **kwargs):
@@ -162,14 +163,32 @@ class CommonSerializer(serializers.Serializer):
         return fields
 
 
+class MandateSerializer(CommonSerializer):
+    description = serializers.CharField()
+    beginning = serializers.DateTimeField()
+
+
 class CardSerializer(serializers.Serializer):
     # created_at = serializers.DateTimeField()
     # updated_at = serializers.DateTimeField()
 
     def get_results(self, obj):
         raise NotImplementedError('You need to extend this serializer to return the results.')
+    
+    def get_mandate(self, obj):
+        mandate = Mandate.objects.first()
+        serializer = MandateSerializer(
+            mandate,
+            context=self.context
+        )
+
+        return serializer.data
 
     results = serializers.SerializerMethodField()
+    mandate = serializers.SerializerMethodField()
+    # TODO
+    # make the mandate dynamic
+    # mandate = MandateSerializer()
 
 
 class PersonScoreCardSerializer(CardSerializer):
