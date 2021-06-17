@@ -526,6 +526,36 @@ class LegislationCardSerializer(CardSerializer):
         return serializer.data
 
 
+class LastSessionCardSerializer(CardSerializer):
+    def get_results(self, obj):
+        # obj is the session
+        votes = Vote.objects.filter(
+            motion__session__organizations=obj
+        ).order_by('timestamp')
+
+        # serialize speeches
+        vote_serializer = SessionVoteSerializer(
+            votes,
+            many=True,
+            context=self.context
+        )
+        return {
+            'votes': vote_serializer.data,
+            'tfidf': [],
+            'presence': []
+        }
+
+    def get_session(self, obj):
+        session = obj.sessions.latest('start_time')
+        serializer = SessionSerializer(
+            session,
+            context=self.context
+        )
+        return serializer.data
+
+    session = serializers.SerializerMethodField()
+
+
 #
 # ORGANIZATION
 #
