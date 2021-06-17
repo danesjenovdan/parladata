@@ -57,9 +57,9 @@ class SpeechSessionInline(admin.TabularInline):
 
 
 class MandateAdmin(admin.ModelAdmin):
-    list_display = ('description',)
-    list_filter = ('description',)
-    search_fields = ('description',)
+    list_display = ('description', 'beginning',)
+    list_filter = ('description', 'beginning',)
+    search_fields = ('description', 'beginning',)
 
 class MembershipAdmin(admin.ModelAdmin):
     inlines = [
