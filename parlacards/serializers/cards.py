@@ -56,7 +56,7 @@ from parlacards.solr import get_speeches_from_solr
 #
 # PERSON
 #
-class PersonCardSerializer(CardSerializer):
+class PersonCardSerializer(PersonScoreCardSerializer):
     def get_results(self, obj):
         # obj is the person
         person_serializer = PersonSerializer(
@@ -529,7 +529,7 @@ class LegislationCardSerializer(CardSerializer):
 #
 # ORGANIZATION
 #
-class GroupCardSerializer(CardSerializer):
+class GroupCardSerializer(GroupScoreCardSerializer):
     def get_results(self, obj):
         # obj is the group
         serializer = OrganizationSerializer(
