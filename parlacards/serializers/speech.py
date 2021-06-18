@@ -3,7 +3,9 @@ from rest_framework import serializers
 from parlacards.serializers.session import SessionSerializer
 
 from parlacards.serializers.common import CommonSerializer, CommonPersonSerializer
-from parlacards.serializers.motion import MotionSerializer
+from parlacards.serializers.vote import SpeechVoteSerializer
+
+from parladata.models.vote import Vote
 
 class SpeechSerializer(CommonSerializer):
     def get_the_order(self, obj):
@@ -24,9 +26,10 @@ class SpeechSerializer(CommonSerializer):
     def get_quote_id(self, obj):
         return None
 
-    speech_id = serializers.IntegerField(source='id')
-    content = serializers.CharField()
-    session = SessionSerializer()
+    def get_votes(self, obj):
+        votes = Vote.objects.filter(motion__speech=obj)
+        return SpeechVoteSerializer(votes, many=True).data
+
     the_order = serializers.SerializerMethodField()
     quoted_text = serializers.SerializerMethodField()
     start_idx = serializers.SerializerMethodField()
@@ -34,4 +37,4 @@ class SpeechSerializer(CommonSerializer):
     quote_id = serializers.SerializerMethodField()
     person = CommonPersonSerializer(source='speaker')
     start_time = serializers.DateTimeField()
-    motions = MotionSerializer(many=True)
+    votes = serializers.SerializerMethodField()
