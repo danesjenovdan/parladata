@@ -45,7 +45,7 @@ class Organization(Timestampable, Taggable, Parsable, Sluggable, VersionableFiel
 
     @property
     def name(self):
-        return self.versionable_property_on_date(
+        return self.versionable_property_value_on_date(
             owner=self,
             property_model_name='OrganizationName',
             datetime=datetime.now()
@@ -53,7 +53,7 @@ class Organization(Timestampable, Taggable, Parsable, Sluggable, VersionableFiel
 
     @property
     def acronym(self):
-        return self.versionable_property_on_date(
+        return self.versionable_property_value_on_date(
             owner=self,
             property_model_name='OrganizationAcronym',
             datetime=datetime.now()
