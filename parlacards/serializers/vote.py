@@ -1,5 +1,7 @@
 from django.db.models import Count
 
+from collections import Counter
+
 from rest_framework import serializers
 
 from parladata.models.person import Person
@@ -36,8 +38,8 @@ class VoteSerializer(CommonSerializer):
         return {
             'coalition': {
                 'max': {
-                    'max_opt': 'for',
-                    'maxOptPerc': 97.67441860465115
+                    'max_option': 'for',
+                    'max_option_percentage': 97.67441860465115
                 },
                 'votes': {
                     'absent': 1.0,
@@ -49,8 +51,8 @@ class VoteSerializer(CommonSerializer):
             },
             'opposition': {
                 'max': {
-                    'max_opt': 'against',
-                    'maxOptPerc': 48.93617021276596
+                    'max_option': 'against',
+                    'max_option_percentage': 48.93617021276596
                 },
                 'votes': {
                     'absent': 4.0,
@@ -136,7 +138,7 @@ class VoteSerializer(CommonSerializer):
                 option_sum['option']: option_sum['option_count'] for option_sum in annotated_group_ballots
             }
             group.votes = {
-                key: group_votes_params.get(key, 0) for key in ['absent', 'abstain', 'for', 'agains']
+                key: group_votes_params.get(key, 0) for key in ['absent', 'abstain', 'for', 'against']
             }
 
             # set group outliers
@@ -235,3 +237,35 @@ class SessionVoteSerializer(CommonSerializer):
     has_outliers = serializers.SerializerMethodField()
     has_votes = serializers.SerializerMethodField()
     title = serializers.SerializerMethodField()
+
+
+class SpeechVoteSerializer(CommonSerializer):
+    result = serializers.SerializerMethodField()
+    id = serializers.IntegerField()
+    name = serializers.CharField()
+    votes = serializers.SerializerMethodField()
+
+    def get_result(self, obj):
+        # obj is the vote
+        options = dict(Counter(list(obj.ballots.values_list('option', flat=True))))
+        max_option = max(options, key=options.get)
+        max_votes = options[max_option]
+        all_votes = sum(options.values())
+        max_percentage = max_votes*100/all_votes
+        return {
+            'is_outlier': False, # TODO this is faked
+            'accepted': obj.motion.result == 'passed',
+            'value': max_percentage,
+            'max_opt': max_option,
+        }
+
+    def get_votes(self, obj):
+        data = {
+            'for': 0,
+            'against': 0,
+            'absent': 0,
+            'abstain': 0
+        }
+        options = dict(Counter(list(obj.ballots.values_list('option', flat=True))))
+        data.update(options)
+        return data
