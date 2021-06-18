@@ -28,3 +28,9 @@ services:
       POSTGRES_DB: parladata
     ports:
       - 5432:5432
+
+  cache:
+   image: memcached
+   entrypoint:
+    - memcached
+    - -m 64

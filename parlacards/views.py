@@ -63,6 +63,8 @@ from parlacards.serializers.cards import (
 from parlacards.serializers.speech import SpeechSerializer
 from parlacards.serializers.session import SessionSerializer
 
+from django.core.cache import cache
+
 class CardView(APIView):
     """
     A view meant to be extended.
@@ -72,19 +74,9 @@ class CardView(APIView):
     thing = None
     card_serializer = None
 
-    def get(self, request, format=None):
-        if not self.thing:
-            raise NotImplementedError('You should define a thing to serialize.')
-        
-        if not self.card_serializer:
-            raise NotImplementedError('You should define a serializer to use.')
-
-        # find the person and if no people were found return
+    def get_serializer_data(self, request):
+        # this assumes that the_thing can be found
         the_thing = self.thing.objects.filter(id=request.card_id).first()
-        if not the_thing:
-            return Response(status=status.HTTP_404_NOT_FOUND)
-        
-        # serialize the results and return
         serializer = self.card_serializer(
             the_thing,
             context={
@@ -92,8 +84,43 @@ class CardView(APIView):
                 'GET': request.GET
             }
         )
-        return Response(serializer.data)
+        return serializer.data
 
+    def get(self, request, format=None):
+        if not self.thing:
+            raise NotImplementedError('You should define a thing to serialize.')
+        
+        if not self.card_serializer:
+            raise NotImplementedError('You should define a serializer to use.')
+
+        # if no things with the id exist, return 404
+        if not self.thing.objects.filter(id=request.card_id).exists():
+            return Response(status=status.HTTP_404_NOT_FOUND)
+        
+        return Response(self.get_serializer_data(request))
+
+
+class CachedCardView(CardView):
+    @staticmethod
+    def calculate_cache_key(request):
+        return f'{request.path}_{request.card_id}_{request.card_date.strftime("%Y-%m-%d")}'
+    
+    def get(self, request, format=None):
+        # only try cache if not explicitly disabled
+        if not request.GET.get('no_cache', False):
+            cache_key = self.calculate_cache_key(request)
+            cached_content = cache.get(cache_key)
+
+            if cached_content:
+                return Response(cached_content)
+        
+        # if no things with the id exist, return 404
+        if not self.thing.objects.filter(id=request.card_id).exists():
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
+        serializer_data = self.get_serializer_data(request)
+        cache.set(cache_key, serializer_data)
+        return Response(serializer_data)
 
 class PersonInfo(CardView):
     """

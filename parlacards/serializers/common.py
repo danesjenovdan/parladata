@@ -2,6 +2,7 @@ import math
 
 from importlib import import_module
 
+from django.core.cache import cache
 from django.db.models import Avg, Max
 
 from rest_framework import serializers
@@ -22,7 +23,7 @@ class VersionableSerializerField(serializers.Field):
             raise Exception(f'You need to provide a date in the serializer context.')
 
         object_to_serialize = value
-        return object_to_serialize.versionable_property_on_date(
+        return object_to_serialize.versionable_property_value_on_date(
             owner=object_to_serialize,
             property_model_name=self.property_model_name,
             datetime=self.context['date'],
@@ -41,6 +42,9 @@ class ScoreSerializerField(serializers.Field):
         trunc_factor = 10 ** 5
         return math.trunc(score * trunc_factor) / trunc_factor
     
+    def calculate_cache_key(self, property_model_name, value_id, timestamp):
+        return f'{property_model_name}_{value_id}_{timestamp.strftime("%Y-%m-%d-%H")}'
+
     def to_representation(self, value):
         # value is going to be the person or
         # organization we're serializing the score for
@@ -72,7 +76,14 @@ class ScoreSerializerField(serializers.Field):
             '-timestamp'
         ).first()
 
-        # if something was found update the score
+        # check for cache
+        cache_key = self.calculate_cache_key(self.property_model_name, value.id, score_object.timestamp)
+        cached_content = cache.get(cache_key)
+
+        if cached_content:
+            return cached_content
+
+        # if nothing was found return error
         if not score_object:
             return {
                 'error': 'No score matches your criteria.'
@@ -145,7 +156,7 @@ class ScoreSerializerField(serializers.Field):
 
         maximum_dict_key = 'mps' if score_type == 'person' else 'groups'
 
-        return {
+        output = {
             'score': score,
             'average': average_score,
             'maximum': {
@@ -154,6 +165,9 @@ class ScoreSerializerField(serializers.Field):
             }
         }
 
+        cache.set(cache_key, output)
+        return output
+
 
 class CommonSerializer(serializers.Serializer):
     def get_fields(self, *args, **kwargs):
@@ -161,6 +175,25 @@ class CommonSerializer(serializers.Serializer):
         for field in fields:
             fields[field].read_only = True
         return fields
+
+
+class CommonCachableSerializer(CommonSerializer):
+    def calculate_cache_key(self, instance):
+        raise NotImplementedError('''
+            You need to define your own function to calculate the cache key.
+            Maybe something like:
+            `return f'ModelName_{instance.id}_{instance.updated_at.strftime("%Y-%m-%d-%H-%M-%s")}'`
+        ''')
+
+    def to_representation(self, instance):
+        cache_key = self.calculate_cache_key(instance)
+        cached_representation = cache.get(cache_key)
+        if cached_representation:
+            return cached_representation
+
+        representation = super().to_representation(instance)
+        cache.set(cache_key, representation)
+        return representation
 
 
 class MandateSerializer(CommonSerializer):
@@ -207,7 +240,10 @@ class GroupScoreCardSerializer(CardSerializer):
     group = serializers.SerializerMethodField()
 
 
-class CommonPersonSerializer(CommonSerializer):
+class CommonPersonSerializer(CommonCachableSerializer):
+    def calculate_cache_key(self, instance):
+        return f'CommonPersonSerializer_{instance.id}_{instance.updated_at.strftime("%Y-%m-%d-%H-%M-%s")}'
+
     def get_group(self, obj):
         active_parliamentary_group_membership = obj.parliamentary_group_on_date(self.context['date'])
         if not active_parliamentary_group_membership:
@@ -226,7 +262,10 @@ class CommonPersonSerializer(CommonSerializer):
     image = serializers.ImageField()
 
 
-class CommonOrganizationSerializer(CommonSerializer):
+class CommonOrganizationSerializer(CommonCachableSerializer):
+    def calculate_cache_key(self, instance):
+        return f'CommonOrganizationSerializer_{instance.id}_{instance.updated_at.strftime("%Y-%m-%d-%H-%M-%s")}'
+
     name = VersionableSerializerField(property_model_name='OrganizationName')
     acronym = VersionableSerializerField(property_model_name='OrganizationAcronym')
     slug = serializers.CharField()

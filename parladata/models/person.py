@@ -38,7 +38,7 @@ class Person(Timestampable, Parsable, Sluggable, VersionableFieldsOwner):
 
     @property
     def name(self):
-        return self.versionable_property_on_date(
+        return self.versionable_property_value_on_date(
             owner=self,
             property_model_name='PersonName',
             datetime=datetime.now()
@@ -46,7 +46,7 @@ class Person(Timestampable, Parsable, Sluggable, VersionableFieldsOwner):
 
     @property
     def honorific_prefix(self):
-        return self.versionable_property_on_date(
+        return self.versionable_property_value_on_date(
             owner=self,
             property_model_name='PersonHonorificPrefix',
             datetime=datetime.now()
@@ -54,7 +54,7 @@ class Person(Timestampable, Parsable, Sluggable, VersionableFieldsOwner):
     
     @property
     def honorific_suffix(self):
-        return self.versionable_property_on_date(
+        return self.versionable_property_value_on_date(
             owner=self,
             property_model_name='PersonHonorificSuffix',
             datetime=datetime.now()
@@ -62,7 +62,7 @@ class Person(Timestampable, Parsable, Sluggable, VersionableFieldsOwner):
     
     @property
     def preferred_pronoun(self):
-        return self.versionable_property_on_date(
+        return self.versionable_property_value_on_date(
             owner=self,
             property_model_name='PersonPreferredPronoun',
             datetime=datetime.now()
@@ -70,7 +70,7 @@ class Person(Timestampable, Parsable, Sluggable, VersionableFieldsOwner):
     
     @property
     def education(self):
-        return self.versionable_property_on_date(
+        return self.versionable_property_value_on_date(
             owner=self,
             property_model_name='PersonEducation',
             datetime=datetime.now()
@@ -78,7 +78,7 @@ class Person(Timestampable, Parsable, Sluggable, VersionableFieldsOwner):
     
     @property
     def education_level(self):
-        return self.versionable_property_on_date(
+        return self.versionable_property_value_on_date(
             owner=self,
             property_model_name='PersonEducationLevel',
             datetime=datetime.now()
@@ -86,7 +86,7 @@ class Person(Timestampable, Parsable, Sluggable, VersionableFieldsOwner):
     
     @property
     def previous_occupation(self):
-        return self.versionable_property_on_date(
+        return self.versionable_property_value_on_date(
             owner=self,
             property_model_name='PersonPreviousOccupation',
             datetime=datetime.now()
@@ -94,7 +94,7 @@ class Person(Timestampable, Parsable, Sluggable, VersionableFieldsOwner):
     
     @property
     def number_of_mandates(self):
-        return self.versionable_property_on_date(
+        return self.versionable_property_value_on_date(
             owner=self,
             property_model_name='PersonNumberOfMandates',
             datetime=datetime.now()
@@ -102,7 +102,7 @@ class Person(Timestampable, Parsable, Sluggable, VersionableFieldsOwner):
     
     @property
     def number_of_voters(self):
-        return self.versionable_property_on_date(
+        return self.versionable_property_value_on_date(
             owner=self,
             property_model_name='PersonNumberOfVoters',
             datetime=datetime.now()
