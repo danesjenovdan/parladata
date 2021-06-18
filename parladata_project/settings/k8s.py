@@ -36,6 +36,21 @@ DATABASES = {
     }
 }
 
+# CACHES = {
+#     'default': {
+#         'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
+#         'LOCATION': 'cache:11211', # TODO get cache address from env
+#         'TIMEOUT': None,
+#     }
+# }
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'unique-snowflake',
+    }
+}
+
 # static files for development
 #STATIC_URL = '/static/'
 STATIC_ROOT = env['STATIC_ROOT']
