@@ -247,7 +247,7 @@ class SpeechVoteSerializer(CommonSerializer):
 
     def get_result(self, obj):
         # obj is the vote
-        options = dict(Counter(list(obj.ballots.values_list('option', flat=True))))
+        options = dict(Counter(list(obj.ballots.values_list('option', flat=True)))) # TODO maybe do this directly on the db
         max_option = max(options, key=options.get)
         max_votes = options[max_option]
         all_votes = sum(options.values())
@@ -266,6 +266,6 @@ class SpeechVoteSerializer(CommonSerializer):
             'absent': 0,
             'abstain': 0
         }
-        options = dict(Counter(list(obj.ballots.values_list('option', flat=True))))
+        options = dict(Counter(list(obj.ballots.values_list('option', flat=True)))) # TODO maybe do this directly on the db
         data.update(options)
         return data
