@@ -33,10 +33,10 @@ class VoteGroupSerializer(CommonSerializer):
 
 
 class VoteSerializer(CommonSerializer):
-    def get_gov_side(self, obj):
+    def get_government_sides(self, obj):
         # obj is the vote
-        return {
-            'coalition': {
+        return [
+            {
                 'max': {
                     'max_option': 'for',
                     'max_option_percentage': 97.67441860465115
@@ -47,9 +47,14 @@ class VoteSerializer(CommonSerializer):
                     'for': 42.0,
                     'against': 0.0
                 },
-                'outliers': []
+                'outliers': [],
+                'group': {
+                    'name': 'Coalition',
+                    'acronym': None,
+                    'slug': None
+                }
             },
-            'opposition': {
+            {
                 'max': {
                     'max_option': 'against',
                     'max_option_percentage': 48.93617021276596
@@ -60,9 +65,14 @@ class VoteSerializer(CommonSerializer):
                     'for': 2.0,
                     'against': 23.0
                 },
-                'outliers': []
+                'outliers': [],
+                'group': {
+                    'name': 'Opposition',
+                    'acronym': None,
+                    'slug': None
+                }
             }
-        }
+        ]
 
     def get_abstract_visible(self, obj):
         return False
@@ -79,8 +89,8 @@ class VoteSerializer(CommonSerializer):
         # obj is the vote
         return {
             'is_outlier': False, # TODO this is faked
-            'accepted': obj.motion.result == 'passed', # TODO this is possibly wrong
-            'value': 51, # TODO this is faked, it's the percentage of progress bar to fill on the front
+            'passed': None, # TODO this is faked
+            'max_option_percentage': 51, # TODO this is faked, it's the percentage of progress bar to fill on the front
             'max_option': 'for', # TODO this is faked
         }
 
@@ -101,7 +111,7 @@ class VoteSerializer(CommonSerializer):
 
         return serializer.data
 
-    def get_parties(self, obj):
+    def get_groups(self, obj):
         # obj is the vote
         vote_ballots = Ballot.objects.filter(
             vote=obj
@@ -160,17 +170,27 @@ class VoteSerializer(CommonSerializer):
     
     def get_legislation(self, obj):
         return None
+    
+    def get_all_votes(self, obj):
+        return {
+            'absent': 1.0,
+            'abstain': 0.0,
+            'for': 42.0,
+            'against': 0.0
+        }
 
-    gov_side = serializers.SerializerMethodField() # TODO this is faked
+    all_votes = serializers.SerializerMethodField() # TODO make this work
+
+    government_sides = serializers.SerializerMethodField() # TODO this is faked
     abstract_visible = serializers.SerializerMethodField() # TODO this is faked
     session = serializers.SerializerMethodField()
     result = serializers.SerializerMethodField()
     members = serializers.SerializerMethodField()
-    parties = serializers.SerializerMethodField()
+    groups = serializers.SerializerMethodField()
     id = serializers.IntegerField()
     agenda_items = serializers.SerializerMethodField() # TODO this is faked
     documents = serializers.SerializerMethodField() # TODO this is faked
-    name = serializers.CharField()
+    title = serializers.CharField(source='name')
     legislation = serializers.SerializerMethodField() # TODO this is faked
 
 
@@ -218,31 +238,47 @@ class SessionVoteSerializer(CommonSerializer):
         # TODO
         return False
     
-    def get_has_votes(self, obj):
+    def get_has_named_votes(self, obj):
         # TODO
         return True
 
     def get_title(self, obj):
         # TODO
         return obj.motion.title
+    
+    def get_all_votes(self, obj):
+        # TODO
+        # return  {
+        #     absent
+        #     abstain
+        #     for
+        #     against
+        # }
+        return {
+            'absent': 1.0,
+            'abstain': 0.0,
+            'for': 42.0,
+            'against': 0.0
+        }
 
-    votes_abstain = serializers.SerializerMethodField()
-    votes_absent = serializers.SerializerMethodField()
-    votes_for = serializers.SerializerMethodField()
-    votes_against = serializers.SerializerMethodField()
+    all_votes = serializers.SerializerMethodField()
+    # votes_abstain = serializers.SerializerMethodField()
+    # votes_absent = serializers.SerializerMethodField()
+    # votes_for = serializers.SerializerMethodField()
+    # votes_against = serializers.SerializerMethodField()
     passed = serializers.SerializerMethodField()
-    session_id = serializers.SerializerMethodField()
+    # session_id = serializers.SerializerMethodField()
     id = serializers.IntegerField()
     is_outlier = serializers.SerializerMethodField()
     has_outliers = serializers.SerializerMethodField()
-    has_votes = serializers.SerializerMethodField()
+    has_named_votes = serializers.SerializerMethodField()
     title = serializers.SerializerMethodField()
 
 
 class SpeechVoteSerializer(CommonSerializer):
     result = serializers.SerializerMethodField()
     id = serializers.IntegerField()
-    name = serializers.CharField()
+    title = serializers.CharField(source='name')
     votes = serializers.SerializerMethodField()
 
     def get_result(self, obj):
@@ -255,7 +291,7 @@ class SpeechVoteSerializer(CommonSerializer):
         return {
             'is_outlier': False, # TODO this is faked
             'accepted': obj.motion.result == 'passed',
-            'value': max_percentage,
+            'max_option_percentage': max_percentage,
             'max_option': max_option,
         }
 
