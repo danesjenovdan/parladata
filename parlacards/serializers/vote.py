@@ -81,7 +81,7 @@ class VoteSerializer(CommonSerializer):
             'is_outlier': False, # TODO this is faked
             'accepted': obj.motion.result == 'passed', # TODO this is possibly wrong
             'value': 51, # TODO this is faked, it's the percentage of progress bar to fill on the front
-            'max_opt': 'for', # TODO this is faked
+            'max_option': 'for', # TODO this is faked
         }
 
     def get_members(self, obj):
@@ -256,7 +256,7 @@ class SpeechVoteSerializer(CommonSerializer):
             'is_outlier': False, # TODO this is faked
             'accepted': obj.motion.result == 'passed',
             'value': max_percentage,
-            'max_opt': max_option,
+            'max_option': max_option,
         }
 
     def get_votes(self, obj):
