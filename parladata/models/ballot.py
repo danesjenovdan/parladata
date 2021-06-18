@@ -7,6 +7,7 @@ class Ballot(Timestampable):
 
     vote = models.ForeignKey('Vote',
                              help_text='The vote event',
+                             related_name='ballots',
                              on_delete=models.CASCADE)
 
     personvoter = models.ForeignKey('Person',
