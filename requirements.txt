@@ -25,6 +25,7 @@ pytest-django
 pytest-cov
 drf-spectacular
 pytest-xdist
+python-memcached
 
 # tagger/lemmatizer
 sklearn
