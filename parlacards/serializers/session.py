@@ -1,12 +1,19 @@
 from rest_framework import serializers
 
-from parlacards.serializers.common import CommonSerializer, CommonOrganizationSerializer
+from parlacards.serializers.common import CommonCachableSerializer, CommonOrganizationSerializer
 
-class SessionSerializer(CommonSerializer):
+class SessionSerializer(CommonCachableSerializer):
+    def calculate_cache_key(self, instance):
+        # instance is session
+        session_timestamp = instance.updated_at
+        organization_timestamps = instance.organizations.all().values_list('updated_at', flat=True)
+        timestamp = max([session_timestamp] + list(organization_timestamps))
+        return f'SessionSerializer_{instance.id}_{timestamp.strftime("%Y-%m-%d-%H-%M-%s")}'
+
     name = serializers.CharField()
     id = serializers.IntegerField()
     start_time = serializers.DateTimeField()
     end_time = serializers.DateTimeField()
     organizations = CommonOrganizationSerializer(many=True)
-    classification = serializers.CharField()
+    classification = serializers.CharField() # TODO regular, irregular, urgent
     in_review = serializers.BooleanField()

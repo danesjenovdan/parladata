@@ -26,19 +26,20 @@ class Vote(Timestampable, Taggable):
     result = models.TextField(blank=True, null=True,
                               help_text='The result of the vote')
 
-    def getBallotCounts(self):
-        opts = self.ballot_set.all().values_list("option")
-        if not opts:
-            return None
+    def get_option_counts(self):
+        annotated_ballots = self.ballots.all().values(
+            'option'
+        ).annotate(
+            option_count=models.Count('option')
+        ).order_by('-option_count')
 
-        opt_counts = opts.annotate(models.Count('option'))
+        option_counts = {
+            option_sum['option']: option_sum['option_count'] for
+            option_sum in annotated_ballots
+        }
 
-        out = {'for': 0,
-               'against': 0,
-               'abstain': 0,
-               'absent': 0
-               }
-        for opt in opt_counts:
-            out[opt[0]] = opt[1]
-
-        return out
+        # we need this to also show zeroes
+        return {
+            key: option_counts.get(key, 0) for
+            key in ['absent', 'abstain', 'for', 'against'] # TODO get this from global var
+        }
