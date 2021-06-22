@@ -4,14 +4,19 @@ from parladata.behaviors.models import Timestampable, Taggable, Parsable
 
 class Motion(Timestampable, Taggable, Parsable):
     """Votings which taken place in parlament."""
-    datetime = models.DateTimeField(blank=True, null=True,
-                               help_text='The date and time when the motion was proposed')
+    datetime = models.DateTimeField(
+        blank=True,
+        null=True,
+        help_text='The date and time when the motion was proposed'
+    )
 
-    session = models.ForeignKey('Session',
-                                blank=True, null=True,
-                                related_name='motions',
-                                on_delete=models.CASCADE,
-                                help_text='The legislative session in which the motion was proposed')
+    session = models.ForeignKey(
+        'Session',
+        blank=True, null=True,
+        related_name='motions',
+        on_delete=models.CASCADE,
+        help_text='The legislative session in which the motion was proposed'
+    )
 
     # TODO this should be reworked possibly by allowing organizations as champions
     champions = models.ManyToManyField(
@@ -21,28 +26,49 @@ class Motion(Timestampable, Taggable, Parsable):
         blank=True
     )
 
-    summary = models.TextField(blank=True, null=True,
-                             help_text='Motion summary')
+    summary = models.TextField(
+        blank=True,
+        null=True,
+        help_text='Motion summary'
+    )
 
-    text = models.TextField(blank=True, null=True,
-                            help_text='The text of the motion')
+    text = models.TextField(
+        blank=True,
+        null=True,
+        help_text='The text of the motion'
+    )
 
-    classification = models.TextField(blank=True, null=True,
-                                      help_text='Motion classification')
+    classification = models.TextField(
+        blank=True,
+        null=True,
+        help_text='Motion classification'
+    )
 
-    title = models.TextField(blank=True, null=True,
-                             help_text='Title of the motion')
+    title = models.TextField(
+        blank=True,
+        null=True,
+        help_text='Title of the motion'
+    )
 
     # TODO rework this into a choice field
-    requirement = models.TextField(blank=True, null=True,
-                                   help_text='The requirement for the motion to pass')
+    requirement = models.TextField(
+        blank=True,
+        null=True,
+        help_text='The requirement for the motion to pass'
+    )
 
-    # TODO rework this into a choice field
-    result = models.TextField(blank=True, null=True,
-                              help_text='Did the motion pass?')
+    result = models.BooleanField(
+        blank=True,
+        null=True,
+        help_text='Did the motion pass?'
+    )
 
-    agenda_items = models.ManyToManyField('AgendaItem', blank=True,
-                                         help_text='Agenda items', related_name='motions')
+    agenda_items = models.ManyToManyField(
+        'AgendaItem',
+        blank=True,
+        help_text='Agenda items',
+        related_name='motions'
+    )
 
     law = models.ForeignKey(
         'Law',
