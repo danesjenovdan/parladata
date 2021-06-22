@@ -156,7 +156,7 @@ def fixSpeakerParty(person_id):
 def uk_motion_result():
     for motion in Motion.objects.all():
         vote = motion.vote.all()[0]
-        options = vote.ballot_set.all().values_list("option", flat=True)
+        options = vote.ballots.all().values_list("option", flat=True)
         max_opt = Counter(options).most_common(1)[0][0]
         if max_opt == "aye":
             motion.result=1
@@ -573,7 +573,7 @@ def unknown_sniperts():
                     #print(b.option)
                     if b.option == "for":
                         print(b.vote.start_time)
-                        print b.vote.ballot_set.count()
+                        print b.vote.ballots.count()
                         print(b.vote.session, b.vote.name)
                     ss.append(b.vote.session_id)
 
@@ -582,7 +582,7 @@ def unknown_sniperts():
     cc= 0
     data = []
     for v in Vote.objects.all().order_by("start_time"):
-        count = v.ballot_set.count()
+        count = v.ballots.count()
         if count == 0:
             continue
         #if count == 151:

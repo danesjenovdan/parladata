@@ -117,7 +117,7 @@ def getPersonWithoutVotes(organization):
                                         quotechar='|',
                                         quoting=csv.QUOTE_MINIMAL)
         for vote in Vote.objects.all():
-            real_voters = vote.ballot_set.all().values_list("voter__id", flat=True)
+            real_voters = vote.ballots.all().values_list("voter__id", flat=True)
             fi_voters_memberships = members.filter(Q(start_time__lte=vote.start_time) |
                                                    Q(start_time=None),
                                                    Q(end_time__gte=vote.start_time) |
