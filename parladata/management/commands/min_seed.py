@@ -190,7 +190,7 @@ class Command(BaseCommand):
             owner=person_pfc_1
         )
         person_pfc_1_preferred_pronoun.save()
-        
+
 
         person_pfc_2 = Person(
             # name='Marjeta Coalition',
@@ -303,7 +303,7 @@ class Command(BaseCommand):
             owner=person_pfo_1
         )
         person_pfo_1_preferred_pronoun.save()
-        
+
 
         PersonMembership(
             role='voter',
@@ -398,7 +398,7 @@ class Command(BaseCommand):
         vote = Vote(
             name='Voting for president',
             motion=motion,
-            datetime=start_time + timedelta(minutes=35),
+            timestamp=start_time + timedelta(minutes=35),
             result='1',
         )
         vote.save()
@@ -421,8 +421,8 @@ class Command(BaseCommand):
 
         question = Question(
             session=session,
-            datetime=start_time,
-            answer_datetime=start_time,
+            timestamp=start_time,
+            answer_timestamp=start_time,
             title='Why we need to work on the first day?',
             recipient_text='Prime minister'
         )
