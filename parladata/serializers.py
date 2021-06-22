@@ -100,7 +100,7 @@ class VoteSerializer(TaggitSerializer, serializers.ModelSerializer):
         fields = '__all__'
 
     def get_results(self, obj):
-        return obj.getBallotCounts()
+        return obj.get_option_counts()
 
     def get_has_ballots(self, obj):
         return bool(obj.ballots.count())
