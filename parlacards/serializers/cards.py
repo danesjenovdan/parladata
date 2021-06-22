@@ -179,7 +179,7 @@ class MostVotesInCommonCardSerializer(PersonScoreCardSerializer):
             many=True,
             context=self.context
         )
-        
+
         return distances_serializer.data
 
     results = serializers.SerializerMethodField()
@@ -210,7 +210,7 @@ class LeastVotesInCommonCardSerializer(PersonScoreCardSerializer):
             many=True,
             context=self.context
         )
-        
+
         return distances_serializer.data
 
     results = serializers.SerializerMethodField()
@@ -517,7 +517,7 @@ class LegislationCardSerializer(CardSerializer):
         # obj is the mandate
         serializer = LegislationSerializer(
             Law.objects.filter(
-                Q(datetime__lte=self.context['date']) | Q(datetime__isnull=True),
+                Q(timestamp__lte=self.context['date']) | Q(timestamp__isnull=True),
                 session__mandate=obj,
             ),
             many=True,
@@ -631,7 +631,7 @@ class GroupQuestionCardSerializer(GroupScoreCardSerializer):
                 )
 
             questions = questions.union(member_questions.filter(q_objects))
-        
+
         # annotate all the questions
         questions = Question.objects.filter(
             id__in=questions.values('id')
@@ -738,7 +738,7 @@ class GroupMostVotesInCommonCardSerializer(GroupScoreCardSerializer):
             many=True,
             context=self.context
         )
-        
+
         return distances_serializer.data
 
 
@@ -765,7 +765,7 @@ class GroupLeastVotesInCommonCardSerializer(GroupScoreCardSerializer):
             many=True,
             context=self.context
         )
-        
+
         return distances_serializer.data
 
 
@@ -780,7 +780,7 @@ class SessionLegislationCardSerializer(CardSerializer):
         # obj is the session
         serializer = LegislationSerializer(
             Law.objects.filter(
-                Q(datetime__lte=self.context['date']) | Q(datetime__isnull=True),
+                Q(timestamp__lte=self.context['date']) | Q(timestamp__isnull=True),
                 session=obj,
             ),
             many=True,
