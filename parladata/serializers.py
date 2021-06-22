@@ -103,7 +103,7 @@ class VoteSerializer(TaggitSerializer, serializers.ModelSerializer):
         return obj.getBallotCounts()
 
     def get_has_ballots(self, obj):
-        return bool(obj.ballot_set.count())
+        return bool(obj.ballots.count())
 
 class BallotSerializer(serializers.ModelSerializer):
     class Meta:

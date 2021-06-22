@@ -2141,7 +2141,7 @@
 #     """
 
 #     data = []
-#     vote = Vote.objects.filter(id=motion_id).prefetch_related('ballot_set')
+#     vote = Vote.objects.filter(id=motion_id).prefetch_related('ballots')
 #     vote = vote.prefetch_related('motion')
 #     if vote:
 #         vote = vote[0]
@@ -2153,7 +2153,7 @@
 #     mems = mems.prefetch_related('organization')
 #     mems = {mem.person_id: mem for mem in mems}
 
-#     for bal in vote.ballot_set.all():
+#     for bal in vote.ballots.all():
 #         mem = mems[bal.voter_id]
 #         # TODO fix this if it breaks
 #         data.append({'mo_id': vote.motion_id,
