@@ -5,26 +5,36 @@ from parladata.behaviors.models import Timestampable, Taggable
 class Vote(Timestampable, Taggable):
     """Votings which taken place in parlament."""
 
-    name = models.TextField(blank=True, null=True,
-                            help_text='Vote name/identifier')
+    name = models.TextField(
+        blank=True,
+        null=True,
+        help_text='Vote name/identifier'
+    )
 
-    motion = models.ForeignKey('Motion',
-                               blank=True, null=True,
-                               related_name='vote',
-                               on_delete=models.CASCADE,
-                               help_text='The motion for which the vote took place')
+    motion = models.ForeignKey(
+        'Motion',
+        blank=True, null=True,
+        related_name='vote',
+        on_delete=models.CASCADE,
+        help_text='The motion for which the vote took place'
+    )
 
-    timestamp = models.DateTimeField(blank=True, null=True,
-                                     help_text='Vote time')
+    timestamp = models.DateTimeField(
+        blank=True,
+        null=True,
+        help_text='Vote time'
+    )
 
     needs_editing = models.BooleanField(
         "Is vote needs editing",
         default=False
     )
 
-    # TODO maybe rework this into a choice field
-    result = models.TextField(blank=True, null=True,
-                              help_text='The result of the vote')
+    result = models.BooleanField(
+        blank=True,
+        null=True,
+        help_text='The result of the vote'
+    )
 
     def get_option_counts(self):
         annotated_ballots = self.ballots.all().values(
