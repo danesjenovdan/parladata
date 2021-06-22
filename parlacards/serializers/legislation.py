@@ -8,6 +8,7 @@ class LegislationSerializer(CommonSerializer):
     epa = serializers.CharField()
     status = serializers.CharField()
     passed = serializers.BooleanField()
-    law_type = serializers.CharField()
+    classification = serializers.CharField()
     has_votes = serializers.BooleanField()
     has_abstract = serializers.BooleanField()
+    timestamp = serializers.DateTimeField()

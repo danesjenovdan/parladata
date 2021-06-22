@@ -433,16 +433,16 @@ class Command(BaseCommand):
             session=session,
             text='Voting for president',
             epa='EPA-1',
-            law_type='act',
+            classification='act',
             status='enacted',
             passed=True,
-            datetime=start_time,
+            timestamp=start_time,
         ).save()
         Law(
             session=session,
             text='Voting for dinner.',
             epa='EPA-1',
-            law_type='act',
+            classification='act',
             status='in_procedure'
         ).save()
 
