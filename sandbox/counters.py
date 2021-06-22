@@ -159,7 +159,7 @@ def getPresence(request):
         votes = s.vote_set.all()
         sesData = {}
         for v in votes:
-            sesData[str(v.id)] = list(v.ballot_set.exclude(option='ni').values_list('voter_id', flat=True))
+            sesData[str(v.id)] = list(v.ballots.exclude(option='ni').values_list('voter_id', flat=True))
             print(len(sesData[str(v.id)]))
         sesData['on_session'] = list(set(sum(list(sesData.values()), [])))
         print('on session', len(sesData['on_session']))
