@@ -106,7 +106,7 @@ metadata:
   annotations:
     cert-manager.io/cluster-issuer: "letsencrypt-production"
     nginx.ingress.kubernetes.io/rewrite-target: /
-    nginx.ingress.kubernetes.io/whitelist-source-range: 91.236.1.209
+    nginx.ingress.kubernetes.io/whitelist-source-range: 51.159.115.36 #91.236.1.209
 spec:
   tls:
     - hosts:
