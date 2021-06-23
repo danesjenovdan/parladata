@@ -8,6 +8,7 @@ services:
     depends_on:
       - db
     environment:
+      PYTHONUNBUFFERED: 1
       DJANGO_SETTINGS_MODULE: parladata_project.settings.k8s
       DJANGO_SECRET_KEY: make-me-secret
       DJANGO_DATABASE_HOST: db
