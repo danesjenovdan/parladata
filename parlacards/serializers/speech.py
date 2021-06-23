@@ -30,17 +30,17 @@ class SpeechSerializer(CommonCachableSerializer):
         if obj.order:
             return obj.order
         return obj.id
-    
+
     def get_quoted_text(self, obj):
         # TODO
         return None
-    
+
     def get_start_idx(self, obj):
         return None
-    
+
     def get_end_idx(self, obj):
         return None
-    
+
     def get_quote_id(self, obj):
         return None
 
@@ -48,6 +48,8 @@ class SpeechSerializer(CommonCachableSerializer):
         votes = Vote.objects.filter(motion__speech=obj)
         return SpeechVoteSerializer(votes, many=True).data
 
+    id = serializers.IntegerField()
+    content = serializers.CharField()
     the_order = serializers.SerializerMethodField()
     quoted_text = serializers.SerializerMethodField()
     start_idx = serializers.SerializerMethodField()

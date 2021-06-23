@@ -17,7 +17,7 @@ class VersionableSerializerField(serializers.Field):
         kwargs['source'] = '*'
         kwargs['read_only'] = True
         super().__init__(**kwargs)
-    
+
     def to_representation(self, value):
         if 'date' not in self.context.keys():
             raise Exception(f'You need to provide a date in the serializer context.')
@@ -36,12 +36,12 @@ class ScoreSerializerField(serializers.Field):
         kwargs['source'] = '*'
         kwargs['read_only'] = True
         super().__init__(**kwargs)
-    
+
     @staticmethod
     def truncate_score(score):
         trunc_factor = 10 ** 5
         return math.trunc(score * trunc_factor) / trunc_factor
-    
+
     def calculate_cache_key(self, property_model_name, value_id, timestamp):
         return f'{property_model_name}_{value_id}_{timestamp.strftime("%Y-%m-%d-%H")}'
 
@@ -92,7 +92,7 @@ class ScoreSerializerField(serializers.Field):
         score = score_object.value
 
         # get ids of all the people or organizations who are
-        # currently in the same playing field (organization 
+        # currently in the same playing field (organization
         # which we're calculating values for)
         if score_type == 'person':
             competition_ids = score_object.playing_field.query_voters(self.context['date']).values_list('id', flat=True)
@@ -154,7 +154,7 @@ class ScoreSerializerField(serializers.Field):
                 context=self.context
             )
 
-        maximum_dict_key = 'mps' if score_type == 'person' else 'groups'
+        maximum_dict_key = 'members' if score_type == 'person' else 'groups'
 
         output = {
             'score': score,
@@ -207,7 +207,7 @@ class CardSerializer(serializers.Serializer):
 
     def get_results(self, obj):
         raise NotImplementedError('You need to extend this serializer to return the results.')
-    
+
     def get_mandate(self, obj):
         mandate = Mandate.objects.first()
         serializer = MandateSerializer(
@@ -251,7 +251,7 @@ class CommonPersonSerializer(CommonCachableSerializer):
 
         serializer = CommonOrganizationSerializer(obj.parliamentary_group_on_date(self.context['date']), context=self.context)
         return serializer.data
-    
+
     slug = serializers.CharField()
     name = VersionableSerializerField(property_model_name='PersonName')
     honorific_prefix = VersionableSerializerField(property_model_name='PersonHonorificPrefix')

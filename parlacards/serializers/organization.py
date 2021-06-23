@@ -9,7 +9,7 @@ from parlacards.serializers.common import (
 )
 
 
-class OrganizationSerializer(CommonSerializer):
+class OrganizationBasicInfoSerializer(CommonSerializer):
     # TODO this will return all links they
     # should be filtered to only contain
     # social networks
