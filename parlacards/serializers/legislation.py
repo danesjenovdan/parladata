@@ -3,6 +3,7 @@ from rest_framework import serializers
 from parlacards.serializers.common import CommonSerializer
 
 class LegislationSerializer(CommonSerializer):
+    id = serializers.IntegerField()
     uid = serializers.CharField()
     text = serializers.CharField()
     epa = serializers.CharField()
