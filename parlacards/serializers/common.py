@@ -76,18 +76,18 @@ class ScoreSerializerField(serializers.Field):
             '-timestamp'
         ).first()
 
+        # if nothing was found return error
+        if not score_object:
+            return {
+                'error': 'No score matches your criteria.'
+            }
+
         # check for cache
         cache_key = self.calculate_cache_key(self.property_model_name, value.id, score_object.timestamp)
         cached_content = cache.get(cache_key)
 
         if cached_content:
             return cached_content
-
-        # if nothing was found return error
-        if not score_object:
-            return {
-                'error': 'No score matches your criteria.'
-            }
 
         score = score_object.value
 
