@@ -27,8 +27,8 @@ from parlacards.models import (
     DeviationFromGroup
 )
 
-from parlacards.serializers.person import PersonSerializer
-from parlacards.serializers.organization import OrganizationSerializer, MembersSerializer
+from parlacards.serializers.person import PersonBasicInfoSerializer
+from parlacards.serializers.organization import OrganizationBasicInfoSerializer, MembersSerializer
 from parlacards.serializers.session import SessionSerializer
 from parlacards.serializers.legislation import LegislationSerializer
 from parlacards.serializers.ballot import BallotSerializer
@@ -59,7 +59,7 @@ from parlacards.solr import get_speeches_from_solr
 class PersonCardSerializer(PersonScoreCardSerializer):
     def get_results(self, obj):
         # obj is the person
-        person_serializer = PersonSerializer(
+        person_serializer = PersonBasicInfoSerializer(
             obj,
             context=self.context
         )
@@ -419,7 +419,8 @@ class GroupSpeechesCardSerializer(GroupScoreCardSerializer):
 # MISC
 #
 class PersonAnalysesSerializer(CommonPersonSerializer):
-    results = serializers.SerializerMethodField()
+    def calculate_cache_key(self, instance):
+        return f'PersonAnalysesSerializer_{instance.id}_{instance.updated_at.strftime("%Y-%m-%d-%H-%M-%s")}'
 
     def get_person_value(self, person, property_model_name):
         scores_module = import_module('parlacards.models')
@@ -447,6 +448,8 @@ class PersonAnalysesSerializer(CommonPersonSerializer):
             'spoken_words': self.get_person_value(person, 'PersonNumberOfSpokenWords'),
             'vocabulary_size': self.get_person_value(person, 'PersonVocabularySize'),
         }
+
+    results = serializers.SerializerMethodField()
 
 
 class VotersCardSerializer(CardSerializer):
@@ -562,7 +565,7 @@ class LastSessionCardSerializer(CardSerializer):
 class GroupCardSerializer(GroupScoreCardSerializer):
     def get_results(self, obj):
         # obj is the group
-        serializer = OrganizationSerializer(
+        serializer = OrganizationBasicInfoSerializer(
             obj,
             context=self.context
         )
