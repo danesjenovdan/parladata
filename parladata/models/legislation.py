@@ -48,13 +48,13 @@ class Law(Timestampable, Taggable):
                                  help_text='Skrajšani, normalni, hitri postopek...')
 
     # TODO maybe this can be a choice field
-    law_type = models.TextField(blank=True, null=True,
+    classification = models.TextField(blank=True, null=True,
                                    help_text='Type of law')
 
     abstract = HTMLField(blank=True,
                      null=True)
 
-    datetime = models.DateTimeField(blank=True,
+    timestamp = models.DateTimeField(blank=True,
                                null=True,
                                help_text='Date of the law.')
 
@@ -65,7 +65,7 @@ class Law(Timestampable, Taggable):
     def has_votes(self):
         # TODO
         return True
-    
+
     @property
     def has_abstract(self):
         return bool(self.abstract)
