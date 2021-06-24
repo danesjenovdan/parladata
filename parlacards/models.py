@@ -43,6 +43,20 @@ class GroupScore(Score):
         abstract = True
 
 
+class SessionScore(Score):
+    session = models.ForeignKey(
+        'parladata.Session',
+        related_name="%(class)s_related",
+        on_delete=models.CASCADE
+    )
+
+    def __str__(self):
+        return f'{self.session.name}: {self.value}'
+
+    class Meta:
+        abstract = True
+
+
 class PersonVocabularySize(PersonScore):
     pass
 
@@ -129,6 +143,14 @@ class GroupTfidf(GroupScore):
         blank=False,
         null=False
     )
+
+
+class SessionTfidf(SessionScore):
+    token = models.TextField(
+        blank=False,
+        null=False
+    )
+
 
 class GroupDiscord(GroupScore):
     pass

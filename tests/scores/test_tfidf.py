@@ -1,6 +1,6 @@
 import pytest
 
-from parlacards.scores.tfidf import calculate_people_tfidf, calculate_groups_tfidf
+from parlacards.scores.tfidf import calculate_people_tfidf, calculate_groups_tfidf, calculate_sessions_tfidf
 
 from tests.fixtures.common import *
 
@@ -9,7 +9,7 @@ def test_calculate_people_tfidf(
     main_organization
 ):
     tfidfs = calculate_people_tfidf(main_organization)
-    
+
     assert len(tfidfs) == 43
     assert len(tfidfs[0]['tfidf']) == 20
 
@@ -33,7 +33,7 @@ def test_calculate_groups_tfidf(
     main_organization
 ):
     tfidfs = calculate_groups_tfidf(main_organization)
-    
+
     assert len(tfidfs) == 7
     assert len(tfidfs[0]['tfidf']) == 20
 
@@ -51,3 +51,27 @@ def test_calculate_groups_tfidf(
 
     assert tfidfs[1]['tfidf'][0][0] == 'prehod'
     assert tfidfs[1]['tfidf'][0][1] == 0.5071603819535089
+
+@pytest.mark.django_db()
+def test_calculate_sessions_tfidf(
+    main_organization
+):
+    tfidfs = calculate_sessions_tfidf(main_organization)
+
+    assert len(tfidfs) == 2
+    assert len(tfidfs[0]['tfidf']) == 20
+
+    assert tfidfs[0]['tfidf'][0][0] == 'mesten'
+    assert tfidfs[0]['tfidf'][0][1] == 0.2966073474885689
+
+    assert tfidfs[0]['tfidf'][1][0] == 'hvala'
+    assert tfidfs[0]['tfidf'][1][1] == 0.29124697373877545
+
+    assert tfidfs[1]['tfidf'][0][0] == 'Ljubljana'
+    assert tfidfs[1]['tfidf'][0][1] == 0.29682546570565693
+
+    assert tfidfs[1]['tfidf'][1][0] == 'mesten'
+    assert tfidfs[1]['tfidf'][1][1] == 0.25651583456044424
+
+    assert tfidfs[1]['tfidf'][-2][0] == 'akt'
+    assert tfidfs[1]['tfidf'][-2][1] == 0.08794828613500946

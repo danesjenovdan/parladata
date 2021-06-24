@@ -8,7 +8,7 @@ from django.conf import settings
 from parladata.models.speech import Speech
 
 def one_month_later(date, shorten_for=0):
-    # damn date math    
+    # damn date math
     try:
         end_date = date.replace(month=date.month+1) - timedelta(days=shorten_for)
     except ValueError:
@@ -48,7 +48,8 @@ def solr_select(
     months=[],
     highlight=False,
     facet=False,
-    rows_per_page=20,
+    page=1,
+    per_page=20,
     document_type='speech'
 ):
     # TODO solr timeout
@@ -64,8 +65,8 @@ def solr_select(
     params = {
         'wt': 'json',
         'sort': 'start_time desc',
-        'rows': rows_per_page,
-        'start': 0, # TODO implement paging like django native
+        'rows': per_page,
+        'start': (page - 1) * per_page,
         'q': q_params,
         'fl': 'speech_id'
     }
@@ -73,7 +74,7 @@ def solr_select(
     if highlight:
         params['hl'] = 'true'
         params['hl.fl'] = 'content'
-    
+
     if facet:
         params['facet'] = 'true'
         params['facet.field'] = ['person_id', 'party_id']
@@ -82,7 +83,7 @@ def solr_select(
         # TODO
         # params['facet.range.start'] = f'{config.facetRangeStart}T00:00:00.000Z',
         # params['facet.range.end'] = config.facetRangeEnd ? `${config.facetRangeEnd}T00:00:00.000Z` : 'NOW',
-    
+
     url = f'{settings.SOLR_URL}/select'
     response = requests.get(url, params=params)
 
@@ -91,7 +92,7 @@ def solr_select(
 def shorten_highlighted_content(highlight, max_length=250):
     if len(highlight) <= max_length:
         return highlight
-    
+
     try:
         first_opening_em_start_index = highlight.index('<em>')
         last_closing_em_end_index = highlight.rfind('</em>') + len('</em>')
@@ -101,7 +102,7 @@ def shorten_highlighted_content(highlight, max_length=250):
     if last_closing_em_end_index <= max_length:
         # all highlights are within limits
         return f'{highlight[:max_length]}[...]'
-    
+
     # not all highlights are withing limits
     # check if first highlight is visible
     # and trim the left side of the highlight
@@ -144,7 +145,8 @@ def get_speeches_from_solr(
     months=[],
     highlight=False,
     facet=False,
-    rows_per_page=20,
+    page=1,
+    per_page=20,
     document_type='speech'
 ):
     solr_response = solr_select(
@@ -154,7 +156,8 @@ def get_speeches_from_solr(
         months=months,
         highlight=highlight,
         facet=facet,
-        rows_per_page=rows_per_page,
+        page=page,
+        per_page=per_page,
         document_type=document_type
     )
 
@@ -169,17 +172,11 @@ def get_speeches_from_solr(
     ))
 
     for speech in speeches:
-        if solr_response['highlighting'].get(
-            f'speech_{speech.id}',
-            {}
-        ).get(
-            'content',
-            False
-        ):
+        if solr_response['highlighting'].get(f'speech_{speech.id}', {}).get('content', False):
             speech.content = '[...]'.join(
                 solr_response['highlighting'][f'speech_{speech.id}']['content']
             )
 
         speech.content = shorten_highlighted_content(speech.content)
 
-    return speeches
+    return (speeches, solr_response['response']['numFound'])
