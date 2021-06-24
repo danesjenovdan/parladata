@@ -834,7 +834,7 @@ class SessionSpeechesCardSerializer(SessionScoreCardSerializer):
         return None
 
     def to_representation(self, instance):
-        parent_data = super().get_serializer_data(instance)
+        parent_data = super().to_representation(instance)
 
         # instance is the session
         speeches = Speech.objects.filter_valid_speeches(self.context['date']).filter(
