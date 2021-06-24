@@ -364,34 +364,6 @@ class SessionSpeeches(CardView):
     thing = Session
     card_serializer = SessionSpeechesCardSerializer
 
-    def get_serializer_data(self, request, the_thing):
-        parent_data = super().get_serializer_data(request, the_thing)
-
-        # the_thing is the session
-        speeches = Speech.objects.filter_valid_speeches(request.card_date).filter(
-            session=the_thing
-        ).order_by(
-            'order',
-            'id' # fallback ordering
-        )
-
-        requested_page, requested_per_page = parse_pagination_query_params(request.GET)
-        paginator = Paginator(speeches, requested_per_page)
-        page = paginator.get_page(requested_page)
-
-        # serialize speeches
-        speeches_serializer = SpeechSerializer(
-            page.object_list,
-            many=True,
-            context={'date': request.card_date}
-        )
-
-        return {
-            **parent_data,
-            **pagination_response_data(paginator, page),
-            'results': speeches_serializer.data,
-        }
-
 
 class SessionVotes(CardView):
     thing = Session
