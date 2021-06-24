@@ -172,13 +172,7 @@ def get_speeches_from_solr(
     ))
 
     for speech in speeches:
-        if solr_response['highlighting'].get(
-            f'speech_{speech.id}',
-            {}
-        ).get(
-            'content',
-            False
-        ):
+        if solr_response['highlighting'].get(f'speech_{speech.id}', {}).get('content', False):
             speech.content = '[...]'.join(
                 solr_response['highlighting'][f'speech_{speech.id}']['content']
             )

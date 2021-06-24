@@ -65,6 +65,7 @@ from parlacards.serializers.speech import SpeechSerializer
 from parlacards.serializers.session import SessionSerializer
 
 from parlacards.solr import get_speeches_from_solr
+from parlacards.pagination import parse_pagination_query_params
 
 from django.core.cache import cache
 
@@ -385,8 +386,7 @@ class SessionSpeeches(APIView):
             'id' # fallback ordering
         )
 
-        requested_page = request.GET.get('page', 1)
-        requested_per_page = request.GET.get('per_page', 10)
+        (requested_page, requested_per_page) = parse_pagination_query_params(request.GET)
 
         paginator = Paginator(speeches, requested_per_page)
         page = paginator.get_page(requested_page)
@@ -473,14 +473,7 @@ class PersonSpeechesView(CardView):
         if request.GET.get('months', False):
             solr_params['months'] = request.GET['months'].split(',')
 
-        try:
-            requested_page = int(request.GET.get('page', 1))
-        except ValueError:
-            requested_page = 1
-        try:
-            requested_per_page = int(request.GET.get('per_page', 10))
-        except ValueError:
-            requested_per_page = 10
+        (requested_page, requested_per_page) = parse_pagination_query_params(request.GET)
 
         (speeches, speech_count) = get_speeches_from_solr(
             **solr_params,
@@ -529,14 +522,7 @@ class GroupSpeechesView(CardView):
         if request.GET.get('people', False):
             solr_params['people_ids'] = request.GET['people'].split(',')
 
-        try:
-            requested_page = int(request.GET.get('page', 1))
-        except ValueError:
-            requested_page = 1
-        try:
-            requested_per_page = int(request.GET.get('per_page', 10))
-        except ValueError:
-            requested_per_page = 10
+        (requested_page, requested_per_page) = parse_pagination_query_params(request.GET)
 
         (speeches, speech_count) = get_speeches_from_solr(
             **solr_params,
