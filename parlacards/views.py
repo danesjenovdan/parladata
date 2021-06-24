@@ -1,7 +1,3 @@
-from datetime import datetime
-from math import ceil
-
-from django.db.models import Q
 from django.core.paginator import Paginator
 
 from rest_framework import status
@@ -63,7 +59,7 @@ from parlacards.serializers.cards import (
 )
 from parlacards.serializers.speech import SpeechSerializer
 
-from parlacards.pagination import SolrPaginator, pagination_response_data, parse_pagination_query_params
+from parlacards.pagination import pagination_response_data, parse_pagination_query_params
 
 from django.core.cache import cache
 
@@ -450,36 +446,6 @@ class PersonSpeechesView(CardView):
     thing = Person
     card_serializer = PersonSpeechesCardSerializer
 
-    def get_serializer_data(self, request, the_thing):
-        parent_data = super().get_serializer_data(request, the_thing)
-
-        # the_thing is the person
-        solr_params = {
-            'people_ids': [the_thing.id],
-            'highlight': True,
-        }
-        if request.GET.get('text', False):
-            solr_params['text_query'] = request.GET['text']
-        if request.GET.get('months', False):
-            solr_params['months'] = request.GET['months'].split(',')
-
-        requested_page, requested_per_page = parse_pagination_query_params(request.GET)
-        paginator = SolrPaginator(solr_params, requested_per_page)
-        page = paginator.get_page(requested_page)
-
-        # serialize speeches
-        speeches_serializer = SpeechSerializer(
-            page.object_list,
-            many=True,
-            context={'date': request.card_date}
-        )
-
-        return {
-            **parent_data,
-            **pagination_response_data(paginator, page),
-            'results': speeches_serializer.data,
-        }
-
 
 class GroupSpeechesView(CardView):
     '''
@@ -487,38 +453,6 @@ class GroupSpeechesView(CardView):
     '''
     thing = Organization
     card_serializer = GroupSpeechesCardSerializer
-
-    def get_serializer_data(self, request, the_thing):
-        parent_data = super().get_serializer_data(request, the_thing)
-
-        # the_thing is the group
-        solr_params = {
-            'group_ids': [the_thing.id],
-            'highlight': True,
-        }
-        if request.GET.get('text', False):
-            solr_params['text_query'] = request.GET['text']
-        if request.GET.get('months', False):
-            solr_params['months'] = request.GET['months'].split(',')
-        if request.GET.get('people', False):
-            solr_params['people_ids'] = request.GET['people'].split(',')
-
-        requested_page, requested_per_page = parse_pagination_query_params(request.GET)
-        paginator = SolrPaginator(solr_params, requested_per_page)
-        page = paginator.get_page(requested_page)
-
-        # serialize speeches
-        speeches_serializer = SpeechSerializer(
-            page.object_list,
-            many=True,
-            context={'date': request.card_date}
-        )
-
-        return {
-            **parent_data,
-            **pagination_response_data(paginator, page),
-            'results': speeches_serializer.data,
-        }
 
 
 class GroupDiscordView(CardView):
