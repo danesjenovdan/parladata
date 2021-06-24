@@ -18,6 +18,7 @@ from parladata.models.vote import Vote
 from parlacards.serializers.cards import (
     PersonCardSerializer,
     GroupMembersCardSerializer,
+    SessionSpeechesCardSerializer,
     VotersCardSerializer,
     GroupsCardSerializer,
     GroupCardSerializer,
@@ -60,12 +61,9 @@ from parlacards.serializers.cards import (
     LastSessionCardSerializer,
     MandateSpeechCardSerializer,
 )
-from parlacards.serializers.common import PersonScoreCardSerializer
 from parlacards.serializers.speech import SpeechSerializer
-from parlacards.serializers.session import SessionSerializer
 
-from parlacards.solr import get_speeches_from_solr
-from parlacards.pagination import parse_pagination_query_params
+from parlacards.pagination import SolrPaginator, pagination_response_data, parse_pagination_query_params
 
 from django.core.cache import cache
 
@@ -366,28 +364,22 @@ class SessionLegislation(CardView):
     card_serializer = SessionLegislationCardSerializer
 
 
-class SessionSpeeches(APIView):
-    def get(self, request, format=None):
-        # find the session and if no people were found return
-        session = Session.objects.filter(id=request.card_id).first()
-        if not session:
-            return Response(status=status.HTTP_404_NOT_FOUND)
+class SessionSpeeches(CardView):
+    thing = Session
+    card_serializer = SessionSpeechesCardSerializer
 
-        # serialize the session
-        session_serializer = SessionSerializer(
-            session,
-            context={'date': request.card_date}
-        )
+    def get_serializer_data(self, request, the_thing):
+        parent_data = super().get_serializer_data(request, the_thing)
 
+        # the_thing is the session
         speeches = Speech.objects.filter_valid_speeches(request.card_date).filter(
-            session=session
+            session=the_thing
         ).order_by(
             'order',
             'id' # fallback ordering
         )
 
-        (requested_page, requested_per_page) = parse_pagination_query_params(request.GET)
-
+        requested_page, requested_per_page = parse_pagination_query_params(request.GET)
         paginator = Paginator(speeches, requested_per_page)
         page = paginator.get_page(requested_page)
 
@@ -397,14 +389,12 @@ class SessionSpeeches(APIView):
             many=True,
             context={'date': request.card_date}
         )
-        return Response({
-            'session': session_serializer.data,
+
+        return {
+            **parent_data,
+            **pagination_response_data(paginator, page),
             'results': speeches_serializer.data,
-            'count': paginator.count,
-            'pages': paginator.num_pages,
-            'page': page.number,
-            'per_page': paginator.per_page
-        })
+        }
 
 
 class SessionVotes(CardView):
@@ -473,30 +463,21 @@ class PersonSpeechesView(CardView):
         if request.GET.get('months', False):
             solr_params['months'] = request.GET['months'].split(',')
 
-        (requested_page, requested_per_page) = parse_pagination_query_params(request.GET)
+        requested_page, requested_per_page = parse_pagination_query_params(request.GET)
+        paginator = SolrPaginator(solr_params, requested_per_page)
+        page = paginator.get_page(requested_page)
 
-        (speeches, speech_count) = get_speeches_from_solr(
-            **solr_params,
-            page=requested_page,
-            per_page=requested_per_page,
-        )
-
-        speech_serializer = SpeechSerializer(
-            speeches,
+        # serialize speeches
+        speeches_serializer = SpeechSerializer(
+            page.object_list,
             many=True,
-            context={
-                'date': request.card_date,
-                'GET': request.GET
-            }
+            context={'date': request.card_date}
         )
 
         return {
             **parent_data,
-            'results': speech_serializer.data,
-            'count': speech_count,
-            'pages': ceil(max(1, speech_count) / requested_per_page),
-            'page': requested_page,
-            'per_page': requested_per_page,
+            **pagination_response_data(paginator, page),
+            'results': speeches_serializer.data,
         }
 
 
@@ -522,30 +503,21 @@ class GroupSpeechesView(CardView):
         if request.GET.get('people', False):
             solr_params['people_ids'] = request.GET['people'].split(',')
 
-        (requested_page, requested_per_page) = parse_pagination_query_params(request.GET)
+        requested_page, requested_per_page = parse_pagination_query_params(request.GET)
+        paginator = SolrPaginator(solr_params, requested_per_page)
+        page = paginator.get_page(requested_page)
 
-        (speeches, speech_count) = get_speeches_from_solr(
-            **solr_params,
-            page=requested_page,
-            per_page=requested_per_page,
-        )
-
-        speech_serializer = SpeechSerializer(
-            speeches,
+        # serialize speeches
+        speeches_serializer = SpeechSerializer(
+            page.object_list,
             many=True,
-            context={
-                'date': request.card_date,
-                'GET': request.GET
-            }
+            context={'date': request.card_date}
         )
 
         return {
             **parent_data,
-            'results': speech_serializer.data,
-            'count': speech_count,
-            'pages': ceil(max(1, speech_count) / requested_per_page),
-            'page': requested_page,
-            'per_page': requested_per_page,
+            **pagination_response_data(paginator, page),
+            'results': speeches_serializer.data,
         }
 
 
