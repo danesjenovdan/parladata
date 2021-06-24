@@ -1,4 +1,5 @@
 from datetime import datetime
+from math import ceil
 
 from django.db.models import Q
 from django.core.paginator import Paginator
@@ -59,11 +60,14 @@ from parlacards.serializers.cards import (
     LastSessionCardSerializer,
     MandateSpeechCardSerializer,
 )
-
+from parlacards.serializers.common import PersonScoreCardSerializer
 from parlacards.serializers.speech import SpeechSerializer
 from parlacards.serializers.session import SessionSerializer
 
+from parlacards.solr import get_speeches_from_solr
+
 from django.core.cache import cache
+
 
 class CardView(APIView):
     """
@@ -74,9 +78,7 @@ class CardView(APIView):
     thing = None
     card_serializer = None
 
-    def get_serializer_data(self, request):
-        # this assumes that the_thing can be found
-        the_thing = self.thing.objects.filter(id=request.card_id).first()
+    def get_serializer_data(self, request, the_thing):
         serializer = self.card_serializer(
             the_thing,
             context={
@@ -93,11 +95,12 @@ class CardView(APIView):
         if not self.card_serializer:
             raise NotImplementedError('You should define a serializer to use.')
 
-        # if no things with the id exist, return 404
-        if not self.thing.objects.filter(id=request.card_id).exists():
-            return Response(status=status.HTTP_404_NOT_FOUND)
+        # if the thing with id exists return serialized data
+        if the_thing := self.thing.objects.filter(id=request.card_id).first():
+            return Response(self.get_serializer_data(request, the_thing))
 
-        return Response(self.get_serializer_data(request))
+        # otherwise return 404
+        return Response(status=status.HTTP_404_NOT_FOUND)
 
 
 class CachedCardView(CardView):
@@ -106,21 +109,24 @@ class CachedCardView(CardView):
         return f'{request.path}_{request.card_id}_{request.card_date.strftime("%Y-%m-%d")}'
 
     def get(self, request, format=None):
+        cache_key = None
+
         # only try cache if not explicitly disabled
         if not request.GET.get('no_cache', False):
             cache_key = self.calculate_cache_key(request)
-            cached_content = cache.get(cache_key)
-
-            if cached_content:
+            if cached_content := cache.get(cache_key):
                 return Response(cached_content)
 
-        # if no things with the id exist, return 404
-        if not self.thing.objects.filter(id=request.card_id).exists():
-            return Response(status=status.HTTP_404_NOT_FOUND)
+        # if the thing with id exists return serialized data
+        if the_thing := self.thing.objects.filter(id=request.card_id).first():
+            serializer_data = self.get_serializer_data(request, the_thing)
+            if cache_key is not None:
+                cache.set(cache_key, serializer_data)
+            return Response(serializer_data)
 
-        serializer_data = self.get_serializer_data(request)
-        cache.set(cache_key, serializer_data)
-        return Response(serializer_data)
+        # otherwise return 404
+        return Response(status=status.HTTP_404_NOT_FOUND)
+
 
 class PersonInfo(CardView):
     """
@@ -454,6 +460,52 @@ class PersonSpeechesView(CardView):
     thing = Person
     card_serializer = PersonSpeechesCardSerializer
 
+    def get_serializer_data(self, request, the_thing):
+        parent_data = super().get_serializer_data(request, the_thing)
+
+        # the_thing is the person
+        solr_params = {
+            'people_ids': [the_thing.id],
+            'highlight': True,
+        }
+        if request.GET.get('text', False):
+            solr_params['text_query'] = request.GET['text']
+        if request.GET.get('months', False):
+            solr_params['months'] = request.GET['months'].split(',')
+
+        try:
+            requested_page = int(request.GET.get('page', 1))
+        except ValueError:
+            requested_page = 1
+        try:
+            requested_per_page = int(request.GET.get('per_page', 10))
+        except ValueError:
+            requested_per_page = 10
+
+        (speeches, speech_count) = get_speeches_from_solr(
+            **solr_params,
+            page=requested_page,
+            per_page=requested_per_page,
+        )
+
+        speech_serializer = SpeechSerializer(
+            speeches,
+            many=True,
+            context={
+                'date': request.card_date,
+                'GET': request.GET
+            }
+        )
+
+        return {
+            **parent_data,
+            'results': speech_serializer.data,
+            'count': speech_count,
+            'pages': ceil(max(1, speech_count) / requested_per_page),
+            'page': requested_page,
+            'per_page': requested_per_page,
+        }
+
 
 class GroupSpeechesView(CardView):
     '''
@@ -461,6 +513,54 @@ class GroupSpeechesView(CardView):
     '''
     thing = Organization
     card_serializer = GroupSpeechesCardSerializer
+
+    def get_serializer_data(self, request, the_thing):
+        parent_data = super().get_serializer_data(request, the_thing)
+
+        # the_thing is the group
+        solr_params = {
+            'group_ids': [the_thing.id],
+            'highlight': True,
+        }
+        if request.GET.get('text', False):
+            solr_params['text_query'] = request.GET['text']
+        if request.GET.get('months', False):
+            solr_params['months'] = request.GET['months'].split(',')
+        if request.GET.get('people', False):
+            solr_params['people_ids'] = request.GET['people'].split(',')
+
+        try:
+            requested_page = int(request.GET.get('page', 1))
+        except ValueError:
+            requested_page = 1
+        try:
+            requested_per_page = int(request.GET.get('per_page', 10))
+        except ValueError:
+            requested_per_page = 10
+
+        (speeches, speech_count) = get_speeches_from_solr(
+            **solr_params,
+            page=requested_page,
+            per_page=requested_per_page,
+        )
+
+        speech_serializer = SpeechSerializer(
+            speeches,
+            many=True,
+            context={
+                'date': request.card_date,
+                'GET': request.GET
+            }
+        )
+
+        return {
+            **parent_data,
+            'results': speech_serializer.data,
+            'count': speech_count,
+            'pages': ceil(max(1, speech_count) / requested_per_page),
+            'page': requested_page,
+            'per_page': requested_per_page,
+        }
 
 
 class GroupDiscordView(CardView):

@@ -376,44 +376,14 @@ class PersonTfidfCardSerializer(PersonScoreCardSerializer):
 
 class PersonSpeechesCardSerializer(PersonScoreCardSerializer):
     def get_results(self, obj):
-        # obj is the person
-        solr_params = {
-            'people_ids': [obj.id],
-            'highlight': True
-        }
-        if self.context['GET'].get('text', False):
-            solr_params['text_query'] = self.context['GET']['text']
-        if self.context['GET'].get('months', False):
-            solr_params['months'] = self.context['GET']['months'].split(',')
-
-        serializer = SpeechSerializer(
-            get_speeches_from_solr(**solr_params),
-            many=True,
-            context=self.context
-        )
-        return serializer.data
+        # this is implemeted in PersonSpeechesView for pagination
+        return None
 
 
 class GroupSpeechesCardSerializer(GroupScoreCardSerializer):
     def get_results(self, obj):
-        # obj is the person
-        solr_params = {
-            'group_ids': [obj.id],
-            'highlight': True
-        }
-        if self.context['GET'].get('text', False):
-            solr_params['text_query'] = self.context['GET']['text']
-        if self.context['GET'].get('people', False):
-            solr_params['people_ids'] = self.context['GET']['people'].split(',')
-        if self.context['GET'].get('months', False):
-            solr_params['months'] = self.context['GET']['months'].split(',')
-
-        serializer = SpeechSerializer(
-            get_speeches_from_solr(**solr_params),
-            many=True,
-            context=self.context
-        )
-        return serializer.data
+        # this is implemeted in GroupSpeechesView for pagination
+        return None
 
 #
 # MISC
