@@ -1,8 +1,8 @@
 from itertools import chain
-from operator import attrgetter
 from importlib import import_module
 
-from datetime import datetime, timedelta
+from datetime import timedelta
+from django.core.paginator import Paginator
 
 from django.db.models import Q, Count, Max
 from django.db.models.functions import TruncDay
@@ -32,7 +32,6 @@ from parlacards.serializers.organization import OrganizationBasicInfoSerializer,
 from parlacards.serializers.session import SessionSerializer
 from parlacards.serializers.legislation import LegislationSerializer
 from parlacards.serializers.ballot import BallotSerializer
-from parlacards.serializers.question import QuestionSerializer
 from parlacards.serializers.voting_distance import VotingDistanceSerializer, GroupVotingDistanceSerializer
 from parlacards.serializers.membership import MembershipSerializer
 from parlacards.serializers.recent_activity import DailyActivitySerializer
@@ -832,8 +831,36 @@ class SessionLegislationCardSerializer(SessionScoreCardSerializer):
 
 class SessionSpeechesCardSerializer(SessionScoreCardSerializer):
     def get_results(self, obj):
-        # this is implemeted in SessionSpeeches view for pagination
+        # this is implemeted in to_representation for pagination
         return None
+
+    def to_representation(self, instance):
+        parent_data = super().get_serializer_data(instance)
+
+        # instance is the session
+        speeches = Speech.objects.filter_valid_speeches(self.context['date']).filter(
+            session=instance
+        ).order_by(
+            'order',
+            'id' # fallback ordering
+        )
+
+        requested_page, requested_per_page = parse_pagination_query_params(self.context['GET'])
+        paginator = Paginator(speeches, requested_per_page)
+        page = paginator.get_page(requested_page)
+
+        # serialize speeches
+        speeches_serializer = SpeechSerializer(
+            page.object_list,
+            many=True,
+            context=self.context
+        )
+
+        return {
+            **parent_data,
+            **pagination_response_data(paginator, page),
+            'results': speeches_serializer.data,
+        }
 
 
 class SpeechCardSerializer(CardSerializer):
