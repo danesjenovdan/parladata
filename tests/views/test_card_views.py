@@ -191,6 +191,11 @@ def test_group_discord():
     response = client.get('/v3/cards/group/discord/?id=6')
     assert response.status_code == 200
 
+@pytest.mark.django_db()
+def test_group_discord_with_nonexistent_id():
+    response = client.get('/v3/cards/group/discord/?id=12000')
+    assert response.status_code == 404
+
 # TODO: needs settings.SOLR_URL
 # @pytest.mark.django_db()
 # def test_group_speeches():
