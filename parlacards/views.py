@@ -1,6 +1,3 @@
-from datetime import datetime
-
-from django.db.models import Q
 from django.core.paginator import Paginator
 
 from rest_framework import status
@@ -17,6 +14,7 @@ from parladata.models.vote import Vote
 from parlacards.serializers.cards import (
     PersonCardSerializer,
     GroupMembersCardSerializer,
+    SessionSpeechesCardSerializer,
     VotersCardSerializer,
     GroupsCardSerializer,
     GroupCardSerializer,
@@ -59,11 +57,12 @@ from parlacards.serializers.cards import (
     LastSessionCardSerializer,
     MandateSpeechCardSerializer,
 )
-
 from parlacards.serializers.speech import SpeechSerializer
-from parlacards.serializers.session import SessionSerializer
+
+from parlacards.pagination import pagination_response_data, parse_pagination_query_params
 
 from django.core.cache import cache
+
 
 class CardView(APIView):
     """
@@ -74,9 +73,7 @@ class CardView(APIView):
     thing = None
     card_serializer = None
 
-    def get_serializer_data(self, request):
-        # this assumes that the_thing can be found
-        the_thing = self.thing.objects.filter(id=request.card_id).first()
+    def get_serializer_data(self, request, the_thing):
         serializer = self.card_serializer(
             the_thing,
             context={
@@ -93,11 +90,12 @@ class CardView(APIView):
         if not self.card_serializer:
             raise NotImplementedError('You should define a serializer to use.')
 
-        # if no things with the id exist, return 404
-        if not self.thing.objects.filter(id=request.card_id).exists():
-            return Response(status=status.HTTP_404_NOT_FOUND)
+        # if the thing with id exists return serialized data
+        if the_thing := self.thing.objects.filter(id=request.card_id).first():
+            return Response(self.get_serializer_data(request, the_thing))
 
-        return Response(self.get_serializer_data(request))
+        # otherwise return 404
+        return Response(status=status.HTTP_404_NOT_FOUND)
 
 
 class CachedCardView(CardView):
@@ -106,21 +104,24 @@ class CachedCardView(CardView):
         return f'{request.path}_{request.card_id}_{request.card_date.strftime("%Y-%m-%d")}'
 
     def get(self, request, format=None):
+        cache_key = None
+
         # only try cache if not explicitly disabled
         if not request.GET.get('no_cache', False):
             cache_key = self.calculate_cache_key(request)
-            cached_content = cache.get(cache_key)
-
-            if cached_content:
+            if cached_content := cache.get(cache_key):
                 return Response(cached_content)
 
-        # if no things with the id exist, return 404
-        if not self.thing.objects.filter(id=request.card_id).exists():
-            return Response(status=status.HTTP_404_NOT_FOUND)
+        # if the thing with id exists return serialized data
+        if the_thing := self.thing.objects.filter(id=request.card_id).first():
+            serializer_data = self.get_serializer_data(request, the_thing)
+            if cache_key is not None:
+                cache.set(cache_key, serializer_data)
+            return Response(serializer_data)
 
-        serializer_data = self.get_serializer_data(request)
-        cache.set(cache_key, serializer_data)
-        return Response(serializer_data)
+        # otherwise return 404
+        return Response(status=status.HTTP_404_NOT_FOUND)
+
 
 class PersonInfo(CardView):
     """
@@ -359,46 +360,9 @@ class SessionLegislation(CardView):
     card_serializer = SessionLegislationCardSerializer
 
 
-class SessionSpeeches(APIView):
-    def get(self, request, format=None):
-        # find the session and if no people were found return
-        session = Session.objects.filter(id=request.card_id).first()
-        if not session:
-            return Response(status=status.HTTP_404_NOT_FOUND)
-
-        # serialize the session
-        session_serializer = SessionSerializer(
-            session,
-            context={'date': request.card_date}
-        )
-
-        speeches = Speech.objects.filter_valid_speeches(request.card_date).filter(
-            session=session
-        ).order_by(
-            'order',
-            'id' # fallback ordering
-        )
-
-        requested_page = request.GET.get('page', 1)
-        requested_per_page = request.GET.get('per_page', 10)
-
-        paginator = Paginator(speeches, requested_per_page)
-        page = paginator.get_page(requested_page)
-
-        # serialize speeches
-        speeches_serializer = SpeechSerializer(
-            page.object_list,
-            many=True,
-            context={'date': request.card_date}
-        )
-        return Response({
-            'session': session_serializer.data,
-            'results': speeches_serializer.data,
-            'count': paginator.count,
-            'pages': paginator.num_pages,
-            'page': page.number,
-            'per_page': paginator.per_page
-        })
+class SessionSpeeches(CardView):
+    thing = Session
+    card_serializer = SessionSpeechesCardSerializer
 
 
 class SessionVotes(CardView):
