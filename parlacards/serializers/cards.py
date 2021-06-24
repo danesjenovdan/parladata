@@ -18,6 +18,7 @@ from parladata.models.question import Question
 from parladata.models.speech import Speech
 
 from parlacards.models import (
+    SessionTfidf,
     VotingDistance,
     PersonMonthlyVoteAttendance,
     GroupMonthlyVoteAttendance,
@@ -905,6 +906,33 @@ class GroupTfidfCardSerializer(GroupScoreCardSerializer):
         if latest_score:
             tfidf_scores = GroupTfidf.objects.filter(
                 group=obj,
+                timestamp=latest_score.timestamp,
+            )
+        else:
+            tfidf_scores = []
+
+        serializer = TfidfSerializer(
+            tfidf_scores,
+            many=True,
+            context=self.context
+        )
+
+        return serializer.data
+
+
+class SessionTfidfCardSerializer(SessionScoreCardSerializer):
+    def get_results(self, obj):
+        # obj is the session
+        latest_score = SessionTfidf.objects.filter(
+            session=obj,
+            timestamp__lte=self.context['date'],
+        ).order_by(
+            '-timestamp'
+        ).first()
+
+        if latest_score:
+            tfidf_scores = SessionTfidf.objects.filter(
+                session=obj,
                 timestamp=latest_score.timestamp,
             )
         else:

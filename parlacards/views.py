@@ -15,6 +15,7 @@ from parlacards.serializers.cards import (
     PersonCardSerializer,
     GroupMembersCardSerializer,
     SessionSpeechesCardSerializer,
+    SessionTfidfCardSerializer,
     VotersCardSerializer,
     GroupsCardSerializer,
     GroupCardSerializer,
@@ -393,6 +394,11 @@ class PersonTfidfView(CardView):
 class GroupTfidfView(CardView):
     thing = Organization
     card_serializer = GroupTfidfCardSerializer
+
+
+class SessionTfidfView(CardView):
+    thing = Session
+    card_serializer = SessionTfidfCardSerializer
 
 
 class GroupMostVotesInCommon(CardView):
