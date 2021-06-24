@@ -49,6 +49,7 @@ urlpatterns = [
     path('session/speeches/', SessionSpeeches.as_view()),
     path('session/votes/', SessionVotes.as_view()),
     path('session/single/', SingleSession.as_view()),
+    path('session/tfidf/', SessionTfidfView.as_view()),
 
     path('speech/single/', SingleSpeech.as_view()),
 

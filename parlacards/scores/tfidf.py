@@ -1,10 +1,11 @@
 from datetime import datetime
+from parladata.models.session import Session
 
 from sklearn.feature_extraction.text import TfidfVectorizer
 
 from parladata.models.speech import Speech
 
-from parlacards.models import PersonTfidf, GroupTfidf
+from parlacards.models import PersonTfidf, GroupTfidf, SessionTfidf
 
 from parlacards.scores.common import (
     get_stopwords,
@@ -176,3 +177,87 @@ def save_groups_tfidf_between(playing_field, datetime_from=datetime.now(), datet
 def save_sparse_groups_tfidf_between(playing_field, datetime_from=datetime.now(), datetime_to=datetime.now()):
     for day in get_fortnights_between(datetime_from, datetime_to):
         save_groups_tfidf(playing_field, timestamp=day)
+
+#
+# SESSION
+#
+def calculate_sessions_tfidf(playing_field, timestamp=datetime.now()):
+    # TODO this is very similar to calculate_people_tfidf
+    # consider refactoring
+    session_ids = Session.objects.filter(
+        organizations=playing_field,
+        start_time__lte=timestamp
+    ).order_by('id').values_list('id', flat=True)
+
+    playing_field_speeches = Speech.objects.filter_valid_speeches(
+        timestamp
+    ).filter(
+        session__id__in=session_ids,
+        start_time__lte=timestamp
+    )
+
+    all_speeches = [
+        ' '.join(
+            playing_field_speeches.filter(
+                session__id=session_id
+            ).values_list(
+                'lemmatized_content',
+                flat=True
+            )
+        ) for session_id in session_ids
+    ]
+
+    tfidfVectorizer = TfidfVectorizer(
+        lowercase=False, # do not transform to lowercase
+        preprocessor=lambda x: x, # do not preprocess
+        tokenizer=lambda x: x.split(' '), # tokenize by splitting at ' '
+        stop_words=get_stopwords('sl'),
+        use_idf=True
+    )
+
+    tfidf = tfidfVectorizer.fit_transform(all_speeches)
+
+    feature_names = tfidfVectorizer.get_feature_names()
+
+    output = []
+    for session_index, session_id in enumerate(session_ids):
+        session_tfidf = [
+            (
+                feature_names[feature_index],
+                float(value)
+            ) for feature_index, value in enumerate(
+                tfidf[session_index].T.todense()
+            )
+        ]
+        # sort in place
+        session_tfidf.sort(key=lambda x: x[1], reverse=True)
+
+        # TODO when refactoring change this to a single
+        # dictionary instead of a list of dictionaries
+        output.append({
+            'session_id': session_id,
+            'tfidf': session_tfidf[:20]
+        })
+
+    return output
+
+def save_sessions_tfidf(playing_field, timestamp=datetime.now()):
+    sessions_tfidf = calculate_sessions_tfidf(playing_field, timestamp)
+
+    for tfidf in sessions_tfidf:
+        for score in tfidf['tfidf']:
+            SessionTfidf(
+                session_id=tfidf['session_id'],
+                timestamp=timestamp,
+                token=score[0],
+                value=score[1],
+                playing_field=playing_field
+            ).save()
+
+def save_sessions_tfidf_between(playing_field, datetime_from=datetime.now(), datetime_to=datetime.now()):
+    for day in get_dates_between(datetime_from, datetime_to):
+        save_sessions_tfidf(playing_field, timestamp=day)
+
+def save_sparse_sessions_tfidf_between(playing_field, datetime_from=datetime.now(), datetime_to=datetime.now()):
+    for day in get_fortnights_between(datetime_from, datetime_to):
+        save_sessions_tfidf(playing_field, timestamp=day)
