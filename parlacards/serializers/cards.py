@@ -49,6 +49,7 @@ from parlacards.serializers.common import (
     CommonPersonSerializer,
     CommonOrganizationSerializer,
     MonthlyAttendanceSerializer,
+    SessionScoreCardSerializer,
 )
 
 from parlacards.solr import get_speeches_from_solr
@@ -751,7 +752,7 @@ class GroupDiscordCardSerializer(GroupScoreCardSerializer):
 #
 # SESSION
 #
-class SessionLegislationCardSerializer(CardSerializer):
+class SessionLegislationCardSerializer(SessionScoreCardSerializer):
     def get_results(self, obj):
         # obj is the session
         serializer = LegislationSerializer(
@@ -764,15 +765,11 @@ class SessionLegislationCardSerializer(CardSerializer):
         )
         return serializer.data
 
-    def get_session(self, obj):
-        # obj is the session
-        serializer = SessionSerializer(
-            obj,
-            context=self.context
-        )
-        return serializer.data
 
-    session = serializers.SerializerMethodField()
+class SessionSpeechesCardSerializer(SessionScoreCardSerializer):
+    def get_results(self, obj):
+        # this is implemeted in SessionSpeeches view for pagination
+        return None
 
 
 class SpeechCardSerializer(CardSerializer):
@@ -832,7 +829,7 @@ class GroupTfidfCardSerializer(GroupScoreCardSerializer):
         return serializer.data
 
 
-class SessionVotesCardSerializer(CardSerializer):
+class SessionVotesCardSerializer(SessionScoreCardSerializer):
     def get_results(self, obj):
         # obj is the session
         votes = Vote.objects.filter(
@@ -847,14 +844,6 @@ class SessionVotesCardSerializer(CardSerializer):
         )
         return serializer.data
 
-    def get_session(self, obj):
-        serializer = SessionSerializer(
-            obj,
-            context=self.context
-        )
-        return serializer.data
-
-    session = serializers.SerializerMethodField()
 
 #
 # SPEECHES
