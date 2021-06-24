@@ -115,6 +115,11 @@ def test_person_tfidf():
     assert response.status_code == 200
 
 @pytest.mark.django_db()
+def test_person_speeches():
+    response = client.get('/v3/cards/person/speeches/?id=6')
+    assert response.status_code == 200
+
+@pytest.mark.django_db()
 def test_group_basic_information():
     response = client.get('/v3/cards/group/basic-information/?id=6')
     assert response.status_code == 200
@@ -186,6 +191,11 @@ def test_group_discord():
     assert response.status_code == 200
 
 @pytest.mark.django_db()
+def test_group_speeches():
+    response = client.get('/v3/cards/group/speeches/?id=6')
+    assert response.status_code == 200
+
+@pytest.mark.django_db()
 def test_session_legislation():
     response = client.get('/v3/cards/session/legislation/?id=1')
     assert response.status_code == 200
@@ -213,4 +223,9 @@ def test_single_vote():
 @pytest.mark.django_db()
 def test_single_session():
     response = client.get('/v3/cards/session/single/?id=1')
+    assert response.status_code == 200
+
+@pytest.mark.django_db()
+def test_search_speeches():
+    response = client.get('/v3/cards/search/speeches/?id=1')
     assert response.status_code == 200
