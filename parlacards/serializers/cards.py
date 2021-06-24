@@ -51,7 +51,6 @@ from parlacards.serializers.common import (
     SessionScoreCardSerializer,
 )
 
-from parlacards.solr import get_speeches_from_solr
 from parlacards.pagination import SolrPaginator, pagination_response_data, parse_pagination_query_params
 
 #
@@ -940,25 +939,40 @@ class SessionVotesCardSerializer(SessionScoreCardSerializer):
 # SPEECHES
 #
 class MandateSpeechCardSerializer(CardSerializer):
-    # TODO
-    # filter by mandate
     def get_results(self, obj):
-        # obj is the mandate
+        # this is implemeted in to_representation for pagination
+        return None
+
+    def to_representation(self, instance):
+        parent_data = super().to_representation(instance)
+
+        # instance is the mandate
         solr_params = {
-            'highlight': True
+            # TODO: filter by mandate
+            'highlight': True,
         }
         if self.context['GET'].get('text', False):
             solr_params['text_query'] = self.context['GET']['text']
+        if self.context['GET'].get('months', False):
+            solr_params['months'] = self.context['GET']['months'].split(',')
         if self.context['GET'].get('people', False):
             solr_params['people_ids'] = self.context['GET']['people'].split(',')
         if self.context['GET'].get('groups', False):
             solr_params['group_ids'] = self.context['GET']['groups'].split(',')
-        if self.context['GET'].get('months', False):
-            solr_params['months'] = self.context['GET']['months'].split(',')
 
-        serializer = SpeechSerializer(
-            get_speeches_from_solr(**solr_params),
+        requested_page, requested_per_page = parse_pagination_query_params(self.context['GET'])
+        paginator = SolrPaginator(solr_params, requested_per_page)
+        page = paginator.get_page(requested_page)
+
+        # serialize speeches
+        speeches_serializer = SpeechSerializer(
+            page.object_list,
             many=True,
             context=self.context
         )
-        return serializer.data
+
+        return {
+            **parent_data,
+            **pagination_response_data(paginator, page),
+            'results': speeches_serializer.data,
+        }
