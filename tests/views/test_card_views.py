@@ -213,6 +213,11 @@ def test_session_votes():
     assert response.status_code == 200
 
 @pytest.mark.django_db()
+def test_session_votes():
+    response = client.get('/v3/cards/session/tfidf/?id=1')
+    assert response.status_code == 200
+
+@pytest.mark.django_db()
 def test_single_speech():
     response = client.get('/v3/cards/speech/single/?id=6')
     assert response.status_code == 200
