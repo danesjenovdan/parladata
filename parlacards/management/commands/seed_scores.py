@@ -10,6 +10,6 @@ class Command(BaseCommand):
         parser.add_argument('main_org_id', type=int)
 
     def handle(self, *args, **options):
-        main_organization = Organization.objects.get(options['main_org_id'])
+        main_organization = Organization.objects.get(id=options['main_org_id'])
 
         calculate_sparse_scores(main_organization)
