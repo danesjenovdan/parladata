@@ -50,13 +50,16 @@ class Command(BaseCommand):
         url = settings.SOLR_URL + '/select?wt=json&q=type:speech&fl=speech_id&rows=100000000'
         self.stdout.write(f'Getting all IDs from {url} ...')
         solr_response = requests.get(url)
-        docs = solr_response.json()['response']['docs']
-        ids_in_solr = [
-            doc['speech_id'] for
-            doc in
-            solr_response.json()['response']['docs'] if
-            'speech_id' in doc
-        ]
+        try:
+            docs = solr_response.json()['response']['docs']
+            ids_in_solr = [
+                doc['speech_id'] for
+                doc in
+                solr_response.json()['response']['docs'] if
+                'speech_id' in doc
+            ]
+        except:
+            ids_in_solr = []
 
         # delete invalid speeches
         self.stdout.write('Deleting invalid speeches ...')
