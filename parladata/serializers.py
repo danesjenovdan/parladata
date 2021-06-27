@@ -176,3 +176,8 @@ class OrganizationMembershipSerializer(serializers.ModelSerializer):
             'start_time',
             'end_time'
         )
+
+class MandateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Mandate
+        fields = '__all__'
