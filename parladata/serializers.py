@@ -16,6 +16,7 @@ class PersonSerializer(serializers.ModelSerializer):
             'updated_at',
             'name',
             'parser_names',
+            'date_of_birth'
         ]
 
 
