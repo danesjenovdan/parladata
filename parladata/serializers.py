@@ -16,6 +16,7 @@ class PersonSerializer(serializers.ModelSerializer):
             'updated_at',
             'name',
             'parser_names',
+            'date_of_birth'
         ]
 
 
@@ -176,3 +177,8 @@ class OrganizationMembershipSerializer(serializers.ModelSerializer):
             'start_time',
             'end_time'
         )
+
+class MandateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Mandate
+        fields = '__all__'

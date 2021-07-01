@@ -5,6 +5,7 @@ from parladata.api_views import *
 
 router = routers.DefaultRouter()
 router.register(r'people', PersonView)
+router.register(r'mandates', MandateView)
 router.register(r'sessions', SessionView)
 router.register(r'motions', MotionView)
 router.register(r'links', LinkView)

@@ -57,6 +57,7 @@ from parlacards.serializers.cards import (
     SessionVotesCardSerializer,
     LastSessionCardSerializer,
     MandateSpeechCardSerializer,
+    SessionGroupAttendanceSerializer,
 )
 from parlacards.serializers.speech import SpeechSerializer
 

@@ -152,5 +152,13 @@ class SessionTfidf(SessionScore):
     )
 
 
+class SessionGroupAttendance(SessionScore):
+    group = models.ForeignKey(
+        'parladata.Organization',
+        related_name="%(class)s_related",
+        on_delete=models.CASCADE
+    )
+
+
 class GroupDiscord(GroupScore):
     pass
