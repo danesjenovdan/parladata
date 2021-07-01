@@ -34,6 +34,8 @@ from parlacards.scores.tfidf import (
 )
 from parlacards.scores.discord import save_sparse_groups_discords_between
 
+from parlacards.scores.session_attendance import save_sparse_groups_vote_attendance_on_session_between
+
 def calculate_sparse_scores(playing_field):
     datetime_to = datetime.now()
     datetime_from = datetime_to - timedelta(days=100)
@@ -62,6 +64,8 @@ def calculate_sparse_scores(playing_field):
     save_sparse_people_monthly_vote_attendance_between(playing_field, datetime_from, datetime_to)
     print('Calculating monthly vote attendance for groups ...')
     save_sparse_groups_monthly_vote_attendance_between(playing_field, datetime_from, datetime_to)
+    print('Calculating session vote attendance for groups ...')
+    save_sparse_groups_vote_attendance_on_session_between(playing_field, datetime_from, datetime_to)
     print('Calculating people style scores ...')
     save_sparse_people_style_scores_between(playing_field, datetime_from, datetime_to)
     print('Calculating groups style scores ...')
