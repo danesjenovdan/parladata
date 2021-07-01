@@ -71,12 +71,11 @@ def save_group_vote_attendance_on_session(session, group, playing_field, timesta
         session_attendance.value=calculate_session_vote_attendance(session, group, timestamp)
         session_attendance.save()
     else:
-        start_month_date = timestamp.date().replace(day=1)
         SessionGroupAttendance(
             session=session,
             group=group,
             value=calculate_session_vote_attendance(session, group, timestamp),
-            timestamp=start_month_date,
+            timestamp=session.start_time,
             playing_field=playing_field,
         ).save()
 
