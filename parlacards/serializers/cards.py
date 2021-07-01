@@ -25,7 +25,8 @@ from parlacards.models import (
     PersonTfidf,
     GroupTfidf,
     GroupVotingDistance,
-    DeviationFromGroup
+    DeviationFromGroup,
+    SessionGroupAttendance
 )
 
 from parlacards.serializers.person import PersonBasicInfoSerializer
@@ -40,6 +41,7 @@ from parlacards.serializers.style_scores import StyleScoresSerializer
 from parlacards.serializers.speech import SpeechSerializer
 from parlacards.serializers.vote import VoteSerializer, SessionVoteSerializer
 from parlacards.serializers.tfidf import TfidfSerializer
+from parlacards.serializers.group_attendance import SessionGroupAttendanceSerializer
 
 from parlacards.serializers.common import (
     CardSerializer,
@@ -569,6 +571,7 @@ class LegislationCardSerializer(CardSerializer):
 class LastSessionCardSerializer(CardSerializer):
     def get_results(self, obj):
         # obj is the group
+        last_session = obj.sessions.latest('start_time')
         votes = Vote.objects.filter(
             motion__session__organizations=obj
         ).order_by('timestamp')
@@ -579,10 +582,19 @@ class LastSessionCardSerializer(CardSerializer):
             many=True,
             context=self.context
         )
+        attendances = SessionGroupAttendance.objects.filter(
+            session=last_session,
+            timestamp__lte=self.context['date'],
+        )
+        attendance_serializer = SessionGroupAttendanceSerializer(
+            attendances,
+            many=True,
+            context=self.context
+        )
         return {
             'votes': vote_serializer.data,
             'tfidf': [],
-            'presence': []
+            'attendance': attendance_serializer.data
         }
 
     def get_session(self, obj):
