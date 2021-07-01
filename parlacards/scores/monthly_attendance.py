@@ -112,8 +112,8 @@ def calculate_group_monthly_vote_attendance(group, playing_field, timestamp=date
     """
     Returns monthly ballots count of voter
     """
-    member_ids = group.query_members(timestamp).values_list('id', flat=True)
     memberships = group.query_memberships_before(timestamp)
+    member_ids = memberships.values_list('member_id', flat=True).distinct('member_id')
 
     ballots = Ballot.objects.none()
     all_valid_ballots = Ballot.objects.none()
