@@ -45,6 +45,9 @@ def calculate_group_discord(group, timestamp=datetime.now()):
             ).count() / ballots.count() * 100
         )
 
+    if len(vote_discords) == 0:
+        return 0
+
     average_discord = sum(vote_discords) / len(vote_discords)
     return average_discord
 

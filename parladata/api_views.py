@@ -1,6 +1,6 @@
 from parladata.models import *
 from parladata.serializers import *
-from parladata.models.versionable_properties import OrganizationName, OrganizationAcronym, PersonName
+from parladata.models.versionable_properties import OrganizationName, OrganizationAcronym, PersonName, PersonPreferredPronoun
 from taggit.models import Tag
 from rest_framework import (viewsets, pagination, permissions,
                             mixins, filters, generics, views)
@@ -82,6 +82,7 @@ class PersonView(viewsets.ModelViewSet):
     def create(self, request, *args, **kwargs):
         logging.warning(request.data)
         name = request.data.pop('name', '')
+        preferred_pronoun = request.data.pop('preferred_pronoun', '')
 
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -90,6 +91,10 @@ class PersonView(viewsets.ModelViewSet):
         instance = serializer.instance
         PersonName(
             value=name,
+            owner=instance
+        ).save()
+        PersonPreferredPronoun(
+            value=preferred_pronoun,
             owner=instance
         ).save()
 
@@ -271,3 +276,11 @@ class OrganizationMembershipsViewSet(viewsets.ModelViewSet):
     queryset = OrganizationMembership.objects.all().order_by('id')
     serializer_class = OrganizationMembershipSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+
+class MandateView(viewsets.ModelViewSet):
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    queryset = Mandate.objects.all().order_by('-id')
+    serializer_class = MandateSerializer
+    fields = '__all__'
+    filter_backends = (DjangoFilterBackend,)
+    filter_fields = ('description',)

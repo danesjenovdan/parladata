@@ -112,10 +112,11 @@ def calculate_group_monthly_vote_attendance(group, playing_field, timestamp=date
     """
     Returns monthly ballots count of voter
     """
-    member_ids = group.query_members(timestamp).values_list('id', flat=True)
     memberships = group.query_memberships_before(timestamp)
+    member_ids = memberships.values_list('member_id', flat=True).distinct('member_id')
 
     ballots = Ballot.objects.none()
+    all_valid_ballots = Ballot.objects.none()
 
     for member_id in member_ids:
         member_ballots = Ballot.objects.filter(
@@ -141,18 +142,22 @@ def calculate_group_monthly_vote_attendance(group, playing_field, timestamp=date
                 Q.OR
             )
 
-        all_valid_ballots = ballots.union(member_ballots.filter(q_objects))
+        all_valid_ballots = all_valid_ballots.union(member_ballots.filter(q_objects))
 
-        annotated_ballots = all_valid_ballots.annotate(
-            month=TruncMonth('vote__timestamp')
-        ).values(
-            'month',
-            'option'
-        ).annotate(
-            ballot_count=Count('option')
-        ).order_by(
-            'month'
-        )
+    all_valid_ballots_ids = all_valid_ballots.values('id')
+
+    annotated_ballots = Ballot.objects.filter(
+        id__in=all_valid_ballots_ids
+    ).annotate(
+        month=TruncMonth('vote__timestamp')
+    ).values(
+        'month',
+        'option'
+    ).annotate(
+        ballot_count=Count('option')
+    ).order_by(
+        'month'
+    )
     data = {}
     for annotated_ballot in annotated_ballots:
         if not annotated_ballot['month'].isoformat() in data.keys():
