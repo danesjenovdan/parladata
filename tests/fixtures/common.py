@@ -30,3 +30,7 @@ def second_group(main_organization):
 @pytest.fixture
 def last_group(main_organization):
     return main_organization.query_parliamentary_groups().order_by('id').last()
+
+@pytest.fixture
+def first_session(main_organization):
+    return main_organization.sessions.first()

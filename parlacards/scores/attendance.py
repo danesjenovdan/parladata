@@ -50,6 +50,9 @@ def calculate_group_vote_attendance(group, timestamp=datetime.now()):
     memberships = group.query_memberships_before(timestamp)
     member_ids = memberships.values_list('member_id', flat=True).distinct('member_id')
 
+    # TODO check if its bug: maybe member_ids = memberships.values_list('member_id', flat=True)
+    member_ids = group.query_members(timestamp).values_list('id', flat=True)
+
     ballots = Ballot.objects.none()
 
     for member_id in member_ids:
