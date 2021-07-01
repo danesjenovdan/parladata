@@ -44,8 +44,8 @@ def calculate_group_number_of_question(group, playing_field, timestamp=datetime.
     """
     Returns question count of group
     """
-    member_ids = group.query_members(timestamp).values_list('id', flat=True)
     memberships = group.query_memberships_before(timestamp)
+    member_ids = memberships.values_list('member_id', flat=True).distinct('member_id')
 
     questions = Question.objects.none()
 

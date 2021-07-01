@@ -80,8 +80,8 @@ def save_sparse_people_vocabulary_sizes_between(playing_field, datetime_from=dat
 # GROUP
 #
 def save_group_vocabulary_size(group, playing_field, timestamp=datetime.now()):
-    member_ids = group.query_members(timestamp).values_list('id', flat=True)
     memberships = group.query_memberships_before(timestamp)
+    member_ids = memberships.values_list('member_id', flat=True).distinct('member_id')
 
     speeches = Speech.objects.none()
 
