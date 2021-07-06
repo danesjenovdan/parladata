@@ -68,3 +68,5 @@ parladata_project/settings/prod.py
 parladata_project/settings/__init__.py
 
 secrets.yaml
+
+tagger/sl.lexicon.guesser
