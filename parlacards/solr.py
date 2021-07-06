@@ -1,11 +1,12 @@
-import re
 from datetime import datetime, timedelta
+from math import ceil, floor
 
 import requests
 
 from django.conf import settings
 
 from parladata.models.speech import Speech
+
 
 def one_month_later(date, shorten_for=0):
     # damn date math
@@ -20,6 +21,7 @@ def one_month_later(date, shorten_for=0):
             one_month_later(date, shorten_for=(shorten_for + 1))
 
     return end_date
+
 
 def process_month_string(month_string):
     year, month = map(
@@ -40,6 +42,7 @@ def process_month_string(month_string):
     end_date = one_month_later(start_date) - timedelta(microseconds=1)
 
     return f'[{start_date.isoformat()}Z TO {end_date.isoformat()}Z]'
+
 
 def solr_select(
     text_query='*',
@@ -91,54 +94,129 @@ def solr_select(
 
     return response.json()
 
+
 def shorten_highlighted_content(highlight, max_length=250):
-    if len(highlight) <= max_length:
+    full_highlight_length = len(highlight)
+
+    if full_highlight_length <= max_length:
         return highlight
 
     try:
         first_opening_em_start_index = highlight.index('<em>')
-        last_closing_em_end_index = highlight.rfind('</em>') + len('</em>')
+        last_closing_em_end_index = highlight.rindex('</em>') + len('</em>')
+        highlight_length = last_closing_em_end_index - first_opening_em_start_index
     except ValueError:
-        return highlight[:max_length] + '[...]'
+        return f'{highlight[:max_length]} [...]'
 
     if last_closing_em_end_index <= max_length:
         # all highlights are within limits
-        return f'{highlight[:max_length]}[...]'
+        last_space_index = highlight.rfind(' ', 0, max_length)
+        if last_space_index != -1 and last_space_index > last_closing_em_end_index:
+            return f'{highlight[:last_space_index]} [...]'
+        return f'{highlight[:max_length]} [...]'
 
-    # not all highlights are withing limits
-    # check if first highlight is visible
-    # and trim the left side of the highlight
-    if first_opening_em_start_index > (max_length / 2):
-        left_trimmed_highlight = f'{highlight[first_opening_em_start_index:]}'
-    else:
-        left_trimmed_highlight = highlight
+    if highlight_length == max_length:
+        # all highlights fit exactly within limits
+        return highlight[first_opening_em_start_index:last_closing_em_end_index]
 
-    # find closing tags that fit the limit
-    closing_start_indexes = [
-        m.start() for
-        m in
-        re.finditer('</em>', left_trimmed_highlight)
-    ]
-    legit_closing_start_indexes = [i for i in closing_start_indexes if i < max_length]
+    if highlight_length < max_length:
+        # highlight is too short, add more text on both ends
+        remaining_length = max_length - highlight_length
 
-    trimmed_highlight = left_trimmed_highlight[:legit_closing_start_indexes[-1]] + '</em>'
+        # add half of remaining length to the end of highlight slice and stop at end
+        slice_end = min(floor(last_closing_em_end_index + (remaining_length / 2)), full_highlight_length)
+        # move slice end to the next space if it exists
+        if slice_end < full_highlight_length and slice_end > last_closing_em_end_index:
+            last_space_index = highlight.rfind(' ', last_closing_em_end_index, slice_end)
+            slice_end = last_space_index - 1 if last_space_index != -1 else slice_end
 
-    # check if trimmed_highlight is too short
-    if len(trimmed_highlight) < (max_length / 2):
-        trimmed_highlight_index = highlight.lower().index(trimmed_highlight.lower())
+        # recalculate remaining length
+        highlight_length = slice_end - first_opening_em_start_index
+        remaining_length = max_length - highlight_length
 
-        # pad on left
-        trimmed_highlight = '[...]' + highlight[
-            (trimmed_highlight_index - int(max_length / 3)):trimmed_highlight_index
-        ] + trimmed_highlight
+        # add half of remaining length to the start of highlight slice and stop at beginning
+        slice_start = max(ceil(first_opening_em_start_index - (remaining_length / 2)), 0)
+        # move slice start to the next space if it exists
+        if slice_start > 0 and slice_start < first_opening_em_start_index:
+            first_space_index = highlight.find(' ', slice_start, first_opening_em_start_index)
+            slice_start = first_space_index + 1 if first_space_index != -1 else slice_start
 
-        # pad on right
-        after_trimmed_highlight_start_index = trimmed_highlight_index + len(trimmed_highlight)
-        trimmed_highlight = trimmed_highlight + highlight[
-            after_trimmed_highlight_start_index:(after_trimmed_highlight_start_index + int(max_length/3))
-        ]
+        # recalculate remaining length
+        highlight_length = slice_end - slice_start
+        remaining_length = max_length - highlight_length
 
-    return trimmed_highlight + '[...]'
+        # try adding all of the remaining length to the end of highlight slice and stop at end
+        slice_end = min(floor(slice_end + remaining_length), full_highlight_length)
+        # move slice end to the next space if it exists
+        if slice_end < full_highlight_length and slice_end > last_closing_em_end_index:
+            last_space_index = highlight.rfind(' ', last_closing_em_end_index, slice_end)
+            slice_end = last_space_index - 1 if last_space_index != -1 else slice_end
+
+        return f'{"[...] " if slice_start > 0 else ""}{highlight[slice_start:slice_end]}{" [...]" if slice_end < full_highlight_length else ""}'
+
+    # not all highlights are within limits
+    # try including only first highlight
+    try:
+        first_closing_em_end_index = highlight.index('</em>') + len('</em>')
+        highlight_length = first_closing_em_end_index - first_opening_em_start_index
+    except ValueError:
+        return f'{highlight[:max_length]} [...]'
+
+    if highlight_length == max_length:
+        # the single highlight fits exactly within limits
+        slice_start = first_opening_em_start_index
+        slice_end = first_closing_em_end_index
+        return f'{"[...] " if slice_start > 0 else ""}{highlight[slice_start:slice_end]}{" [...]" if slice_end < full_highlight_length else ""}'
+
+    if highlight_length > max_length:
+        # the single highlight is too long, just trim it to max length and close the tag
+        slice_start = first_opening_em_start_index
+        slice_end = first_opening_em_start_index + max_length - len('</em>')
+        last_space_index = highlight.rfind(' ', slice_start, slice_end)
+        if last_space_index != -1:
+            slice_end = last_space_index
+        highlight_slice = highlight[slice_start:slice_end] + '</em>'
+        return f'{"[...] " if slice_start > 0 else ""}{highlight_slice}{" [...]" if slice_end < full_highlight_length else ""}'
+
+    # highlight is too short, add more text on both ends
+    remaining_length = max_length - highlight_length
+
+    # add half of remaining length to the end of highlight slice and stop at end
+    slice_end = min(floor(first_closing_em_end_index + (remaining_length / 2)), full_highlight_length)
+    # move slice end to the next space if it exists
+    if slice_end < full_highlight_length and slice_end > first_closing_em_end_index:
+        last_space_index = highlight.rfind(' ', first_closing_em_end_index, slice_end)
+        slice_end = last_space_index - 1 if last_space_index != -1 else slice_end
+
+    # recalculate remaining length
+    highlight_length = slice_end - first_opening_em_start_index
+    remaining_length = max_length - highlight_length
+
+    # add half of remaining length to the start of highlight slice and stop at beginning
+    slice_start = max(ceil(first_opening_em_start_index - (remaining_length / 2)), 0)
+    # move slice start to the next space if it exists
+    if slice_start > 0 and slice_start < first_opening_em_start_index:
+        first_space_index = highlight.find(' ', slice_start, first_opening_em_start_index)
+        slice_start = first_space_index + 1 if first_space_index != -1 else slice_start
+
+    # recalculate remaining length
+    highlight_length = slice_end - slice_start
+    remaining_length = max_length - highlight_length
+
+    # try adding all of the remaining length to the end of highlight slice and stop at end
+    slice_end = min(floor(slice_end + remaining_length), full_highlight_length)
+    # move slice end to the next space if it exists
+    if slice_end < full_highlight_length and slice_end > first_closing_em_end_index:
+        last_space_index = highlight.rfind(' ', first_closing_em_end_index, slice_end)
+        slice_end = last_space_index - 1 if last_space_index != -1 else slice_end
+
+    highlight_slice = highlight[slice_start:slice_end]
+    # if we have more opening tags than closing ones, close the last one
+    if highlight_slice.count('<em>') > highlight_slice.count('</em>'):
+        highlight_slice + '</em>'
+
+    return f'{"[...] " if slice_start > 0 else ""}{highlight_slice}{" [...]" if slice_end < full_highlight_length else ""}'
+
 
 def get_speeches_from_solr(
     text_query='*',
