@@ -571,9 +571,10 @@ class LegislationCardSerializer(CardSerializer):
 class LastSessionCardSerializer(CardSerializer):
     def get_results(self, obj):
         # obj is the group
+        # TODO maybe we need to find latest session with the data
         last_session = obj.sessions.latest('start_time')
         votes = Vote.objects.filter(
-            motion__session__organizations=obj
+            motion__session=last_session
         ).order_by('timestamp')
 
         # serialize speeches
@@ -591,9 +592,14 @@ class LastSessionCardSerializer(CardSerializer):
             many=True,
             context=self.context
         )
+        tfidf = SessionTfidfCardSerializer(
+            last_session,
+            context=self.context
+        ).get_results(last_session)
+
         return {
             'votes': vote_serializer.data,
-            'tfidf': [],
+            'tfidf': tfidf,
             'attendance': attendance_serializer.data
         }
 

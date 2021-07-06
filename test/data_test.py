@@ -52,7 +52,7 @@ def testDuplSpeeches():
 def speechesOnSessionTest():
     data = []
     for s in Session.objects.all().order_by('organization_id'):
-        if not s.speech_set.all():
+        if not s.speeches.all():
             data.append({'id': s.id,
                          'date': s.start_time,
                          'name': s.name,
