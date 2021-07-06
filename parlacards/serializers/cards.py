@@ -56,7 +56,7 @@ from parlacards.serializers.common import (
     SessionScoreCardSerializer,
 )
 
-from parlacards.solr import solr_select
+from parlacards.solr import parse_search_query_params, solr_select
 from parlacards.pagination import SolrPaginator, pagination_response_data, parse_pagination_query_params
 
 #
@@ -389,15 +389,7 @@ class PersonSpeechesCardSerializer(PersonScoreCardSerializer):
         parent_data = super().to_representation(instance)
 
         # instance is the person
-        solr_params = {
-            'people_ids': [instance.id],
-            'highlight': True,
-        }
-        if self.context['GET'].get('text', False):
-            solr_params['text_query'] = self.context['GET']['text']
-        if self.context['GET'].get('months', False):
-            solr_params['months'] = self.context['GET']['months'].split(',')
-
+        solr_params = parse_search_query_params(self.context['GET'], people_ids=[instance.id], group_ids=None, highlight=True)
         requested_page, requested_per_page = parse_pagination_query_params(self.context['GET'])
         paginator = SolrPaginator(solr_params, requested_per_page)
         page = paginator.get_page(requested_page)
@@ -425,17 +417,7 @@ class GroupSpeechesCardSerializer(GroupScoreCardSerializer):
         parent_data = super().to_representation(instance)
 
         # instance is the group
-        solr_params = {
-            'group_ids': [instance.id],
-            'highlight': True,
-        }
-        if self.context['GET'].get('text', False):
-            solr_params['text_query'] = self.context['GET']['text']
-        if self.context['GET'].get('months', False):
-            solr_params['months'] = self.context['GET']['months'].split(',')
-        if self.context['GET'].get('people', False):
-            solr_params['people_ids'] = self.context['GET']['people'].split(',')
-
+        solr_params = parse_search_query_params(self.context['GET'], group_ids=[instance.id], highlight=True)
         requested_page, requested_per_page = parse_pagination_query_params(self.context['GET'])
         paginator = SolrPaginator(solr_params, requested_per_page)
         page = paginator.get_page(requested_page)
@@ -996,19 +978,8 @@ class MandateSpeechCardSerializer(CardSerializer):
         parent_data = super().to_representation(instance)
 
         # instance is the mandate
-        solr_params = {
-            # TODO: filter by mandate
-            'highlight': True,
-        }
-        if self.context['GET'].get('text', False):
-            solr_params['text_query'] = self.context['GET']['text']
-        if self.context['GET'].get('months', False):
-            solr_params['months'] = self.context['GET']['months'].split(',')
-        if self.context['GET'].get('people', False):
-            solr_params['people_ids'] = self.context['GET']['people'].split(',')
-        if self.context['GET'].get('groups', False):
-            solr_params['group_ids'] = self.context['GET']['groups'].split(',')
-
+        # TODO: filter by mandate
+        solr_params = parse_search_query_params(self.context['GET'], highlight=True)
         requested_page, requested_per_page = parse_pagination_query_params(self.context['GET'])
         paginator = SolrPaginator(solr_params, requested_per_page)
         page = paginator.get_page(requested_page)
@@ -1030,19 +1001,8 @@ class MandateSpeechCardSerializer(CardSerializer):
 class MandateUsageByGroupCardSerializer(CardSerializer):
     def get_results(self, obj):
         # obj is the mandate
-        solr_params = {
-            # TODO: filter by mandate
-            'facet': True,
-        }
-        if self.context['GET'].get('text', False):
-            solr_params['text_query'] = self.context['GET']['text']
-        if self.context['GET'].get('months', False):
-            solr_params['months'] = self.context['GET']['months'].split(',')
-        if self.context['GET'].get('people', False):
-            solr_params['people_ids'] = self.context['GET']['people'].split(',')
-        if self.context['GET'].get('groups', False):
-            solr_params['group_ids'] = self.context['GET']['groups'].split(',')
-
+        # TODO: filter by mandate
+        solr_params = parse_search_query_params(self.context['GET'], facet=True)
         solr_response = solr_select(**solr_params, per_page=0)
 
         if not solr_response.get('facet_counts', {}).get('facet_fields', {}).get('party_id', []):
@@ -1067,19 +1027,8 @@ class MandateUsageByGroupCardSerializer(CardSerializer):
 class MandateMostUsedByPeopleCardSerializer(CardSerializer):
     def get_results(self, obj):
         # obj is the mandate
-        solr_params = {
-            # TODO: filter by mandate
-            'facet': True,
-        }
-        if self.context['GET'].get('text', False):
-            solr_params['text_query'] = self.context['GET']['text']
-        if self.context['GET'].get('months', False):
-            solr_params['months'] = self.context['GET']['months'].split(',')
-        if self.context['GET'].get('people', False):
-            solr_params['people_ids'] = self.context['GET']['people'].split(',')
-        if self.context['GET'].get('groups', False):
-            solr_params['group_ids'] = self.context['GET']['groups'].split(',')
-
+        # TODO: filter by mandate
+        solr_params = parse_search_query_params(self.context['GET'], facet=True)
         solr_response = solr_select(**solr_params, per_page=0)
 
         if not solr_response.get('facet_counts', {}).get('facet_fields', {}).get('person_id', []):
@@ -1104,19 +1053,8 @@ class MandateMostUsedByPeopleCardSerializer(CardSerializer):
 class MandateUsageThroughTimeCardSerializer(CardSerializer):
     def get_results(self, obj):
         # obj is the mandate
-        solr_params = {
-            # TODO: filter by mandate
-            'facet': True,
-        }
-        if self.context['GET'].get('text', False):
-            solr_params['text_query'] = self.context['GET']['text']
-        if self.context['GET'].get('months', False):
-            solr_params['months'] = self.context['GET']['months'].split(',')
-        if self.context['GET'].get('people', False):
-            solr_params['people_ids'] = self.context['GET']['people'].split(',')
-        if self.context['GET'].get('groups', False):
-            solr_params['group_ids'] = self.context['GET']['groups'].split(',')
-
+        # TODO: filter by mandate
+        solr_params = parse_search_query_params(self.context['GET'], facet=True)
         solr_response = solr_select(**solr_params, per_page=0)
 
         if not solr_response.get('facet_counts', {}).get('facet_ranges', {}).get('start_time', {}).get('counts', []):

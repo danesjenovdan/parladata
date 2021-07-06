@@ -177,3 +177,20 @@ def get_speeches_from_solr(
         speech.content = shorten_highlighted_content(speech.content)
 
     return (speeches, solr_response['response']['numFound'])
+
+
+def parse_search_query_params(params, **overrides):
+    parsed_params = {}
+    if params.get('text', False):
+        parsed_params['text_query'] = params['text']
+    if params.get('months', False):
+        parsed_params['months'] = params['months'].split(',')
+    if params.get('people', False):
+        parsed_params['people_ids'] = params['people'].split(',')
+    if params.get('groups', False):
+        parsed_params['group_ids'] = params['groups'].split(',')
+
+    return {
+        **parsed_params,
+        **overrides,
+    }
