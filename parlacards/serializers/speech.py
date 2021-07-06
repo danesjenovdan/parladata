@@ -23,7 +23,7 @@ class SpeechSerializer(CommonCachableSerializer):
             vote_timestamp = speech_timestamp
 
         timestamp = max([speech_timestamp, person_timestamp, vote_timestamp])
-        return f'SpeechSerializer_{instance.id}_{timestamp}'
+        return f'SpeechSerializer_{instance.id}_{timestamp.isoformat()}'
 
     def get_the_order(self, obj):
         # obj is the speech
