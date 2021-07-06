@@ -58,6 +58,7 @@ from parlacards.serializers.cards import (
     LastSessionCardSerializer,
     MandateSpeechCardSerializer,
     SessionGroupAttendanceSerializer,
+    MandateUsageByGroupCardSerializer,
 )
 from parlacards.serializers.speech import SpeechSerializer
 
@@ -448,6 +449,14 @@ class MandateSpeeches(CardView):
     '''
     thing = Mandate
     card_serializer = MandateSpeechCardSerializer
+
+
+class MandateUsageByGroup(CardView):
+    '''
+    Search speeches for a mandate and return word usage by group.
+    '''
+    thing = Mandate
+    card_serializer = MandateUsageByGroupCardSerializer
 
 
 class LastSession(CardView):
