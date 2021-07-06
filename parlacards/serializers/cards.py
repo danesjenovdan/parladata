@@ -17,6 +17,7 @@ from parladata.models.legislation import Law
 from parladata.models.question import Question
 from parladata.models.speech import Speech
 from parladata.models.organization import Organization
+from parladata.models.person import Person
 
 from parlacards.models import (
     SessionTfidf,
@@ -43,7 +44,7 @@ from parlacards.serializers.speech import SpeechSerializer
 from parlacards.serializers.vote import VoteSerializer, SessionVoteSerializer
 from parlacards.serializers.tfidf import TfidfSerializer
 from parlacards.serializers.group_attendance import SessionGroupAttendanceSerializer
-from parlacards.serializers.facets import GroupFacetSerializer
+from parlacards.serializers.facets import GroupFacetSerializer, PersonFacetSerializer
 from parlacards.serializers.common import (
     CardSerializer,
     PersonScoreCardSerializer,
@@ -1055,6 +1056,43 @@ class MandateUsageByGroupCardSerializer(CardSerializer):
         ]
 
         facet_serializer = GroupFacetSerializer(
+            objects,
+            many=True,
+            context=self.context
+        )
+
+        return facet_serializer.data
+
+
+class MandateMostUsedByPeopleCardSerializer(CardSerializer):
+    def get_results(self, instance):
+        # instance is the mandate
+        solr_params = {
+            # TODO: filter by mandate
+            'facet': True,
+        }
+        if self.context['GET'].get('text', False):
+            solr_params['text_query'] = self.context['GET']['text']
+        if self.context['GET'].get('months', False):
+            solr_params['months'] = self.context['GET']['months'].split(',')
+        if self.context['GET'].get('people', False):
+            solr_params['people_ids'] = self.context['GET']['people'].split(',')
+        if self.context['GET'].get('groups', False):
+            solr_params['group_ids'] = self.context['GET']['groups'].split(',')
+
+        solr_response = solr_select(**solr_params, per_page=0)
+
+        if not solr_response.get('facet_counts', {}).get('facet_fields', {}).get('person_id', []):
+            return None
+
+        facet_counts = solr_response['facet_counts']['facet_fields']['person_id']
+        facet_counts_tuples = zip(facet_counts[::2], facet_counts[1::2])
+        objects = [
+            {'person': Person.objects.filter(pk=person_id).first(), 'value': value}
+            for (person_id, value) in facet_counts_tuples
+        ]
+
+        facet_serializer = PersonFacetSerializer(
             objects,
             many=True,
             context=self.context
