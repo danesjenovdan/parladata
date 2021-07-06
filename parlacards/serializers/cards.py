@@ -1028,8 +1028,8 @@ class MandateSpeechCardSerializer(CardSerializer):
 
 
 class MandateUsageByGroupCardSerializer(CardSerializer):
-    def get_results(self, instance):
-        # instance is the mandate
+    def get_results(self, obj):
+        # obj is the mandate
         solr_params = {
             # TODO: filter by mandate
             'facet': True,
@@ -1065,8 +1065,8 @@ class MandateUsageByGroupCardSerializer(CardSerializer):
 
 
 class MandateMostUsedByPeopleCardSerializer(CardSerializer):
-    def get_results(self, instance):
-        # instance is the mandate
+    def get_results(self, obj):
+        # obj is the mandate
         solr_params = {
             # TODO: filter by mandate
             'facet': True,
@@ -1099,3 +1099,34 @@ class MandateMostUsedByPeopleCardSerializer(CardSerializer):
         )
 
         return facet_serializer.data
+
+
+class MandateUsageThroughTimeCardSerializer(CardSerializer):
+    def get_results(self, obj):
+        # obj is the mandate
+        solr_params = {
+            # TODO: filter by mandate
+            'facet': True,
+        }
+        if self.context['GET'].get('text', False):
+            solr_params['text_query'] = self.context['GET']['text']
+        if self.context['GET'].get('months', False):
+            solr_params['months'] = self.context['GET']['months'].split(',')
+        if self.context['GET'].get('people', False):
+            solr_params['people_ids'] = self.context['GET']['people'].split(',')
+        if self.context['GET'].get('groups', False):
+            solr_params['group_ids'] = self.context['GET']['groups'].split(',')
+
+        solr_response = solr_select(**solr_params, per_page=0)
+
+        if not solr_response.get('facet_counts', {}).get('facet_ranges', {}).get('start_time', {}).get('counts', []):
+            return None
+
+        facet_counts = solr_response['facet_counts']['facet_ranges']['start_time']['counts']
+        facet_counts_tuples = zip(facet_counts[::2], facet_counts[1::2])
+        objects = [
+            {'timestamp': timestamp, 'value': value}
+            for (timestamp, value) in facet_counts_tuples
+        ]
+
+        return objects
