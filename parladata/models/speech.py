@@ -31,6 +31,7 @@ class Speech(Versionable, Timestampable, Taggable):
     session = models.ForeignKey('Session',
                                 blank=True, null=True,
                                 on_delete=models.CASCADE,
+                                related_name='speeches',
                                 help_text='Speech session')
 
     start_time = models.DateTimeField(blank=True, null=True,
