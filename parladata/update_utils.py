@@ -1,6 +1,7 @@
 from django.db.models import Q
 
-from parladata.models import Vote
+from parladata.models.vote import Vote
+from parladata.models.session import Session
 
 import operator
 

@@ -15,7 +15,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         self.stdout.write('Start setting results')
 
-        majority = options['original'][0]
+        majority = options['majority'][0]
 
         set_results_to_votes(majority)
 
