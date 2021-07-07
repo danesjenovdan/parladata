@@ -242,3 +242,31 @@ def test_single_session():
 # def test_search_speeches():
 #     response = client.get('/v3/cards/search/speeches/?id=1')
 #     assert response.status_code == 200
+
+# TODO: needs settings.SOLR_URL
+# @pytest.mark.django_db()
+# def test_search_most_used_by_people():
+#     response = client.get('/v3/cards/search/most-used-by-people/?id=1')
+#     assert response.status_code == 200
+
+# TODO: needs settings.SOLR_URL
+# @pytest.mark.django_db()
+# def test_search_usage_by_group():
+#     response = client.get('/v3/cards/search/usage-by-group/?id=1')
+#     assert response.status_code == 200
+
+# TODO: needs settings.SOLR_URL
+# @pytest.mark.django_db()
+# def test_search_usage_through_time():
+#     response = client.get('/v3/cards/search/usage-through-time/?id=1')
+#     assert response.status_code == 200
+
+@pytest.mark.django_db()
+def test_search_votes():
+    response = client.get('/v3/cards/search/votes/?id=1')
+    assert response.status_code == 200
+
+@pytest.mark.django_db()
+def test_search_legislation():
+    response = client.get('/v3/cards/search/legislation/?id=1')
+    assert response.status_code == 200
