@@ -58,6 +58,11 @@ from parlacards.serializers.cards import (
     LastSessionCardSerializer,
     MandateSpeechCardSerializer,
     SessionGroupAttendanceSerializer,
+    MandateUsageByGroupCardSerializer,
+    MandateMostUsedByPeopleCardSerializer,
+    MandateUsageThroughTimeCardSerializer,
+    MandateVotesCardSerializer,
+    MandateLegislationCardSerializer,
 )
 from parlacards.serializers.speech import SpeechSerializer
 
@@ -442,12 +447,52 @@ class GroupDiscordView(CardView):
     card_serializer = GroupDiscordCardSerializer
 
 
+class MandateVotes(CardView):
+    '''
+    Search votes for a mandate.
+    '''
+    thing = Mandate
+    card_serializer = MandateVotesCardSerializer
+
+
+class MandateLegislation(CardView):
+    '''
+    Search laws for a mandate.
+    '''
+    thing = Mandate
+    card_serializer = MandateLegislationCardSerializer
+
+
 class MandateSpeeches(CardView):
     '''
     Search speeches for a mandate.
     '''
     thing = Mandate
     card_serializer = MandateSpeechCardSerializer
+
+
+class MandateUsageByGroup(CardView):
+    '''
+    Search speeches for a mandate and return word usage by group.
+    '''
+    thing = Mandate
+    card_serializer = MandateUsageByGroupCardSerializer
+
+
+class MandateMostUsedByPeople(CardView):
+    '''
+    Search speeches for a mandate and return word usage by group.
+    '''
+    thing = Mandate
+    card_serializer = MandateMostUsedByPeopleCardSerializer
+
+
+class MandateUsageThroughTime(CardView):
+    '''
+    Search speeches for a mandate and return word usage by group.
+    '''
+    thing = Mandate
+    card_serializer = MandateUsageThroughTimeCardSerializer
 
 
 class LastSession(CardView):
