@@ -62,6 +62,7 @@ from parlacards.serializers.cards import (
     MandateMostUsedByPeopleCardSerializer,
     MandateUsageThroughTimeCardSerializer,
     MandateVotesCardSerializer,
+    MandateLegislationCardSerializer,
 )
 from parlacards.serializers.speech import SpeechSerializer
 
@@ -452,6 +453,14 @@ class MandateVotes(CardView):
     '''
     thing = Mandate
     card_serializer = MandateVotesCardSerializer
+
+
+class MandateLegislation(CardView):
+    '''
+    Search speeches for a mandate.
+    '''
+    thing = Mandate
+    card_serializer = MandateLegislationCardSerializer
 
 
 class MandateSpeeches(CardView):
