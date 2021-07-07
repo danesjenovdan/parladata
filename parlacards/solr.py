@@ -80,9 +80,11 @@ def solr_select(
         params['facet.field'] = ['person_id', 'party_id']
         params['facet.range'] = 'start_time'
         params['facet.range.gap'] = '+1MONTHS'
-        # TODO
+        # TODO proper facet start
         # params['facet.range.start'] = f'{config.facetRangeStart}T00:00:00.000Z',
         # params['facet.range.end'] = config.facetRangeEnd ? `${config.facetRangeEnd}T00:00:00.000Z` : 'NOW',
+        params['facet.range.start'] = f'2018-12-15T00:00:00.000Z'
+        params['facet.range.end'] = 'NOW'
 
     url = f'{settings.SOLR_URL}/select'
     response = requests.get(url, params=params)
@@ -161,15 +163,10 @@ def get_speeches_from_solr(
         document_type=document_type
     )
 
-    speech_ids = [
-        solr_doc['speech_id'] for
-        solr_doc in solr_response['response']['docs']
-    ]
+    speech_ids = [solr_doc['speech_id'] for solr_doc in solr_response['response']['docs']]
 
     # get speeches into memory from the db
-    speeches = list(Speech.objects.filter(
-        id__in=speech_ids
-    ))
+    speeches = list(Speech.objects.filter(id__in=speech_ids))
 
     for speech in speeches:
         if solr_response['highlighting'].get(f'speech_{speech.id}', {}).get('content', False):
@@ -180,3 +177,20 @@ def get_speeches_from_solr(
         speech.content = shorten_highlighted_content(speech.content)
 
     return (speeches, solr_response['response']['numFound'])
+
+
+def parse_search_query_params(params, **overrides):
+    parsed_params = {}
+    if params.get('text', False):
+        parsed_params['text_query'] = params['text']
+    if params.get('months', False):
+        parsed_params['months'] = params['months'].split(',')
+    if params.get('people', False):
+        parsed_params['people_ids'] = params['people'].split(',')
+    if params.get('groups', False):
+        parsed_params['group_ids'] = params['groups'].split(',')
+
+    return {
+        **parsed_params,
+        **overrides,
+    }
