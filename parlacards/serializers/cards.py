@@ -1068,3 +1068,37 @@ class MandateUsageThroughTimeCardSerializer(CardSerializer):
         ]
 
         return objects
+
+
+class MandateVotesCardSerializer(CardSerializer):
+    def get_results(self, obj):
+        # this is implemeted in to_representation for pagination
+        return None
+
+    def to_representation(self, instance):
+        parent_data = super().to_representation(instance)
+
+        # instance is the mandate
+        # TODO: filter by mandate
+        votes = Vote.objects.filter(timestamp__lte=self.context['date']).order_by('-timestamp')
+
+        # TODO: maybe lemmatize?, maybe search by each word separately?
+        if text := self.context['GET'].get('text', None):
+            votes = votes.filter(motion__text__icontains=text)
+
+        requested_page, requested_per_page = parse_pagination_query_params(self.context['GET'])
+        paginator = Paginator(votes, requested_per_page)
+        page = paginator.get_page(requested_page)
+
+        # serialize votes
+        vote_serializer = SessionVoteSerializer(
+            page.object_list,
+            many=True,
+            context=self.context
+        )
+
+        return {
+            **parent_data,
+            **pagination_response_data(paginator, page),
+            'results': vote_serializer.data,
+        }
