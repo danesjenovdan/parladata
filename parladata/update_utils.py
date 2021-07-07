@@ -34,7 +34,6 @@ def set_results_to_votes(majority='relative_normal'):
         vote.result = final_result
         vote.save()
 
-
 def pair_motions_with_speeches():
     for session in Session.objects.all():
         motions = session.motions.filter(speech=None)
@@ -51,7 +50,7 @@ def pair_motions_with_speeches():
                         score +=1
                 scores[speech_id] = score/len(splitted_title)
 
-            the_speech = max(scores.items(), key=operator.itemgetter(1))[0]
-            print(the_speech)
-            speech = speeches_with_motion.get(id=the_speech)
-            speech.motions.add(motion)
+            if scores:
+                the_speech = max(scores.items(), key=operator.itemgetter(1))[0]
+                speech = speeches_with_motion.get(id=the_speech)
+                speech.motions.add(motion)
