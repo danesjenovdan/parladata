@@ -49,10 +49,9 @@ def pair_motions_with_speeches():
                 for word in splitted_title:
                     if word in content:
                         score +=1
-                scores[speech_id] = score/len(c)
+                scores[speech_id] = score/len(splitted_title)
 
             the_speech = max(scores.items(), key=operator.itemgetter(1))[0]
             print(the_speech)
             speech = speeches_with_motion.get(id=the_speech)
             speech.motions.add(motion)
-
