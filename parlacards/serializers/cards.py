@@ -1034,7 +1034,9 @@ class MandateMostUsedByPeopleCardSerializer(CardSerializer):
         if not solr_response.get('facet_counts', {}).get('facet_fields', {}).get('person_id', []):
             return None
 
-        facet_counts = solr_response['facet_counts']['facet_fields']['person_id']
+        # slice first 10 items from the list to only show top 5 people
+        # 5 times (id, value) = 10
+        facet_counts = solr_response['facet_counts']['facet_fields']['person_id'][:10]
         facet_counts_tuples = zip(facet_counts[::2], facet_counts[1::2])
         objects = [
             {'person': Person.objects.filter(pk=person_id).first(), 'value': value}
