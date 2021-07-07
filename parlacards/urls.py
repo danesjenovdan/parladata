@@ -56,6 +56,7 @@ urlpatterns = [
     path('vote/single/', SingleVote.as_view()),
 
     path('search/votes/', MandateVotes.as_view()),
+    path('search/legislation/', MandateLegislation.as_view()),
     path('search/speeches/', MandateSpeeches.as_view()),
     path('search/usage-by-group/', MandateUsageByGroup.as_view()),
     path('search/most-used-by-people/', MandateMostUsedByPeople.as_view()),

@@ -1102,3 +1102,39 @@ class MandateVotesCardSerializer(CardSerializer):
             **pagination_response_data(paginator, page),
             'results': vote_serializer.data,
         }
+
+
+class MandateLegislationCardSerializer(CardSerializer):
+    def get_results(self, obj):
+        # this is implemeted in to_representation for pagination
+        return None
+
+    def to_representation(self, instance):
+        parent_data = super().to_representation(instance)
+
+        # instance is the mandate
+        legislation = Law.objects.filter(
+            Q(timestamp__lte=self.context['date']) | Q(timestamp__isnull=True),
+            session__mandate=instance,
+        )
+
+        # TODO: maybe lemmatize?, maybe search by each word separately?
+        if text := self.context['GET'].get('text', None):
+            legislation = legislation.filter(text__icontains=text)
+
+        requested_page, requested_per_page = parse_pagination_query_params(self.context['GET'])
+        paginator = Paginator(legislation, requested_per_page)
+        page = paginator.get_page(requested_page)
+
+        # serialize votes
+        legislation_serializer = LegislationSerializer(
+            page.object_list,
+            many=True,
+            context=self.context
+        )
+
+        return {
+            **parent_data,
+            **pagination_response_data(paginator, page),
+            'results': legislation_serializer.data,
+        }
