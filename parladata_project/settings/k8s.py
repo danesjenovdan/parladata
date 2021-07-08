@@ -69,7 +69,8 @@ SOLR_URL = env['SOLR_URL']
 
 EMAIL_BACKEND = os.getenv('PARLAMETER_EMAIL_BACKEND', 'django.core.mail.backends.filebased.EmailBackend')
 EMAIL_FILE_PATH = os.getenv('PARLAMETER_EMAIL_FILE_PATH', '/tmp/emails')
-EMAIL_USE_TLS = bool(os.getenv('PARLAMETER_EMAIL_USE_TLS', True))
+EMAIL_USE_TLS = eval(os.getenv('PARLAMETER_EMAIL_USE_TLS', 'False'))
+EMAIL_USE_SSL = eval(os.getenv('PARLAMETER_EMAIL_USE_SSL', 'False'))
 EMAIL_HOST = os.getenv('PARLAMETER_EMAIL_HOST', 'dummy')
 EMAIL_PORT = int(os.getenv('PARLAMETER_EMAIL_PORT', 587))
 EMAIL_HOST_USER = os.getenv('PARLAMETER_SMTP_USER', 'dummy')
