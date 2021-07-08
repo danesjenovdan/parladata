@@ -1,0 +1,20 @@
+{% load i18n %}
+{% load static %}
+<html>
+<body>
+    <div>
+        {% translate 'Parlameter' %}
+    </div>
+    <div>
+        <h2>{% translate 'Parlameter' %}</h2>
+        {% if new_motions %}
+            There are new motions in parlameter</br></br>
+            <a href="{% url 'admin:parladata_motion_changelist' %}">{% url 'admin:parladata_motion_changelist' %}</a>
+        {% endif %}
+        {% if new_speeches %}
+            There are new speeches in parlameter</br></br>
+        {% endif %}
+    </div>
+    <div>
+    </div>
+</body>
