@@ -34,7 +34,7 @@ from parlacards.models import (
 from parlacards.serializers.person import PersonBasicInfoSerializer
 from parlacards.serializers.organization import OrganizationBasicInfoSerializer, MembersSerializer
 from parlacards.serializers.session import SessionSerializer
-from parlacards.serializers.legislation import LegislationSerializer
+from parlacards.serializers.legislation import LegislationSerializer, LegislationDetailSerializer
 from parlacards.serializers.ballot import BallotSerializer
 from parlacards.serializers.voting_distance import VotingDistanceSerializer, GroupVotingDistanceSerializer
 from parlacards.serializers.membership import MembershipSerializer
@@ -548,6 +548,16 @@ class LegislationCardSerializer(CardSerializer):
                 session__mandate=obj,
             ),
             many=True,
+            context=self.context
+        )
+        return serializer.data
+
+
+class LegislationDetailCardSerializer(CardSerializer):
+    def get_results(self, obj):
+        # obj is the law
+        serializer = LegislationDetailSerializer(
+            obj,
             context=self.context
         )
         return serializer.data
