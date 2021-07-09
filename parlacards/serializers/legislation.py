@@ -20,6 +20,7 @@ class LegislationSerializer(CommonSerializer):
 
 class LegislationDetailSerializer(LegislationSerializer):
     votes = serializers.SerializerMethodField()
+    abstract = serializers.CharField()
 
     def get_votes(self, obj):
         votes = Vote.objects.filter(motion__law=obj)
