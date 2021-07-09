@@ -237,6 +237,11 @@ def test_single_session():
     response = client.get('/v3/cards/session/single/?id=1')
     assert response.status_code == 200
 
+@pytest.mark.django_db()
+def test_single_law():
+    response = client.get('/v3/cards/legislation/single/?id=1')
+    assert response.status_code == 200
+
 # TODO: needs settings.SOLR_URL
 # @pytest.mark.django_db()
 # def test_search_speeches():
