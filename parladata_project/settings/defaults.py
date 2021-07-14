@@ -28,6 +28,7 @@ INSTALLED_APPS = (
     'django_filters',
     'drf_spectacular',
     'parlacards',
+    'debug_toolbar',
 )
 
 """MIDDLEWARE = (
@@ -43,6 +44,7 @@ INSTALLED_APPS = (
 )"""
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'debug_toolbar.middleware.DebugToolbarMiddleware', # Django debug toolbar
     'django.contrib.sessions.middleware.SessionMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -132,3 +134,9 @@ OAUTH2_PROVIDER = {
 }
 
 DEFAULT_AUTO_FIELD='django.db.models.AutoField'
+
+DEBUG = True
+
+DEBUG_TOOLBAR_CONFIG = {
+    "SHOW_TOOLBAR_CALLBACK": lambda request: DEBUG,
+}
