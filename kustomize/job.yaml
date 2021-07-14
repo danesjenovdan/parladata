@@ -1,0 +1,28 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: pi
+spec:
+  template:
+    spec:
+      containers:
+      - name: parladata-job-runner
+        image: rg.fr-par.scw.cloud/djnd/parladata:d18d6e17aada20ff0fc32a505b129b56eb13f568
+        # TODO COMMIT HASH COMES ABOVE GET IT LIKE SO:
+        # git log -n 1 origin/k8s
+        volumeMounts:
+            - name: parladata-persistent-storage
+              mountPath: /pvc
+        env:
+          - name: DJANGO_SETTINGS_MODULE
+            value: parladata_project.settings.k8s
+        envFrom:
+          - secretRef:
+              name: parladata-credentials
+        command:
+          - python
+          - manage.py
+          - collectstatic
+          # TODO YOUR COMMAND ABOVE
+      restartPolicy: Never
+  backoffLimit: 1
