@@ -76,3 +76,16 @@ EMAIL_PORT = int(os.getenv('PARLAMETER_EMAIL_PORT', 587))
 EMAIL_HOST_USER = os.getenv('PARLAMETER_SMTP_USER', 'dummy')
 EMAIL_HOST_PASSWORD = os.getenv('PARLAMETER_SMTP_PASSWORD', 'dummy')
 FROM_EMAIL = os.getenv('PARLAMETER_FROM_EMAIL', 'test@test.si')
+
+# DJANGO STORAGE SETTINGS
+if os.getenv('PARLAMETER_ENABLE_S3', False):
+    DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+    STATICFILES_STORAGE = 'storages.backends.s3boto3.S3StaticStorage'
+    AWS_ACCESS_KEY_ID = os.getenv('PARLAMETER_AWS_ACCESS_KEY_ID', '')
+    AWS_SECRET_ACCESS_KEY = os.getenv('PARLAMETER_AWS_SECRET_ACCESS_KEY', '')
+    AWS_STORAGE_BUCKET_NAME = os.getenv('PARLAMETER_AWS_STORAGE_BUCKET_NAME', '')
+    AWS_DEFAULT_ACL = 'public-read' # if files are not public they won't show up for end users
+    AWS_LOCATION = os.getenv('PARLAMETER_AWS_LOCATION', 'parladata')
+    AWS_S3_REGION_NAME = os.getenv('PARLAMETER_AWS_REGION_NAME', 'fr-par')
+    AWS_S3_ENDPOINT_URL = os.getenv('PARLAMETER_AWS_S3_ENDPOINT_URL', 'https://s3.fr-par.scw.cloud')
+    AWS_S3_SIGNATURE_VERSION = os.getenv('PARLAMETER_AWS_S3_SIGNATURE_VERSION', 's3v4')
