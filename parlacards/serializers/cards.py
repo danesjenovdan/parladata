@@ -103,17 +103,37 @@ class GroupVocabularySizeCardSerializer(GroupScoreCardSerializer):
 
 class PersonBallotCardSerializer(PersonScoreCardSerializer):
     def get_results(self, obj):
-        # obj is the person
+        # this is implemeted in to_representation for pagination
+        return None
+
+    def to_representation(self, instance):
+        parent_data = super().to_representation(instance)
+
+        # instance is the person
         ballots = Ballot.objects.filter(
-            personvoter=obj,
+            personvoter=instance,
             vote__timestamp__lte=self.context['date']
+        ).order_by(
+            '-vote__timestamp',
+            '-id' # fallback ordering
         )
+
+        requested_page, requested_per_page = parse_pagination_query_params(self.context['GET'])
+        paginator = Paginator(ballots, requested_per_page)
+        page = paginator.get_page(requested_page)
+
+        # serialize ballots
         ballot_serializer = BallotSerializer(
-            ballots,
+            page.object_list,
             many=True,
             context=self.context
         )
-        return ballot_serializer.data
+
+        return {
+            **parent_data,
+            **pagination_response_data(paginator, page),
+            'results': ballot_serializer.data,
+        }
 
 
 class PersonQuestionCardSerializer(PersonScoreCardSerializer):
@@ -720,20 +740,37 @@ class GroupQuestionCardSerializer(GroupScoreCardSerializer):
 
 
 class GroupBallotCardSerializer(GroupScoreCardSerializer):
-    # TODO this is very similar to
-    # parlacards.scores.devaition_from_group.get_group_ballot
-    # consider refactoring one or both
-    # the difference is that this function needs all the ballots
-    def get_results(self, group):
-        votes = Vote.objects.filter(timestamp__lte=self.context['date']).order_by('-timestamp')
-        party_ballots = []
+    def get_results(self, obj):
+        # this is implemeted in to_representation for pagination
+        return None
 
-        for vote in votes:
+    def to_representation(self, instance):
+        parent_data = super().to_representation(instance)
+
+        # instance is the group
+        votes = Vote.objects.filter(
+            timestamp__lte=self.context['date']
+        ).order_by(
+            '-timestamp',
+            '-id' # fallback ordering
+        )
+
+        requested_page, requested_per_page = parse_pagination_query_params(self.context['GET'])
+        paginator = Paginator(votes, requested_per_page)
+        page = paginator.get_page(requested_page)
+
+        party_ballots = []
+        for vote in page.object_list:
             voter_ids = PersonMembership.valid_at(vote.timestamp).filter(
-                on_behalf_of=group,
+                # instance is the group
+                on_behalf_of=instance,
                 role='voter'
             ).values_list('member_id', flat=True)
 
+            # TODO this is very similar to
+            # parlacards.scores.devaition_from_group.get_group_ballot
+            # consider refactoring one or both
+            # the difference is that this function needs all the ballots
             ballots = Ballot.objects.filter(
                 vote=vote,
                 personvoter__in=voter_ids
@@ -746,29 +783,32 @@ class GroupBallotCardSerializer(GroupScoreCardSerializer):
                 option='absent'
             )
 
-            options_aggregated = ballots.values(
-                'option'
-            ).annotate(
-                dcount=Count('option')
-            ).order_by().aggregate(Max('option'))
-            # If you don't include the order_by(),
-            # you may get incorrect results if the
-            # default sorting is not what you expect.
+            # if there are no ballots max option will be None
+            options_aggregated = ballots.values('option').aggregate(Max('option'))
 
-            # TODO this is lazy, possibly harmless
-            # but still smells -> using personal
-            # ballots as party ballots
-            party_ballot = ballots.first()
-            if party_ballot:
-                party_ballot.option = options_aggregated['option__max']
-                party_ballots.append(party_ballot)
+            # this is a in memory only ballot object that is only constructed
+            # for the serializer to use
+            fake_ballot = Ballot(
+                option=options_aggregated['option__max'],
+                vote=vote,
+            )
 
+            # always append a ballot to party_ballots so that pagination returns
+            # an expected number of objects, even if option is None
+            party_ballots.append(fake_ballot)
+
+        # serialize ballots
         ballot_serializer = BallotSerializer(
             party_ballots,
             many=True,
             context=self.context
         )
-        return ballot_serializer.data
+
+        return {
+            **parent_data,
+            **pagination_response_data(paginator, page),
+            'results': ballot_serializer.data,
+        }
 
 
 class GroupMostVotesInCommonCardSerializer(GroupScoreCardSerializer):
