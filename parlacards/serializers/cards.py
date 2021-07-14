@@ -103,17 +103,37 @@ class GroupVocabularySizeCardSerializer(GroupScoreCardSerializer):
 
 class PersonBallotCardSerializer(PersonScoreCardSerializer):
     def get_results(self, obj):
-        # obj is the person
+        # this is implemeted in to_representation for pagination
+        return None
+
+    def to_representation(self, instance):
+        parent_data = super().to_representation(instance)
+
+        # instance is the person
         ballots = Ballot.objects.filter(
-            personvoter=obj,
+            personvoter=instance,
             vote__timestamp__lte=self.context['date']
+        ).order_by(
+            '-vote__timestamp',
+            '-id' # fallback ordering
         )
+
+        requested_page, requested_per_page = parse_pagination_query_params(self.context['GET'])
+        paginator = Paginator(ballots, requested_per_page)
+        page = paginator.get_page(requested_page)
+
+        # serialize ballots
         ballot_serializer = BallotSerializer(
-            ballots,
+            page.object_list,
             many=True,
             context=self.context
         )
-        return ballot_serializer.data
+
+        return {
+            **parent_data,
+            **pagination_response_data(paginator, page),
+            'results': ballot_serializer.data,
+        }
 
 
 class PersonQuestionCardSerializer(PersonScoreCardSerializer):
