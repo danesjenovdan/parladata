@@ -1,0 +1,106 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: parladata
+  labels:
+    app: parladata
+spec:
+  serviceName: parladata
+  replicas: 1
+  selector:
+    matchLabels:
+      app: parladata
+  template:
+    metadata:
+      labels:
+        app: parladata
+    spec:
+      initContainers:
+        - name: collectstatic
+          image: parladata
+          volumeMounts:
+            - name: parladata-persistent-storage
+              mountPath: /pvc
+          command:
+            - python
+            - manage.py
+            - collectstatic
+            - --no-input
+          env:
+            - name: DJANGO_SETTINGS_MODULE
+              value: parladata_project.settings.k8s
+          envFrom:
+            - secretRef:
+                name: parladata-credentials
+        - name: migrate
+          image: parladata
+          command:
+            - python
+            - manage.py
+            - migrate
+          env:
+            - name: DJANGO_SETTINGS_MODULE
+              value: parladata_project.settings.k8s
+          envFrom:
+            - secretRef:
+                name: parladata-credentials
+      containers:
+        - name: parladata
+          image: parladata # kustomize thing
+          volumeMounts:
+          - name: parladata-persistent-storage
+            mountPath: /pvc
+          ports:
+            - name: http
+              containerPort: 8000
+              protocol: TCP
+          livenessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 15
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+            initialDelaySeconds: 15
+            periodSeconds: 30
+            timeoutSeconds: 5
+          command:
+            - gunicorn
+            - parladata_project.wsgi:application
+            - -b
+            - 0.0.0.0:8000
+            - --log-level
+            - DEBUG
+            - --workers
+            - "1"
+            - --threads
+            - "3"
+            - --timeout
+            - "120"
+          envFrom:
+              - secretRef:
+                  name: parladata-credentials
+          env:
+            - name: DJANGO_SETTINGS_MODULE
+              value: parladata_project.settings.k8s
+        - name: parladata-nginx
+          ports:
+            - name: http
+              containerPort: 80
+              protocol: TCP
+          image: nginx:alpine
+          volumeMounts:
+            - name: parladata-persistent-storage
+              mountPath: /usr/share/nginx/html
+  volumeClaimTemplates:
+  - metadata:
+      name: parladata-persistent-storage
+    spec:
+      storageClassName: 'scw-bssd-retain'
+      accessModes:
+        - ReadWriteOnce
+      resources:
+        requests:
+          storage: 2Gi
