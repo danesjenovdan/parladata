@@ -5,7 +5,7 @@ from .defaults import *
 # python -c 'from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())'
 env = dict(
     SECRET_KEY=os.getenv('DJANGO_SECRET_KEY', 'r^&^$8c*g$6db1s!s7uk9c!v%*ps)_0)h$!f3m7$%(o4b+5qwk'),
-    DEBUG=os.getenv('DJANGO_DEBUG', True),
+    DEBUG=os.getenv('DJANGO_DEBUG', False),
     DATABASE_HOST=os.getenv('DJANGO_DATABASE_HOST', 'localhost'),
     DATABASE_PORT=os.getenv('DJANGO_DATABASE_PORT', '5432'),
     DATABASE_NAME=os.getenv('DJANGO_DATABASE_NAME', 'parladata'),
@@ -89,3 +89,7 @@ if os.getenv('PARLAMETER_ENABLE_S3', False):
     AWS_S3_REGION_NAME = os.getenv('PARLAMETER_AWS_REGION_NAME', 'fr-par')
     AWS_S3_ENDPOINT_URL = os.getenv('PARLAMETER_AWS_S3_ENDPOINT_URL', 'https://s3.fr-par.scw.cloud')
     AWS_S3_SIGNATURE_VERSION = os.getenv('PARLAMETER_AWS_S3_SIGNATURE_VERSION', 's3v4')
+
+DEBUG_TOOLBAR_CONFIG = {
+    "SHOW_TOOLBAR_CALLBACK": lambda request: DEBUG,
+}
