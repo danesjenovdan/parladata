@@ -27,6 +27,8 @@ drf-spectacular
 pytest-xdist
 python-memcached
 django-debug-toolbar
+boto3
+django-storages
 
 # tagger/lemmatizer
 sklearn
