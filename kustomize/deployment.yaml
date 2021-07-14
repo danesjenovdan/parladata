@@ -60,6 +60,12 @@ spec:
             - 0.0.0.0:8000
             - --log-level
             - DEBUG
+            - --workers
+            - 1
+            - --threads
+            - 3
+            - --timeout
+            - 120
           ports:
             - containerPort: 8000
           envFrom:
