@@ -19,6 +19,7 @@ class Speech(Versionable, Timestampable, Taggable):
 
     speaker = models.ForeignKey('Person',
                                 on_delete=models.CASCADE,
+                                related_name='speeches',
                                 help_text='Person making the speech')
 
     content = models.TextField(blank=False, null=False, help_text='Words spoken')

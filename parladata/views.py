@@ -2205,8 +2205,8 @@
 
 #     else:
 #         person = person[0]
-#         sessions_with_vote = person.ballot_set.filter(vote__start_time__lte=fdate).exclude(option='absent').values_list("vote__session", flat=True).distinct()
-#         sessions_with_speech = person.speech_set.filter(start_time__lte=fdate).values_list("session", flat=True).distinct()
+#         sessions_with_vote = person.ballots.filter(vote__start_time__lte=fdate).exclude(option='absent').values_list("vote__session", flat=True).distinct()
+#         sessions_with_speech = person.speeches.filter(start_time__lte=fdate).values_list("session", flat=True).distinct()
 
 #         sessions = set(list(sessions_with_vote) + list(sessions_with_speech))
 
