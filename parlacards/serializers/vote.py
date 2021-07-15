@@ -52,7 +52,7 @@ class VoteGroupSerializer(CommonCachableSerializer):
         )
 
         return group_ballots
-    
+
     def get_annotated_group_ballots(self, group):
         annotated_group_ballots = self.get_group_ballots(group).values(
             'option'
@@ -77,7 +77,7 @@ class VoteGroupSerializer(CommonCachableSerializer):
             context=self.context
         )
         return serializer.data
-    
+
     def get_max(self, obj):
         # obj is group
         # TODO only call DB once
@@ -87,7 +87,7 @@ class VoteGroupSerializer(CommonCachableSerializer):
             'max_option_percentage': max_option_percentage,
             'max_option': max_option
         }
-    
+
     def get_votes(self, obj):
         # obj is group
         group_votes_params = {
@@ -183,7 +183,7 @@ class VoteSerializer(CommonSerializer):
             context=self.context
         )
         return serializer.data
-    
+
     def get_result(self, obj):
         # obj is the vote
         # TODO use VoteSumsSerializer for max
@@ -207,7 +207,7 @@ class VoteSerializer(CommonSerializer):
     def get_groups(self, obj):
         # obj is the vote
         groups = obj.motion.session.organization.query_parliamentary_groups(self.context['date'])
-    
+
         # pass the vote to the serializer
         self.context['vote'] = obj
         serializer = VoteGroupSerializer(
@@ -216,16 +216,16 @@ class VoteSerializer(CommonSerializer):
             context=self.context
         )
         return serializer.data
-    
+
     def get_agenda_items(self, obj):
         return None
-    
+
     def get_documents(self, obj):
         return None
-    
+
     def get_legislation(self, obj):
         return None
-    
+
     def get_all_votes(self, obj):
         # obj is the vote
         serializer = VoteSumsSerializer(
@@ -256,11 +256,11 @@ class SessionVoteSerializer(CommonSerializer):
     def get_is_outlier(self, obj):
         # TODO some day
         return False
-    
+
     def get_has_outliers(self, obj):
         # TODO before some day
         return False
-    
+
     def get_has_named_votes(self, obj):
         # TODO before some day
         return True
@@ -269,7 +269,7 @@ class SessionVoteSerializer(CommonSerializer):
         # TODO return motion object
         # and handle it on the front-end
         return obj.motion.title
-    
+
     def get_all_votes(self, obj):
         # obj is the vote
         serializer = VoteSumsSerializer(
@@ -285,7 +285,8 @@ class SessionVoteSerializer(CommonSerializer):
     has_outliers = serializers.SerializerMethodField()
     has_named_votes = serializers.SerializerMethodField()
     title = serializers.SerializerMethodField()
-        
+    timestamp = serializers.DateTimeField()
+
 
 class BareVoteSerializer(SessionVoteSerializer):
     def get_session(self, obj):
@@ -296,7 +297,6 @@ class BareVoteSerializer(SessionVoteSerializer):
         )
         return serializer.data
 
-    timestamp = serializers.DateTimeField()
     session = serializers.SerializerMethodField()
 
 
