@@ -257,7 +257,10 @@ class CommonPersonSerializer(CommonCachableSerializer):
         if not active_parliamentary_group_membership:
             return None
 
-        serializer = CommonOrganizationSerializer(obj.parliamentary_group_on_date(self.context['date']), context=self.context)
+        serializer = CommonOrganizationSerializer(
+            active_parliamentary_group_membership,
+            context=self.context
+        )
         return serializer.data
 
     slug = serializers.CharField()

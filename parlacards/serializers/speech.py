@@ -2,29 +2,13 @@ from rest_framework import serializers
 
 from parlacards.serializers.session import SessionSerializer
 
-from parlacards.serializers.common import CommonCachableSerializer, CommonPersonSerializer
+from parlacards.serializers.common import CommonSerializer, CommonCachableSerializer, CommonPersonSerializer
 from parlacards.serializers.vote import SpeechVoteSerializer
 
 from parladata.models.vote import Vote
 
-# TODO paginate
-class SpeechSerializer(CommonCachableSerializer):
-    def calculate_cache_key(self, instance):
-        # instance is the speech
-        speech_timestamp = instance.updated_at
-        person_timestamp = instance.speaker.updated_at
-        try:
-            vote_timestamp = Vote.objects.filter(
-                motion__speech=instance
-            ).latest(
-                'updated_at'
-            ).updated_at
-        except Vote.DoesNotExist:
-            vote_timestamp = speech_timestamp
 
-        timestamp = max([speech_timestamp, person_timestamp, vote_timestamp])
-        return f'SpeechSerializer_{instance.id}_{timestamp.isoformat()}'
-
+class BaseSpeechSerializer(CommonSerializer):
     def get_the_order(self, obj):
         # obj is the speech
         if obj.order:
@@ -58,3 +42,26 @@ class SpeechSerializer(CommonCachableSerializer):
     person = CommonPersonSerializer(source='speaker')
     start_time = serializers.DateTimeField()
     votes = serializers.SerializerMethodField()
+
+
+# TODO paginate
+class SpeechSerializer(BaseSpeechSerializer, CommonCachableSerializer):
+    def calculate_cache_key(self, instance):
+        # instance is the speech
+        speech_timestamp = instance.updated_at
+        person_timestamp = instance.speaker.updated_at
+        try:
+            vote_timestamp = Vote.objects.filter(
+                motion__speech=instance
+            ).latest(
+                'updated_at'
+            ).updated_at
+        except Vote.DoesNotExist:
+            vote_timestamp = speech_timestamp
+
+        timestamp = max([speech_timestamp, person_timestamp, vote_timestamp])
+        return f'SpeechSerializer_{instance.id}_{timestamp.isoformat()}'
+
+
+class HighlightSerializer(BaseSpeechSerializer):
+    pass
