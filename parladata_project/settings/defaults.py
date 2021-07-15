@@ -135,8 +135,4 @@ OAUTH2_PROVIDER = {
 
 DEFAULT_AUTO_FIELD='django.db.models.AutoField'
 
-DEBUG = True
-
-DEBUG_TOOLBAR_CONFIG = {
-    "SHOW_TOOLBAR_CALLBACK": lambda request: DEBUG,
-}
+DEBUG = False
