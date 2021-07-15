@@ -9,11 +9,37 @@
         <h2>{% translate 'Parlameter' %}</h2>
         {% if new_motions %}
             There are new motions in parlameter</br></br>
-            <a href="{% url 'admin:parladata_motion_changelist' %}">{% url 'admin:parladata_motion_changelist' %}</a>
+            <a href="{{ base_url }}{% url 'admin:parladata_motion_changelist' %}">Motions</a>
         {% endif %}
+
         {% if new_speeches %}
-            There are new speeches in parlameter</br></br>
+        <h2>There are new speeches in parlameter for next sessions: {sessions}</h2>
+        </br></br>
+        <a href="{{ base_url }}{% url 'admin:parladata_speech_changelist' %}">Speeches</a>
+        <a href="{{ base_url }}{% url 'admin:parlacards_sessiontfidf_changelist' %}">Session TFIDF</a>
         {% endif %}
+
+
+        {% if new_voters %}
+        <h2>There are voters without memberships:</h2>
+        {% for voter in new_voters %}
+            <p>{{ voter }}</p>
+        {% endfor %}
+        <a href="{{ base_url }}{% url 'admin:parladata_person_changelist' %}">People</a>
+        <a href="{{ base_url }}{% url 'admin:parladata_personmembership_changelist' %}">Memberships</a>
+        </br></br>
+        {% endif %}
+
+        {% if new_people %}
+        <h2>There are voters without memberships:</h2>
+        {% for person in new_people %}
+            <p>{{ person }}</p>
+        {% endfor %}
+        <a href="{{ base_url }}{% url 'admin:parladata_person_changelist' %}">People</a>
+        <a href="{{ base_url }}{% url 'admin:parladata_personmembership_changelist' %}">Memberships</a>
+        </br></br>
+        {% endif %}
+
     </div>
     <div>
     </div>
