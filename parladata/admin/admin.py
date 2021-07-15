@@ -1,12 +1,14 @@
 from django.contrib import admin
-from django import forms
-from collections import Counter
-from django.urls import reverse
-from parladata.models import *
+from django.utils.safestring import mark_safe
 from django.conf import settings
 from django.db.models import Q
+from django import forms
+from django.urls import reverse
 
+from parladata.models import *
 from parladata.models.versionable_properties import *
+
+from collections import Counter
 
 class LinkOrganizationInline(admin.TabularInline):
     model = Link
@@ -86,15 +88,18 @@ class SpeechForm(forms.ModelForm):
 class SpeechAdmin(admin.ModelAdmin):
     form = SpeechForm
     fields = ['content', 'motions', 'speaker', 'order', 'tags']
+    list_filter = ('session', 'tags')
     search_fields = ['speaker__name', 'content']
     #autocomplete_fields = ['motion']
     inlines = [
     ]
     list_display = ('id',
-                    'tag_list')
+                    'tag_list',
+                    'session',
+                    'speaker')
 
     def get_queryset(self, request):
-        return super().get_queryset(request).prefetch_related('tags')
+        return super().get_queryset(request).prefetch_related('tags', 'session', 'speaker')
 
     def tag_list(self, obj):
         return u", ".join(o.name for o in obj.tags.all())
@@ -118,14 +123,19 @@ class MotionAdmin(admin.ModelAdmin):
                     'get_against',
                     'get_abstain',
                     'get_not',
-                    'link_to_vote')
+                    'link_to_vote',
+                    'session_name')
 
     list_editable = ('result',)
     list_filter = ('result', 'datetime', 'session')
-    search_fields = ['text', 'session__name']
+    search_fields = ['text', 'vote__session__name']
     inlines = [
         LinkMotionInline,
     ]
+    list_per_page = 25
+
+    def get_queryset(self, request):
+        return Motion.objects.all().prefetch_related('session', 'vote').order_by('-id')
 
     def get_for(self, obj):
         results = dict(Counter(Ballot.objects.filter(vote__motion=obj).values_list("option", flat=True))).get("for", 0)
@@ -144,8 +154,11 @@ class MotionAdmin(admin.ModelAdmin):
         return results
 
     def link_to_vote(self, obj):
-        link = reverse("admin:parladata_vote_change", args=[Vote.objects.get(motion=obj).id])
-        return u'<a href="%s">Vote</a>' % (link)
+        link = reverse("admin:parladata_vote_change", args=[obj.vote.first().id])
+        return mark_safe(f'<a href="{link}">Vote</a>')
+
+    def session_name(self, obj):
+        return obj.session.name
 
     link_to_vote.allow_tags = True
 
@@ -213,9 +226,8 @@ class AgendaItemAdmin(admin.ModelAdmin):
     list_filter = ('name', 'session')
     search_fields = ['name']
 
-# admin.site.register(PersonEducation, PersonEducationAdmin)
+
 admin.site.register(ParliamentMember, MPAdmin)
-# admin.site.register(Organization, OrganizationAdmin)
 admin.site.register(PersonMembership, MembershipAdmin)
 admin.site.register(Session, SessionAdmin)
 admin.site.register(Speech, SpeechAdmin)
@@ -225,7 +237,6 @@ admin.site.register(Vote, VoteAdmin)
 admin.site.register(Link)
 admin.site.register(Ballot)
 admin.site.register(Question, QuestionAdmin)
-# admin.site.register(OrganizationName, OrganizationNameAdmin)
 admin.site.register(AgendaItem, AgendaItemAdmin)
 admin.site.register(Law, LawAdmin)
 admin.site.register(OrganizationMembership)
