@@ -51,11 +51,11 @@ spec:
             - --log-level
             - DEBUG
             - --workers
-            - 1
+            - "1"
             - --threads
-            - 3
+            - "3"
             - --timeout
-            - 120
+            - "120"
           ports:
             - containerPort: 8000
           envFrom:
