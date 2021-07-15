@@ -40,7 +40,7 @@ from parlacards.serializers.voting_distance import VotingDistanceSerializer, Gro
 from parlacards.serializers.membership import MembershipSerializer
 from parlacards.serializers.recent_activity import DailyActivitySerializer
 from parlacards.serializers.style_scores import StyleScoresSerializer
-from parlacards.serializers.speech import SpeechSerializer
+from parlacards.serializers.speech import SpeechSerializer, HighlightSerializer
 from parlacards.serializers.vote import VoteSerializer, SessionVoteSerializer
 from parlacards.serializers.tfidf import TfidfSerializer
 from parlacards.serializers.group_attendance import SessionGroupAttendanceSerializer
@@ -488,6 +488,7 @@ class PersonAnalysesSerializer(CommonPersonSerializer):
             'education': person.education_level,
             'spoken_words': self.get_person_value(person, 'PersonNumberOfSpokenWords'),
             'vocabulary_size': self.get_person_value(person, 'PersonVocabularySize'),
+            # 'working_bodies': OrganizationSerializer(person...) # TODO
         }
 
     results = serializers.SerializerMethodField()
@@ -1038,7 +1039,7 @@ class MandateSpeechCardSerializer(CardSerializer):
         page = paginator.get_page(requested_page)
 
         # serialize speeches
-        speeches_serializer = SpeechSerializer(
+        speeches_serializer = HighlightSerializer(
             page.object_list,
             many=True,
             context=self.context

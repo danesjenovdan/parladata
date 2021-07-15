@@ -65,6 +65,8 @@ class Versionable(models.Model):
     class Meta:
         abstract = True
 
+
+# TODO touch on delete
 class VersionableProperty(Versionable):
     owner = None
     value = models.TextField(blank=False, null=False)

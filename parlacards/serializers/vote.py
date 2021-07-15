@@ -20,23 +20,21 @@ from parlacards.serializers.common import (
 class VoteBallotSerializer(CommonCachableSerializer):
     def calculate_cache_key(self, instance):
         # instance is the vote
-        # TODO what if ballots change?
         vote_timestamp = instance.updated_at
         person_timestamp = instance.personvoter.updated_at
         timestamp = max([vote_timestamp, person_timestamp])
         return f'VoteBallotSerializer_{instance.id}_{instance.personvoter.id}_{timestamp.strftime("%Y-%m-%d-%H-%M-%s")}'
 
     person = CommonPersonSerializer(source='personvoter')
-    outlier = serializers.BooleanField()
     option = serializers.CharField()
 
 
 class VoteGroupSerializer(CommonCachableSerializer):
     def calculate_cache_key(self, instance):
         # instance is group
-        # TODO what if ballots change?
         group_timestamp = instance.updated_at
         vote_timestamp = self.context['vote'].updated_at
+        # TODO get latest membership timestamp
         timestamp = max([group_timestamp, vote_timestamp])
         return f'VoteGroupSerializer_{instance.id}_{self.context["vote"].id}_{timestamp.strftime("%Y-%m-%d-%H-%M-%s")}'
 
@@ -82,6 +80,7 @@ class VoteGroupSerializer(CommonCachableSerializer):
     
     def get_max(self, obj):
         # obj is group
+        # TODO only call DB once
         max_option_percentage = self.get_annotated_group_ballots(obj).first()['option_count'] * 100 / sum(self.get_annotated_group_ballots(obj).values_list('option_count', flat=True))
         max_option = self.get_annotated_group_ballots(obj).first()['option']
         return {
@@ -117,9 +116,6 @@ class VoteGroupSerializer(CommonCachableSerializer):
 class VoteSumsSerializer(CommonCachableSerializer):
     def calculate_cache_key(self, instance):
         # instance is the vote
-        # TODO should the vote change when ballots change?
-        # maybe touch, maybe a better cache key, but this
-        # one is cheap
         return f'VoteSumsSerializer_{instance.id}_{instance.updated_at.strftime("%Y-%m-%d-%H-%M-%s")}'
 
     # for is a reserved word FML
@@ -190,6 +186,7 @@ class VoteSerializer(CommonSerializer):
     
     def get_result(self, obj):
         # obj is the vote
+        # TODO use VoteSumsSerializer for max
         return {
             'is_outlier': False, # TODO this is faked
             'passed': obj.motion.result,
@@ -199,15 +196,8 @@ class VoteSerializer(CommonSerializer):
 
     def get_members(self, obj):
         # obj is the vote
-        vote_ballots = Ballot.objects.filter(
-            vote=obj,
-        )
-
-        for ballot in vote_ballots:
-            ballot.outlier = False # TODO this is faked
-
         serializer = VoteBallotSerializer(
-            vote_ballots,
+            obj.ballots.all(),
             many=True,
             context=self.context
         )
