@@ -623,7 +623,10 @@ class LastSessionCardSerializer(CardSerializer):
         }
 
     def get_session(self, obj):
-        session = obj.sessions.latest('start_time')
+        session = obj.sessions.filter(
+            speeches__isnull=False,
+            motions__isnull=False
+        ).distinct('id', 'start_time').latest('start_time')
         serializer = SessionSerializer(
             session,
             context=self.context
