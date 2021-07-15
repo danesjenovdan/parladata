@@ -10,6 +10,7 @@ from parladata.models.vote import Vote
 from parladata.models.session import Session
 from parladata.models.motion import Motion
 from parladata.models.speech import Speech
+from parladata.models.person import Person
 
 from datetime import datetime, timedelta
 
@@ -74,15 +75,23 @@ def notify_editors_for_new_data():
     new_motions = Motion.objects.filter(created_at__gte=yeterday)
     new_speeches = Speech.objects.filter(created_at__gte=yeterday)
     editor_group = Group.objects.filter(name__icontains="editor").first()
-    if new_motions or new_speeches:
+    sessions = new_speeches.values_list('session__name', flat=True).distinct('session__name')
+    new_people = Person.objects.filter(created_at__gte=yeterday)
+    new_voters = Person.objects.filter(ballots__isnull=False, person_memberships__isnull=True).distinct('id')
+    
+    if new_motions or new_speeches or new_people:
         for editor in editor_group.user_set.all():
             send_email(
                 _('New data for edit in parlameter'),
                 editor.email,
                 'daily_notification.html',
                 {
+                    'base_url': settings.BASE_URL,
                     'new_motions': new_motions,
-                    'new_speeches': new_speeches
+                    'new_speeches': new_speeches,
+                    'sessions': sessions,
+                    'new_voters': new_voters,
+                    'new_people': new_people
                 }
             )
 

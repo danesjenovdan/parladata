@@ -68,7 +68,8 @@ class MembershipAdmin(admin.ModelAdmin):
         LinkMembershipInline,
     ]
     # list_filter = ['organization']
-    search_fields = ['person__name', 'organization___name']
+    search_fields = ['member__name', 'organization___name']
+    autocomplete_fields = ('member', 'organization', 'on_behalf_of')
 
 
 class SessionAdmin(admin.ModelAdmin):
@@ -95,14 +96,18 @@ class SpeechAdmin(admin.ModelAdmin):
     ]
     list_display = ('id',
                     'tag_list',
-                    'session',
+                    'session_name',
                     'speaker')
+    list_per_page = 25
 
     def get_queryset(self, request):
         return super().get_queryset(request).prefetch_related('tags', 'session', 'speaker')
 
     def tag_list(self, obj):
         return u", ".join(o.name for o in obj.tags.all())
+
+    def session_name(self, obj):
+        return obj.session.name
 
 
 class QuestionAdmin(admin.ModelAdmin):

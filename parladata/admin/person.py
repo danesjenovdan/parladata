@@ -60,6 +60,6 @@ class PersonAdmin(admin.ModelAdmin):
         PersonNumberOfMandatesInline,
         PersonNumberOfVotersInline,
     ]
-    search_fields = ('id',) # 'name' maybe?
+    search_fields = ('id', 'personname__value') # 'name' maybe?
 
 admin.site.register(Person, PersonAdmin)
