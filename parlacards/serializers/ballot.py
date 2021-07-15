@@ -1,9 +1,8 @@
 from rest_framework import serializers
 
-from parlacards.serializers.motion import MotionSerializer
-from parlacards.serializers.session import SessionSerializer
-
 from parlacards.serializers.common import CommonSerializer
+from parlacards.serializers.vote import BareVoteSerializer
+
 
 # TODO
 # class BallotSerializer(CommonCachableSerializer):
@@ -18,24 +17,12 @@ from parlacards.serializers.common import CommonSerializer
 #         return f'BallotSerializer_{instance.id}_{instance.personvoter.id}_{timestamp.strftime("%Y-%m-%d-%H-%M-%s")}'
 
 class BallotSerializer(CommonSerializer):
-    def get_motion(self, obj):
-        motion_serializer = MotionSerializer(
-            obj.vote.motion,
+    def get_vote(self, obj):
+        vote_serializer = BareVoteSerializer(
+            obj.vote,
             context=self.context
         )
-        return motion_serializer.data
-    
-    def get_timestamp(self, obj):
-        return obj.vote.timestamp
-    
-    def get_session(self, obj):
-        session_serializer = SessionSerializer(
-            obj.vote.motion.session,
-            context=self.context
-        )
-        return session_serializer.data
+        return vote_serializer.data
 
-    motion = serializers.SerializerMethodField()
+    vote = serializers.SerializerMethodField()
     option = serializers.CharField()
-    timestamp = serializers.SerializerMethodField()
-    session = serializers.SerializerMethodField()
