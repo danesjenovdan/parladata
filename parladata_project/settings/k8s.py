@@ -85,6 +85,7 @@ if os.getenv('PARLAMETER_ENABLE_S3', False):
     AWS_SECRET_ACCESS_KEY = os.getenv('PARLAMETER_AWS_SECRET_ACCESS_KEY', '')
     AWS_STORAGE_BUCKET_NAME = os.getenv('PARLAMETER_AWS_STORAGE_BUCKET_NAME', '')
     AWS_DEFAULT_ACL = 'public-read' # if files are not public they won't show up for end users
+    AWS_QUERYSTRING_AUTH = False # query strings expire and don't play nice with the cache
     AWS_LOCATION = os.getenv('PARLAMETER_AWS_LOCATION', 'parladata')
     AWS_S3_REGION_NAME = os.getenv('PARLAMETER_AWS_REGION_NAME', 'fr-par')
     AWS_S3_ENDPOINT_URL = os.getenv('PARLAMETER_AWS_S3_ENDPOINT_URL', 'https://s3.fr-par.scw.cloud')
