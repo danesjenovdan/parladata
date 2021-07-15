@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from parlacards.serializers.common import CommonSerializer
-from parlacards.serializers.vote import SessionVoteSerializer
+from parlacards.serializers.vote import BareVoteSerializer
 
 from parladata.models.vote import Vote
 
@@ -24,7 +24,7 @@ class LegislationDetailSerializer(LegislationSerializer):
 
     def get_votes(self, obj):
         votes = Vote.objects.filter(motion__law=obj)
-        return SessionVoteSerializer(
+        return BareVoteSerializer(
             votes,
             many=True,
             context=self.context
