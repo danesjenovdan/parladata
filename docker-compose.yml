@@ -9,6 +9,7 @@ services:
       - db
     environment:
       PYTHONUNBUFFERED: 1
+      DJANGO_DEBUG: "yes"
       DJANGO_SETTINGS_MODULE: parladata_project.settings.k8s
       DJANGO_SECRET_KEY: make-me-secret
       DJANGO_DATABASE_HOST: db
@@ -18,6 +19,12 @@ services:
       PARLAMETER_URL: https://parlameter.si/
       CARDS_URL: https://glej.parlameter.si/
       NOTIFICATIONS_URL: https://obvestila.parlameter.si/
+      PARLAMETER_SOLR_URL: http://parlasolr.lb.djnd.si/solr/parlasearch
+      PARLAMETER_ENABLE_S3: ""
+      PARLAMETER_AWS_ACCESS_KEY_ID: ""
+      PARLAMETER_AWS_SECRET_ACCESS_KEY: ""
+      PARLAMETER_AWS_STORAGE_BUCKET_NAME: "parlameter"
+      PARLAMETER_AWS_LOCATION: "dev"
     volumes:
       - ./:/app
 

@@ -6,6 +6,9 @@ from django.utils.translation import ugettext_lazy as _
 from parladata.behaviors.models import Timestampable
 
 
+# TODO touch parents on save
+# TODO touch parents on delete
+
 class Membership(Timestampable):
     start_time = models.DateTimeField(blank=True, null=True,
                                      help_text='Start time')
