@@ -19,8 +19,9 @@ class Parsable(models.Model):
         if not self.parser_names:
             self.parser_names = new_parser_name
         else:
-            self.parser_names = f'{self.parser_names}|{new_parser_name}'
-    
+            if not new_parser_name in self.parser_names_as_list:
+                self.parser_names = f'{self.parser_names}|{new_parser_name}'
+
     @property
     def parser_names_as_list(self):
         if not self.parser_names:
