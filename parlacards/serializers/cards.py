@@ -41,7 +41,7 @@ from parlacards.serializers.membership import MembershipSerializer
 from parlacards.serializers.recent_activity import DailyActivitySerializer
 from parlacards.serializers.style_scores import StyleScoresSerializer
 from parlacards.serializers.speech import SpeechSerializer, HighlightSerializer
-from parlacards.serializers.vote import VoteSerializer, SessionVoteSerializer
+from parlacards.serializers.vote import VoteSerializer, SessionVoteSerializer, BareVoteSerializer
 from parlacards.serializers.tfidf import TfidfSerializer
 from parlacards.serializers.group_attendance import SessionGroupAttendanceSerializer
 from parlacards.serializers.facets import GroupFacetSerializer, PersonFacetSerializer
@@ -1147,7 +1147,7 @@ class MandateVotesCardSerializer(CardSerializer):
         page = paginator.get_page(requested_page)
 
         # serialize votes
-        vote_serializer = SessionVoteSerializer(
+        vote_serializer = BareVoteSerializer(
             page.object_list,
             many=True,
             context=self.context

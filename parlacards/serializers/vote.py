@@ -287,6 +287,20 @@ class SessionVoteSerializer(CommonSerializer):
     title = serializers.SerializerMethodField()
         
 
+class BareVoteSerializer(SessionVoteSerializer):
+    def get_session(self, obj):
+        # obj is the vote
+        serializer = SessionSerializer(
+            obj.motion.session,
+            context=self.context
+        )
+        return serializer.data
+
+    timestamp = serializers.DateTimeField()
+    session = serializers.SerializerMethodField()
+
+
+# TODO THIS IS ALL FAKED OMG HACK WARNING ERROR
 class SpeechVoteSerializer(CommonSerializer):
     result = serializers.SerializerMethodField()
     id = serializers.IntegerField()
