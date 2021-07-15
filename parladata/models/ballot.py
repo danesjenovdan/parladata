@@ -13,6 +13,7 @@ class Ballot(Timestampable):
     personvoter = models.ForeignKey('Person',
                               blank=True, null=True,
                               on_delete=models.CASCADE,
+                              related_name='ballots',
                               help_text='The voter')
 
     orgvoter = models.ForeignKey('Organization',
