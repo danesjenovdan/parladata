@@ -63,8 +63,8 @@ class Command(BaseCommand):
 
         print_method(f'Real person is author of {real_person.authored_questions.all().count()} questions.')
         for fake_person in fake_people:
-            print_method(f'Fake person {fake_person.id} is author of {fake_person.authored_questions.all().count()} speeches.')
-            print_method('Moving speeches to real person...')
+            print_method(f'Fake person {fake_person.id} is author of {fake_person.authored_questions.all().count()} questions.')
+            print_method('Moving questions to real person...')
             for question in fake_person.authored_questions.all():
                 question.authors.remove(fake_person)
                 question.authors.add(real_person)
@@ -73,7 +73,7 @@ class Command(BaseCommand):
 
         print_method(f'Real person is recipient of {real_person.received_questions.all().count()} questions.')
         for fake_person in fake_people:
-            print_method(f'Fake person {fake_person.id} is author of {fake_person.received_questions.all().count()} speeches.')
+            print_method(f'Fake person {fake_person.id} is recipient of {fake_person.received_questions.all().count()} questions.')
             print_method('Moving questions to real person...')
             for question in fake_person.received_questions.all():
                 question.recipient_people.remove(fake_person)
