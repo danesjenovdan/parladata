@@ -8,11 +8,6 @@ from parladata.behaviors.models import Timestampable, Parsable, Sluggable, Versi
 from parladata.models.memberships import PersonMembership
 
 
-class PersonManager(models.Manager):
-    def get_queryset(self):
-        return super().get_queryset().prefetch_related('personname')
-
-
 class Person(Timestampable, Parsable, Sluggable, VersionableFieldsOwner):
     """Model for all people that are somehow connected to the parlament."""
 
@@ -41,7 +36,6 @@ class Person(Timestampable, Parsable, Sluggable, VersionableFieldsOwner):
                                  default=True,
                                  help_text='a generic active or not toggle')
 
-    objects = PersonManager()
 
     @property
     def name(self):
