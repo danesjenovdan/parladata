@@ -248,8 +248,8 @@ def merge_people(q_s):
     base_person = q_s.first()
     others = q_s.exclude(id=base_person.id)
     for other in others:
-        other.speech_set.all().update(speaker=base_person)
-        other.ballot_set.all().update(voter=base_person)
+        other.speeches.all().update(speaker=base_person)
+        other.ballots.all().update(voter=base_person)
         other.delete()
 
 
