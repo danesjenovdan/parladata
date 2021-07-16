@@ -52,6 +52,8 @@ CACHES = {
     }
 }
 
+BASE_URL = os.getenv('DJANGO_BASE_URL', 'http://localhost:8000')
+
 # static files for development
 #STATIC_URL = '/static/'
 STATIC_ROOT = env['STATIC_ROOT']
