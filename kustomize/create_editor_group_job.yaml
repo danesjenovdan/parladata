@@ -1,13 +1,13 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: parladata-mergepeople-job-runner
+  name: parladata-create-editor-group-job-runner
 spec:
   template:
     spec:
       containers:
-      - name: parladata-mergepeople-job-runner
-        image: rg.fr-par.scw.cloud/djnd/parladata:cbbbcc7e6e978121892eff8f4caf6630e85f4d48
+      - name: parladata-create-editor-group-job-runner
+        image: rg.fr-par.scw.cloud/djnd/parladata:47860eb2a691c15e394da58ee9a6e2a38d000997
         # TODO COMMIT HASH COMES ABOVE GET IT LIKE SO:
         # git log -n 1 origin/k8s
         env:
@@ -19,10 +19,6 @@ spec:
         command:
           - python
           - manage.py
-          - mergepeople
-          - --original
-          - 2663
-          - --fake
-          - 266
+          - create_editor_group
       restartPolicy: Never
   backoffLimit: 1
