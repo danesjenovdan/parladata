@@ -27,8 +27,8 @@ def getVotingArray():
         for vote in votes:
 
             # check if person voted
-            if len(vote.ballot_set.filter(voter=person)) != 0:
-                record.append(vote.ballot_set.filter(voter=person)[0].option)
+            if len(vote.ballots.filter(voter=person)) != 0:
+                record.append(vote.ballots.filter(voter=person)[0].option)
             else:
                 record.append(0)
             
@@ -38,7 +38,7 @@ def getVotingArray():
 #            otherpersons = list(persons)
 #            otherpersons.remove(person)
 #            for k, other in enumerate(otherpersons):
-#                if ballot.option == other.ballot_set.all().order_by('vote')[j].option:
+#                if ballot.option == other.ballots.all().order_by('vote')[j].option:
 #                    results[i][k] = results[i][k] + 1
     
     print('Finished processing votes.')

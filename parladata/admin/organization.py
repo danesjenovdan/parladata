@@ -21,6 +21,6 @@ class OrganizationAdmin(admin.ModelAdmin):
         OrganizationNameInline,
         OrganizationAcronymInline,
     ]
-    search_fields = ('id',) # 'name' maybe?
+    search_fields = ('id', 'personname__value') # 'name' maybe?
 
 admin.site.register(Organization, OrganizationAdmin)

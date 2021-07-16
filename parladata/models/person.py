@@ -36,6 +36,7 @@ class Person(Timestampable, Parsable, Sluggable, VersionableFieldsOwner):
                                  default=True,
                                  help_text='a generic active or not toggle')
 
+
     @property
     def name(self):
         return self.versionable_property_value_on_date(
