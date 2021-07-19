@@ -30,7 +30,9 @@ jobs:
         with:
           context: .
           push: true
-          tags: rg.fr-par.scw.cloud/djnd/parladata:${{ github.sha }}
+          tags: |
+            rg.fr-par.scw.cloud/djnd/parladata:${{ github.sha }}
+            rg.fr-par.scw.cloud/djnd/parladata:latest
       -
         name: Update image versions in kustomize/kustomization.yaml
         run: |
