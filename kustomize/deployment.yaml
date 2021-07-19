@@ -28,6 +28,13 @@ spec:
           envFrom:
             - secretRef:
                 name: parladata-credentials
+          resources:
+            requests:
+              memory: 500Mi
+              cpu: 500m
+            limits:
+              memory: 500Mi
+              cpu: 500m
         - name: migrate
           image: parladata
           command:
@@ -40,6 +47,13 @@ spec:
           envFrom:
             - secretRef:
                 name: parladata-credentials
+          resources:
+            requests:
+              memory: 500Mi
+              cpu: 500m
+            limits:
+              memory: 500Mi
+              cpu: 500m
       containers:
         - name: parladata
           image: parladata
@@ -64,3 +78,10 @@ spec:
           env:
             - name: DJANGO_SETTINGS_MODULE
               value: parladata_project.settings.k8s
+          resources:
+            requests:
+              memory: 2Gi
+              cpu: 1000m
+            limits:
+              memory: 2Gi
+              cpu: 2000m
