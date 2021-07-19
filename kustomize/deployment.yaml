@@ -30,10 +30,10 @@ spec:
                 name: parladata-credentials
           resources:
             requests:
-              memory: 500Mi
+              memory: 1Gi
               cpu: 500m
             limits:
-              memory: 500Mi
+              memory: 1Gi
               cpu: 500m
         - name: migrate
           image: parladata
@@ -49,10 +49,10 @@ spec:
                 name: parladata-credentials
           resources:
             requests:
-              memory: 500Mi
+              memory: 1Gi
               cpu: 500m
             limits:
-              memory: 500Mi
+              memory: 1Gi
               cpu: 500m
       containers:
         - name: parladata
