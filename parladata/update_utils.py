@@ -106,3 +106,17 @@ def send_email(subject, to_email, template, data, from_email=settings.FROM_EMAIL
         body=text_body)
     msg.attach_alternative(html_body, "text/html")
     msg.send()
+
+
+def set_vote_session():
+    for session in Session.objects.all():
+        if not session.speeches.count():
+            continue
+        start_time = session.speeches.earliest('start_time').start_time
+        end_time = session.speeches.latest('start_time').start_time
+        motions = Motion.objects.filter(
+            Q(datetime__gte=start_time) | Q(datetime__lte=end_time),
+            session__isnull=True,
+        )
+        print(motions.count())
+        motions.update(session=session)
