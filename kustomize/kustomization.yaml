@@ -7,6 +7,6 @@ resources:
   - service.yaml
   - ingress.yaml
 images:
-  - name: parladata
+  - name: parladata-ua
     newName: rg.fr-par.scw.cloud/djnd/parladata-ua
     newTag: 'dc96a76ba95ca4e4e4940d1751e21c61fdfac141'
