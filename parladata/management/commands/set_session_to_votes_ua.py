@@ -9,5 +9,5 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         self.stdout.write('Start setting session to votes')
 
-        set_vote_session()
+        set_vote_session(self.stdout.write)
 

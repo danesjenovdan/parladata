@@ -108,7 +108,7 @@ def send_email(subject, to_email, template, data, from_email=settings.FROM_EMAIL
     msg.send()
 
 
-def set_vote_session():
+def set_vote_session(print_method=print):
     for session in Session.objects.all():
         if not session.speeches.count():
             continue
@@ -118,5 +118,5 @@ def set_vote_session():
             Q(datetime__gte=start_time) | Q(datetime__lte=end_time),
             session__isnull=True,
         )
-        print(motions.count())
+        print_method(f'{motions.count()} motions updated with session.')
         motions.update(session=session)
