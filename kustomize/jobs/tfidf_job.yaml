@@ -1,15 +1,13 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: parladata-mergepeople-job-runner
+  name: parladata-tfidf-job-runner
 spec:
   template:
     spec:
       containers:
-      - name: parladata-mergepeople-job-runner
-        image: rg.fr-par.scw.cloud/djnd/parladata:cbbbcc7e6e978121892eff8f4caf6630e85f4d48
-        # TODO COMMIT HASH COMES ABOVE GET IT LIKE SO:
-        # git log -n 1 origin/k8s
+      - name: parladata-tfidf-job-runner
+        image: rg.fr-par.scw.cloud/djnd/parladata:latest
         env:
           - name: DJANGO_SETTINGS_MODULE
             value: parladata_project.settings.k8s
@@ -19,10 +17,7 @@ spec:
         command:
           - python
           - manage.py
-          - mergepeople
-          - --original
-          - 2663
-          - --fake
-          - 266
+          - set_tfidf_for_sessions
+          # TODO YOUR COMMAND ABOVE
       restartPolicy: Never
   backoffLimit: 1
