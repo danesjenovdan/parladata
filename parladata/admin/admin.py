@@ -163,7 +163,7 @@ class MotionAdmin(admin.ModelAdmin):
         return mark_safe(f'<a href="{link}">Vote</a>')
 
     def session_name(self, obj):
-        return obj.session.name
+        return obj.session.name if obj.session else ''
 
     link_to_vote.allow_tags = True
 
