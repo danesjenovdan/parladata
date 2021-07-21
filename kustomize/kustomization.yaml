@@ -4,13 +4,7 @@ kind: Kustomization
 namespace: parlameter
 resources:
   - solr.yaml
-  - api.yaml
 images:
-  -
-    name: parlasearch
-    newName: rg.fr-par.scw.cloud/djnd/parlasearch
-    newTag: 'b8e243ad15dba3009e3537b78f41dd56a77fb35b'
-  -
-    name: parlasolr
+  - name: parlasolr
     newName: rg.fr-par.scw.cloud/djnd/parlasolr
     newTag: 'b8e243ad15dba3009e3537b78f41dd56a77fb35b'
