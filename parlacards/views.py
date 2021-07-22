@@ -15,6 +15,7 @@ from parladata.models.legislation import Law
 from parlacards.serializers.cards import (
     PersonCardSerializer,
     GroupMembersCardSerializer,
+    SearchDropdownSerializer,
     SessionSpeechesCardSerializer,
     SessionTfidfCardSerializer,
     VotersCardSerializer,
@@ -508,3 +509,11 @@ class LastSession(CardView):
     '''
     thing = Organization
     card_serializer = LastSessionCardSerializer
+
+
+class SearchDropdown(CardView):
+    '''
+    Search field dropdown autocomplete data
+    '''
+    thing = Mandate
+    card_serializer = SearchDropdownSerializer
