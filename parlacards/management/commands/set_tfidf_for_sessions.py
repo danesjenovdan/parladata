@@ -9,5 +9,6 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         self.stdout.write('Start setting TFIDF')
+        # TODO: get main org id more reliably
         playing_field = Organization.objects.first()
         save_sessions_tfidf_for_fresh_sessions(playing_field,)
