@@ -40,7 +40,7 @@ from parlacards.serializers.voting_distance import VotingDistanceSerializer, Gro
 from parlacards.serializers.membership import MembershipSerializer
 from parlacards.serializers.recent_activity import DailyActivitySerializer
 from parlacards.serializers.style_scores import StyleScoresSerializer
-from parlacards.serializers.speech import SpeechSerializer, HighlightSerializer
+from parlacards.serializers.speech import SpeechSerializer, HighlightSerializer, SpeechWithSessionSerializer
 from parlacards.serializers.vote import VoteSerializer, SessionVoteSerializer, BareVoteSerializer
 from parlacards.serializers.tfidf import TfidfSerializer
 from parlacards.serializers.group_attendance import SessionGroupAttendanceSerializer
@@ -419,7 +419,7 @@ class PersonSpeechesCardSerializer(PersonScoreCardSerializer):
         page = paginator.get_page(requested_page)
 
         # serialize speeches
-        speeches_serializer = SpeechSerializer(
+        speeches_serializer = SpeechWithSessionSerializer(
             page.object_list,
             many=True,
             context=self.context
@@ -447,7 +447,7 @@ class GroupSpeechesCardSerializer(GroupScoreCardSerializer):
         page = paginator.get_page(requested_page)
 
         # serialize speeches
-        speeches_serializer = SpeechSerializer(
+        speeches_serializer = SpeechWithSessionSerializer(
             page.object_list,
             many=True,
             context=self.context
@@ -1204,4 +1204,32 @@ class MandateLegislationCardSerializer(CardSerializer):
             **parent_data,
             **pagination_response_data(paginator, page),
             'results': legislation_serializer.data,
+        }
+
+
+class SearchDropdownSerializer(CardSerializer):
+    def get_results(self, obj):
+        # obj is the mandate
+
+        # TODO: get main org id more reliably
+        playing_field = Organization.objects.first()
+
+        # TODO: add mayor
+        people = playing_field.query_voters(self.context['date'])
+        person_serializer = CommonPersonSerializer(
+            people,
+            many=True,
+            context=self.context
+        )
+
+        groups = playing_field.query_parliamentary_groups(self.context['date'])
+        group_serializer = CommonOrganizationSerializer(
+            groups,
+            many=True,
+            context=self.context
+        )
+
+        return {
+            'people': person_serializer.data,
+            'groups': group_serializer.data,
         }
