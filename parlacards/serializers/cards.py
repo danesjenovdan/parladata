@@ -40,7 +40,7 @@ from parlacards.serializers.voting_distance import VotingDistanceSerializer, Gro
 from parlacards.serializers.membership import MembershipSerializer
 from parlacards.serializers.recent_activity import DailyActivitySerializer
 from parlacards.serializers.style_scores import StyleScoresSerializer
-from parlacards.serializers.speech import SpeechSerializer, HighlightSerializer
+from parlacards.serializers.speech import SpeechSerializer, HighlightSerializer, SpeechWithSessionSerializer
 from parlacards.serializers.vote import VoteSerializer, SessionVoteSerializer, BareVoteSerializer
 from parlacards.serializers.tfidf import TfidfSerializer
 from parlacards.serializers.group_attendance import SessionGroupAttendanceSerializer
@@ -419,7 +419,7 @@ class PersonSpeechesCardSerializer(PersonScoreCardSerializer):
         page = paginator.get_page(requested_page)
 
         # serialize speeches
-        speeches_serializer = SpeechSerializer(
+        speeches_serializer = SpeechWithSessionSerializer(
             page.object_list,
             many=True,
             context=self.context
@@ -447,7 +447,7 @@ class GroupSpeechesCardSerializer(GroupScoreCardSerializer):
         page = paginator.get_page(requested_page)
 
         # serialize speeches
-        speeches_serializer = SpeechSerializer(
+        speeches_serializer = SpeechWithSessionSerializer(
             page.object_list,
             many=True,
             context=self.context
