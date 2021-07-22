@@ -34,6 +34,16 @@ def test_misc_last_session():
     assert response.status_code == 200
 
 @pytest.mark.django_db()
+def test_misc_search():
+    response = client.get('/v3/cards/misc/search/?id=1')
+    assert response.status_code == 200
+
+@pytest.mark.django_db()
+def test_misc_menu_search():
+    response = client.get('/v3/cards/misc/menu-search/?id=1')
+    assert response.status_code == 200
+
+@pytest.mark.django_db()
 def test_person_basic_information():
     response = client.get('/v3/cards/person/basic-information/?id=6')
     assert response.status_code == 200
