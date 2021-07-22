@@ -44,7 +44,6 @@ class BaseSpeechSerializer(CommonSerializer):
     votes = serializers.SerializerMethodField()
 
 
-# TODO paginate
 class SpeechSerializer(BaseSpeechSerializer, CommonCachableSerializer):
     def calculate_cache_key(self, instance):
         # instance is the speech
@@ -63,5 +62,36 @@ class SpeechSerializer(BaseSpeechSerializer, CommonCachableSerializer):
         return f'SpeechSerializer_{instance.id}_{timestamp.isoformat()}'
 
 
-class HighlightSerializer(BaseSpeechSerializer):
+class BaseSpeechWithSessionSerializer(BaseSpeechSerializer):
+    def get_session(self, obj):
+        # obj is the speech
+        serializer = SessionSerializer(
+            obj.session,
+            context=self.context
+        )
+        return serializer.data
+
+    session = serializers.SerializerMethodField()
+
+
+class SpeechWithSessionSerializer(BaseSpeechWithSessionSerializer, CommonCachableSerializer):
+    def calculate_cache_key(self, instance):
+        # instance is the speech
+        speech_timestamp = instance.updated_at
+        person_timestamp = instance.speaker.updated_at
+        session_timestamp = instance.session.updated_at
+        try:
+            vote_timestamp = Vote.objects.filter(
+                motion__speech=instance
+            ).latest(
+                'updated_at'
+            ).updated_at
+        except Vote.DoesNotExist:
+            vote_timestamp = speech_timestamp
+
+        timestamp = max([speech_timestamp, person_timestamp, session_timestamp, vote_timestamp])
+        return f'SpeechWithSessionSerializer_{instance.id}_{timestamp.isoformat()}'
+
+
+class HighlightSerializer(BaseSpeechWithSessionSerializer):
     pass
