@@ -32,7 +32,7 @@ from parlacards.models import (
 )
 
 from parlacards.serializers.person import PersonBasicInfoSerializer
-from parlacards.serializers.organization import OrganizationBasicInfoSerializer, MembersSerializer
+from parlacards.serializers.organization import OrganizationBasicInfoSerializer
 from parlacards.serializers.session import SessionSerializer
 from parlacards.serializers.legislation import LegislationSerializer, LegislationDetailSerializer
 from parlacards.serializers.ballot import BallotSerializer
@@ -300,8 +300,7 @@ class RecentActivityCardSerializer(PersonScoreCardSerializer):
         # obj is the person
 
         # we're getting events for the past 30 days
-        # TODO return this back to 30
-        from_datetime = self.context['date'] - timedelta(days=60)
+        from_datetime = self.context['date'] - timedelta(days=30)
 
         ballots = Ballot.objects.filter(
             personvoter=obj,
@@ -341,7 +340,11 @@ class RecentActivityCardSerializer(PersonScoreCardSerializer):
             *speeches.values_list('date', flat=True)
         ])
 
-        events_to_serialize = chain(ballots, questions, speeches)
+        # Do NOT use chain directly if you want to iterate over it multiple
+        # times. `chain` is just an iterator and will NOT reset on subsequent
+        # iterations. Iteration functions will just keep calling next() on it
+        # and just see an empty list.
+        events_to_serialize = list(chain(ballots, questions, speeches))
 
         # this is ripe for optimization
         # currently iterates over all events
@@ -465,7 +468,7 @@ class GroupSpeechesCardSerializer(GroupScoreCardSerializer):
 #
 class PersonAnalysesSerializer(CommonPersonSerializer):
     def calculate_cache_key(self, instance):
-        return f'PersonAnalysesSerializer_{instance.id}_{instance.updated_at.strftime("%Y-%m-%d-%H-%M-%s")}'
+        return f'PersonAnalysesSerializer_{instance.id}_{instance.updated_at.isoformat()}'
 
     def get_person_value(self, person, property_model_name):
         scores_module = import_module('parlacards.models')
@@ -481,6 +484,19 @@ class PersonAnalysesSerializer(CommonPersonSerializer):
 
         return None
 
+    def get_working_bodies(self, person):
+        memberships = PersonMembership.valid_at(self.context['date']).filter(member=person)
+        organizations = Organization.objects.filter(
+            id__in=memberships.values_list('organization'),
+            classification__in=('committee', 'commision', 'other'), # TODO: add other classifications?
+        )
+        organization_serializer = CommonOrganizationSerializer(
+            organizations,
+            context=self.context,
+            many=True,
+        )
+        return organization_serializer.data
+
     def get_results(self, person):
         return {
             'mandates': person.number_of_mandates,
@@ -492,7 +508,7 @@ class PersonAnalysesSerializer(CommonPersonSerializer):
             'education': person.education_level,
             'spoken_words': self.get_person_value(person, 'PersonNumberOfSpokenWords'),
             'vocabulary_size': self.get_person_value(person, 'PersonVocabularySize'),
-            # 'working_bodies': OrganizationSerializer(person...) # TODO
+            'working_bodies': self.get_working_bodies(person),
         }
 
     results = serializers.SerializerMethodField()
@@ -653,12 +669,14 @@ class GroupCardSerializer(GroupScoreCardSerializer):
         return serializer.data
 
 
-class GroupMembersCardSerializer(CardSerializer):
+class GroupMembersCardSerializer(GroupScoreCardSerializer):
     def get_results(self, obj):
         # obj is the group
-        serializer = MembersSerializer(
-            obj,
-            context=self.context
+        members = obj.query_members_by_role(role='member', timestamp=self.context['date'])
+        serializer = CommonPersonSerializer(
+            members,
+            many=True,
+            context=self.context,
         )
         return serializer.data
 

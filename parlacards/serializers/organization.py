@@ -40,14 +40,3 @@ class OrganizationBasicInfoSerializer(CommonSerializer):
     presidents = serializers.SerializerMethodField()
     deputies = serializers.SerializerMethodField()
     members = serializers.SerializerMethodField()
-
-
-class MembersSerializer(CommonOrganizationSerializer):
-    def calculate_cache_key(self, instance):
-        return f'MembersSerializer_{instance.id}_{instance.updated_at.strftime("%Y-%m-%d-%H-%M-%s")}'
-
-    def get_members(self, obj):
-        serializer = CommonPersonSerializer(obj.query_members(timestamp=self.context['date']), many=True, context=self.context)
-        return serializer.data
-
-    members = serializers.SerializerMethodField()
