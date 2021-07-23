@@ -468,7 +468,7 @@ class GroupSpeechesCardSerializer(GroupScoreCardSerializer):
 #
 class PersonAnalysesSerializer(CommonPersonSerializer):
     def calculate_cache_key(self, instance):
-        return f'PersonAnalysesSerializer_{instance.id}_{instance.updated_at.strftime("%Y-%m-%d-%H-%M-%s")}'
+        return f'PersonAnalysesSerializer_{instance.id}_{instance.updated_at.isoformat()}'
 
     def get_person_value(self, person, property_model_name):
         scores_module = import_module('parlacards.models')
@@ -484,6 +484,19 @@ class PersonAnalysesSerializer(CommonPersonSerializer):
 
         return None
 
+    def get_working_bodies(self, person):
+        memberships = PersonMembership.valid_at(self.context['date']).filter(member=person)
+        organizations = Organization.objects.filter(
+            id__in=memberships.values_list('organization'),
+            classification__in=('committee', 'commision', 'other'), # TODO: add other classifications?
+        )
+        organization_serializer = CommonOrganizationSerializer(
+            organizations,
+            context=self.context,
+            many=True,
+        )
+        return organization_serializer.data
+
     def get_results(self, person):
         return {
             'mandates': person.number_of_mandates,
@@ -495,7 +508,7 @@ class PersonAnalysesSerializer(CommonPersonSerializer):
             'education': person.education_level,
             'spoken_words': self.get_person_value(person, 'PersonNumberOfSpokenWords'),
             'vocabulary_size': self.get_person_value(person, 'PersonVocabularySize'),
-            # 'working_bodies': OrganizationSerializer(person...) # TODO
+            'working_bodies': self.get_working_bodies(person),
         }
 
     results = serializers.SerializerMethodField()
