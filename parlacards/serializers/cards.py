@@ -300,8 +300,7 @@ class RecentActivityCardSerializer(PersonScoreCardSerializer):
         # obj is the person
 
         # we're getting events for the past 30 days
-        # TODO return this back to 30
-        from_datetime = self.context['date'] - timedelta(days=60)
+        from_datetime = self.context['date'] - timedelta(days=30)
 
         ballots = Ballot.objects.filter(
             personvoter=obj,
@@ -341,7 +340,11 @@ class RecentActivityCardSerializer(PersonScoreCardSerializer):
             *speeches.values_list('date', flat=True)
         ])
 
-        events_to_serialize = chain(ballots, questions, speeches)
+        # Do NOT use chain directly if you want to iterate over it multiple
+        # times. `chain` is just an iterator and will NOT reset on subsequent
+        # iterations. Iteration functions will just keep calling next() on it
+        # and just see an empty list.
+        events_to_serialize = list(chain(ballots, questions, speeches))
 
         # this is ripe for optimization
         # currently iterates over all events
