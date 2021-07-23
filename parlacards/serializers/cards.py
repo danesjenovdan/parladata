@@ -32,7 +32,7 @@ from parlacards.models import (
 )
 
 from parlacards.serializers.person import PersonBasicInfoSerializer
-from parlacards.serializers.organization import OrganizationBasicInfoSerializer, MembersSerializer
+from parlacards.serializers.organization import OrganizationBasicInfoSerializer
 from parlacards.serializers.session import SessionSerializer
 from parlacards.serializers.legislation import LegislationSerializer, LegislationDetailSerializer
 from parlacards.serializers.ballot import BallotSerializer
@@ -653,12 +653,14 @@ class GroupCardSerializer(GroupScoreCardSerializer):
         return serializer.data
 
 
-class GroupMembersCardSerializer(CardSerializer):
+class GroupMembersCardSerializer(GroupScoreCardSerializer):
     def get_results(self, obj):
         # obj is the group
-        serializer = MembersSerializer(
-            obj,
-            context=self.context
+        members = obj.query_members_by_role(role='member', timestamp=self.context['date'])
+        serializer = CommonPersonSerializer(
+            members,
+            many=True,
+            context=self.context,
         )
         return serializer.data
 
