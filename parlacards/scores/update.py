@@ -55,6 +55,16 @@ def run_analyises_for_new_data(timestamp=datetime.now()):
         playing_field = Organization.objects.get(id=playing_field)
         run_question_analyses_on_date(playing_field, timestamp)
 
+def force_run_analyses(timestamp=datetime.now(), print_method=print):
+    playing_field = Organization.objects.first()
+    print_method('start vote analyses')
+    run_vote_analyses_on_date(playing_field, timestamp)
+    print_method('start speech analyses')
+    run_speech_analyses_on_date(playing_field, timestamp)
+    print_method('start question analyses')
+    run_question_analyses_on_date(playing_field, timestamp)
+    print_method('finish')
+
 def run_speech_analyses_on_date(playing_field, timestamp):
     save_people_avg_number_of_speeches_per_session(playing_field, timestamp)
     save_people_number_of_spoken_words(playing_field, timestamp)
