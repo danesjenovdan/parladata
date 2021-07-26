@@ -19,6 +19,7 @@ class Score(Timestampable):
 class PersonScore(Score):
     person = models.ForeignKey(
         'parladata.Person',
+        related_name="%(class)s_related",
         on_delete=models.CASCADE
     )
 
