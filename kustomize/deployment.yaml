@@ -78,6 +78,8 @@ spec:
           env:
             - name: DJANGO_SETTINGS_MODULE
               value: parladata_project.settings.k8s
+            - name: DJANGO_DEBUG
+              value: "True"
           resources:
             requests:
               memory: 1Gi
