@@ -18,6 +18,7 @@ spec:
           - python
           - manage.py
           - daily_update
-          - "2021-07-24"
+          - --start_time
+          - 2021-07-24
       restartPolicy: Never
   backoffLimit: 1
