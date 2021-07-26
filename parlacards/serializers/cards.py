@@ -527,10 +527,45 @@ class VotersCardSerializer(CardSerializer):
             'personname__value', # TODO: will this work correctly when people have multiple names?
             'id' # fallback ordering
         )
-        # TODO: sort by requested analysis
+
+        # TODO check if sorting of analyses is optimized enough
+
+        order_mapping = {
+            'speeches_per_session': 'PersonAvgSpeechesPerSession',
+            'number_of_questions': 'PersonNumberOfQuestions',
+            'mismatch_of_pg': 'DeviationFromGroup',
+            'presence_votes': 'PersonVoteAttendance',
+            'spoken_words': 'PersonNumberOfSpokenWords',
+            'vocabulary_size': 'PersonVocabularySize',
+        }
+        order_by = self.context['GET'].get('order_by', 'name')
+        property_model_name = order_mapping.get(order_by, None)
+        if order_by == 'name' or not property_model_name:
+            ordered_people = people
+        else:
+            scores_module = import_module('parlacards.models')
+            ScoreModel = getattr(scores_module, property_model_name)
+
+            latest_scores = ScoreModel.objects.filter(
+                person__in=people
+            ).order_by(
+                'person',
+                '-timestamp'
+            ).distinct(
+                'person'
+            ).values(
+                'person',
+                'value'
+            )
+
+            people_by_id = {person.id: person for person in people}
+
+            sorted_scores = sorted(list(latest_scores), key=lambda x: x['value'], reverse=True)
+
+            ordered_people = [people_by_id[score['person']] for score in sorted_scores]
 
         requested_page, requested_per_page = parse_pagination_query_params(self.context['GET'])
-        paginator = Paginator(people, requested_per_page)
+        paginator = Paginator(ordered_people, requested_per_page)
         page = paginator.get_page(requested_page)
 
         # serialize people
