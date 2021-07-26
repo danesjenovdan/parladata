@@ -9,7 +9,10 @@ class Command(BaseCommand):
     help = 'Seeds sparse scores'
 
     def add_arguments(self, parser):
-        parser.add_argument('start_time', nargs='?', type=str, default='')
+        parser.add_argument(
+            '--start_time',
+            type=str,
+            default='')
 
     def handle(self, *args, **options):
 
