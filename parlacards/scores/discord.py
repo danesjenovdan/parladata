@@ -39,11 +39,14 @@ def calculate_group_discord(group, timestamp=datetime.now()):
             dcount=Count('option')
         ).order_by().aggregate(Max('option'))
 
-        vote_discords.append(
-            ballots.exclude(
-                option=options_aggregated['option__max']
-            ).count() / ballots.count() * 100
-        )
+        ballots_count = ballots.count()
+
+        if ballots_count > 0:
+            vote_discords.append(
+                ballots.exclude(
+                    option=options_aggregated['option__max']
+                ).count() / ballots_count * 100
+            )
 
     if len(vote_discords) == 0:
         return 0
