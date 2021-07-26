@@ -17,7 +17,7 @@ spec:
         command:
           - python
           - manage.py
-          - daily_update
+          - run_all_analyses
           - --start_time
           - 2021-07-24
       restartPolicy: Never
