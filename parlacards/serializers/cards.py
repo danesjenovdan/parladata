@@ -661,23 +661,25 @@ class LegislationDetailCardSerializer(CardSerializer):
 
 
 class LastSessionCardSerializer(CardSerializer):
-    def get_results(self, obj):
-        # obj is the group
-
-        last_session = obj.sessions.filter(
+    def get_last_session(self, obj):
+        # obj is the parent organization
+        return obj.sessions.filter(
             speeches__isnull=False,
             motions__isnull=False
         ).distinct('id', 'start_time').latest('start_time')
-        votes = Vote.objects.filter(
-            motion__session=last_session
-        ).order_by('timestamp')
 
-        # serialize speeches
-        vote_serializer = SessionVoteSerializer(
-            votes,
-            many=True,
+    def get_results(self, obj):
+        # obj is the parent organization
+        last_session = self.get_last_session(obj)
+
+        # tfidf
+        tfidf_serializer = SessionTfidfCardSerializer(
+            last_session,
             context=self.context
         )
+        tfidf_results = tfidf_serializer.get_results(last_session)
+
+        # attendance
         attendances = SessionGroupAttendance.objects.filter(
             session=last_session,
             timestamp__lte=self.context['date'],
@@ -687,22 +689,49 @@ class LastSessionCardSerializer(CardSerializer):
             many=True,
             context=self.context
         )
-        tfidf = SessionTfidfCardSerializer(
-            last_session,
-            context=self.context
-        ).get_results(last_session)
 
         return {
-            'votes': vote_serializer.data,
-            'tfidf': tfidf,
-            'attendance': attendance_serializer.data
+            'tfidf': tfidf_results,
+            'attendance': attendance_serializer.data,
+            'votes': None, # this is implemeted in to_representation for pagination
+        }
+
+    def to_representation(self, instance):
+        parent_data = super().to_representation(instance)
+
+        # instance is the parent organization
+        last_session = self.get_last_session(instance)
+
+        votes = Vote.objects.filter(
+            motion__session=last_session
+        ).order_by(
+            'timestamp',
+            'id' # fallback ordering
+        )
+
+        requested_page, requested_per_page = parse_pagination_query_params(self.context['GET'])
+        paginator = Paginator(votes, requested_per_page)
+        page = paginator.get_page(requested_page)
+
+        # serialize votes
+        vote_serializer = SessionVoteSerializer(
+            page.object_list,
+            many=True,
+            context=self.context
+        )
+
+        return {
+            **parent_data,
+            **pagination_response_data(paginator, page),
+            'results': {
+                **parent_data['results'],
+                'votes': vote_serializer.data,
+            },
         }
 
     def get_session(self, obj):
-        session = obj.sessions.filter(
-            speeches__isnull=False,
-            motions__isnull=False
-        ).distinct('id', 'start_time').latest('start_time')
+        # obj is the parent organization
+        session = self.get_last_session(obj)
         serializer = SessionSerializer(
             session,
             context=self.context
@@ -1091,18 +1120,36 @@ class SessionTfidfCardSerializer(SessionScoreCardSerializer):
 
 class SessionVotesCardSerializer(SessionScoreCardSerializer):
     def get_results(self, obj):
-        # obj is the session
+        # this is implemeted in to_representation for pagination
+        return None
+
+    def to_representation(self, instance):
+        parent_data = super().to_representation(instance)
+
+        # instance is the session
         votes = Vote.objects.filter(
-            motion__session=obj
+            motion__session=instance
+        ).order_by(
+            'timestamp',
+            'id' # fallback ordering
         )
 
-        # serialize speeches
-        serializer = SessionVoteSerializer(
-            votes,
+        requested_page, requested_per_page = parse_pagination_query_params(self.context['GET'])
+        paginator = Paginator(votes, requested_per_page)
+        page = paginator.get_page(requested_page)
+
+        # serialize votes
+        vote_serializer = SessionVoteSerializer(
+            page.object_list,
             many=True,
             context=self.context
         )
-        return serializer.data
+
+        return {
+            **parent_data,
+            **pagination_response_data(paginator, page),
+            'results': vote_serializer.data,
+        }
 
 
 #
@@ -1283,27 +1330,34 @@ class MandateLegislationCardSerializer(CardSerializer):
 
 class SearchDropdownSerializer(CardSerializer):
     def get_results(self, obj):
+        # TODO THIS IS DISABLED SINCE ITS SUPER SLOW WITH LARGE NUMBER OF PEOPLE
+        # REENABLE WHEN WE FIX IT
+        return {
+            'people': [],
+            'groups': [],
+        }
+
         # obj is the mandate
 
-        # TODO: get main org id more reliably
-        playing_field = Organization.objects.first()
+        # # TODO: get main org id more reliably
+        # playing_field = Organization.objects.first()
 
-        # TODO: add mayor
-        people = playing_field.query_voters(self.context['date'])
-        person_serializer = CommonPersonSerializer(
-            people,
-            many=True,
-            context=self.context
-        )
+        # # TODO: add mayor
+        # people = playing_field.query_voters(self.context['date'])
+        # person_serializer = CommonPersonSerializer(
+        #     people,
+        #     many=True,
+        #     context=self.context
+        # )
 
-        groups = playing_field.query_parliamentary_groups(self.context['date'])
-        group_serializer = CommonOrganizationSerializer(
-            groups,
-            many=True,
-            context=self.context
-        )
+        # groups = playing_field.query_parliamentary_groups(self.context['date'])
+        # group_serializer = CommonOrganizationSerializer(
+        #     groups,
+        #     many=True,
+        #     context=self.context
+        # )
 
-        return {
-            'people': person_serializer.data,
-            'groups': group_serializer.data,
-        }
+        # return {
+        #     'people': person_serializer.data,
+        #     'groups': group_serializer.data,
+        # }
