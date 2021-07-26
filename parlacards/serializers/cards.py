@@ -300,7 +300,7 @@ class RecentActivityCardSerializer(PersonScoreCardSerializer):
         # obj is the person
 
         # we're getting events for the past 30 days
-        from_datetime = self.context['date'] - timedelta(days=30)
+        from_datetime = self.context['date'] - timedelta(days=5)
 
         ballots = Ballot.objects.filter(
             personvoter=obj,
