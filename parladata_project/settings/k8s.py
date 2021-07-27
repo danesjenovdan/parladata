@@ -36,14 +36,6 @@ DATABASES = {
     }
 }
 
-# CACHES = {
-#     'default': {
-#         'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
-#         'LOCATION': 'cache:11211', # TODO get cache address from env
-#         'TIMEOUT': None,
-#     }
-# }
-
 if os.getenv('PARLAMETER_ENABLE_MEMCACHED', False):
     CACHES = {
         'default': {
@@ -54,7 +46,9 @@ if os.getenv('PARLAMETER_ENABLE_MEMCACHED', False):
                 'binary': True,
                 'username': os.getenv('PARLAMETER_MEMCACHED_USERNAME', ''),
                 'password': os.getenv('PARLAMETER_MEMCACHED_PASSWORD', ''),
-                'tcp_nodelay': True,
+                'behaviors': {
+                    'tcp_nodelay': True,
+                }
             }
         }
     }
