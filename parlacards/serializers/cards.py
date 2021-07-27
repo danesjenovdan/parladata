@@ -756,14 +756,36 @@ class GroupCardSerializer(GroupScoreCardSerializer):
 
 class GroupMembersCardSerializer(GroupScoreCardSerializer):
     def get_results(self, obj):
-        # obj is the group
-        members = obj.query_members_by_role(role='member', timestamp=self.context['date'])
-        serializer = CommonPersonSerializer(
-            members,
-            many=True,
-            context=self.context,
+        # this is implemeted in to_representation for pagination
+        return None
+
+    def to_representation(self, instance):
+        parent_data = super().to_representation(instance)
+
+        # instance is the group
+        members = instance.query_members_by_role(
+            role='member',
+            timestamp=self.context['date']
+        ).order_by(
+            'personname__value', # TODO: will this work correctly when people have multiple names?
+            'id' # fallback ordering
         )
-        return serializer.data
+
+        requested_page, requested_per_page = parse_pagination_query_params(self.context['GET'])
+        paginator = Paginator(members, requested_per_page)
+        page = paginator.get_page(requested_page)
+
+        people_serializer = CommonPersonSerializer(
+            page.object_list,
+            many=True,
+            context=self.context
+        )
+
+        return {
+            **parent_data,
+            **pagination_response_data(paginator, page),
+            'results': people_serializer.data,
+        }
 
 
 class GroupMonthlyVoteAttendanceCardSerializer(GroupScoreCardSerializer):
