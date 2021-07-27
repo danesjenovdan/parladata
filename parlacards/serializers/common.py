@@ -187,9 +187,11 @@ class CommonCachableSerializer(CommonSerializer):
 
     def to_representation(self, instance):
         cache_key = self.calculate_cache_key(instance)
-        cached_representation = cache.get(cache_key)
-        if cached_representation:
-            return cached_representation
+
+        # only try cache if not explicitly disabled
+        if not self.context['GET'].get('no_cache', False):
+            if cached_representation := cache.get(cache_key):
+                return cached_representation
 
         representation = super().to_representation(instance)
         cache.set(cache_key, representation)
