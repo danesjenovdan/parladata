@@ -44,13 +44,22 @@ DATABASES = {
 #     }
 # }
 
-CACHES = {
-    'default': {
-        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
-        'LOCATION': 'unique-snowflake',
-        'TIMEOUT': None,
+if os.getenv('PARLAMETER_ENABLE_MEMCACHED', False):
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.memcached.PyMemcacheCache',
+            'LOCATION': os.getenv('PARLAMETER_MEMCACHED_LOCATION', None),
+            'KEY_PREFIX': os.getenv('PARLAMETER_MEMCACHED_KEY_PREFIX', ''),
+        }
     }
-}
+else:
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+            'LOCATION': 'unique-snowflake',
+            'TIMEOUT': None,
+        }
+    }
 
 BASE_URL = os.getenv('DJANGO_BASE_URL', 'http://localhost:8000')
 
