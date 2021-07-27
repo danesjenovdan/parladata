@@ -1134,6 +1134,15 @@ class SessionVotesCardSerializer(SessionScoreCardSerializer):
             'id' # fallback ordering
         )
 
+        # TODO: maybe lemmatize?, maybe search by each word separately?
+        if text := self.context['GET'].get('text', None):
+            votes = votes.filter(motion__text__icontains=text)
+
+        passed_string = self.context['GET'].get('passed', None)
+        if passed_string in ['true', 'false']:
+            passed_bool = passed_string == 'true'
+            votes = votes.filter(result=passed_bool)
+
         requested_page, requested_per_page = parse_pagination_query_params(self.context['GET'])
         paginator = Paginator(votes, requested_per_page)
         page = paginator.get_page(requested_page)
