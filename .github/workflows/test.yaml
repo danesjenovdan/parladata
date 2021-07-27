@@ -29,17 +29,19 @@ jobs:
           postgresql db: 'parladata'
           postgresql user: postgres
           postgresql password: postgres
-      - 
+      -
         name: Set up Python 3.8
         uses: actions/setup-python@v1
         with:
           python-version: 3.8
-      - 
+      -
         name: Install dependencies
         run: |
+          sudo apt-get update
+          sudo apt-get install -y libmemcached-dev libsasl2-modules
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-      - 
+      -
         name: Test with pytest
         env:
           DJANGO_SETTINGS_MODULE: parladata_project.settings.k8s

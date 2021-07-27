@@ -36,21 +36,31 @@ DATABASES = {
     }
 }
 
-# CACHES = {
-#     'default': {
-#         'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
-#         'LOCATION': 'cache:11211', # TODO get cache address from env
-#         'TIMEOUT': None,
-#     }
-# }
-
-CACHES = {
-    'default': {
-        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
-        'LOCATION': 'unique-snowflake',
-        'TIMEOUT': None,
+if os.getenv('PARLAMETER_ENABLE_MEMCACHED', False):
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.memcached.PyLibMCCache',
+            'LOCATION': os.getenv('PARLAMETER_MEMCACHED_LOCATION', None),
+            'TIMEOUT': None,
+            'KEY_PREFIX': os.getenv('PARLAMETER_MEMCACHED_KEY_PREFIX', ''),
+            'OPTIONS': {
+                'binary': True,
+                'username': os.getenv('PARLAMETER_MEMCACHED_USERNAME', ''),
+                'password': os.getenv('PARLAMETER_MEMCACHED_PASSWORD', ''),
+                'behaviors': {
+                    'tcp_nodelay': True,
+                }
+            }
+        }
     }
-}
+else:
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+            'LOCATION': 'unique-snowflake',
+            'TIMEOUT': None,
+        }
+    }
 
 BASE_URL = os.getenv('DJANGO_BASE_URL', 'http://localhost:8000')
 

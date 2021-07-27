@@ -29,6 +29,7 @@ python-memcached
 django-debug-toolbar
 boto3
 django-storages
+pylibmc
 
 # tagger/lemmatizer
 sklearn
