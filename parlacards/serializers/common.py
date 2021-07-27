@@ -139,7 +139,7 @@ class ScoreSerializerField(serializers.Field):
         ).values_list(f'{score_type}__id', flat=True)
 
         if score_type == 'person':
-            maximum_competitors = Person.objects.filter(id__in=winner_ids)
+            maximum_competitors = Person.objects.filter(id__in=winner_ids)[:8] # max 8 fit inside the bar in card
             winners_serializer = CommonPersonSerializer(
                 maximum_competitors,
                 many=True,
@@ -147,7 +147,7 @@ class ScoreSerializerField(serializers.Field):
             )
         else:
             # score_type == 'organization'
-            maximum_competitors = Organization.objects.filter(id__in=winner_ids)
+            maximum_competitors = Organization.objects.filter(id__in=winner_ids)[:8] # max 8 fit inside the bar in card
             winners_serializer = CommonOrganizationSerializer(
                 maximum_competitors,
                 many=True,
