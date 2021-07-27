@@ -139,7 +139,7 @@ class ScoreSerializerField(serializers.Field):
         ).values_list(f'{score_type}__id', flat=True)
 
         if score_type == 'person':
-            maximum_competitors = Person.objects.filter(id__in=winner_ids)
+            maximum_competitors = Person.objects.filter(id__in=winner_ids)[:8] # max 8 fit inside the bar in card
             winners_serializer = CommonPersonSerializer(
                 maximum_competitors,
                 many=True,
@@ -147,7 +147,7 @@ class ScoreSerializerField(serializers.Field):
             )
         else:
             # score_type == 'organization'
-            maximum_competitors = Organization.objects.filter(id__in=winner_ids)
+            maximum_competitors = Organization.objects.filter(id__in=winner_ids)[:8] # max 8 fit inside the bar in card
             winners_serializer = CommonOrganizationSerializer(
                 maximum_competitors,
                 many=True,
@@ -187,9 +187,11 @@ class CommonCachableSerializer(CommonSerializer):
 
     def to_representation(self, instance):
         cache_key = self.calculate_cache_key(instance)
-        cached_representation = cache.get(cache_key)
-        if cached_representation:
-            return cached_representation
+
+        # only try cache if not explicitly disabled
+        if not self.context['GET'].get('no_cache', False):
+            if cached_representation := cache.get(cache_key):
+                return cached_representation
 
         representation = super().to_representation(instance)
         cache.set(cache_key, representation)

@@ -114,19 +114,17 @@ class CachedCardView(CardView):
         return f'{request.path}_{request.card_id}_{request.card_date.strftime("%Y-%m-%d")}'
 
     def get(self, request, format=None):
-        cache_key = None
+        cache_key = self.calculate_cache_key(request)
 
         # only try cache if not explicitly disabled
         if not request.GET.get('no_cache', False):
-            cache_key = self.calculate_cache_key(request)
             if cached_content := cache.get(cache_key):
                 return Response(cached_content)
 
         # if the thing with id exists return serialized data
         if the_thing := self.thing.objects.filter(id=request.card_id).first():
             serializer_data = self.get_serializer_data(request, the_thing)
-            if cache_key is not None:
-                cache.set(cache_key, serializer_data)
+            cache.set(cache_key, serializer_data)
             return Response(serializer_data)
 
         # otherwise return 404
