@@ -41,6 +41,7 @@ if os.getenv('PARLAMETER_ENABLE_MEMCACHED', False):
         'default': {
             'BACKEND': 'django.core.cache.backends.memcached.PyLibMCCache',
             'LOCATION': os.getenv('PARLAMETER_MEMCACHED_LOCATION', None),
+            'TIMEOUT': None,
             'KEY_PREFIX': os.getenv('PARLAMETER_MEMCACHED_KEY_PREFIX', ''),
             'OPTIONS': {
                 'binary': True,
