@@ -709,7 +709,7 @@ class LastSessionCardSerializer(CardSerializer):
             'id' # fallback ordering
         )
 
-        requested_page, requested_per_page = parse_pagination_query_params(self.context['GET'])
+        requested_page, requested_per_page = parse_pagination_query_params(self.context['GET'], prefix='votes:')
         paginator = Paginator(votes, requested_per_page)
         page = paginator.get_page(requested_page)
 
@@ -722,7 +722,7 @@ class LastSessionCardSerializer(CardSerializer):
 
         return {
             **parent_data,
-            **pagination_response_data(paginator, page),
+            **pagination_response_data(paginator, page, prefix='votes:'),
             'results': {
                 **parent_data['results'],
                 'votes': vote_serializer.data,
@@ -752,6 +752,37 @@ class GroupCardSerializer(GroupScoreCardSerializer):
             context=self.context
         )
         return serializer.data
+
+    def to_representation(self, instance):
+        parent_data = super().to_representation(instance)
+
+        # instance is the group
+        members = instance.query_members_by_role(
+            role='member',
+            timestamp=self.context['date']
+        ).order_by(
+            'personname__value', # TODO: will this work correctly when people have multiple names?
+            'id' # fallback ordering
+        )
+
+        requested_page, requested_per_page = parse_pagination_query_params(self.context['GET'], prefix='members:')
+        paginator = Paginator(members, requested_per_page)
+        page = paginator.get_page(requested_page)
+
+        people_serializer = CommonPersonSerializer(
+            page.object_list,
+            many=True,
+            context=self.context
+        )
+
+        return {
+            **parent_data,
+            **pagination_response_data(paginator, page, prefix='members:'),
+            'results': {
+                **parent_data['results'],
+                'members': people_serializer.data,
+            },
+        }
 
 
 class GroupMembersCardSerializer(GroupScoreCardSerializer):
