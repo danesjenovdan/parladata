@@ -51,6 +51,7 @@ if os.getenv('PARLAMETER_ENABLE_MEMCACHED', False):
             'LOCATION': os.getenv('PARLAMETER_MEMCACHED_LOCATION', None),
             'KEY_PREFIX': os.getenv('PARLAMETER_MEMCACHED_KEY_PREFIX', ''),
             'OPTIONS': {
+                'binary': True,
                 'username': os.getenv('PARLAMETER_MEMCACHED_USERNAME', ''),
                 'password': os.getenv('PARLAMETER_MEMCACHED_PASSWORD', ''),
             }
