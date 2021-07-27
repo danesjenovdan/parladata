@@ -709,7 +709,7 @@ class LastSessionCardSerializer(CardSerializer):
             'id' # fallback ordering
         )
 
-        requested_page, requested_per_page = parse_pagination_query_params(self.context['GET'])
+        requested_page, requested_per_page = parse_pagination_query_params(self.context['GET'], prefix='votes:')
         paginator = Paginator(votes, requested_per_page)
         page = paginator.get_page(requested_page)
 
@@ -722,7 +722,7 @@ class LastSessionCardSerializer(CardSerializer):
 
         return {
             **parent_data,
-            **pagination_response_data(paginator, page),
+            **pagination_response_data(paginator, page, prefix='votes:'),
             'results': {
                 **parent_data['results'],
                 'votes': vote_serializer.data,
@@ -753,17 +753,70 @@ class GroupCardSerializer(GroupScoreCardSerializer):
         )
         return serializer.data
 
+    def to_representation(self, instance):
+        parent_data = super().to_representation(instance)
+
+        # instance is the group
+        members = instance.query_members_by_role(
+            role='member',
+            timestamp=self.context['date']
+        ).order_by(
+            'personname__value', # TODO: will this work correctly when people have multiple names?
+            'id' # fallback ordering
+        )
+
+        requested_page, requested_per_page = parse_pagination_query_params(self.context['GET'], prefix='members:')
+        paginator = Paginator(members, requested_per_page)
+        page = paginator.get_page(requested_page)
+
+        people_serializer = CommonPersonSerializer(
+            page.object_list,
+            many=True,
+            context=self.context
+        )
+
+        return {
+            **parent_data,
+            **pagination_response_data(paginator, page, prefix='members:'),
+            'results': {
+                **parent_data['results'],
+                'members': people_serializer.data,
+            },
+        }
+
 
 class GroupMembersCardSerializer(GroupScoreCardSerializer):
     def get_results(self, obj):
-        # obj is the group
-        members = obj.query_members_by_role(role='member', timestamp=self.context['date'])
-        serializer = CommonPersonSerializer(
-            members,
-            many=True,
-            context=self.context,
+        # this is implemeted in to_representation for pagination
+        return None
+
+    def to_representation(self, instance):
+        parent_data = super().to_representation(instance)
+
+        # instance is the group
+        members = instance.query_members_by_role(
+            role='member',
+            timestamp=self.context['date']
+        ).order_by(
+            'personname__value', # TODO: will this work correctly when people have multiple names?
+            'id' # fallback ordering
         )
-        return serializer.data
+
+        requested_page, requested_per_page = parse_pagination_query_params(self.context['GET'])
+        paginator = Paginator(members, requested_per_page)
+        page = paginator.get_page(requested_page)
+
+        people_serializer = CommonPersonSerializer(
+            page.object_list,
+            many=True,
+            context=self.context
+        )
+
+        return {
+            **parent_data,
+            **pagination_response_data(paginator, page),
+            'results': people_serializer.data,
+        }
 
 
 class GroupMonthlyVoteAttendanceCardSerializer(GroupScoreCardSerializer):
@@ -1133,6 +1186,15 @@ class SessionVotesCardSerializer(SessionScoreCardSerializer):
             'timestamp',
             'id' # fallback ordering
         )
+
+        # TODO: maybe lemmatize?, maybe search by each word separately?
+        if text := self.context['GET'].get('text', None):
+            votes = votes.filter(motion__text__icontains=text)
+
+        passed_string = self.context['GET'].get('passed', None)
+        if passed_string in ['true', 'false']:
+            passed_bool = passed_string == 'true'
+            votes = votes.filter(result=passed_bool)
 
         requested_page, requested_per_page = parse_pagination_query_params(self.context['GET'])
         paginator = Paginator(votes, requested_per_page)

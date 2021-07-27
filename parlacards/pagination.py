@@ -16,19 +16,19 @@ def valid_positive_int(number, default):
     return number
 
 
-def parse_pagination_query_params(params):
-    requested_page = valid_positive_int(params.get('page', None), 1)
-    requested_per_page = valid_positive_int(params.get('per_page', None), 10)
+def parse_pagination_query_params(params, prefix=''):
+    requested_page = valid_positive_int(params.get(f'{prefix}page', None), 1)
+    requested_per_page = valid_positive_int(params.get(f'{prefix}per_page', None), 10)
 
     return (requested_page, requested_per_page)
 
 
-def pagination_response_data(paginator, page):
+def pagination_response_data(paginator, page, prefix=''):
     return {
-        'count': paginator.count,
-        'pages': paginator.num_pages,
-        'page': page.number,
-        'per_page': paginator.per_page
+        f'{prefix}count': paginator.count,
+        f'{prefix}pages': paginator.num_pages,
+        f'{prefix}page': page.number,
+        f'{prefix}per_page': paginator.per_page
     }
 
 
