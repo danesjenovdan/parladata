@@ -54,6 +54,7 @@ if os.getenv('PARLAMETER_ENABLE_MEMCACHED', False):
                 'binary': True,
                 'username': os.getenv('PARLAMETER_MEMCACHED_USERNAME', ''),
                 'password': os.getenv('PARLAMETER_MEMCACHED_PASSWORD', ''),
+                'tcp_nodelay': True,
             }
         }
     }
