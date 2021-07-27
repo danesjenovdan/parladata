@@ -2,8 +2,10 @@
 FROM python:3.8
 
 RUN apt-get update && \
-    apt-get install -y libmemcached-dev && \
-    apt-get upgrade -y
+    apt-get upgrade -y && \
+    apt-get install -y \
+    libmemcached-dev \
+    libsasl2-modules
 
 RUN /usr/local/bin/python -m pip install --upgrade pip
 
