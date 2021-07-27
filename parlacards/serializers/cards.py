@@ -844,20 +844,20 @@ class GroupQuestionCardSerializer(GroupScoreCardSerializer):
         member_ids = obj.query_members(timestamp).values_list('id', flat=True)
         memberships = obj.query_memberships_before(timestamp)
 
+        all_member_questions = Question.objects.filter(
+            timestamp__lte=timestamp,
+            authors__id__in=member_ids,
+        )
+
+        if not all_member_questions.exists():
+            return []
+
         questions = Question.objects.none()
 
         for member_id in member_ids:
-            member_questions = Question.objects.filter(
-                timestamp__lte=timestamp,
-                authors__id=member_id,
-            )
+            member_questions = all_member_questions.filter(authors__id=member_id)
+            member_memberships = memberships.filter(member__id=member_id).values('start_time', 'end_time')
 
-            member_memberships = memberships.filter(
-                member__id=member_id
-            ).values(
-                'start_time',
-                'end_time'
-            )
             q_objects = Q()
             for membership in member_memberships:
                 q_params = {}
