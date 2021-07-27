@@ -47,9 +47,13 @@ DATABASES = {
 if os.getenv('PARLAMETER_ENABLE_MEMCACHED', False):
     CACHES = {
         'default': {
-            'BACKEND': 'django.core.cache.backends.memcached.PyMemcacheCache',
+            'BACKEND': 'django.core.cache.backends.memcached.PyLibMCCache',
             'LOCATION': os.getenv('PARLAMETER_MEMCACHED_LOCATION', None),
             'KEY_PREFIX': os.getenv('PARLAMETER_MEMCACHED_KEY_PREFIX', ''),
+            'OPTIONS': {
+                'username': os.getenv('PARLAMETER_MEMCACHED_USERNAME', ''),
+                'password': os.getenv('PARLAMETER_MEMCACHED_PASSWORD', ''),
+            }
         }
     }
 else:
