@@ -10,6 +10,7 @@ from parladata.models.versionable_properties import *
 
 from collections import Counter
 
+
 class LinkOrganizationInline(admin.TabularInline):
     model = Link
     fk_name = 'organization'
@@ -119,17 +120,19 @@ class QuestionAdmin(admin.ModelAdmin):
 
 class MotionAdmin(admin.ModelAdmin):
     #form = MotionForm
-    list_display = ('id',
-                    'text',
-                    'datetime',
-                    'result',
-                    'requirement',
-                    'get_for',
-                    'get_against',
-                    'get_abstain',
-                    'get_not',
-                    'link_to_vote',
-                    'session_name')
+    list_display = (
+        'id',
+        'text',
+        'session_name',
+        'result',
+        'requirement',
+        'get_for',
+        'get_against',
+        'get_abstain',
+        'get_not',
+        'link_to_vote',
+        'datetime',
+    )
 
     list_editable = ('result',)
     list_filter = ('result', 'datetime', 'session')
@@ -164,6 +167,7 @@ class MotionAdmin(admin.ModelAdmin):
 
     def session_name(self, obj):
         return obj.session.name if obj.session else ''
+
 
     link_to_vote.allow_tags = True
 
