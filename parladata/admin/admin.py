@@ -81,18 +81,12 @@ class SessionAdmin(admin.ModelAdmin):
     ]
     search_fields = ['name']
 
-class SpeechForm(forms.ModelForm):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.fields['motions'].queryset = Motion.objects.filter(
-            session=self.instance.session)
 
 class SpeechAdmin(admin.ModelAdmin):
-    form = SpeechForm
-    fields = ['content', 'motions', 'speaker', 'order', 'tags']
+    fields = ['content', 'motions', 'speaker', 'order', 'tags', 'session']
     list_filter = ('session', 'tags')
     search_fields = ['speaker__name', 'content']
-    #autocomplete_fields = ['motion']
+    autocomplete_fields = ['motions']
     inlines = [
     ]
     list_display = ('id',
@@ -136,7 +130,7 @@ class MotionAdmin(admin.ModelAdmin):
 
     list_editable = ('result',)
     list_filter = ('result', 'datetime', 'session')
-    search_fields = ['text', 'vote__session__name']
+    search_fields = ['text','title']
     inlines = [
         LinkMotionInline,
     ]
@@ -162,7 +156,10 @@ class MotionAdmin(admin.ModelAdmin):
         return results
 
     def link_to_vote(self, obj):
-        link = reverse("admin:parladata_vote_change", args=[obj.vote.first().id])
+        try:
+            link = reverse("admin:parladata_vote_change", args=[obj.vote.first().id])
+        except:
+            return ''
         return mark_safe(f'<a href="{link}">Vote</a>')
 
     def session_name(self, obj):
@@ -175,6 +172,23 @@ class MotionAdmin(admin.ModelAdmin):
     get_against.short_description = 'against'
     get_abstain.short_description = 'abstain'
     get_not.short_description = 'absent'
+    
+
+    def get_search_results(self, request, queryset, search_term):
+        url = request.META.get('HTTP_REFERER', '')
+
+        # if autocompelte calls from speech admin then filter motions by speech session
+        if '/admin/parladata/speech/' in url:
+            speech_id = url.split('/')[-3]
+            session = Speech.objects.get(id=speech_id).session
+            queryset = queryset.filter(session=session)
+
+        results = super().get_search_results(
+            request,
+            queryset,
+            search_term
+        )
+        return results
 
 
 class VoteAdmin(admin.ModelAdmin):
