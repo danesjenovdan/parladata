@@ -68,8 +68,8 @@ class MembershipAdmin(admin.ModelAdmin):
     inlines = [
         LinkMembershipInline,
     ]
-    # list_filter = ['organization']
-    search_fields = ['member__name', 'organization___name']
+    list_filter = ['role', 'organization', 'on_behalf_of']
+    search_fields = ['member__personname__value', 'role', 'on_behalf_of__organizationname__value', 'organization__organizationname__value']
     autocomplete_fields = ('member', 'organization', 'on_behalf_of')
 
 
@@ -222,22 +222,6 @@ class ContactAdmin(admin.ModelAdmin):
 #     fields = ('name', 'education', 'education_level')
 
 
-class ParliamentMember(Person):
-    class Meta:
-        proxy = True
-
-
-class MPAdmin(admin.ModelAdmin):
-    # TODO bring back name
-    # list_display = ('name',)
-    # list_filter = ('name',)
-
-    def get_queryset(self, request):
-        MPs_ids = PersonMembership.objects.filter(role='voter').values_list('member', flat=True)
-        qs = Person.objects.filter(id__in=MPs_ids)
-        if request.user.is_superuser:
-            return qs
-
 class LawAdmin(admin.ModelAdmin):
     list_display = ('text', 'session', 'status', 'epa')
     list_filter = ('session',)
@@ -250,7 +234,6 @@ class AgendaItemAdmin(admin.ModelAdmin):
     search_fields = ['name']
 
 
-admin.site.register(ParliamentMember, MPAdmin)
 admin.site.register(PersonMembership, MembershipAdmin)
 admin.site.register(Session, SessionAdmin)
 admin.site.register(Speech, SpeechAdmin)
