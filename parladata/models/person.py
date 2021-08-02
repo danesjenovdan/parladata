@@ -108,6 +108,14 @@ class Person(Timestampable, Parsable, Sluggable, VersionableFieldsOwner):
             property_model_name='PersonNumberOfVoters',
             datetime=datetime.now()
         )
+    
+    @property
+    def email(self):
+        return self.versionable_property_value_on_date(
+            owner=self,
+            property_model_name='PersonEmail',
+            datetime=datetime.now()
+        )
 
     def parliamentary_group_on_date(self, timestamp=datetime.now()):
         active_memberships = PersonMembership.objects.filter(

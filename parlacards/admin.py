@@ -3,10 +3,62 @@ from django import forms
 from django.utils.safestring import mark_safe
 
 from parlacards.models import (SessionTfidf, PersonTfidf, GroupTfidf)
+from parladata.models.memberships import PersonMembership
+
+from django.contrib import admin
+
+from datetime import datetime
+
+
+class MembersListFilter(admin.SimpleListFilter):
+    title = 'member'
+
+    parameter_name = 'member'
+
+    def lookups(self, request, model_admin):
+        list_of_members = []
+        queryset = PersonMembership.valid_at(datetime.now()).prefetch_related('member__personname').filter(
+            role='voter'
+        ).values('member_id', 'member__personname__value')
+
+        for breed in queryset:
+            list_of_members.append(
+                (str(breed['member_id']), breed['member__personname__value'])
+            )
+        return sorted(list_of_members, key=lambda tp: tp[1])
+
+    def queryset(self, request, queryset):
+        if self.value():
+            return queryset.filter(person_id=self.value())
+        return queryset
+
+
+class OrganizationsListFilter(admin.SimpleListFilter):
+    title = 'organization'
+
+    parameter_name = 'organization'
+
+    def lookups(self, request, model_admin):
+        list_of_members = []
+        queryset = PersonMembership.valid_at(datetime.now()).prefetch_related('on_behalf_of__organizationname__value').filter(
+            role='voter'
+        ).order_by('on_behalf_of', 'on_behalf_of__organizationname__value').distinct('on_behalf_of').values('on_behalf_of_id', 'on_behalf_of__organizationname__value')
+
+        for breed in queryset:
+            list_of_members.append(
+                (str(breed['on_behalf_of_id']), breed['on_behalf_of__organizationname__value'])
+            )
+        return sorted(list_of_members, key=lambda tp: tp[1])
+
+    def queryset(self, request, queryset):
+        # Compare the requested value to decide how to filter the queryset.
+        if self.value():
+            return queryset.filter(group_id=self.value())
+        return queryset
 
 
 class SessionTfidfAdmin(admin.ModelAdmin):
-    list_display = ('created_at', 'session_name', 'token', 'value', 'delete')
+    list_display = ('session_name', 'token', 'value', 'created_at', 'delete')
     list_filter = ('session',)
     search_fields = ['session__name']
     list_per_page = 20
@@ -34,8 +86,8 @@ class SessionTfidfAdmin(admin.ModelAdmin):
 
 
 class PersonTfidfAdmin(admin.ModelAdmin):
-    list_display = ('created_at', 'person', 'token', 'value', 'delete')
-    list_filter = ('person',)
+    list_display = ( 'person', 'token', 'value', 'created_at', 'delete')
+    list_filter = (MembersListFilter, )
     list_per_page = 20
     ordering = ['-value']
     list_editable = ('token',)
@@ -55,8 +107,8 @@ class PersonTfidfAdmin(admin.ModelAdmin):
 
 
 class GroupTfidfAdmin(admin.ModelAdmin):
-    list_display = ('created_at', 'group', 'token', 'value', 'delete')
-    list_filter = ('group',)
+    list_display = ('group', 'token', 'value', 'created_at', 'delete')
+    list_filter = (OrganizationsListFilter, )
     list_per_page = 20
     ordering = ['-value']
     list_editable = ('token',)
