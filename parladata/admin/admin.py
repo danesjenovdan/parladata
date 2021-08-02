@@ -112,6 +112,14 @@ class QuestionAdmin(admin.ModelAdmin):
     list_filter = ('type_of_question', 'session', 'authors')
 
 
+class DocumentAdmin(admin.ModelAdmin):
+    list_display = ['name', 'file_url']
+    list_filter = ()
+
+    def file_url(self, obj):
+        return obj.file.url
+
+
 class MotionAdmin(admin.ModelAdmin):
     #form = MotionForm
     list_display = (
@@ -172,7 +180,6 @@ class MotionAdmin(admin.ModelAdmin):
     get_against.short_description = 'against'
     get_abstain.short_description = 'abstain'
     get_not.short_description = 'absent'
-    
 
     def get_search_results(self, request, queryset, search_term):
         url = request.META.get('HTTP_REFERER', '')
@@ -247,3 +254,4 @@ admin.site.register(AgendaItem, AgendaItemAdmin)
 admin.site.register(Law, LawAdmin)
 admin.site.register(OrganizationMembership)
 admin.site.register(Mandate, MandateAdmin)
+admin.site.register(Document, DocumentAdmin)
