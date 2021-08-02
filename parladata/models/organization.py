@@ -61,10 +61,11 @@ class Organization(Timestampable, Taggable, Parsable, Sluggable, VersionableFiel
 
     @property
     def email(self):
-        return Link.objects.filter(
-            organization=self,
-            note='email'
-        ).first()
+        return self.versionable_property_value_on_date(
+            owner=self,
+            property_model_name='OrganizationEmail',
+            datetime=datetime.now()
+        )
 
     # TODO make all membership queries depend on a date
     def number_of_members_at(self, timestamp=datetime.now()):
