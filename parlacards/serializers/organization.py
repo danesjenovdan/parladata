@@ -22,7 +22,7 @@ class OrganizationBasicInfoSerializer(CommonSerializer):
         return serializer.data
 
     def get_deputies(self, obj):
-        deputies = obj.query_members_by_role('president')
+        deputies = obj.query_members_by_role('deputy')
         serializer = CommonPersonSerializer(deputies, many=True, context=self.context)
         return serializer.data
 
