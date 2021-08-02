@@ -3,40 +3,37 @@
 <html>
 <body>
     <div>
-        {% translate 'Parlameter' %}
+        <h2>{% translate 'New updates on Parlameter' %}</h2>
     </div>
     <div>
-        <h2>{% translate 'Parlameter' %}</h2>
         {% if new_motions %}
-            There are new motions in parlameter</br></br>
-            <a href="{{ base_url }}{% url 'admin:parladata_motion_changelist' %}">Motions</a>
+            There are new motions in Parlameter, that you have to check:</br></br>
+            <a href="{{ base_url }}{% url 'admin:parladata_motion_changelist' %}">Check new motions</a>
         {% endif %}
 
         {% if new_speeches %}
-        <h2>There are new speeches in parlameter for next sessions: {sessions}</h2>
-        </br></br>
-        <a href="{{ base_url }}{% url 'admin:parladata_speech_changelist' %}">Speeches</a>
-        <a href="{{ base_url }}{% url 'admin:parlacards_sessiontfidf_changelist' %}">Session TFIDF</a>
+            There are new speeches in Parlameter: </br>
+            {% for session in sessions %}
+                for this sessions: {{ sessions }}</br>
+                <a href="{{ base_url }}{% url 'admin:parlacards_sessiontfidf_changelist' %}?session__id__exact={{ session.id }}">Check new session TFIDF</a></br>
+            {% endfor %}
         {% endif %}
 
-
         {% if new_voters %}
-        <h2>There are voters without memberships:</h2>
+        There are voters without memberships:
         {% for voter in new_voters %}
             <p>{{ voter }}</p>
+            <a href="{{ base_url }}{% url 'admin:parladata_person_change' voter.id %}">{{ person }}</a>
         {% endfor %}
-        <a href="{{ base_url }}{% url 'admin:parladata_person_changelist' %}">People</a>
-        <a href="{{ base_url }}{% url 'admin:parladata_personmembership_changelist' %}">Memberships</a>
         </br></br>
         {% endif %}
 
         {% if new_people %}
         <h2>There are voters without memberships:</h2>
         {% for person in new_people %}
-            <p>{{ person }}</p>
+            <p></p>
+            <a href="{{ base_url }}{% url 'admin:parladata_person_change' person.id %}">{{ person }}</a>
         {% endfor %}
-        <a href="{{ base_url }}{% url 'admin:parladata_person_changelist' %}">People</a>
-        <a href="{{ base_url }}{% url 'admin:parladata_personmembership_changelist' %}">Memberships</a>
         </br></br>
         {% endif %}
 
