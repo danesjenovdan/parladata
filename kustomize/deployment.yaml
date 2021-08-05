@@ -49,10 +49,10 @@ spec:
                 name: parladata-credentials
           resources:
             requests:
-              memory: 1Gi
+              memory: 1300Mi
               cpu: 200m
             limits:
-              memory: 1Gi
+              memory: 1300Mi
               cpu: 200m
       containers:
         - name: parladata
