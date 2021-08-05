@@ -62,7 +62,7 @@ class SessionTfidfAdmin(admin.ModelAdmin):
     list_filter = ('session',)
     search_fields = ['session__name']
     list_per_page = 20
-    ordering = ['datetime__date' '-value']
+    ordering = ['timestamp__date', '-value']
     list_editable = ('token',)
 
     def get_queryset(self, request):
@@ -89,7 +89,7 @@ class PersonTfidfAdmin(admin.ModelAdmin):
     list_display = ( 'person', 'token', 'value', 'created_at', 'delete')
     list_filter = (MembersListFilter, )
     list_per_page = 20
-    ordering = ['datetime__date' '-value']
+    ordering = ['timestamp__date', '-value']
     list_editable = ('token',)
 
     def get_changelist_formset(self, request, **kwargs):
@@ -110,7 +110,7 @@ class GroupTfidfAdmin(admin.ModelAdmin):
     list_display = ('group', 'token', 'value', 'created_at', 'delete')
     list_filter = (OrganizationsListFilter, )
     list_per_page = 20
-    ordering = ['datetime__date' '-value']
+    ordering = ['timestamp__date', '-value']
     list_editable = ('token',)
 
     def get_changelist_formset(self, request, **kwargs):
