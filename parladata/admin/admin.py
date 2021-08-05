@@ -239,6 +239,7 @@ class AgendaItemAdmin(admin.ModelAdmin):
     list_display = ('name', 'session',)
     list_filter = ('name', 'session')
     search_fields = ['name']
+    autocomplete_fields = ['session']
 
 
 admin.site.register(PersonMembership, MembershipAdmin)
