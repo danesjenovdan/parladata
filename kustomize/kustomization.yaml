@@ -9,4 +9,4 @@ resources:
 images:
   - name: parladata
     newName: rg.fr-par.scw.cloud/djnd/parladata
-    newTag: '5f31fa7ae706576688b3d8f302dcefc55cbc1ba0'
+    newTag: 'ed47aa52fb76a9c00f34bc490bf2cf1353e6811d'
