@@ -81,7 +81,7 @@ def save_people_tfidf(playing_field, timestamp=datetime.now()):
 
     for tfidf in people_tfidf:
         for score in tfidf['tfidf']:
-            if score[1] > 0:
+            if score[1] > 0 and score[0] != '':
                 PersonTfidf(
                     person_id=tfidf['speaker_id'],
                     timestamp=timestamp,
@@ -163,7 +163,7 @@ def save_groups_tfidf(playing_field, timestamp=datetime.now()):
 
     for tfidf in groups_tfidf:
         for score in tfidf['tfidf']:
-            if score[1] > 0:
+            if score[1] > 0 and score[0] != '':
                 GroupTfidf(
                     group_id=tfidf['group_id'],
                     timestamp=timestamp,
@@ -248,7 +248,7 @@ def save_sessions_tfidf(playing_field, timestamp=datetime.now()):
 
     for tfidf in sessions_tfidf:
         for score in tfidf['tfidf']:
-            if score[1] > 0:
+            if score[1] > 0 and score[0] != '':
                 SessionTfidf(
                     session_id=tfidf['session_id'],
                     timestamp=timestamp,
