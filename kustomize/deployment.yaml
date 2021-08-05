@@ -49,10 +49,10 @@ spec:
                 name: parladata-credentials
           resources:
             requests:
-              memory: 1300Mi
+              memory: 1Gi
               cpu: 200m
             limits:
-              memory: 1300Mi
+              memory: 1Gi
               cpu: 200m
       containers:
         - name: parladata
@@ -80,8 +80,8 @@ spec:
               value: parladata_project.settings.k8s
           resources:
             requests:
-              memory: 1Gi
+              memory: 1300Mi
               cpu: 1000m
             limits:
-              memory: 1Gi
+              memory: 1300Mi
               cpu: 1000m
