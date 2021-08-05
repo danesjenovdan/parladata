@@ -65,6 +65,19 @@ def force_run_analyses(timestamp=datetime.now(), print_method=print):
     run_question_analyses_on_date(playing_field, timestamp)
     print_method('finish')
 
+
+def force_run_group_analyses(timestamp=datetime.now(), print_method=print):
+    playing_field = Organization.objects.first()
+    print_method('start speech analyses')
+    save_group_number_of_questions(playing_field, timestamp)
+    save_groups_voting_distances(playing_field, timestamp)
+    save_groups_monthly_vote_attendance(playing_field, timestamp)
+    save_groups_vote_attendance_on_sessions(playing_field, timestamp)
+    save_groups_discords(playing_field, timestamp)
+    save_groups_vote_attendance(playing_field, timestamp)
+    save_groups_vocabulary_sizes(playing_field, timestamp)
+
+
 def run_speech_analyses_on_date(playing_field, timestamp):
     save_people_avg_number_of_speeches_per_session(playing_field, timestamp)
     save_people_number_of_spoken_words(playing_field, timestamp)
