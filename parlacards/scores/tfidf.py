@@ -81,13 +81,14 @@ def save_people_tfidf(playing_field, timestamp=datetime.now()):
 
     for tfidf in people_tfidf:
         for score in tfidf['tfidf']:
-            PersonTfidf(
-                person_id=tfidf['speaker_id'],
-                timestamp=timestamp,
-                token=score[0],
-                value=score[1],
-                playing_field=playing_field
-            ).save()
+            if score[1] > 0:
+                PersonTfidf(
+                    person_id=tfidf['speaker_id'],
+                    timestamp=timestamp,
+                    token=score[0],
+                    value=score[1],
+                    playing_field=playing_field
+                ).save()
 
 def save_people_tfidf_between(playing_field, datetime_from=datetime.now(), datetime_to=datetime.now()):
     for day in get_dates_between(datetime_from, datetime_to):
@@ -162,13 +163,14 @@ def save_groups_tfidf(playing_field, timestamp=datetime.now()):
 
     for tfidf in groups_tfidf:
         for score in tfidf['tfidf']:
-            GroupTfidf(
-                group_id=tfidf['group_id'],
-                timestamp=timestamp,
-                token=score[0],
-                value=score[1],
-                playing_field=playing_field
-            ).save()
+            if score[1] > 0:
+                GroupTfidf(
+                    group_id=tfidf['group_id'],
+                    timestamp=timestamp,
+                    token=score[0],
+                    value=score[1],
+                    playing_field=playing_field
+                ).save()
 
 def save_groups_tfidf_between(playing_field, datetime_from=datetime.now(), datetime_to=datetime.now()):
     for day in get_dates_between(datetime_from, datetime_to):
@@ -246,13 +248,14 @@ def save_sessions_tfidf(playing_field, timestamp=datetime.now()):
 
     for tfidf in sessions_tfidf:
         for score in tfidf['tfidf']:
-            SessionTfidf(
-                session_id=tfidf['session_id'],
-                timestamp=timestamp,
-                token=score[0],
-                value=score[1],
-                playing_field=playing_field
-            ).save()
+            if score[1] > 0:
+                SessionTfidf(
+                    session_id=tfidf['session_id'],
+                    timestamp=timestamp,
+                    token=score[0],
+                    value=score[1],
+                    playing_field=playing_field
+                ).save()
 
 def save_sessions_tfidf_between(playing_field, datetime_from=datetime.now(), datetime_to=datetime.now()):
     for day in get_dates_between(datetime_from, datetime_to):
