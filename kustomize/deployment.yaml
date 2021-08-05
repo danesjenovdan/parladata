@@ -80,8 +80,8 @@ spec:
               value: parladata_project.settings.k8s
           resources:
             requests:
-              memory: 1Gi
+              memory: 1300Mi
               cpu: 1000m
             limits:
-              memory: 1Gi
+              memory: 1300Mi
               cpu: 1000m
