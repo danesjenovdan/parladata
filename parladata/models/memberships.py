@@ -9,6 +9,13 @@ from parladata.behaviors.models import Timestampable
 # TODO touch parents on save
 # TODO touch parents on delete
 
+ROLES = [
+    ('member', 'member'),
+    ('voter', 'voter'),
+    ('persident', 'president'),
+    ('deputy', 'deputy'),
+]
+
 class Membership(Timestampable):
     start_time = models.DateTimeField(blank=True, null=True,
                                      help_text='Start time')
@@ -39,6 +46,7 @@ class PersonMembership(Membership):
     role = models.TextField(_('role'),
                             blank=False, null=False,
                             default='member',
+                            choices=ROLES,
                             help_text=_('The role that the person fulfills in the organization'))
 
     on_behalf_of = models.ForeignKey('Organization',

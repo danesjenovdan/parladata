@@ -90,7 +90,7 @@ def solr_select(
         params['facet.range.end'] = 'NOW'
 
     url = f'{settings.SOLR_URL}/select'
-    response = requests.get(url, params=params)
+    response = requests.get(url, params=params, timeout=30)
 
     return response.json()
 
