@@ -62,3 +62,6 @@ class OrganizationName(OrganizationVersionableProperty):
 
 class OrganizationAcronym(OrganizationVersionableProperty):
     pass
+
+class OrganizationEmail(OrganizationVersionableProperty):
+    pass

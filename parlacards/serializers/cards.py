@@ -45,6 +45,7 @@ from parlacards.serializers.vote import VoteSerializer, SessionVoteSerializer, B
 from parlacards.serializers.tfidf import TfidfSerializer
 from parlacards.serializers.group_attendance import SessionGroupAttendanceSerializer
 from parlacards.serializers.facets import GroupFacetSerializer, PersonFacetSerializer
+from parlacards.serializers.question import QuestionSerializer
 from parlacards.serializers.common import (
     CardSerializer,
     PersonScoreCardSerializer,
@@ -839,24 +840,34 @@ class GroupVoteAttendanceCardSerializer(GroupScoreCardSerializer):
 
 class GroupQuestionCardSerializer(GroupScoreCardSerializer):
     def get_results(self, obj):
-        # obj is the group
+        # this is implemeted in to_representation for pagination
+        return None
+
+    def to_representation(self, instance):
+        parent_data = super().to_representation(instance)
+
+        # instance is the group
         timestamp = self.context['date']
-        member_ids = obj.query_members(timestamp).values_list('id', flat=True)
-        memberships = obj.query_memberships_before(timestamp)
+        member_ids = instance.query_members(timestamp).values_list('id', flat=True)
 
         all_member_questions = Question.objects.filter(
             timestamp__lte=timestamp,
             authors__id__in=member_ids,
-        )
+        ).prefetch_related('authors')
 
         if not all_member_questions.exists():
             return []
 
+        memberships = instance.query_memberships_before(timestamp)
         questions = Question.objects.none()
 
         for member_id in member_ids:
             member_questions = all_member_questions.filter(authors__id=member_id)
-            member_memberships = memberships.filter(member__id=member_id).values('start_time', 'end_time')
+
+            if not member_questions.exists():
+                continue
+
+            member_memberships = memberships.filter(member_id=member_id).values('start_time', 'end_time')
 
             q_objects = Q()
             for membership in member_memberships:
@@ -875,32 +886,29 @@ class GroupQuestionCardSerializer(GroupScoreCardSerializer):
         # annotate all the questions
         questions = Question.objects.filter(
             id__in=questions.values('id')
+        ).prefetch_related(
+            'authors',
+            'recipient_people',
+            'links',
         ).order_by(
             '-timestamp'
-        ).annotate(
-            date=TruncDay('timestamp')
         )
 
-        dates_to_serialize = set(questions.values_list('date', flat=True))
+        requested_page, requested_per_page = parse_pagination_query_params(self.context['GET'])
+        paginator = Paginator(questions, requested_per_page)
+        page = paginator.get_page(requested_page)
 
-        # this is ripe for optimization
-        # currently iterates over all questions
-        # for every date
-        grouped_questions_to_serialize = [
-            {
-                'date': date,
-                'events': questions.filter(
-                    date=date
-                )
-            } for date in dates_to_serialize
-        ]
-
-        serializer = DailyActivitySerializer(
-            grouped_questions_to_serialize,
+        question_serializer = QuestionSerializer(
+            page.object_list,
             many=True,
             context=self.context
         )
-        return serializer.data
+
+        return {
+            **parent_data,
+            **pagination_response_data(paginator, page),
+            'results': question_serializer.data,
+        }
 
 
 class GroupBallotCardSerializer(GroupScoreCardSerializer):
