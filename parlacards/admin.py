@@ -21,9 +21,9 @@ class MembersListFilter(admin.SimpleListFilter):
             role='voter'
         ).values('member_id', 'member__personname__value')
 
-        for breed in queryset:
+        for person in queryset:
             list_of_members.append(
-                (str(breed['member_id']), breed['member__personname__value'])
+                (str(person['member_id']), person['member__personname__value'])
             )
         return sorted(list_of_members, key=lambda tp: tp[1])
 
@@ -39,16 +39,16 @@ class OrganizationsListFilter(admin.SimpleListFilter):
     parameter_name = 'organization'
 
     def lookups(self, request, model_admin):
-        list_of_members = []
+        list_of_groups = []
         queryset = PersonMembership.valid_at(datetime.now()).prefetch_related('on_behalf_of__organizationname__value').filter(
             role='voter'
         ).order_by('on_behalf_of', 'on_behalf_of__organizationname__value').distinct('on_behalf_of').values('on_behalf_of_id', 'on_behalf_of__organizationname__value')
 
-        for breed in queryset:
-            list_of_members.append(
-                (str(breed['on_behalf_of_id']), breed['on_behalf_of__organizationname__value'])
+        for group in queryset:
+            list_of_groups.append(
+                (str(group['on_behalf_of_id']), group['on_behalf_of__organizationname__value'])
             )
-        return sorted(list_of_members, key=lambda tp: tp[1])
+        return sorted(list_of_groups, key=lambda tp: tp[1])
 
     def queryset(self, request, queryset):
         # Compare the requested value to decide how to filter the queryset.
