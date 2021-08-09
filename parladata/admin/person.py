@@ -65,7 +65,7 @@ class PersonAdmin(admin.ModelAdmin):
         PersonNumberOfVotersInline,
         PersonEmailInline,
     ]
-    search_fields = ('id', 'personname__value')
+    search_fields = ('id', 'personname__value', 'parser_names')
     list_display = ('id', 'name')
 
 class ParliamentMember(Person):
