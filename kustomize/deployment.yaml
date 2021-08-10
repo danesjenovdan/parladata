@@ -1,22 +1,22 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: parladata-deployment
+  name: parladata-ajdovscina
   labels:
-    app: parladata
+    app: parladata-ajdovscina
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: parladata
+      app: parladata-ajdovscina
   template:
     metadata:
       labels:
-        app: parladata
+        app: parladata-ajdovscina
     spec:
       initContainers:
         - name: collectstatic
-          image: parladata
+          image: parladata-ajdovscina
           command:
             - python
             - manage.py
@@ -36,7 +36,7 @@ spec:
               memory: 1Gi
               cpu: 200m
         - name: migrate
-          image: parladata
+          image: parladata-ajdovscina
           command:
             - python
             - manage.py
@@ -56,7 +56,7 @@ spec:
               cpu: 200m
       containers:
         - name: parladata
-          image: parladata
+          image: parladata-ajdovscina
           command:
             - gunicorn
             - parladata_project.wsgi:application

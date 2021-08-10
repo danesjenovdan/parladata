@@ -7,6 +7,6 @@ resources:
   - service.yaml
   - ingress.yaml
 images:
-  - name: parladata
-    newName: rg.fr-par.scw.cloud/djnd/parladata
+  - name: parladata-ajdovscina
+    newName: rg.fr-par.scw.cloud/djnd/parladata-ajdovscina
     newTag: '599fdfecb3214afd8183d615fe83018892e643cc'
