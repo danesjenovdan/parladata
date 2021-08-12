@@ -1,0 +1,27 @@
+from django.contrib import admin
+from django.utils.safestring import mark_safe
+from django.conf import settings
+from django.urls import reverse
+
+from parladata.models import Session
+
+
+class SessionAdmin(admin.ModelAdmin):
+    # autocomplete_fields = ['mandate', 'organization', 'organizations']
+    inlines = [
+        # SpeechSessionInline,
+        # MotionSessionInline,
+    ]
+    search_fields = ['name']
+    list_display = ['id', 'name', 'tfidf']
+
+    def tfidf(self, obj):
+        partial_url = reverse('admin:parlacards_sessiontfidf_changelist')
+        url = f'{settings.BASE_URL}{partial_url}?session__id__exact={obj.id}'
+        return mark_safe(f'<input onclick="location.href=\'{url}\'" type="button" value="Tfidf" />')
+
+    tfidf.allow_tags = True
+    tfidf.short_description = 'TFIDF'
+
+
+admin.site.register(Session, SessionAdmin)
