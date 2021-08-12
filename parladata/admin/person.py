@@ -1,6 +1,7 @@
-from importlib import import_module
-
 from django.contrib import admin
+from django.utils.safestring import mark_safe
+from django.urls import reverse
+from django.conf import settings
 
 from parladata.models import Person, PersonMembership
 from parladata.models.versionable_properties import *
@@ -65,7 +66,7 @@ class PersonAdmin(admin.ModelAdmin):
         PersonNumberOfVotersInline,
         PersonEmailInline,
     ]
-    search_fields = ('id', 'personname__value')
+    search_fields = ('id', 'personname__value', 'parser_names')
     list_display = ('id', 'name')
 
 class ParliamentMember(Person):
@@ -74,11 +75,20 @@ class ParliamentMember(Person):
 
 
 class MPAdmin(PersonAdmin):
+    list_display = ['id', 'name', 'tfidf']
     def get_queryset(self, request):
         MPs_ids = PersonMembership.objects.filter(role='voter').values_list('member', flat=True)
         qs = Person.objects.filter(id__in=MPs_ids)
         if request.user.is_superuser:
             return qs
+
+    def tfidf(self, obj):
+        partial_url = reverse('admin:parlacards_persontfidf_changelist')
+        url = f'{settings.BASE_URL}{partial_url}?member={obj.id}'
+        return mark_safe(f'<input onclick="location.href=\'{url}\'" type="button" value="Tfidf" />')
+
+    tfidf.allow_tags = True
+    tfidf.short_description = 'TFIDF'
 
 
 admin.site.register(Person, PersonAdmin)

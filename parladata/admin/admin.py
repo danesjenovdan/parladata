@@ -73,20 +73,11 @@ class MembershipAdmin(admin.ModelAdmin):
     autocomplete_fields = ('member', 'organization', 'on_behalf_of')
 
 
-class SessionAdmin(admin.ModelAdmin):
-    # autocomplete_fields = ['mandate', 'organization', 'organizations']
-    inlines = [
-        # SpeechSessionInline,
-        # MotionSessionInline,
-    ]
-    search_fields = ['name']
-
-
 class SpeechAdmin(admin.ModelAdmin):
     fields = ['content', 'motions', 'speaker', 'order', 'tags', 'session']
     list_filter = ('session', 'tags')
     search_fields = ['speaker__name', 'content']
-    autocomplete_fields = ['motions']
+    autocomplete_fields = ['motions', 'speaker']
     inlines = [
     ]
     list_display = ('id',
@@ -94,6 +85,9 @@ class SpeechAdmin(admin.ModelAdmin):
                     'session_name',
                     'speaker')
     list_per_page = 25
+    formfield_overrides = {
+        models.ManyToManyField: {'widget': forms.SelectMultiple(attrs={'style': 'width: 100%'})},
+    }
 
     def get_queryset(self, request):
         return super().get_queryset(request).prefetch_related('tags', 'session', 'speaker')
@@ -243,7 +237,6 @@ class AgendaItemAdmin(admin.ModelAdmin):
 
 
 admin.site.register(PersonMembership, MembershipAdmin)
-admin.site.register(Session, SessionAdmin)
 admin.site.register(Speech, SpeechAdmin)
 admin.site.register(Motion, MotionAdmin)
 admin.site.register(Vote, VoteAdmin)
