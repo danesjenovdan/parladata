@@ -79,8 +79,7 @@ class MPAdmin(PersonAdmin):
     def get_queryset(self, request):
         MPs_ids = PersonMembership.objects.filter(role='voter').values_list('member', flat=True)
         qs = Person.objects.filter(id__in=MPs_ids)
-        if request.user.is_superuser:
-            return qs
+        return qs
 
     def tfidf(self, obj):
         partial_url = reverse('admin:parlacards_persontfidf_changelist')
