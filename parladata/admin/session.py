@@ -13,12 +13,12 @@ class SessionAdmin(admin.ModelAdmin):
         # MotionSessionInline,
     ]
     search_fields = ['name']
-    list_display = ['id', 'name', 'tfidf']
+    list_display = ['id', 'name', 'tfidf', 'start_time']
 
     def tfidf(self, obj):
         partial_url = reverse('admin:parlacards_sessiontfidf_changelist')
         url = f'{settings.BASE_URL}{partial_url}?session__id__exact={obj.id}'
-        return mark_safe(f'<input onclick="location.href=\'{url}\'" type="button" value="Tfidf" />')
+        return mark_safe(f'<a href="{url}"><input type="button" value="Tfidf" /></a>')
 
     tfidf.allow_tags = True
     tfidf.short_description = 'TFIDF'
