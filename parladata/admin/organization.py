@@ -28,15 +28,7 @@ class OrganizationAdmin(admin.ModelAdmin):
     ]
     search_fields = ('id', 'organizationname__value') # 'name' maybe?
 
-    list_display = ('id', 'name', 'tfidf')
-
-    def tfidf(self, obj):
-        partial_url = reverse('admin:parlacards_grouptfidf_changelist')
-        url = f'{settings.BASE_URL}{partial_url}?organization={obj.id}'
-        return mark_safe(f'<input onclick="location.href=\'{url}\'" type="button" value="Tfidf" />')
-
-    tfidf.allow_tags = True
-    tfidf.short_description = 'TFIDF'
+    list_display = ('id', 'name')
 
 
 class ParliamentaryGroup(Organization):
@@ -54,7 +46,7 @@ class ParliamentaryGroupAdmin(OrganizationAdmin):
     def tfidf(self, obj):
         partial_url = reverse('admin:parlacards_grouptfidf_changelist')
         url = f'{settings.BASE_URL}{partial_url}?organization={obj.id}'
-        return mark_safe(f'<input onclick="location.href=\'{url}\'" type="button" value="Tfidf" />')
+        return mark_safe(f'<a href="{url}"><input type="button" value="Tfidf" /></a>')
 
     tfidf.allow_tags = True
     tfidf.short_description = 'TFIDF'

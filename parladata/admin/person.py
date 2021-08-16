@@ -84,7 +84,7 @@ class MPAdmin(PersonAdmin):
     def tfidf(self, obj):
         partial_url = reverse('admin:parlacards_persontfidf_changelist')
         url = f'{settings.BASE_URL}{partial_url}?member={obj.id}'
-        return mark_safe(f'<input onclick="location.href=\'{url}\'" type="button" value="Tfidf" />')
+        return mark_safe(f'<a href="{url}"><input type="button" value="Tfidf" /></a>')
 
     tfidf.allow_tags = True
     tfidf.short_description = 'TFIDF'
