@@ -79,4 +79,4 @@ class Motion(Timestampable, Taggable, Parsable):
     )
 
     def __str__(self):
-        return self.text[:100] + ' --> ' + (self.session.name if self.session else '')
+        return self.text + ' --> ' + (self.session.name if self.session else '')

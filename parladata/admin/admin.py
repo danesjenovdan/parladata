@@ -86,7 +86,7 @@ class SpeechAdmin(admin.ModelAdmin):
                     'speaker')
     list_per_page = 25
     formfield_overrides = {
-        models.ManyToManyField: {'widget': forms.SelectMultiple(attrs={'style': 'width: 100%'})},
+        models.ManyToManyField: {'widget': forms.CheckboxSelectMultiple(attrs={'style': 'width: 100%'})},
     }
 
     def get_queryset(self, request):
