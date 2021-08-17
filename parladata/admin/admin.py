@@ -73,7 +73,14 @@ class MembershipAdmin(admin.ModelAdmin):
     autocomplete_fields = ('member', 'organization', 'on_behalf_of')
 
 
+class SpeechForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['motions'].queryset = Motion.objects.filter(
+            session=self.instance.session)
+
 class SpeechAdmin(admin.ModelAdmin):
+    form = SpeechForm
     fields = ['content', 'motions', 'speaker', 'order', 'tags', 'session']
     list_filter = ('session', 'tags')
     search_fields = ['speaker__name', 'content']
