@@ -6,6 +6,7 @@ from django import forms
 from django.urls import reverse
 
 from parladata.models import *
+from parladata.models.task import Task
 from parladata.models.versionable_properties import *
 
 from collections import Counter
@@ -107,6 +108,8 @@ class SpeechAdmin(admin.ModelAdmin):
 
 
 class QuestionAdmin(admin.ModelAdmin):
+    autocomplete_fields = ['authors']
+    search_fields = ["title"]
     inlines = [
         LinkQuestionInline
     ]
@@ -249,6 +252,7 @@ admin.site.register(Motion, MotionAdmin)
 admin.site.register(Vote, VoteAdmin)
 #admin.site.register(Area, LeafletGeoAdmin)
 admin.site.register(Link)
+admin.site.register(Task)
 admin.site.register(Ballot)
 admin.site.register(Question, QuestionAdmin)
 admin.site.register(AgendaItem, AgendaItemAdmin)
