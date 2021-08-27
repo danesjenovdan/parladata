@@ -30,6 +30,7 @@ django-debug-toolbar
 boto3
 django-storages
 pylibmc
+martor
 
 # tagger/lemmatizer
 sklearn
