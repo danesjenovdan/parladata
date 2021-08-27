@@ -15,6 +15,10 @@ class Command(BaseCommand):
         tasks = Task.objects.filter(started_at__isnull=True).order_by('created_at')
         for task in tasks:
             try:
+                # skip task if it's started in another runner
+                check_task = Task.objects.get(id=tesk.id)
+                if check_task.started_at:
+                    continue
                 tasks_module = import_module('parladata.tasks')
                 task_method = getattr(tasks_module, task.name)
                 task.started_at = datetime.now()
