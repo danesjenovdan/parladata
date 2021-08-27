@@ -3,12 +3,19 @@ from django.utils.safestring import mark_safe
 from django.conf import settings
 from django.urls import reverse
 
-from parladata.models import Session
+from parladata.models import Session, Link
 
+
+class SessionLinkInline(admin.TabularInline):
+    model = Link
+    fk_name = 'session'
+    exclude = ['person', 'membership', 'motion', 'question', 'organization', 'agenda_item']
+    extra = 0
 
 class SessionAdmin(admin.ModelAdmin):
     # autocomplete_fields = ['mandate', 'organization', 'organizations']
     inlines = [
+        SessionLinkInline
         # SpeechSessionInline,
         # MotionSessionInline,
     ]
