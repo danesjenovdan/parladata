@@ -23,7 +23,12 @@ class Link(Timestampable, Taggable):
 
     date = models.DateField(blank=True, null=True)
 
-    session = models.ForeignKey('Session', blank=True, null=True, on_delete=models.CASCADE)
+    session = models.ForeignKey(
+        'Session',
+        blank=True, null=True,
+        on_delete=models.CASCADE,
+        related_name='links'
+    )
 
     organization = models.ForeignKey('Organization',
                                      blank=True,
@@ -35,12 +40,14 @@ class Link(Timestampable, Taggable):
     person = models.ForeignKey('Person',
                                blank=True, null=True,
                                on_delete=models.CASCADE,
-                               help_text='The person of this link.')
+                               help_text='The person of this link.',
+                               related_name='links')
 
     membership = models.ForeignKey('PersonMembership',
                                    blank=True, null=True,
                                    on_delete=models.CASCADE,
-                                   help_text='The membership of this link.')
+                                   help_text='The membership of this link.',
+                                   related_name='links')
 
     motion = models.ForeignKey('Motion',
                                blank=True,
@@ -55,6 +62,15 @@ class Link(Timestampable, Taggable):
                                  on_delete=models.CASCADE,
                                  help_text='The question this link belongs to.',
                                  related_name='links')
+
+    agenda_item = models.ForeignKey(
+        'AgendaItem',
+        blank=True,
+        null=True,
+        on_delete=models.CASCADE,
+        help_text='The agenda item this link belongs to.',
+        related_name='links'
+    )
 
     def __str__(self):
         return self.url

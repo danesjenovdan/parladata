@@ -31,4 +31,7 @@ urlpatterns = [
 
     # Django debug toolbar
     path('__debug__/', include(debug_toolbar.urls)),
+
+    # martor markdown editor
+    path('martor/', include('martor.urls')),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
