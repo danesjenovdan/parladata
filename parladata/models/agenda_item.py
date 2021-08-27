@@ -1,6 +1,8 @@
 from django.db import models
 
 from parladata.behaviors.models import Timestampable, Taggable
+from martor.models import MartorField
+
 
 class AgendaItem(Timestampable, Taggable):
     name = models.TextField(blank=True, null=True,
@@ -17,6 +19,8 @@ class AgendaItem(Timestampable, Taggable):
                                 help_text='Order of agenda item')
 
     gov_id = models.TextField(blank=True, null=True, help_text='gov_id of agenda item')
+
+    text = MartorField(null=True, blank=True)
 
     def __str__(self):
         return (self.session.name if self.session else '') + ' -> ' + self.name
