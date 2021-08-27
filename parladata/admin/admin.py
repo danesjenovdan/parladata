@@ -6,36 +6,38 @@ from django import forms
 from django.urls import reverse
 
 from parladata.models import *
+from parladata.models.task import Task
 from parladata.models.versionable_properties import *
 
 from collections import Counter
 
 
+
 class LinkOrganizationInline(admin.TabularInline):
     model = Link
     fk_name = 'organization'
-    exclude = ['person', 'membership', 'motion', 'question', 'session']
+    exclude = ['person', 'membership', 'motion', 'question', 'session', 'agenda_item']
     extra = 0
 
 
 class LinkMembershipInline(admin.TabularInline):
     model = Link
     fk_name = 'membership'
-    exclude = ['person', 'organization', 'motion', 'question', 'session']
+    exclude = ['person', 'organization', 'motion', 'question', 'session', 'agenda_item']
     extra = 0
 
 
 class LinkMotionInline(admin.TabularInline):
     model = Link
     fk_name = 'motion'
-    exclude = ['person', 'membership', 'organization', 'session', 'question']
+    exclude = ['person', 'membership', 'organization', 'session', 'question', 'agenda_item']
     extra = 0
 
 
 class LinkQuestionInline(admin.TabularInline):
     model = Link
     fk_name = 'question'
-    exclude = ['person', 'organization', 'motion', 'session', 'membership']
+    exclude = ['person', 'organization', 'motion', 'session', 'membership', 'agenda_item']
     extra = 0
 
 
@@ -107,6 +109,8 @@ class SpeechAdmin(admin.ModelAdmin):
 
 
 class QuestionAdmin(admin.ModelAdmin):
+    autocomplete_fields = ['authors']
+    search_fields = ["title"]
     inlines = [
         LinkQuestionInline
     ]
@@ -236,22 +240,15 @@ class LawAdmin(admin.ModelAdmin):
     search_fields = ['text']
 
 
-class AgendaItemAdmin(admin.ModelAdmin):
-    list_display = ('name', 'session',)
-    list_filter = ('name', 'session')
-    search_fields = ['name']
-    autocomplete_fields = ['session']
-
-
 admin.site.register(PersonMembership, MembershipAdmin)
 admin.site.register(Speech, SpeechAdmin)
 admin.site.register(Motion, MotionAdmin)
 admin.site.register(Vote, VoteAdmin)
 #admin.site.register(Area, LeafletGeoAdmin)
 admin.site.register(Link)
+admin.site.register(Task)
 admin.site.register(Ballot)
 admin.site.register(Question, QuestionAdmin)
-admin.site.register(AgendaItem, AgendaItemAdmin)
 admin.site.register(Law, LawAdmin)
 admin.site.register(OrganizationMembership)
 admin.site.register(Mandate, MandateAdmin)

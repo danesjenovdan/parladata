@@ -29,6 +29,7 @@ INSTALLED_APPS = (
     'drf_spectacular',
     'parlacards',
     'debug_toolbar',
+    'martor',
 )
 
 """MIDDLEWARE = (
@@ -136,3 +137,12 @@ OAUTH2_PROVIDER = {
 DEFAULT_AUTO_FIELD='django.db.models.AutoField'
 
 DEBUG = False
+
+
+# Global martor settings
+# Input: string boolean, `true/false`
+MARTOR_ENABLE_CONFIGS = {
+    'jquery': 'true',       # to include/revoke jquery (require for admin default django)
+    'living': 'true',       # to enable/disable live updates in preview
+}
+
