@@ -57,8 +57,10 @@
                 <form action="/v3/merge-people/" method="post">
                     {% csrf_token %}
                     {{ form.confirmed }}
-                    Real person: {{ form.real_person }}</br>
-                    Fake people: {{ form.people }} </br>
+                    <div style="display: none;">
+                        Real person: {{ form.real_person }}</br>
+                        Fake people: {{ form.people }} </br>
+                    </div>
                     <input type="submit" value="Confirm mearging">
                 </form>
             {% elif form %}
