@@ -1,14 +1,18 @@
 from django.forms import formset_factory
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django import forms
 from django.contrib import admin
+from django.urls import reverse
 
-from parladata.forms import MergePeopleForm
+from parladata.forms import MergePeopleForm, AddBallotsForm
 from parladata.models.person import Person
 from parladata.models.ballot import Ballot
 from parladata.models.speech import Speech
+from parladata.models.vote import Vote
 from parladata.models.question import Question
 from parladata.models.task import Task
+
+import collections
 
 
 def merge_people(request):
@@ -17,7 +21,6 @@ def merge_people(request):
     app_list = admin.site.get_app_list(request)
     if request.method == 'POST':
         form = MergePeopleForm(request.POST)
-        print(form.data)
         real_person = dict(form.data)['real_person'][0]
         people = dict(form.data)['people']
         confirmed = dict(form.data)['confirmed'][0]
@@ -42,14 +45,12 @@ def merge_people(request):
                 )
 
             statisctics = make_statistics(real_person, people)
-            print(statisctics)
             _mutable = form.data._mutable
             form.data._mutable = True
             form.data['confirmed'] = True
             form.data._mutable = _mutable
-            print(vars(form['people'].field.widget))
-            form['real_person'].field.widget = forms.HiddenInput()
-            form['people'].field.widget = forms.HiddenInput()
+            # form['real_person'].field.widget = forms.HiddenInput()
+            # form['people'].field.widget = forms.HiddenInput()
             return render(
                 request,
                 'merge_people.html',
@@ -84,6 +85,97 @@ def merge_people(request):
             'form': form,
             'app_list': app_list,
             'opts': {'app_label': 'parladata', 'app_config': {'verbose_name': 'parliamentmember'}}
+        }
+    )
+
+
+def add_ballots(request):
+    app_list = admin.site.get_app_list(request)
+    if request.method == 'POST':
+        vote_id = request.GET.get('vote_id', None)
+        vote = Vote.objects.get(id=vote_id)
+        if not vote:
+            return redirect(reverse("admin:parladata_vote_changelist"))
+        form = AddBallotsForm(request.POST)
+        print(form.data)
+        people_for = dict(form.data).get('people_for', [])
+        people_against = dict(form.data).get('people_against', [])
+        people_abstain = dict(form.data).get('people_abstain', [])
+        people_absent = dict(form.data).get('people_absent', [])
+        confirmed = dict(form.data)['confirmed'][0]
+        if people_for or people_against or people_abstain or people_absent:
+            if confirmed:
+                options = {
+                    'for': people_for,
+                    'against': people_against,
+                    'abstain': people_abstain,
+                    'absent': people_absent
+                }
+                for option, people in options.items():
+                    print(option, people)
+                    Ballot.objects.bulk_create([
+                        Ballot(
+                            personvoter_id=person,
+                            option=option,
+                            vote=vote)
+                        for person in people if person
+                    ])
+
+                return redirect(reverse("admin:parladata_vote_changelist"))
+
+            ballots = []
+            all_ballots = people_for + people_against + people_abstain + people_absent
+            duplicates = [item for item, count in collections.Counter(all_ballots).items() if count > 1]
+            duplicated = Person.objects.filter(id__in=duplicates)
+            confirm = False
+            if not duplicated:
+                _mutable = form.data._mutable
+                form.data._mutable = True
+                form.data['confirmed'] = True
+                form.data._mutable = _mutable
+                confirm = True
+
+            return render(
+                request,
+                'add_ballots.html',
+                {
+                    'ballots': {
+                        'people_for': Person.objects.filter(id__in=people_for),
+                        'people_against': Person.objects.filter(id__in=people_against),
+                        'people_abstain': Person.objects.filter(id__in=people_abstain),
+                        'people_absent': Person.objects.filter(id__in=people_absent),
+                        'sum': len(all_ballots),
+                        'duplicated': duplicated
+                    },
+                    'form': form,
+                    'confirm': confirm,
+                    'app_list': app_list,
+                    'opts': {'app_label': 'parladata', 'app_config': {'verbose_name': 'vote'}}
+                }
+            )
+        else:
+            form.clean()
+            print('cleand form')
+            return render(
+                request,
+                'add_ballots.html',
+                {
+                    'form': form,
+                    'app_list': app_list,
+                    'opts': {'app_label': 'parladata', 'app_config': {'verbose_name': 'vote'}}
+                }
+            )
+
+    form = AddBallotsForm()
+    print('empty form')
+
+    return render(
+        request,
+        'add_ballots.html',
+        {
+            'form': form,
+            'app_list': app_list,
+            'opts': {'app_label': 'parladata', 'app_config': {'verbose_name': 'vote'}}
         }
     )
 
