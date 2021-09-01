@@ -24,4 +24,6 @@ router.register(r'organization-memberships', OrganizationMembershipsViewSet)
 
 urlpatterns = [
     url(r'^', include(router.urls)),
+    url(r'^merge-people', merge_people),
+    url(r'^add-ballots', add_ballots),
 ]
