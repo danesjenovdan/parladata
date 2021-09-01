@@ -143,7 +143,7 @@ class MotionAdmin(admin.ModelAdmin):
 
     list_editable = ('result',)
     list_filter = ('result', 'datetime', 'session')
-    search_fields = ['text','title']
+    search_fields = ['text', 'title']
     inlines = [
         LinkMotionInline,
     ]
@@ -203,18 +203,7 @@ class MotionAdmin(admin.ModelAdmin):
         return results
 
 
-class VoteAdmin(admin.ModelAdmin):
-    list_display = ('id', 'name', 'the_tags', )
 
-    list_filter = ('tags',)
-    inlines = [
-        # CountVoteInline,
-    ]
-    search_fields = ['name']
-
-    def the_tags(self, obj):
-        return "%s" % (obj.tags.all(), )
-    the_tags.short_description = 'tags'
 
 
 class ContactAdmin(admin.ModelAdmin):
@@ -240,14 +229,18 @@ class LawAdmin(admin.ModelAdmin):
     search_fields = ['text']
 
 
+class BallotAdmin(admin.ModelAdmin):
+    list_display = ('vote', 'personvoter', 'option')
+    autocomplete_fields = ['personvoter', 'orgvoter', 'vote']
+
+
 admin.site.register(PersonMembership, MembershipAdmin)
 admin.site.register(Speech, SpeechAdmin)
 admin.site.register(Motion, MotionAdmin)
-admin.site.register(Vote, VoteAdmin)
 #admin.site.register(Area, LeafletGeoAdmin)
 admin.site.register(Link)
 admin.site.register(Task)
-admin.site.register(Ballot)
+admin.site.register(Ballot, BallotAdmin)
 admin.site.register(Question, QuestionAdmin)
 admin.site.register(Law, LawAdmin)
 admin.site.register(OrganizationMembership)
