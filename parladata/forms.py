@@ -43,3 +43,11 @@ class MergePeopleForm(forms.Form):
     confirmed = forms.BooleanField(widget=HiddenInput())
     real_person = UserChoiceField()
     people = UsersChoiceField()
+
+
+class AddBallotsForm(forms.Form):
+    confirmed = forms.BooleanField(widget=HiddenInput())
+    people_for = UsersChoiceField(required=False)
+    people_against = UsersChoiceField(required=False)
+    people_abstain = UsersChoiceField(required=False)
+    people_absent = UsersChoiceField(required=False)
