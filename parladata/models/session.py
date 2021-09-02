@@ -2,6 +2,12 @@ from django.db import models
 
 from parladata.behaviors.models import Timestampable
 
+CLASSIFICATIONS = [
+  ('regular', 'regular'),
+  ('irregular', 'irregular'),
+  ('correspondent', 'correspondent')
+]
+
 class Session(Timestampable):
     """Sessions that happened in parliament."""
 
@@ -27,9 +33,11 @@ class Session(Timestampable):
                                            related_name='sessions',
                                            help_text='The organization(s) in session')
 
-    classification = models.CharField(max_length=128,
-                                      blank=True, null=True,
-                                      help_text='Session classification')
+    classification = models.CharField(
+        max_length=128,
+        help_text='Session classification',
+        choices=CLASSIFICATIONS,
+        default='regular')
 
     in_review = models.BooleanField(default=False,
                                     help_text='Is session still in review?')
