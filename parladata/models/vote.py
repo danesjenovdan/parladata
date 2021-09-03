@@ -53,3 +53,6 @@ class Vote(Timestampable, Taggable):
             key: option_counts.get(key, 0) for
             key in ['absent', 'abstain', 'for', 'against'] # TODO get this from global var
         }
+
+    def __str__(self):
+        return self.name
