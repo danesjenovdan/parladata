@@ -8,7 +8,7 @@ from parladata.models import Vote, Ballot
 from collections import Counter
 
 class VoteAdmin(admin.ModelAdmin):
-    list_display = ('id', 'name', 'the_tags', 'get_for', 'get_against', 'get_abstain', 'get_abesnt', 'add_ballots')
+    list_display = ('id', 'name', 'the_tags', 'get_for', 'get_against', 'get_abstain', 'get_abesnt', 'needs_editing', 'add_ballots')
 
     list_filter = ('tags',)
     inlines = [
