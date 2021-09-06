@@ -3,9 +3,10 @@ from django.db import models
 from parladata.behaviors.models import Timestampable
 
 CLASSIFICATIONS = [
-  ('regular', 'regular'),
-  ('irregular', 'irregular'),
-  ('correspondent', 'correspondent')
+    ('unknown', 'unknown'),
+    ('regular', 'regular'),
+    ('irregular', 'irregular'),
+    ('correspondent', 'correspondent')
 ]
 
 class Session(Timestampable):
@@ -37,7 +38,7 @@ class Session(Timestampable):
         max_length=128,
         help_text='Session classification',
         choices=CLASSIFICATIONS,
-        default='regular')
+        default='unknown')
 
     in_review = models.BooleanField(default=False,
                                     help_text='Is session still in review?')
