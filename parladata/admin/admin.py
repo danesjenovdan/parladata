@@ -233,12 +233,16 @@ class BallotAdmin(admin.ModelAdmin):
     list_display = ('vote', 'personvoter', 'option')
     autocomplete_fields = ['personvoter', 'orgvoter', 'vote']
 
+class LinkAdmin(admin.ModelAdmin):
+    list_display = ('url', 'name')
+    autocomplete_fields = ['session', 'person', 'motion', 'question', 'agenda_item', 'membership', 'organization']
+
 
 admin.site.register(PersonMembership, MembershipAdmin)
 admin.site.register(Speech, SpeechAdmin)
 admin.site.register(Motion, MotionAdmin)
 #admin.site.register(Area, LeafletGeoAdmin)
-admin.site.register(Link)
+admin.site.register(Link, LinkAdmin)
 admin.site.register(Task)
 admin.site.register(Ballot, BallotAdmin)
 admin.site.register(Question, QuestionAdmin)
