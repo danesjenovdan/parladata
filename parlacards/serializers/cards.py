@@ -1109,7 +1109,7 @@ class SessionSpeechesCardSerializer(SessionScoreCardSerializer):
 class SpeechCardSerializer(CardSerializer):
     def get_results(self, obj):
         # obj is the speech
-        serializer = SpeechSerializer(
+        serializer = SpeechWithSessionSerializer(
             obj,
             context=self.context
         )
