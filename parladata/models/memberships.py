@@ -12,7 +12,7 @@ from parladata.behaviors.models import Timestampable
 ROLES = [
     ('member', 'member'),
     ('voter', 'voter'),
-    ('persident', 'president'),
+    ('president', 'president'),
     ('deputy', 'deputy'),
 ]
 
