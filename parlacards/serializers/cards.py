@@ -46,6 +46,7 @@ from parlacards.serializers.tfidf import TfidfSerializer
 from parlacards.serializers.group_attendance import SessionGroupAttendanceSerializer
 from parlacards.serializers.facets import GroupFacetSerializer, PersonFacetSerializer
 from parlacards.serializers.question import QuestionSerializer
+from parlacards.serializers.agenda_item import AgendaItemsSerializer
 from parlacards.serializers.common import (
     CardSerializer,
     PersonScoreCardSerializer,
@@ -1056,6 +1057,16 @@ class SessionLegislationCardSerializer(SessionScoreCardSerializer):
                 session=obj,
             ),
             many=True,
+            context=self.context
+        )
+        return serializer.data
+
+
+class SessionAgendaItemCardSerializer(SessionScoreCardSerializer):
+    def get_results(self, obj):
+        # obj is the session
+        serializer = AgendaItemsSerializer(
+            obj,
             context=self.context
         )
         return serializer.data
