@@ -9,6 +9,7 @@ from parladata.models.person import Person
 from parladata.models.ballot import Ballot
 
 from parlacards.serializers.session import SessionSerializer
+from parlacards.serializers.link import LinkSerializer
 
 from parlacards.serializers.common import (
     CommonSerializer,
@@ -221,7 +222,10 @@ class VoteSerializer(CommonSerializer):
         return None
 
     def get_documents(self, obj):
-        return None
+        return LinkSerializer(
+            obj.motion.links.all(),
+            many=True
+        ).data
 
     def get_legislation(self, obj):
         return None
