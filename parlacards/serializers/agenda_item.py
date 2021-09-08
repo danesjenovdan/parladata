@@ -14,12 +14,18 @@ class AgendaItemSerializer(CommonSerializer):
     name = serializers.CharField()
     order = serializers.IntegerField()
     text = serializers.CharField()
-    links = LinkSerializer(many=True)
+    documents = serializers.SerializerMethodField()
+
+    def get_documents(self, obj):
+        return LinkSerializer(
+            obj.links.all(),
+            many=True
+        ).data
 
 
 class AgendaItemsSerializer(CommonCachableSerializer):
     agenda_items = serializers.SerializerMethodField()
-    links = LinkSerializer(many=True)
+    documents = serializers.SerializerMethodField()
 
     def calculate_cache_key(self, instance):
         # instance is the session
@@ -35,3 +41,9 @@ class AgendaItemsSerializer(CommonCachableSerializer):
             many=True
         )
         return agenda_item_serializer.data
+
+    def get_documents(self, obj):
+        return LinkSerializer(
+            obj.links.all(),
+            many=True
+        ).data
