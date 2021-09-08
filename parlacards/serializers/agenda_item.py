@@ -9,10 +9,10 @@ from parlacards.serializers.tag import TagSerializer
 from parlacards.serializers.link import LinkSerializer
 
 class AgendaItemSerializer(CommonSerializer):
-    id = serializers.CharField()
+    id = serializers.IntegerField()
     tags = TagSerializer(many=True)
     name = serializers.CharField()
-    order = serializers.CharField()
+    order = serializers.IntegerField()
     text = serializers.CharField()
     links = LinkSerializer(many=True)
 
