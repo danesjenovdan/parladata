@@ -282,6 +282,7 @@ class CommonOrganizationSerializer(CommonCachableSerializer):
     name = VersionableSerializerField(property_model_name='OrganizationName')
     acronym = VersionableSerializerField(property_model_name='OrganizationAcronym')
     slug = serializers.CharField()
+    color = serializers.CharField()
 
 
 class CommonSessionSerializer(CommonCachableSerializer):
