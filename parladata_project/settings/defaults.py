@@ -30,6 +30,7 @@ INSTALLED_APPS = (
     'parlacards',
     'debug_toolbar',
     'martor',
+    'colorfield',
 )
 
 """MIDDLEWARE = (
