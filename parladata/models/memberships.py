@@ -17,16 +17,30 @@ ROLES = [
 ]
 
 class Membership(Timestampable):
-    start_time = models.DateTimeField(blank=True, null=True,
-                                     help_text='Start time')
+    start_time = models.DateTimeField(
+        blank=True, null=True,
+        help_text='Start time'
+    )
 
-    end_time = models.DateTimeField(blank=True, null=True,
-                                   help_text='End time')
-    
-    organization = models.ForeignKey('Organization',
-                                     blank=False, null=False,
-                                     on_delete=models.CASCADE,
-                                     help_text=_('The organization that the member belongs to.'))
+    end_time = models.DateTimeField(
+        blank=True, null=True,
+        help_text='End time'
+    )
+
+    organization = models.ForeignKey(
+        'Organization',
+        blank=False, null=False,
+        on_delete=models.CASCADE,
+        help_text=_('The organization that the member belongs to.')
+    )
+
+    mandate = models.ForeignKey(
+        'Mandate',
+        blank=True, null=True,
+        verbose_name=_("Mandate"),
+        related_name="%(class)ss",
+        on_delete=models.CASCADE
+    )
 
     def __str__(self):
         return f'Member: {self.member}, Org: {self.organization}, StartTime: {self.start_time}'
