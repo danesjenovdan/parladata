@@ -1294,7 +1294,7 @@ class MandateUsageByGroupCardSerializer(CardSerializer):
 class MandateMostUsedByPeopleCardSerializer(CardSerializer):
     def get_results(self, obj):
         # obj is the mandate
-        # TODO: filter by mandate
+        people_ids = obj.personmemberships.filter(role='voter').values_list('member_id')
         solr_params = parse_search_query_params(self.context['GET'], facet=True)
         solr_response = solr_select(**solr_params, per_page=0)
 
@@ -1303,11 +1303,20 @@ class MandateMostUsedByPeopleCardSerializer(CardSerializer):
 
         # slice first 10 items from the list to only show top 5 people
         # 5 times (id, value) = 10
-        facet_counts = solr_response['facet_counts']['facet_fields']['person_id'][:10]
+        end_slice = 0
+        people_count = 0
+        for person_id in solr_response['facet_counts']['facet_fields']['person_id'][::2]:
+            end_slice += 2
+            if person_id in people_ids:
+                people_count += 1
+            if people_count > 5:
+                break
+
+        facet_counts = solr_response['facet_counts']['facet_fields']['person_id'][:end_slice]
         facet_counts_tuples = zip(facet_counts[::2], facet_counts[1::2])
         objects = [
             {'person': Person.objects.filter(pk=person_id).first(), 'value': value}
-            for (person_id, value) in facet_counts_tuples
+            for (person_id, value) in facet_counts_tuples if person_id in people_ids
         ]
 
         facet_serializer = PersonFacetSerializer(
