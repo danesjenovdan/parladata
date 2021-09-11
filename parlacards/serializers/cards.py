@@ -1294,7 +1294,7 @@ class MandateUsageByGroupCardSerializer(CardSerializer):
 class MandateMostUsedByPeopleCardSerializer(CardSerializer):
     def get_results(self, obj):
         # obj is the mandate
-        people_ids = obj.personmemberships.filter(role='voter').values_list('member_id')
+        people_ids = obj.personmemberships.filter(role='voter').values_list('member_id', flat=True)
         solr_params = parse_search_query_params(self.context['GET'], facet=True)
         solr_response = solr_select(**solr_params, per_page=0)
 
