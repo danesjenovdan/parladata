@@ -1310,7 +1310,7 @@ class MandateMostUsedByPeopleCardSerializer(CardSerializer):
             end_slice += 2
             if int(person_id) in people_ids:
                 people_count += 1
-            if people_count > 5:
+            if people_count == 5:
                 break
 
         facet_counts = solr_response['facet_counts']['facet_fields']['person_id'][:end_slice]
