@@ -18,7 +18,6 @@ django-tinymce
 Lemmagen
 nltk
 slugify
-django-storages
 Pillow
 pytest
 pytest-django
