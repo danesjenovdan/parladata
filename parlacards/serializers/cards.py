@@ -1301,13 +1301,14 @@ class MandateMostUsedByPeopleCardSerializer(CardSerializer):
         if not solr_response.get('facet_counts', {}).get('facet_fields', {}).get('person_id', []):
             return None
 
+        # TODO make this better
         # slice first 10 items from the list to only show top 5 people
         # 5 times (id, value) = 10
         end_slice = 0
         people_count = 0
         for person_id in solr_response['facet_counts']['facet_fields']['person_id'][::2]:
             end_slice += 2
-            if person_id in people_ids:
+            if int(person_id) in people_ids:
                 people_count += 1
             if people_count > 5:
                 break
@@ -1316,7 +1317,7 @@ class MandateMostUsedByPeopleCardSerializer(CardSerializer):
         facet_counts_tuples = zip(facet_counts[::2], facet_counts[1::2])
         objects = [
             {'person': Person.objects.filter(pk=person_id).first(), 'value': value}
-            for (person_id, value) in facet_counts_tuples if person_id in people_ids
+            for (person_id, value) in facet_counts_tuples if int(person_id) in people_ids
         ]
 
         facet_serializer = PersonFacetSerializer(
