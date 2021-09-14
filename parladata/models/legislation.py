@@ -5,18 +5,17 @@ from tinymce.models import HTMLField
 from parladata.behaviors.models import Timestampable, Taggable
 
 
-STATUSES = [
-    ('in_procedure', 'in_procedure'),
-    ('enacted', 'enacted'),
-    ('submitted', 'submitted'),
-    ('rejected', 'rejected'),
-    ('adopted', 'adopted'),
-    ('received', 'received'),
-    ('retracted', 'retracted'),
-]
-
 class Law(Timestampable, Taggable):
     """Laws which taken place in parlament."""
+    STATUSES = [
+        ('in_procedure', 'in_procedure'),
+        ('enacted', 'enacted'),
+        ('submitted', 'submitted'),
+        ('rejected', 'rejected'),
+        ('adopted', 'adopted'),
+        ('received', 'received'),
+        ('retracted', 'retracted'),
+    ]
 
     uid = models.TextField(blank=True, null=True,
                            help_text='law uid from DZ page')
