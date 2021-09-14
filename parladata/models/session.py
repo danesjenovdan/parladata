@@ -2,15 +2,15 @@ from django.db import models
 
 from parladata.behaviors.models import Timestampable
 
-CLASSIFICATIONS = [
-    ('unknown', 'unknown'),
-    ('regular', 'regular'),
-    ('irregular', 'irregular'),
-    ('correspondent', 'correspondent')
-]
 
 class Session(Timestampable):
     """Sessions that happened in parliament."""
+    CLASSIFICATIONS = [
+        ('unknown', 'unknown'),
+        ('regular', 'regular'),
+        ('irregular', 'irregular'),
+        ('correspondent', 'correspondent')
+    ]
 
     mandate = models.ForeignKey('Mandate',
                                 blank=False, null=False,
