@@ -1268,8 +1268,8 @@ class MandateSpeechCardSerializer(CardSerializer):
 class MandateUsageByGroupCardSerializer(CardSerializer):
     def get_results(self, obj):
         # obj is the mandate
-        # TODO: filter by mandate
         solr_params = parse_search_query_params(self.context['GET'], facet=True)
+        solr_params['mandate'] = instance.description
         solr_response = solr_select(**solr_params, per_page=0)
 
         if not solr_response.get('facet_counts', {}).get('facet_fields', {}).get('party_id', []):
@@ -1332,8 +1332,8 @@ class MandateMostUsedByPeopleCardSerializer(CardSerializer):
 class MandateUsageThroughTimeCardSerializer(CardSerializer):
     def get_results(self, obj):
         # obj is the mandate
-        # TODO: filter by mandate
         solr_params = parse_search_query_params(self.context['GET'], facet=True)
+        solr_params['mandate'] = instance.description
         solr_response = solr_select(**solr_params, per_page=0)
 
         if not solr_response.get('facet_counts', {}).get('facet_ranges', {}).get('start_time', {}).get('counts', []):
