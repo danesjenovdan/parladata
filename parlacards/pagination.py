@@ -1,7 +1,7 @@
 from django.core.paginator import Paginator
 from django.utils.functional import cached_property
 
-from parlacards.solr import get_speeches_from_solr
+from parlacards.solr import get_speeches_from_solr, get_votes_from_solr, get_legislation_from_solr
 
 
 def valid_positive_int(number, default):
@@ -34,17 +34,26 @@ def pagination_response_data(paginator, page, prefix=''):
 
 class SolrPaginator(Paginator):
     def __init__(self, solr_params, per_page, orphans=0,
-                 allow_empty_first_page=True):
+                 allow_empty_first_page=True, document_type='speech'):
         self.solr_params = solr_params
         self.object_list = None
         self.per_page = int(per_page)
         self.orphans = int(orphans)
         self.allow_empty_first_page = allow_empty_first_page
+        self.document_type = document_type
+        self.search_method = None
+
+        if self.document_type == 'vote':
+            self.search_method = get_votes_from_solr
+        elif self.document_type == 'law':
+            self.search_method = get_legislation_from_solr
+        else:
+            self.search_method = get_speeches_from_solr
 
     @cached_property
     def count(self):
         """Return the total number of objects, across all pages."""
-        _, count = get_speeches_from_solr(**self.solr_params, page=1, per_page=0)
+        _, count = self.search_method(**self.solr_params, page=1, per_page=0)
         return count
 
     def page(self, number):
@@ -54,7 +63,8 @@ class SolrPaginator(Paginator):
         top = bottom + self.per_page
         if top + self.orphans >= self.count:
             top = self.count
+
         # I'm not sure why this is called bottom and top, but Paginator slices
         # object_list like this `object_list[bottom:top]`
-        objects, _ = get_speeches_from_solr(**self.solr_params, page=number, per_page=top-bottom)
+        objects, _ = self.search_method(**self.solr_params, page=number, per_page=top-bottom)
         return self._get_page(objects, number, self)
