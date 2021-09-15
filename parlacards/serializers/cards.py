@@ -58,7 +58,7 @@ from parlacards.serializers.common import (
     SessionScoreCardSerializer,
 )
 
-from parlacards.solr import parse_search_query_params, solr_select
+from parlacards.solr import parse_search_query_params, solr_select, get_votes_from_solr, get_legislation_from_solr
 from parlacards.pagination import SolrPaginator, pagination_response_data, parse_pagination_query_params
 
 #
@@ -1358,12 +1358,14 @@ class MandateVotesCardSerializer(CardSerializer):
         parent_data = super().to_representation(instance)
 
         # instance is the mandate
-        # TODO: filter by mandate
-        votes = Vote.objects.filter(timestamp__lte=self.context['date']).order_by('-timestamp')
+        votes = Vote.objects.filter(
+            timestamp__lte=self.context['date'],
+            motion__session__mandate=instance
+        ).order_by('-timestamp')
 
-        # TODO: maybe lemmatize?, maybe search by each word separately?
         if text := self.context['GET'].get('text', None):
-            votes = votes.filter(motion__text__icontains=text)
+            # TODO filter by mandate
+            votes = get_votes_from_solr(text_query=text)
 
         requested_page, requested_per_page = parse_pagination_query_params(self.context['GET'])
         paginator = Paginator(votes, requested_per_page)
@@ -1399,7 +1401,8 @@ class MandateLegislationCardSerializer(CardSerializer):
 
         # TODO: maybe lemmatize?, maybe search by each word separately?
         if text := self.context['GET'].get('text', None):
-            legislation = legislation.filter(text__icontains=text)
+            # TODO filter by mandate
+            legislation = get_legislation_from_solr(text_query=text)
 
         requested_page, requested_per_page = parse_pagination_query_params(self.context['GET'])
         paginator = Paginator(legislation, requested_per_page)

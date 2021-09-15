@@ -6,6 +6,8 @@ import requests
 from django.conf import settings
 
 from parladata.models.speech import Speech
+from parladata.models.vote import Vote
+from parladata.models.legislation import Law
 
 
 def one_month_later(date, shorten_for=0):
@@ -53,10 +55,12 @@ def solr_select(
     facet=False,
     page=1,
     per_page=20,
-    document_type='speech'
+    document_type='speech',
+    fl='speech_id',
 ):
     # TODO solr timeout
     # TODO solr offline
+    # TODO filter mandate
     q_params = f'{text_query} AND type:{document_type}'
     if people_ids:
         q_params += f' AND person_id:({" OR ".join(map(lambda x: str(x), people_ids))})'
@@ -71,7 +75,7 @@ def solr_select(
         'rows': per_page,
         'start': (page - 1) * per_page,
         'q': q_params,
-        'fl': 'speech_id'
+        'fl': fl
     }
 
     if highlight:
@@ -247,3 +251,29 @@ def parse_search_query_params(params, **overrides):
         **parsed_params,
         **overrides,
     }
+
+
+def get_votes_from_solr(text_query='*', page=1, per_page=20):
+    solr_response = solr_select(
+        text_query=text_query,
+        page=page,
+        per_page=per_page,
+        document_type='vote',
+        fl="vote_id",
+    )
+    vote_ids = [solr_doc['vote_id'] for solr_doc in solr_response['response']['docs']]
+    votes = list(Vote.objects.filter(id__in=vote_ids))
+    return votes
+
+
+def get_legislation_from_solr(text_query='*', page=1, per_page=20):
+    solr_response = solr_select(
+        text_query=text_query,
+        page=page,
+        per_page=per_page,
+        document_type='law',
+        fl="law_id",
+    )
+    law_ids = [solr_doc['law_id'] for solr_doc in solr_response['response']['docs']]
+    legislation = list(Law.objects.filter(id__in=law_ids))
+    return legislation
