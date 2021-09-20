@@ -106,3 +106,5 @@ if os.getenv('PARLAMETER_ENABLE_S3', False):
 DEBUG_TOOLBAR_CONFIG = {
     "SHOW_TOOLBAR_CALLBACK": lambda request: DEBUG,
 }
+
+LEMMATIZER_MODULE = os.getenv('LEMMATIZER_MODULE', 'parlacards.lemmatizers.lemmatizer_sl')

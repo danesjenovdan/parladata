@@ -10,8 +10,7 @@ from parlacards.scores.common import (
     get_dates_between,
     get_fortnights_between,
     remove_punctuation,
-    tokenize,
-    lemmatize_many
+    tokenize
 )
 
 def get_styled_lemmas(style):
