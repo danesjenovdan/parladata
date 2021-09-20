@@ -66,6 +66,7 @@ from parlacards.serializers.cards import (
     MandateVotesCardSerializer,
     MandateLegislationCardSerializer,
     LegislationDetailCardSerializer,
+    SessionAgendaItemCardSerializer,
 )
 from parlacards.serializers.speech import SpeechSerializer
 
@@ -411,6 +412,11 @@ class GroupTfidfView(CardView):
 class SessionTfidfView(CardView):
     thing = Session
     card_serializer = SessionTfidfCardSerializer
+
+
+class SessionAgendaItemsView(CardView):
+    thing = Session
+    card_serializer = SessionAgendaItemCardSerializer
 
 
 class GroupMostVotesInCommon(CardView):

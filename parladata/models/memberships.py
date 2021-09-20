@@ -9,33 +9,47 @@ from parladata.behaviors.models import Timestampable
 # TODO touch parents on save
 # TODO touch parents on delete
 
-ROLES = [
-    ('member', 'member'),
-    ('voter', 'voter'),
-    ('persident', 'president'),
-    ('deputy', 'deputy'),
-]
 
 class Membership(Timestampable):
-    start_time = models.DateTimeField(blank=True, null=True,
-                                     help_text='Start time')
+    start_time = models.DateTimeField(
+        blank=True, null=True,
+        help_text='Start time'
+    )
 
-    end_time = models.DateTimeField(blank=True, null=True,
-                                   help_text='End time')
-    
-    organization = models.ForeignKey('Organization',
-                                     blank=False, null=False,
-                                     on_delete=models.CASCADE,
-                                     help_text=_('The organization that the member belongs to.'))
+    end_time = models.DateTimeField(
+        blank=True, null=True,
+        help_text='End time'
+    )
+
+    organization = models.ForeignKey(
+        'Organization',
+        blank=False, null=False,
+        on_delete=models.CASCADE,
+        help_text=_('The organization that the member belongs to.')
+    )
+
+    mandate = models.ForeignKey(
+        'Mandate',
+        blank=True, null=True,
+        verbose_name=_("Mandate"),
+        related_name="%(class)ss",
+        on_delete=models.CASCADE
+    )
 
     def __str__(self):
         return f'Member: {self.member}, Org: {self.organization}, StartTime: {self.start_time}'
-    
+
     class Meta:
         abstract = True
 
 class PersonMembership(Membership):
     """A relationship between a person and an organization."""
+    ROLES = [
+        ('member', 'member'),
+        ('voter', 'voter'),
+        ('president', 'president'),
+        ('deputy', 'deputy'),
+    ]
 
     member = models.ForeignKey('Person',
                                blank=False, null=False,
@@ -64,7 +78,7 @@ class PersonMembership(Membership):
             models.Q(start_time__lte=timestamp) | models.Q(start_time__isnull=True),
             models.Q(end_time__gte=timestamp) | models.Q(end_time__isnull=True),
         )
-    
+
     @staticmethod
     def valid_before(timestamp):
         return PersonMembership.objects.filter(

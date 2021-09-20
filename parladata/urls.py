@@ -2,6 +2,7 @@ from django.conf.urls import url, include
 from rest_framework import routers
 
 from parladata.api_views import *
+from parladata.views import *
 
 router = routers.DefaultRouter()
 router.register(r'people', PersonView)
@@ -24,4 +25,6 @@ router.register(r'organization-memberships', OrganizationMembershipsViewSet)
 
 urlpatterns = [
     url(r'^', include(router.urls)),
+    url(r'^merge-people', merge_people),
+    url(r'^add-ballots', add_ballots),
 ]

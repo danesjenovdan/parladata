@@ -14,6 +14,7 @@ from parladata.behaviors.models import (
     Sluggable,
     VersionableFieldsOwner
 )
+from colorfield.fields import ColorField
 
 class Organization(Timestampable, Taggable, Parsable, Sluggable, VersionableFieldsOwner):
     """A group with a common purpose or reason
@@ -42,6 +43,8 @@ class Organization(Timestampable, Taggable, Parsable, Sluggable, VersionableFiel
 
     description = models.TextField(blank=True, null=True,
                                    help_text='Organization description')
+
+    color = ColorField(default='#09a2cc')
 
     @property
     def name(self):

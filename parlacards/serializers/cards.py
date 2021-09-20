@@ -46,6 +46,7 @@ from parlacards.serializers.tfidf import TfidfSerializer
 from parlacards.serializers.group_attendance import SessionGroupAttendanceSerializer
 from parlacards.serializers.facets import GroupFacetSerializer, PersonFacetSerializer
 from parlacards.serializers.question import QuestionSerializer
+from parlacards.serializers.agenda_item import AgendaItemsSerializer
 from parlacards.serializers.common import (
     CardSerializer,
     PersonScoreCardSerializer,
@@ -57,7 +58,7 @@ from parlacards.serializers.common import (
     SessionScoreCardSerializer,
 )
 
-from parlacards.solr import parse_search_query_params, solr_select
+from parlacards.solr import parse_search_query_params, solr_select, get_votes_from_solr, get_legislation_from_solr
 from parlacards.pagination import SolrPaginator, pagination_response_data, parse_pagination_query_params
 
 #
@@ -1061,6 +1062,16 @@ class SessionLegislationCardSerializer(SessionScoreCardSerializer):
         return serializer.data
 
 
+class SessionAgendaItemCardSerializer(SessionScoreCardSerializer):
+    def get_results(self, obj):
+        # obj is the session
+        serializer = AgendaItemsSerializer(
+            obj,
+            context=self.context
+        )
+        return serializer.data
+
+
 class SessionSpeechesCardSerializer(SessionScoreCardSerializer):
     def get_results(self, obj):
         # this is implemeted in to_representation for pagination
@@ -1098,7 +1109,7 @@ class SessionSpeechesCardSerializer(SessionScoreCardSerializer):
 class SpeechCardSerializer(CardSerializer):
     def get_results(self, obj):
         # obj is the speech
-        serializer = SpeechSerializer(
+        serializer = SpeechWithSessionSerializer(
             obj,
             context=self.context
         )
@@ -1234,8 +1245,8 @@ class MandateSpeechCardSerializer(CardSerializer):
         parent_data = super().to_representation(instance)
 
         # instance is the mandate
-        # TODO: filter by mandate
         solr_params = parse_search_query_params(self.context['GET'], highlight=True)
+        solr_params['mandate'] = instance.description
         requested_page, requested_per_page = parse_pagination_query_params(self.context['GET'])
         paginator = SolrPaginator(solr_params, requested_per_page)
         page = paginator.get_page(requested_page)
@@ -1257,8 +1268,8 @@ class MandateSpeechCardSerializer(CardSerializer):
 class MandateUsageByGroupCardSerializer(CardSerializer):
     def get_results(self, obj):
         # obj is the mandate
-        # TODO: filter by mandate
         solr_params = parse_search_query_params(self.context['GET'], facet=True)
+        solr_params['mandate'] = instance.description
         solr_response = solr_select(**solr_params, per_page=0)
 
         if not solr_response.get('facet_counts', {}).get('facet_fields', {}).get('party_id', []):
@@ -1283,20 +1294,30 @@ class MandateUsageByGroupCardSerializer(CardSerializer):
 class MandateMostUsedByPeopleCardSerializer(CardSerializer):
     def get_results(self, obj):
         # obj is the mandate
-        # TODO: filter by mandate
+        people_ids = obj.personmemberships.filter(role='voter').values_list('member_id', flat=True)
         solr_params = parse_search_query_params(self.context['GET'], facet=True)
         solr_response = solr_select(**solr_params, per_page=0)
 
         if not solr_response.get('facet_counts', {}).get('facet_fields', {}).get('person_id', []):
             return None
 
+        # TODO make this better
         # slice first 10 items from the list to only show top 5 people
         # 5 times (id, value) = 10
-        facet_counts = solr_response['facet_counts']['facet_fields']['person_id'][:10]
+        end_slice = 0
+        people_count = 0
+        for person_id in solr_response['facet_counts']['facet_fields']['person_id'][::2]:
+            end_slice += 2
+            if int(person_id) in people_ids:
+                people_count += 1
+            if people_count == 5:
+                break
+
+        facet_counts = solr_response['facet_counts']['facet_fields']['person_id'][:end_slice]
         facet_counts_tuples = zip(facet_counts[::2], facet_counts[1::2])
         objects = [
             {'person': Person.objects.filter(pk=person_id).first(), 'value': value}
-            for (person_id, value) in facet_counts_tuples
+            for (person_id, value) in facet_counts_tuples if int(person_id) in people_ids
         ]
 
         facet_serializer = PersonFacetSerializer(
@@ -1311,8 +1332,8 @@ class MandateMostUsedByPeopleCardSerializer(CardSerializer):
 class MandateUsageThroughTimeCardSerializer(CardSerializer):
     def get_results(self, obj):
         # obj is the mandate
-        # TODO: filter by mandate
         solr_params = parse_search_query_params(self.context['GET'], facet=True)
+        solr_params['mandate'] = instance.description
         solr_response = solr_select(**solr_params, per_page=0)
 
         if not solr_response.get('facet_counts', {}).get('facet_ranges', {}).get('start_time', {}).get('counts', []):
@@ -1335,17 +1356,25 @@ class MandateVotesCardSerializer(CardSerializer):
 
     def to_representation(self, instance):
         parent_data = super().to_representation(instance)
-
         # instance is the mandate
-        # TODO: filter by mandate
-        votes = Vote.objects.filter(timestamp__lte=self.context['date']).order_by('-timestamp')
-
-        # TODO: maybe lemmatize?, maybe search by each word separately?
-        if text := self.context['GET'].get('text', None):
-            votes = votes.filter(motion__text__icontains=text)
 
         requested_page, requested_per_page = parse_pagination_query_params(self.context['GET'])
-        paginator = Paginator(votes, requested_per_page)
+
+        if text := self.context['GET'].get('text', None):
+            solr_params = parse_search_query_params(self.context['GET'])
+            solr_params['mandate'] = instance.description
+            paginator = SolrPaginator(
+                solr_params,
+                requested_per_page,
+                document_type='vote'
+            )
+        else:
+            votes = Vote.objects.filter(
+                timestamp__lte=self.context['date'],
+                motion__session__mandate=instance
+            ).order_by('-timestamp')
+            paginator = Paginator(votes, requested_per_page)
+    
         page = paginator.get_page(requested_page)
 
         # serialize votes
@@ -1371,17 +1400,24 @@ class MandateLegislationCardSerializer(CardSerializer):
         parent_data = super().to_representation(instance)
 
         # instance is the mandate
-        legislation = Law.objects.filter(
-            Q(timestamp__lte=self.context['date']) | Q(timestamp__isnull=True),
-            session__mandate=instance,
-        )
-
-        # TODO: maybe lemmatize?, maybe search by each word separately?
-        if text := self.context['GET'].get('text', None):
-            legislation = legislation.filter(text__icontains=text)
-
         requested_page, requested_per_page = parse_pagination_query_params(self.context['GET'])
-        paginator = Paginator(legislation, requested_per_page)
+
+        if text := self.context['GET'].get('text', None):
+            solr_params = parse_search_query_params(self.context['GET'])
+            solr_params['mandate'] = instance.description
+            paginator = SolrPaginator(
+                solr_params,
+                requested_per_page,
+                document_type='law'
+            )
+        else:
+            legislation = Law.objects.filter(
+                Q(timestamp__lte=self.context['date']) | Q(timestamp__isnull=True),
+                session__mandate=instance,
+            )
+
+            paginator = Paginator(legislation, requested_per_page)
+
         page = paginator.get_page(requested_page)
 
         # serialize votes
