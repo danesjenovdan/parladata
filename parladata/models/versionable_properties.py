@@ -2,6 +2,7 @@ from django.db import models
 
 from parladata.behaviors.models import VersionableProperty
 
+
 class PersonVersionableProperty(VersionableProperty):
     owner = models.ForeignKey(
         'parladata.Person',
@@ -35,11 +36,12 @@ class PersonEmail(PersonVersionableProperty):
     pass
 
 class PersonPreferredPronoun(PersonVersionableProperty):
-    # TODO make this a selection
-    # he
-    # she
-    # they
-    pass
+    PRONOUNS = [
+        ('he', 'he'),
+        ('she', 'she'),
+        ('they', 'they'),
+    ]
+    value = models.TextField(blank=False, null=False, choices=PRONOUNS)
 
 class PersonNumberOfVoters(PersonVersionableProperty):
     value = models.IntegerField(blank=False, null=False)
