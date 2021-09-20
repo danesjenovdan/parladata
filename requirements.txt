@@ -36,3 +36,4 @@ django-colorfield
 sklearn
 python-crfsuite
 marisa-trie
+git+https://github.com/Desklop/Uk_Stemmer
