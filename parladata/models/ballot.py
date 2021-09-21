@@ -2,15 +2,15 @@ from django.db import models
 
 from parladata.behaviors.models import Timestampable
 
-ROLES = [
-    ('for', 'for'),
-    ('against', 'against'),
-    ('abstain', 'abstain'),
-    ('absent', 'absent'),
-]
 
 class Ballot(Timestampable):
     """All ballots from all votes."""
+    OPTIONS = [
+        ('for', 'for'),
+        ('against', 'against'),
+        ('abstain', 'abstain'),
+        ('absent', 'absent'),
+]
 
     vote = models.ForeignKey('Vote',
                              help_text='The vote event',
@@ -32,7 +32,7 @@ class Ballot(Timestampable):
     option = models.CharField(max_length=128,
                               blank=True, null=True,
                               help_text='Yes, no, abstain',
-                              choices=ROLES)
+                              choices=OPTIONS)
 
     @property
     def voter(self):

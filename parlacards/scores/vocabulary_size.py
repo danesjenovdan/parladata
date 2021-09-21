@@ -13,7 +13,6 @@ from parlacards.scores.common import (
     get_fortnights_between,
     remove_punctuation,
     tokenize,
-    lemmatize_many
 )
 
 # TODO we should lemmatize speeches at import time
