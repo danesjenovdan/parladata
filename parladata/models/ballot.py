@@ -5,7 +5,7 @@ from parladata.behaviors.models import Timestampable
 
 class Ballot(Timestampable):
     """All ballots from all votes."""
-    ROLES = [
+    OPTIONS = [
         ('for', 'for'),
         ('against', 'against'),
         ('abstain', 'abstain'),
@@ -32,7 +32,7 @@ class Ballot(Timestampable):
     option = models.CharField(max_length=128,
                               blank=True, null=True,
                               help_text='Yes, no, abstain',
-                              choices=ROLES)
+                              choices=OPTIONS)
 
     @property
     def voter(self):
