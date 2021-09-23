@@ -252,7 +252,12 @@ class SessionScoreCardSerializer(CardSerializer):
 
 class CommonPersonSerializer(CommonCachableSerializer):
     def calculate_cache_key(self, instance):
-        return f'CommonPersonSerializer_{instance.id}_{instance.updated_at.strftime("%Y-%m-%d-%H-%M-%s")}'
+        organization = instance.parliamentary_group_on_date(datetime.now())
+        person_updated_at = instance.updated_at
+        if organization:
+            if organization.updated_at > person_updated_at:
+                person_updated_at = organization.updated_at
+        return f'CommonPersonSerializer_{instance.id}_{person_updated_at.strftime("%Y-%m-%d-%H-%M-%s")}'
 
     def get_group(self, obj):
         active_parliamentary_group_membership = obj.parliamentary_group_on_date(self.context['date'])
