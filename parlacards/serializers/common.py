@@ -11,6 +11,8 @@ from parladata.models.person import Person
 from parladata.models.organization import Organization
 from parladata.models.common import Mandate
 
+from datetime import datetime
+
 class VersionableSerializerField(serializers.Field):
     def __init__(self, property_model_name, **kwargs):
         self.property_model_name = property_model_name
