@@ -5,7 +5,7 @@ from django.urls import reverse
 from django.conf import settings
 from django.shortcuts import redirect
 
-from parlacards.models import (SessionTfidf, PersonTfidf, GroupTfidf)
+from parlacards.models import (SessionTfidf, PersonTfidf, GroupTfidf, Quote)
 from parladata.models.memberships import PersonMembership
 
 from django.contrib import admin
@@ -167,3 +167,4 @@ class GroupTfidfAdmin(admin.ModelAdmin):
 admin.site.register(SessionTfidf, SessionTfidfAdmin)
 admin.site.register(PersonTfidf, PersonTfidfAdmin)
 admin.site.register(GroupTfidf, GroupTfidfAdmin)
+admin.site.register(Quote)
