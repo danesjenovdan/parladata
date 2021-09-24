@@ -28,7 +28,7 @@ from parlacards.models import (
     GroupTfidf,
     GroupVotingDistance,
     DeviationFromGroup,
-    SessionGroupAttendance
+    SessionGroupAttendance,
 )
 
 from parlacards.serializers.person import PersonBasicInfoSerializer
@@ -40,7 +40,12 @@ from parlacards.serializers.voting_distance import VotingDistanceSerializer, Gro
 from parlacards.serializers.membership import MembershipSerializer
 from parlacards.serializers.recent_activity import DailyActivitySerializer
 from parlacards.serializers.style_scores import StyleScoresSerializer
-from parlacards.serializers.speech import SpeechSerializer, HighlightSerializer, SpeechWithSessionSerializer
+from parlacards.serializers.speech import (
+    SpeechSerializer,
+    HighlightSerializer,
+    SpeechWithSessionSerializer,
+)
+from parlacards.serializers.quote import QuoteWithSessionSerializer
 from parlacards.serializers.vote import VoteSerializer, SessionVoteSerializer, BareVoteSerializer
 from parlacards.serializers.tfidf import TfidfSerializer
 from parlacards.serializers.group_attendance import SessionGroupAttendanceSerializer
@@ -1110,6 +1115,16 @@ class SpeechCardSerializer(CardSerializer):
     def get_results(self, obj):
         # obj is the speech
         serializer = SpeechWithSessionSerializer(
+            obj,
+            context=self.context
+        )
+        return serializer.data
+
+
+class QuoteCardSerializer(CardSerializer):
+    def get_results(self, obj):
+        # obj is the quote
+        serializer = QuoteWithSessionSerializer(
             obj,
             context=self.context
         )
