@@ -290,3 +290,19 @@ def test_search_votes():
 def test_search_legislation():
     response = client.get('/v3/cards/search/legislation/?id=1')
     assert response.status_code == 200
+
+@pytest.mark.django_db()
+def test_create_and_get_quote():
+    response = client.post(
+        '/v3/cards/speech/quote/',
+        {
+            "speech": 1,
+            "start_index": 6,
+            "end_index": 9,
+            "quote_content": "dan"
+        }
+    )
+    assert response.status_code == 201
+
+    response = client.get('/v3/cards/speech/quote/?id=1')
+    assert response.status_code == 200
