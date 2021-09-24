@@ -309,7 +309,7 @@ def test_create_and_get_quote():
 
 
 @pytest.mark.django_db()
-def test_valiration_error_on_create_quote():
+def test_validation_error_on_create_quote():
     response = client.post(
         '/v3/cards/speech/quote/',
         {
