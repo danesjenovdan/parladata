@@ -81,8 +81,7 @@ def calculate_group_vote_attendance(group, timestamp=datetime.now()):
         ballots = ballots.union(member_ballots.filter(q_ballot_objects))
 
     # WORKAROUND because values_list of union returns distinct values
-    #ballot_options = ballots.values_list('option', flat=True)
-    ballot_options = [ballot.option for ballot in list(ballots)]
+    ballot_options = [ballot.option for ballot in ballots]
 
     option_counter = Counter(ballot_options)
 

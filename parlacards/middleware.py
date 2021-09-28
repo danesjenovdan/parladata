@@ -17,17 +17,21 @@ class ParlacardsMiddleware:
         if '/cards/' not in request.path:
             return self.get_response(request)
 
+        if request.method == 'POST':
+            # if request method is POST we don't need card_date and card_id
+            return self.get_response(request)
+
         # get params
         request_id = request.GET.get('id', None)
         date_string = request.GET.get('date', datetime.now().strftime('%Y-%m-%d'))
-        
+
         # if no id was supplied, return
         if not request_id:
             content = {'error': '`id` is required.'}
             return JsonResponse(content, status=400)
             # we return a JsonResponse instead of DRF's Response
             # return Response(content, status=status.HTTP_400_BAD_REQUEST)
-        
+
         # if id is not an integer return
         try:
             request.card_id = int(request_id)

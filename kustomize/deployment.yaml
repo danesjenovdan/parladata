@@ -78,8 +78,8 @@ spec:
           env:
             - name: DJANGO_SETTINGS_MODULE
               value: parladata_project.settings.k8s
-            - name: LEMMATIZER_MODULE
-              value: parlacards.lemmatizers.lemmatizer_sl
+            - name: LEMMATIZER_LANGUAGE_CODE
+              value: sl
           resources:
             requests:
               memory: 1300Mi
