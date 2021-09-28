@@ -55,6 +55,7 @@ urlpatterns = [
     path('session/agenda-items/', SessionAgendaItemsView.as_view()),
 
     path('speech/single/', SingleSpeech.as_view()),
+    path('speech/quote/', SpeechQuote.as_view()),
 
     path('vote/single/', SingleVote.as_view()),
     path('legislation/single/', SingleLegislation.as_view()),
