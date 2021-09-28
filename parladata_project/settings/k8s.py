@@ -107,4 +107,4 @@ DEBUG_TOOLBAR_CONFIG = {
     "SHOW_TOOLBAR_CALLBACK": lambda request: DEBUG,
 }
 
-LEMMATIZER_MODULE = os.getenv('LEMMATIZER_MODULE', 'parlacards.lemmatizers.lemmatizer_sl')
+LEMMATIZER_LANGUAGE_CODE = os.getenv('LEMMATIZER_LANGUAGE_CODE', 'sl')
