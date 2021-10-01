@@ -68,7 +68,7 @@ class Command(BaseCommand):
         output = []
         for i, vote in enumerate(votes):
             output.append({
-                'term': vote.motion.session.mandate.description,
+                'term': vote.motion.session.mandate.id,
                 'type': 'vote',
                 'id': 'vote_' + str(vote.id),
                 'vote_id': vote.id,
