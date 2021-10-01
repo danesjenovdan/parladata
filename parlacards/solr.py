@@ -69,7 +69,7 @@ def solr_select(
     if months:
         q_params += f' AND start_time:({" OR ".join(map(lambda x: process_month_string(x), months))})'
     if mandate:
-        q_params += f' AND term:"{mandate}"'
+        q_params += f' AND term:{mandate}'
 
     params = {
         'wt': 'json',
@@ -251,6 +251,8 @@ def parse_search_query_params(params, **overrides):
         parsed_params['people_ids'] = params['people'].split(',')
     if params.get('groups', False):
         parsed_params['group_ids'] = params['groups'].split(',')
+    if params.get('mandate', False):
+        parsed_params['mandate'] = params['mandate']
 
     return {
         **parsed_params,
