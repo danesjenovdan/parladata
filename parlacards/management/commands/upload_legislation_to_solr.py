@@ -68,7 +68,7 @@ class Command(BaseCommand):
         output = []
         for i, law in enumerate(legislation):
             output.append({
-                'term': law.session.mandate.description,
+                'term': law.session.mandate.id,
                 'type': 'law',
                 'id': 'law_' + str(law.id),
                 'law_id': law.id,

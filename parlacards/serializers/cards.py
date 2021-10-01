@@ -1261,7 +1261,7 @@ class MandateSpeechCardSerializer(CardSerializer):
 
         # instance is the mandate
         solr_params = parse_search_query_params(self.context['GET'], highlight=True)
-        solr_params['mandate'] = instance.description
+        solr_params['mandate'] = instance.id
         requested_page, requested_per_page = parse_pagination_query_params(self.context['GET'])
         paginator = SolrPaginator(solr_params, requested_per_page)
         page = paginator.get_page(requested_page)
@@ -1284,7 +1284,7 @@ class MandateUsageByGroupCardSerializer(CardSerializer):
     def get_results(self, obj):
         # obj is the mandate
         solr_params = parse_search_query_params(self.context['GET'], facet=True)
-        solr_params['mandate'] = instance.description
+        solr_params['mandate'] = instance.id
         solr_response = solr_select(**solr_params, per_page=0)
 
         if not solr_response.get('facet_counts', {}).get('facet_fields', {}).get('party_id', []):
@@ -1311,6 +1311,7 @@ class MandateMostUsedByPeopleCardSerializer(CardSerializer):
         # obj is the mandate
         people_ids = obj.personmemberships.filter(role='voter').values_list('member_id', flat=True)
         solr_params = parse_search_query_params(self.context['GET'], facet=True)
+        solr_params['mandate'] = obj.id
         solr_response = solr_select(**solr_params, per_page=0)
 
         if not solr_response.get('facet_counts', {}).get('facet_fields', {}).get('person_id', []):
@@ -1348,7 +1349,7 @@ class MandateUsageThroughTimeCardSerializer(CardSerializer):
     def get_results(self, obj):
         # obj is the mandate
         solr_params = parse_search_query_params(self.context['GET'], facet=True)
-        solr_params['mandate'] = instance.description
+        solr_params['mandate'] = obj.id
         solr_response = solr_select(**solr_params, per_page=0)
 
         if not solr_response.get('facet_counts', {}).get('facet_ranges', {}).get('start_time', {}).get('counts', []):
@@ -1377,7 +1378,7 @@ class MandateVotesCardSerializer(CardSerializer):
 
         if text := self.context['GET'].get('text', None):
             solr_params = parse_search_query_params(self.context['GET'])
-            solr_params['mandate'] = instance.description
+            solr_params['mandate'] = instance.id
             paginator = SolrPaginator(
                 solr_params,
                 requested_per_page,
@@ -1419,7 +1420,7 @@ class MandateLegislationCardSerializer(CardSerializer):
 
         if text := self.context['GET'].get('text', None):
             solr_params = parse_search_query_params(self.context['GET'])
-            solr_params['mandate'] = instance.description
+            solr_params['mandate'] = instance.id
             paginator = SolrPaginator(
                 solr_params,
                 requested_per_page,
