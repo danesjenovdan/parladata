@@ -71,6 +71,7 @@ from parlacards.serializers.cards import (
     LegislationDetailCardSerializer,
     SessionAgendaItemCardSerializer,
     QuoteCardSerializer,
+    RootGroupBasicInfoCardSerializer,
 )
 from parlacards.serializers.speech import SpeechSerializer
 from parlacards.serializers.quote import QuoteSerializer
@@ -476,6 +477,14 @@ class GroupDiscordView(CardView):
     '''
     thing = Organization
     card_serializer = GroupDiscordCardSerializer
+
+
+class RootOrganization(CardView):
+    '''
+    Basic information of root organization.
+    '''
+    thing = Organization
+    card_serializer = RootGroupBasicInfoCardSerializer
 
 
 class MandateVotes(CardView):

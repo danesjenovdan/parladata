@@ -12,6 +12,7 @@ urlpatterns = [
     path('misc/last-session/', LastSession.as_view()),
     path('misc/search/', SearchDropdown.as_view()),
     path('misc/menu-search/', SearchDropdown.as_view()),
+    path('misc/basic-information/', RootOrganization.as_view()),
 
     path('person/basic-information/', PersonInfo.as_view()),
     path('person/vocabulary-size/', VocabularySize.as_view()),
