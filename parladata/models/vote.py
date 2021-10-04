@@ -1,6 +1,7 @@
 from django.db import models
 
 from parladata.behaviors.models import Timestampable, Taggable
+from parladata.models.memberships import PersonMembership
 
 class Vote(Timestampable, Taggable):
     """Votings which taken place in parlament."""
@@ -36,8 +37,42 @@ class Vote(Timestampable, Taggable):
         help_text='The result of the vote'
     )
 
-    def get_option_counts(self):
-        annotated_ballots = self.ballots.all().values(
+    def get_option_counts(self, gov_side=None):
+        """
+        gov_side: is used for getting option counts for coalition and opposition.
+        gov_side options:
+            * None: all members
+            * 'coalition': coalition members
+            * 'opposition': members which's not in coalition
+        """
+        if gov_side == None:
+            ballots = self.ballots.all()
+        else:
+            start_time = self.motion.datetime
+            root_organization = self.motion.session.organizations.first()
+            coalition_membership = root_organization.organizationmemberships_children.valid_at(
+                start_time
+            ).filter(
+                member__tags__name='coalition'
+            ).prefetch_related('member').first()
+            if coalition_membership:
+                coalition = coalition_membership.member
+                groups = coalition.query_organization_members(start_time)
+                voter_ids = PersonMembership.objects.filter(
+                    role='voter',
+                    on_behalf_of__in=groups,
+                    organization=root_organization,
+                ).valid_at(start_time).values_list('member_id')
+            else:
+                return {}
+            if gov_side == 'coalition':
+                ballots = self.ballots.filter(personvoter_id__in=voter_ids)
+            elif gov_side == 'opposition':
+                ballots = self.ballots.exclude(personvoter_id__in=voter_ids)
+            else:
+                ballots = self.ballots.all()
+
+        annotated_ballots = ballots.values(
             'option'
         ).annotate(
             option_count=models.Count('option')
@@ -52,6 +87,26 @@ class Vote(Timestampable, Taggable):
         return {
             key: option_counts.get(key, 0) for
             key in ['absent', 'abstain', 'for', 'against'] # TODO get this from global var
+        }
+
+    def get_stats(self, gov_side=None):
+        """
+        gov_side: is used for getting statistics for coalition and opposition.
+        gov_side options:
+            * None: all members
+            * 'coalition': coalition members
+            * 'opposition': members which's not in coalition
+        """
+        option_counts = self.get_option_counts(gov_side)
+        if not option_counts:
+            return None
+        max_option = max(option_counts, key=option_counts.get)
+        max_percentage = option_counts.get(max_option, 0)
+        return {
+            'is_outlier': False, # TODO remove because this is disabled on the front for now.
+            'passed': self.motion.result,
+            'max_option_percentage': max_percentage,
+            'max_option': max_option
         }
 
     def __str__(self):
