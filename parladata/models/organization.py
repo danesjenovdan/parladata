@@ -98,12 +98,13 @@ class Organization(Timestampable, Taggable, Parsable, Sluggable, VersionableFiel
     # of all the memberships before a given date
     #
     # why? to query speeches only for the time
-    # when the speaker was a member of the organization
+    # when the speaker was a voter member of the organization
     def query_memberships_before(self, timestamp=datetime.now()):
         return PersonMembership.valid_before(
             timestamp
         ).filter(
-            organization=self
+            on_behalf_of=self,
+            role='voter'
         )
 
     def query_organization_members(self, timestamp=datetime.now()):

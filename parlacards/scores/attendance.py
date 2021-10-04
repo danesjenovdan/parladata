@@ -50,9 +50,6 @@ def calculate_group_vote_attendance(group, timestamp=datetime.now()):
     memberships = group.query_memberships_before(timestamp)
     member_ids = memberships.values_list('member_id', flat=True).distinct('member_id')
 
-    # TODO check if its bug: maybe member_ids = memberships.values_list('member_id', flat=True)
-    member_ids = group.query_members(timestamp).values_list('id', flat=True)
-
     ballots = Ballot.objects.none()
 
     for member_id in member_ids:
@@ -83,7 +80,9 @@ def calculate_group_vote_attendance(group, timestamp=datetime.now()):
 
         ballots = ballots.union(member_ballots.filter(q_ballot_objects))
 
-    ballot_options = ballots.values_list('option', flat=True)
+    # WORKAROUND because values_list of union returns distinct values
+    ballot_options = [ballot.option for ballot in ballots]
+
     option_counter = Counter(ballot_options)
 
     ballots_for = option_counter.get('for', 0)
