@@ -1,7 +1,12 @@
 from uk_stemmer import UkStemmer
 
 
-# initialize the lemmatizer class only once
+STOPWORDS = []
+
+def get_stopwords():
+    return STOPWORDS
+
+# initialize the stemmer class only once
 stemmer = UkStemmer()
 def lemmatize(token):
     return stemmer.stem_word(token)

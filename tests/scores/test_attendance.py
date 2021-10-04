@@ -29,7 +29,7 @@ def test_calculate_group_vote_attendance(
     last_group
 ):
     attendance = calculate_group_vote_attendance(first_group)
-    assert attendance == 75
+    assert attendance == 89.1891891891892
 
     attendance = calculate_group_vote_attendance(last_group)
-    assert attendance == 75.0
+    assert attendance == 97.05159705159706
