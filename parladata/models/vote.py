@@ -48,29 +48,34 @@ class Vote(Timestampable, Taggable):
         if gov_side == None:
             ballots = self.ballots.all()
         else:
-            start_time = self.motion.datetime
+            vote_start_time = self.motion.datetime
+
+            # root org is parliament/municipality
             root_organization = self.motion.session.organizations.first()
-            coalition_membership = root_organization.organizationmemberships_children.valid_at(
-                start_time
+            coalition_membership = root_organization.organizationmemberships_children.active_at(
+                vote_start_time
             ).filter(
                 member__tags__name='coalition'
             ).prefetch_related('member').first()
-            if coalition_membership:
-                coalition = coalition_membership.member
-                groups = coalition.query_organization_members(start_time)
-                voter_ids = PersonMembership.objects.filter(
-                    role='voter',
-                    on_behalf_of__in=groups,
-                    organization=root_organization,
-                ).valid_at(start_time).values_list('member_id')
-            else:
+
+            # if coalition is not set then return empty dict
+            if not coalition_membership:
                 return {}
-            if gov_side == 'coalition':
-                ballots = self.ballots.filter(personvoter_id__in=voter_ids)
-            elif gov_side == 'opposition':
-                ballots = self.ballots.exclude(personvoter_id__in=voter_ids)
             else:
-                ballots = self.ballots.all()
+                coalition = coalition_membership.member
+                coalition_groups = coalition.query_organization_members(vote_start_time)
+                coalition_voter_ids = PersonMembership.objects.filter(
+                    role='voter',
+                    on_behalf_of__in=coalition_groups,
+                    organization=root_organization,
+                ).active_at(vote_start_time).values_list('member_id')
+
+            if gov_side == 'coalition':
+                ballots = self.ballots.filter(personvoter_id__in=coalition_voter_ids)
+            elif gov_side == 'opposition':
+                ballots = self.ballots.exclude(personvoter_id__in=coalition_voter_ids)
+            else:
+                raise ValueError(f'gov_side can be None, coalition, opposition. You set it to {gov_side}')
 
         annotated_ballots = ballots.values(
             'option'
