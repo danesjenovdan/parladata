@@ -122,6 +122,7 @@ class LinkSerializer(TaggitSerializer, serializers.ModelSerializer):
 class MotionSerializer(serializers.ModelSerializer):
     vote = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
     links = LinkSerializer(many=True, read_only=True)
+    tags = TagListSerializerField(required=False)
     class Meta:
         model = Motion
         fields = '__all__'

@@ -77,7 +77,7 @@ class Command(BaseCommand):
                 'person_id': speech.speaker.id,
                 'start_time': speech.start_time.isoformat(),
                 'content': speech.content,
-                'term': speech.session.mandate.description,
+                'term': speech.session.mandate.id,
                 'party_id': maybe_party.id if maybe_party else None, # TODO rename to group_id
                 # 'term_id': speech.session.mandate.id
             })
@@ -85,6 +85,6 @@ class Command(BaseCommand):
             if (i > 0) and (i % 100 == 0):
                 commit_to_solr(self, output)
                 output = []
-        
+
         if bool(output):
             commit_to_solr(self, output)
