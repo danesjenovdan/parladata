@@ -139,6 +139,7 @@ class MotionAdmin(admin.ModelAdmin):
         'get_not',
         'link_to_vote',
         'datetime',
+        'tag_list',
     )
 
     list_editable = ('result',)
@@ -177,6 +178,9 @@ class MotionAdmin(admin.ModelAdmin):
 
     def session_name(self, obj):
         return obj.session.name if obj.session else ''
+
+    def tag_list(self, obj):
+        return u", ".join(o.name for o in obj.tags.all())
 
 
     link_to_vote.allow_tags = True

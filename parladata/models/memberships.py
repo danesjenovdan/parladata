@@ -9,6 +9,12 @@ from parladata.behaviors.models import Timestampable
 # TODO touch parents on save
 # TODO touch parents on delete
 
+class ActiveAtQuerySet(models.QuerySet):
+    def active_at(self, timestamp):
+        return self.filter(
+            models.Q(start_time__lte=timestamp) | models.Q(start_time__isnull=True),
+            models.Q(end_time__gte=timestamp) | models.Q(end_time__isnull=True)
+        )
 
 class Membership(Timestampable):
     start_time = models.DateTimeField(
@@ -24,6 +30,7 @@ class Membership(Timestampable):
     organization = models.ForeignKey(
         'Organization',
         blank=False, null=False,
+        related_name="%(class)ss_children",
         on_delete=models.CASCADE,
         help_text=_('The organization that the member belongs to.')
     )
@@ -35,6 +42,8 @@ class Membership(Timestampable):
         related_name="%(class)ss",
         on_delete=models.CASCADE
     )
+
+    objects = ActiveAtQuerySet.as_manager()
 
     def __str__(self):
         return f'Member: {self.member}, Org: {self.organization}, StartTime: {self.start_time}'
