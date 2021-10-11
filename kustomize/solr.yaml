@@ -22,7 +22,7 @@ spec:
         image: parlasolr # kustomize thing
         volumeMounts:
         - name: parlasolr-persistent-storage
-          mountPath: /opt/solr/server/solr/mycores
+          mountPath: /var/solr/data
         ports:
         - name: http
           containerPort: 8983
@@ -54,7 +54,8 @@ spec:
         command: ['sh', '-c', '/opt/docker-solr/scripts/precreate-core parlasearch']
         volumeMounts:
         - name: parlasolr-persistent-storage
-          mountPath: /opt/solr/server/solr/mycores
+          # /var/solr/data it's SOLR_HOME set in Docker file
+          mountPath: /var/solr/data
         resources:
           requests:
             memory: 1Gi
@@ -64,10 +65,10 @@ spec:
             cpu: 500m
       - name: link-config-1
         image: parlasolr
-        command: ['cp', '-f', '/parlasearch-conf/schema.xml', '/opt/solr/server/solr/mycores/parlasearch/conf/']
+        command: ['cp', '-f', '/parlasearch-conf/schema.xml', '/var/solr/data/parlasearch/conf/']
         volumeMounts:
         - name: parlasolr-persistent-storage
-          mountPath: /opt/solr/server/solr/mycores
+          mountPath: /var/solr/data
         resources:
           requests:
             memory: 200Mi
@@ -77,10 +78,10 @@ spec:
             cpu: 100m
       - name: link-config-2
         image: parlasolr
-        command: ['cp', '-f', '/parlasearch-conf/solrconfig.xml', '/opt/solr/server/solr/mycores/parlasearch/conf/']
+        command: ['cp', '-f', '/parlasearch-conf/solrconfig.xml', '/var/solr/data/parlasearch/conf/']
         volumeMounts:
         - name: parlasolr-persistent-storage
-          mountPath: /opt/solr/server/solr/mycores
+          mountPath: /var/solr/data
         resources:
           requests:
             memory: 200Mi
