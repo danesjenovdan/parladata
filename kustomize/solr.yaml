@@ -54,6 +54,7 @@ spec:
         command: ['sh', '-c', '/opt/docker-solr/scripts/precreate-core parlasearch']
         volumeMounts:
         - name: parlasolr-persistent-storage
+          # /var/solr/data it's SOLR_HOME set in Docker file
           mountPath: /var/solr/data
         resources:
           requests:
