@@ -1056,18 +1056,18 @@ class GroupDiscordCardSerializer(GroupScoreCardSerializer):
 class RootGroupBasicInfoCardSerializer(serializers.Serializer):
     name = VersionableSerializerField(property_model_name='OrganizationName')
     email = VersionableSerializerField(property_model_name='OrganizationEmail')
-    president = serializers.SerializerMethodField()
+    leader = serializers.SerializerMethodField()
     website = serializers.SerializerMethodField()
     budget = serializers.SerializerMethodField()
 
-    def get_president(self, obj):
+    def get_leader(self, obj):
         people = obj.query_members_by_role(role='leader')
         if people:
             return CommonPersonSerializer(
                 people.first(),
                 context=self.context).data
         else:
-            raise Exception(f'There`s not a president of this organization')
+            raise Exception(f'There`s not a leader of this organization')
 
     def get_website(self, obj):
         website = Link.objects.filter(organization=obj, tags__name='website')
