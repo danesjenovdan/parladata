@@ -1061,7 +1061,7 @@ class RootGroupBasicInfoCardSerializer(serializers.Serializer):
     budget = serializers.SerializerMethodField()
 
     def get_president(self, obj):
-        people = obj.query_members_by_role(role='president')
+        people = obj.query_members_by_role(role='leader')
         if people:
             return CommonPersonSerializer(
                 people.first(),

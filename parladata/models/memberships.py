@@ -58,6 +58,7 @@ class PersonMembership(Membership):
         ('voter', 'voter'),
         ('president', 'president'),
         ('deputy', 'deputy'),
+        ('leader', 'leader'),
     ]
 
     member = models.ForeignKey('Person',
