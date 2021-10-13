@@ -18,6 +18,7 @@ from parladata.models.question import Question
 from parladata.models.speech import Speech
 from parladata.models.organization import Organization
 from parladata.models.person import Person
+from parladata.models.link import Link
 
 from parlacards.models import (
     SessionTfidf,
@@ -61,6 +62,7 @@ from parlacards.serializers.common import (
     CommonOrganizationSerializer,
     MonthlyAttendanceSerializer,
     SessionScoreCardSerializer,
+    VersionableSerializerField
 )
 
 from parlacards.solr import parse_search_query_params, solr_select, get_votes_from_solr, get_legislation_from_solr
@@ -1049,6 +1051,31 @@ class GroupLeastVotesInCommonCardSerializer(GroupScoreCardSerializer):
 
 class GroupDiscordCardSerializer(GroupScoreCardSerializer):
     results = ScoreSerializerField(property_model_name='GroupDiscord')
+
+
+class RootGroupBasicInfoCardSerializer(serializers.Serializer):
+    name = VersionableSerializerField(property_model_name='OrganizationName')
+    email = VersionableSerializerField(property_model_name='OrganizationEmail')
+    president = serializers.SerializerMethodField()
+    website = serializers.SerializerMethodField()
+    budget = serializers.SerializerMethodField()
+
+    def get_president(self, obj):
+        people = obj.query_members_by_role(role='leader')
+        if people:
+            return CommonPersonSerializer(
+                people.first(),
+                context=self.context).data
+        else:
+            raise Exception(f'There`s not a president of this organization')
+
+    def get_website(self, obj):
+        website = Link.objects.filter(organization=obj, tags__name='website')
+        return website.first().url if website else None
+
+    def get_budget(self, obj):
+        budget = Link.objects.filter(organization=obj, tags__name='budget')
+        return budget.first().url if budget else None
 
 #
 # SESSION
