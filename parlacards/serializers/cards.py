@@ -130,6 +130,11 @@ class PersonBallotCardSerializer(PersonScoreCardSerializer):
         if text := self.context['GET'].get('text', None):
             ballots = ballots.filter(vote__motion__text__icontains=text)
 
+        # get options filter
+        if text := self.context['GET'].get('options', None):
+            options = text.split(',')
+            ballots = ballots.filter(option__in=options)
+
         requested_page, requested_per_page = parse_pagination_query_params(self.context['GET'])
         paginator = Paginator(ballots, requested_per_page)
         page = paginator.get_page(requested_page)
