@@ -33,7 +33,7 @@ from parlacards.models import (
 )
 
 from parlacards.serializers.person import PersonBasicInfoSerializer
-from parlacards.serializers.organization import OrganizationBasicInfoSerializer
+from parlacards.serializers.organization import OrganizationBasicInfoSerializer, RootOrganizationBasicInfoSerializer
 from parlacards.serializers.session import SessionSerializer
 from parlacards.serializers.legislation import LegislationSerializer, LegislationDetailSerializer
 from parlacards.serializers.ballot import BallotSerializer
@@ -61,8 +61,7 @@ from parlacards.serializers.common import (
     CommonPersonSerializer,
     CommonOrganizationSerializer,
     MonthlyAttendanceSerializer,
-    SessionScoreCardSerializer,
-    VersionableSerializerField
+    SessionScoreCardSerializer
 )
 
 from parlacards.solr import parse_search_query_params, solr_select, get_votes_from_solr, get_legislation_from_solr
@@ -1053,29 +1052,15 @@ class GroupDiscordCardSerializer(GroupScoreCardSerializer):
     results = ScoreSerializerField(property_model_name='GroupDiscord')
 
 
-class RootGroupBasicInfoCardSerializer(serializers.Serializer):
-    name = VersionableSerializerField(property_model_name='OrganizationName')
-    email = VersionableSerializerField(property_model_name='OrganizationEmail')
-    leader = serializers.SerializerMethodField()
-    website = serializers.SerializerMethodField()
-    budget = serializers.SerializerMethodField()
+class RootGroupBasicInfoCardSerializer(CardSerializer):
+    def get_results(self, obj):
+        # obj is the root organization
+        serializer = RootOrganizationBasicInfoSerializer(
+            obj,
+            context=self.context
+        )
+        return serializer.data
 
-    def get_leader(self, obj):
-        people = obj.query_members_by_role(role='leader')
-        if people:
-            return CommonPersonSerializer(
-                people.first(),
-                context=self.context).data
-        else:
-            raise Exception(f'There`s not a leader of this organization')
-
-    def get_website(self, obj):
-        website = Link.objects.filter(organization=obj, tags__name='website')
-        return website.first().url if website else None
-
-    def get_budget(self, obj):
-        budget = Link.objects.filter(organization=obj, tags__name='budget')
-        return budget.first().url if budget else None
 
 #
 # SESSION
@@ -1417,7 +1402,7 @@ class MandateVotesCardSerializer(CardSerializer):
                 motion__session__mandate=instance
             ).order_by('-timestamp')
             paginator = Paginator(votes, requested_per_page)
-    
+
         page = paginator.get_page(requested_page)
 
         # serialize votes
@@ -1479,34 +1464,41 @@ class MandateLegislationCardSerializer(CardSerializer):
 
 class SearchDropdownSerializer(CardSerializer):
     def get_results(self, obj):
-        # TODO THIS IS DISABLED SINCE ITS SUPER SLOW WITH LARGE NUMBER OF PEOPLE
-        # REENABLE WHEN WE FIX IT
-        return {
-            'people': [],
-            'groups': [],
-        }
-
         # obj is the mandate
 
-        # # TODO: get main org id more reliably
-        # playing_field = Organization.objects.first()
+        people_data = []
+        groups_data = []
 
-        # # TODO: add mayor
-        # people = playing_field.query_voters(self.context['date'])
-        # person_serializer = CommonPersonSerializer(
-        #     people,
-        #     many=True,
-        #     context=self.context
-        # )
+        text = self.context['GET'].get('text', None)
 
-        # groups = playing_field.query_parliamentary_groups(self.context['date'])
-        # group_serializer = CommonOrganizationSerializer(
-        #     groups,
-        #     many=True,
-        #     context=self.context
-        # )
+        if text and len(text) >= 2:
+            # TODO: get main org id more reliably
+            playing_field = Organization.objects.first()
 
-        # return {
-        #     'people': person_serializer.data,
-        #     'groups': group_serializer.data,
-        # }
+            # TODO: add mayor when we can get root org from playing field
+            people = playing_field.query_voters(self.context['date'])
+            # TODO: will this work correctly when people have multiple names?
+            people = people.filter(personname__value__icontains=text).order_by('personname__value', 'id')
+            person_serializer = CommonPersonSerializer(
+                people[:10],
+                many=True,
+                context=self.context
+            )
+            people_data = person_serializer.data
+
+            groups = playing_field.query_parliamentary_groups(self.context['date'])
+            # TODO: will this work correctly when groups have multiple names?
+            groups = groups.filter(
+                Q(organizationname__value__icontains=text) | Q(organizationacronym__value__icontains=text)
+            ).order_by('organizationname__value', 'id')
+            group_serializer = CommonOrganizationSerializer(
+                groups[:10],
+                many=True,
+                context=self.context
+            )
+            groups_data = group_serializer.data
+
+        return {
+            'people': people_data,
+            'groups': groups_data,
+        }
