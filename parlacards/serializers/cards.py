@@ -33,7 +33,7 @@ from parlacards.models import (
 )
 
 from parlacards.serializers.person import PersonBasicInfoSerializer
-from parlacards.serializers.organization import OrganizationBasicInfoSerializer
+from parlacards.serializers.organization import OrganizationBasicInfoSerializer, RootOrganizationBasicInfoSerializer
 from parlacards.serializers.session import SessionSerializer
 from parlacards.serializers.legislation import LegislationSerializer, LegislationDetailSerializer
 from parlacards.serializers.ballot import BallotSerializer
@@ -61,8 +61,7 @@ from parlacards.serializers.common import (
     CommonPersonSerializer,
     CommonOrganizationSerializer,
     MonthlyAttendanceSerializer,
-    SessionScoreCardSerializer,
-    VersionableSerializerField
+    SessionScoreCardSerializer
 )
 
 from parlacards.solr import parse_search_query_params, solr_select, get_votes_from_solr, get_legislation_from_solr
@@ -1053,29 +1052,15 @@ class GroupDiscordCardSerializer(GroupScoreCardSerializer):
     results = ScoreSerializerField(property_model_name='GroupDiscord')
 
 
-class RootGroupBasicInfoCardSerializer(serializers.Serializer):
-    name = VersionableSerializerField(property_model_name='OrganizationName')
-    email = VersionableSerializerField(property_model_name='OrganizationEmail')
-    leader = serializers.SerializerMethodField()
-    website = serializers.SerializerMethodField()
-    budget = serializers.SerializerMethodField()
+class RootGroupBasicInfoCardSerializer(CardSerializer):
+    def get_results(self, obj):
+        # obj is the root organization
+        serializer = RootOrganizationBasicInfoSerializer(
+            obj,
+            context=self.context
+        )
+        return serializer.data
 
-    def get_leader(self, obj):
-        people = obj.query_members_by_role(role='leader')
-        if people:
-            return CommonPersonSerializer(
-                people.first(),
-                context=self.context).data
-        else:
-            raise Exception(f'There`s not a leader of this organization')
-
-    def get_website(self, obj):
-        website = Link.objects.filter(organization=obj, tags__name='website')
-        return website.first().url if website else None
-
-    def get_budget(self, obj):
-        budget = Link.objects.filter(organization=obj, tags__name='budget')
-        return budget.first().url if budget else None
 
 #
 # SESSION
