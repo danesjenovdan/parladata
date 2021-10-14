@@ -1402,7 +1402,7 @@ class MandateVotesCardSerializer(CardSerializer):
                 motion__session__mandate=instance
             ).order_by('-timestamp')
             paginator = Paginator(votes, requested_per_page)
-    
+
         page = paginator.get_page(requested_page)
 
         # serialize votes
@@ -1464,34 +1464,41 @@ class MandateLegislationCardSerializer(CardSerializer):
 
 class SearchDropdownSerializer(CardSerializer):
     def get_results(self, obj):
-        # TODO THIS IS DISABLED SINCE ITS SUPER SLOW WITH LARGE NUMBER OF PEOPLE
-        # REENABLE WHEN WE FIX IT
-        return {
-            'people': [],
-            'groups': [],
-        }
-
         # obj is the mandate
 
-        # # TODO: get main org id more reliably
-        # playing_field = Organization.objects.first()
+        people_data = []
+        groups_data = []
 
-        # # TODO: add mayor
-        # people = playing_field.query_voters(self.context['date'])
-        # person_serializer = CommonPersonSerializer(
-        #     people,
-        #     many=True,
-        #     context=self.context
-        # )
+        text = self.context['GET'].get('text', None)
 
-        # groups = playing_field.query_parliamentary_groups(self.context['date'])
-        # group_serializer = CommonOrganizationSerializer(
-        #     groups,
-        #     many=True,
-        #     context=self.context
-        # )
+        if text and len(text) >= 2:
+            # TODO: get main org id more reliably
+            playing_field = Organization.objects.first()
 
-        # return {
-        #     'people': person_serializer.data,
-        #     'groups': group_serializer.data,
-        # }
+            # TODO: add mayor when we can get root org from playing field
+            people = playing_field.query_voters(self.context['date'])
+            # TODO: will this work correctly when people have multiple names?
+            people = people.filter(personname__value__icontains=text).order_by('personname__value', 'id')
+            person_serializer = CommonPersonSerializer(
+                people[:10],
+                many=True,
+                context=self.context
+            )
+            people_data = person_serializer.data
+
+            groups = playing_field.query_parliamentary_groups(self.context['date'])
+            # TODO: will this work correctly when groups have multiple names?
+            groups = groups.filter(
+                Q(organizationname__value__icontains=text) | Q(organizationacronym__value__icontains=text)
+            ).order_by('organizationname__value', 'id')
+            group_serializer = CommonOrganizationSerializer(
+                groups[:10],
+                many=True,
+                context=self.context
+            )
+            groups_data = group_serializer.data
+
+        return {
+            'people': people_data,
+            'groups': groups_data,
+        }
