@@ -12,7 +12,7 @@ from rest_framework import serializers
 from parladata.models.ballot import Ballot
 from parladata.models.vote import Vote
 from parladata.models.question import Question
-from parladata.models.memberships import PersonMembership
+from parladata.models.memberships import OrganizationMembership, PersonMembership
 from parladata.models.legislation import Law
 from parladata.models.question import Question
 from parladata.models.speech import Speech
@@ -533,13 +533,22 @@ class VotersCardSerializer(CardSerializer):
         return None
 
     def to_representation(self, instance):
+        # instance is the mandate
         parent_data = super().to_representation(instance)
 
-        # instance is the organization
-        people = instance.query_voters(self.context['date']).order_by(
+        membership = OrganizationMembership.valid_at(self.context['date']).filter(mandate=instance).first()
+        if not membership:
+            raise Exception(f'Root organization membership for this mandate does not exist')
+        playing_field = membership.member
+
+        people = playing_field.query_voters(self.context['date']).order_by(
             'personname__value', # TODO: will this work correctly when people have multiple names?
             'id' # fallback ordering
         )
+
+        if text := self.context['GET'].get('text', None):
+            # TODO: will this work correctly when people have multiple names?
+            people = people.filter(personname__value__icontains=text).order_by('personname__value', 'id')
 
         # TODO check if sorting of analyses is optimized enough
 
