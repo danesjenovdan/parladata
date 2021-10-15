@@ -1,6 +1,7 @@
 from datetime import datetime
 
 from django.db import models
+from django.db.models import Q
 from django.utils.translation import ugettext_lazy as _
 
 from parladata.behaviors.models import Timestampable
@@ -12,8 +13,8 @@ from parladata.behaviors.models import Timestampable
 class ActiveAtQuerySet(models.QuerySet):
     def active_at(self, timestamp):
         return self.filter(
-            models.Q(start_time__lte=timestamp) | models.Q(start_time__isnull=True),
-            models.Q(end_time__gte=timestamp) | models.Q(end_time__isnull=True)
+            Q(start_time__lte=timestamp) | Q(start_time__isnull=True),
+            Q(end_time__gte=timestamp) | Q(end_time__isnull=True)
         )
 
 class Membership(Timestampable):
@@ -85,14 +86,14 @@ class PersonMembership(Membership):
     @staticmethod
     def valid_at(timestamp):
         return PersonMembership.objects.filter(
-            models.Q(start_time__lte=timestamp) | models.Q(start_time__isnull=True),
-            models.Q(end_time__gte=timestamp) | models.Q(end_time__isnull=True),
+            Q(start_time__lte=timestamp) | Q(start_time__isnull=True),
+            Q(end_time__gte=timestamp) | Q(end_time__isnull=True),
         )
 
     @staticmethod
     def valid_before(timestamp):
         return PersonMembership.objects.filter(
-            models.Q(start_time__lte=timestamp) | models.Q(start_time__isnull=True)
+            Q(start_time__lte=timestamp) | Q(start_time__isnull=True)
         )
 
 
@@ -107,6 +108,6 @@ class OrganizationMembership(Membership):
     @staticmethod
     def valid_at(date=datetime.now()):
         return OrganizationMembership.objects.filter(
-            models.Q(start_time__lte=date) | models.Q(start_time__isnull=True),
-            models.Q(end_time__gte=date) | models.Q(end_time__isnull=True),
+            Q(start_time__lte=date) | Q(start_time__isnull=True),
+            Q(end_time__gte=date) | Q(end_time__isnull=True),
         )
