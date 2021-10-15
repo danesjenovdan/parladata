@@ -483,7 +483,7 @@ class RootOrganization(CardView):
     '''
     Basic information of root organization.
     '''
-    thing = Organization
+    thing = Mandate
     card_serializer = RootGroupBasicInfoCardSerializer
 
 

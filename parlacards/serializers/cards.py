@@ -1068,9 +1068,14 @@ class GroupDiscordCardSerializer(GroupScoreCardSerializer):
 
 class RootGroupBasicInfoCardSerializer(CardSerializer):
     def get_results(self, obj):
-        # obj is the root organization
+        # obj is the mandate
+        membership = OrganizationMembership.valid_at(self.context['date']).filter(mandate=obj).first()
+        if not membership:
+            raise Exception(f'Root organization membership for this mandate does not exist')
+        root_organization = membership.organization
+
         serializer = RootOrganizationBasicInfoSerializer(
-            obj,
+            root_organization,
             context=self.context
         )
         return serializer.data
@@ -1479,12 +1484,11 @@ class MandateLegislationCardSerializer(CardSerializer):
 class SearchDropdownSerializer(CardSerializer):
     def get_results(self, obj):
         # obj is the mandate
-
         membership = OrganizationMembership.valid_at(self.context['date']).filter(mandate=obj).first()
         if not membership:
             raise Exception(f'Root organization membership for this mandate does not exist')
         playing_field = membership.member
-        root_org = membership.organization
+        root_organization = membership.organization
 
         people_data = []
         groups_data = []
@@ -1492,7 +1496,7 @@ class SearchDropdownSerializer(CardSerializer):
         text = self.context['GET'].get('text', None)
 
         if text and len(text) >= 2:
-            leader = root_org.query_members_by_role('leader', self.context['date']).order_by('personname__value', 'id')
+            leader = root_organization.query_members_by_role('leader', self.context['date']).order_by('personname__value', 'id')
             voters = playing_field.query_voters(self.context['date']).order_by('personname__value', 'id')
 
             # TODO: will this work correctly when people have multiple names?
