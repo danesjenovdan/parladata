@@ -1480,19 +1480,27 @@ class SearchDropdownSerializer(CardSerializer):
     def get_results(self, obj):
         # obj is the mandate
 
+        membership = OrganizationMembership.valid_at(self.context['date']).filter(mandate=obj).first()
+        if not membership:
+            raise Exception(f'Root organization membership for this mandate does not exist')
+        playing_field = membership.member
+        root_org = membership.organization
+
         people_data = []
         groups_data = []
 
         text = self.context['GET'].get('text', None)
 
         if text and len(text) >= 2:
-            # TODO: get main org id more reliably
-            playing_field = Organization.objects.first()
+            leader = root_org.query_members_by_role('leader', self.context['date']).order_by('personname__value', 'id')
+            voters = playing_field.query_voters(self.context['date']).order_by('personname__value', 'id')
 
-            # TODO: add mayor when we can get root org from playing field
-            people = playing_field.query_voters(self.context['date'])
             # TODO: will this work correctly when people have multiple names?
-            people = people.filter(personname__value__icontains=text).order_by('personname__value', 'id')
+            leader = leader.filter(personname__value__icontains=text)
+            voters = voters.filter(personname__value__icontains=text)
+
+            people = leader.union(voters)
+
             person_serializer = CommonPersonSerializer(
                 people[:10],
                 many=True,
