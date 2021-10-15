@@ -150,7 +150,7 @@ class Voters(CardView):
     '''
     Show a list of all MPs belonging to an organization.
     '''
-    thing = Organization
+    thing = Mandate
     card_serializer = VotersCardSerializer
 
 
@@ -483,7 +483,7 @@ class RootOrganization(CardView):
     '''
     Basic information of root organization.
     '''
-    thing = Organization
+    thing = Mandate
     card_serializer = RootGroupBasicInfoCardSerializer
 
 

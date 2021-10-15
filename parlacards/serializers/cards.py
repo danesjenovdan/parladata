@@ -12,7 +12,7 @@ from rest_framework import serializers
 from parladata.models.ballot import Ballot
 from parladata.models.vote import Vote
 from parladata.models.question import Question
-from parladata.models.memberships import PersonMembership
+from parladata.models.memberships import OrganizationMembership, PersonMembership
 from parladata.models.legislation import Law
 from parladata.models.question import Question
 from parladata.models.speech import Speech
@@ -533,13 +533,22 @@ class VotersCardSerializer(CardSerializer):
         return None
 
     def to_representation(self, instance):
+        # instance is the mandate
         parent_data = super().to_representation(instance)
 
-        # instance is the organization
-        people = instance.query_voters(self.context['date']).order_by(
+        membership = OrganizationMembership.valid_at(self.context['date']).filter(mandate=instance).first()
+        if not membership:
+            raise Exception(f'Root organization membership for this mandate does not exist')
+        playing_field = membership.member
+
+        people = playing_field.query_voters(self.context['date']).order_by(
             'personname__value', # TODO: will this work correctly when people have multiple names?
             'id' # fallback ordering
         )
+
+        if text := self.context['GET'].get('text', None):
+            # TODO: will this work correctly when people have multiple names?
+            people = people.filter(personname__value__icontains=text).order_by('personname__value', 'id')
 
         # TODO check if sorting of analyses is optimized enough
 
@@ -1059,9 +1068,14 @@ class GroupDiscordCardSerializer(GroupScoreCardSerializer):
 
 class RootGroupBasicInfoCardSerializer(CardSerializer):
     def get_results(self, obj):
-        # obj is the root organization
+        # obj is the mandate
+        membership = OrganizationMembership.valid_at(self.context['date']).filter(mandate=obj).first()
+        if not membership:
+            raise Exception(f'Root organization membership for this mandate does not exist')
+        root_organization = membership.organization
+
         serializer = RootOrganizationBasicInfoSerializer(
-            obj,
+            root_organization,
             context=self.context
         )
         return serializer.data
@@ -1470,6 +1484,11 @@ class MandateLegislationCardSerializer(CardSerializer):
 class SearchDropdownSerializer(CardSerializer):
     def get_results(self, obj):
         # obj is the mandate
+        membership = OrganizationMembership.valid_at(self.context['date']).filter(mandate=obj).first()
+        if not membership:
+            raise Exception(f'Root organization membership for this mandate does not exist')
+        playing_field = membership.member
+        root_organization = membership.organization
 
         people_data = []
         groups_data = []
@@ -1477,13 +1496,15 @@ class SearchDropdownSerializer(CardSerializer):
         text = self.context['GET'].get('text', None)
 
         if text and len(text) >= 2:
-            # TODO: get main org id more reliably
-            playing_field = Organization.objects.first()
+            leader = root_organization.query_members_by_role('leader', self.context['date']).order_by('personname__value', 'id')
+            voters = playing_field.query_voters(self.context['date']).order_by('personname__value', 'id')
 
-            # TODO: add mayor when we can get root org from playing field
-            people = playing_field.query_voters(self.context['date'])
             # TODO: will this work correctly when people have multiple names?
-            people = people.filter(personname__value__icontains=text).order_by('personname__value', 'id')
+            leader = leader.filter(personname__value__icontains=text)
+            voters = voters.filter(personname__value__icontains=text)
+
+            people = leader.union(voters)
+
             person_serializer = CommonPersonSerializer(
                 people[:10],
                 many=True,
