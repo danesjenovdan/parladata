@@ -140,12 +140,6 @@ class PersonMembershipSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class LawSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Law
-        fields = '__all__'
-
-
 class QuestionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Question
@@ -183,6 +177,37 @@ class OrganizationMembershipSerializer(serializers.ModelSerializer):
 class MandateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Mandate
+        fields = '__all__'
+
+
+class ProcedureSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Procedure
+        fields = '__all__'
+
+
+class ProcedurePhaseSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProcedurePhase
+        fields = '__all__'
+
+
+class LegislationConsiderationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = LegislationConsideration
+        fields = '__all__'
+
+
+class LegislationStatusSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = LegislationStatus
+        fields = ['id', 'name']
+
+
+class LawSerializer(serializers.ModelSerializer):
+    status = LegislationStatusSerializer()
+    class Meta:
+        model = Law
         fields = '__all__'
 
 

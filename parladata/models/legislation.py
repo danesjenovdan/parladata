@@ -45,10 +45,11 @@ class Law(Timestampable, Taggable):
                                on_delete=models.CASCADE,
                                help_text='Working body obj')
 
-    status = models.TextField(
-        blank=True, null=True,
-        choices=STATUSES,
-        help_text='Status of law'
+    status = models.ForeignKey(
+        'LegislationStatus',
+        on_delete=models.CASCADE,
+        blank=True,
+        null=True,
     )
 
     passed = models.BooleanField(blank=True, null=True)
@@ -71,8 +72,15 @@ class Law(Timestampable, Taggable):
                                null=True,
                                help_text='Date of the law.')
 
+    considerations = models.ManyToManyField(
+        'ProcedurePhase',
+        through='LegislationConsideration',
+        blank=True,
+        help_text='Consideration of legislation'
+    )
+
     def __str__(self):
-        return (self.session.name if self.session else '') + ' -> ' + self.text
+        return f'{self.session.name if self.session else ""} -> {self.text}'
 
     @property
     def has_votes(self):
@@ -82,3 +90,57 @@ class Law(Timestampable, Taggable):
     @property
     def has_abstract(self):
         return bool(self.abstract)
+
+
+class Procedure(Timestampable):
+    type = models.TextField(
+        blank=True,
+        null=True,
+        help_text='Name of procedure type'
+    )
+
+
+class ProcedurePhase(Timestampable):
+    name = models.TextField(
+        blank=True,
+        null=True,
+        help_text='Name of procedure phase'
+    )
+    procedure_phase = models.ForeignKey(
+        'Procedure',
+        on_delete=models.CASCADE,
+    )
+
+
+class LegislationConsideration(Timestampable):
+    timestamp = models.DateTimeField(
+        blank=True,
+        null=True,
+        help_text='Date of the law.'
+    )
+    organization = models.ForeignKey(
+        'Organization',
+        blank=True,
+        null=True,
+        on_delete=models.CASCADE,
+        help_text='Organization in which consideration happened'
+    )
+    legislation = models.ForeignKey(
+        'Law',
+        on_delete=models.CASCADE
+    )
+    procedure_phase = models.ForeignKey(
+        'ProcedurePhase',
+        on_delete=models.CASCADE
+    )
+
+
+class LegislationStatus(Timestampable):
+    name = models.TextField(
+        blank=True,
+        null=True,
+        help_text='Status of legisaltion'
+    )
+
+    def __str__(self):
+        return self.name
