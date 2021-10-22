@@ -19,6 +19,9 @@ class LegislationSerializer(CommonSerializer):
     has_abstract = serializers.BooleanField()
     timestamp = serializers.DateTimeField()
 
+    def get_status(self, obj):
+        return obj.status.name
+
 
 class LegislationDetailSerializer(LegislationSerializer):
     votes = serializers.SerializerMethodField()
