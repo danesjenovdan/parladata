@@ -8,6 +8,7 @@ from django.urls import reverse
 from parladata.models import *
 from parladata.models.task import Task
 from parladata.models.versionable_properties import *
+from parladata.models.common import *
 
 from collections import Counter
 
@@ -207,14 +208,15 @@ class MotionAdmin(admin.ModelAdmin):
         return results
 
 
-
-
-
 class ContactAdmin(admin.ModelAdmin):
     list_display = ('id', 'value')
 
     search_fields = ['value']
 
+
+class EducationLevelAdmin(admin.ModelAdmin):
+    list_display = ('id', 'text')
+    search_fields = ['text']
 
 # class PersonEducation(Person):
 #     class Meta:
@@ -254,3 +256,4 @@ admin.site.register(Law, LawAdmin)
 admin.site.register(OrganizationMembership)
 admin.site.register(Mandate, MandateAdmin)
 admin.site.register(Document, DocumentAdmin)
+admin.site.register(EducationLevel, EducationLevelAdmin)
