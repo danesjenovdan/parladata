@@ -106,7 +106,7 @@ class ProcedurePhase(Timestampable):
         null=True,
         help_text='Name of procedure phase'
     )
-    procedure_phase = models.ForeignKey(
+    procedure = models.ForeignKey(
         'Procedure',
         on_delete=models.CASCADE,
     )
