@@ -1,4 +1,5 @@
 from django.db import models
+from parladata.behaviors.models import Timestampable
 
 # TODO razmisli kako bomo to uredili
 # želimo imeti možnost, da je v eni bazi
@@ -12,3 +13,10 @@ class Mandate(models.Model):
 
     def __str__(self):
         return self.description
+
+
+class EducationLevel(Timestampable):
+    text = models.TextField()
+
+    def __str__(self):
+        return self.text
