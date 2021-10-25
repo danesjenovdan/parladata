@@ -27,7 +27,24 @@ class PersonEducation(PersonVersionableProperty):
     pass
 
 class PersonEducationLevel(PersonVersionableProperty):
-    value = models.IntegerField(blank=False, null=False)
+    EDUCATION_LEVELS = [
+        ('1', '1'),
+        ('2', '2'),
+        ('3', '3'),
+        ('4', '4'),
+        ('5', '5'),
+        ('6/1', '6/1'),
+        ('6/2', '6/2'),
+        ('7', '7'),
+        ('8/1', '8/1'),
+        ('8/2', '8/2')
+
+    ]
+    value = models.TextField(
+        blank=False,
+        null=False,
+        choices=EDUCATION_LEVELS
+    )
 
 class PersonNumberOfMandates(PersonVersionableProperty):
     value = models.IntegerField(blank=False, null=False)
