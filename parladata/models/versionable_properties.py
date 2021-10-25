@@ -32,7 +32,9 @@ class PersonEducationLevel(PersonVersionableProperty):
     education_level = models.ForeignKey(
         EducationLevel,
         verbose_name="Education level",
-        on_delete=models.CASCADE
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True
     )
 
     @property
