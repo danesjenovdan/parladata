@@ -31,6 +31,7 @@ django-storages
 pylibmc
 martor
 django-colorfield
+django-admin-sortable2
 
 # tagger/lemmatizer
 sklearn
