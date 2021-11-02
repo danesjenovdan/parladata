@@ -17,6 +17,10 @@ class Mandate(models.Model):
 
 class EducationLevel(Timestampable):
     text = models.TextField()
+    order = models.PositiveIntegerField(default=1)
 
     def __str__(self):
         return self.text
+
+    class Meta(object):
+        ordering = ['order']
