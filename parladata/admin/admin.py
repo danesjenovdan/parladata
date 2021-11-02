@@ -5,6 +5,8 @@ from django.db.models import Q
 from django import forms
 from django.urls import reverse
 
+from adminsortable2.admin import SortableAdminMixin
+
 from parladata.models import *
 from parladata.models.task import Task
 from parladata.models.versionable_properties import *
@@ -214,7 +216,8 @@ class ContactAdmin(admin.ModelAdmin):
     search_fields = ['value']
 
 
-class EducationLevelAdmin(admin.ModelAdmin):
+class EducationLevelAdmin(SortableAdminMixin, admin.ModelAdmin):
+    ordering = ('order',)
     list_display = ('id', 'text')
     search_fields = ['text']
 

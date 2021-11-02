@@ -31,6 +31,7 @@ INSTALLED_APPS = (
     'debug_toolbar',
     'martor',
     'colorfield',
+    'adminsortable2',
 )
 
 """MIDDLEWARE = (
