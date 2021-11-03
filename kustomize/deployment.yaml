@@ -3,20 +3,20 @@ kind: Deployment
 metadata:
   name: parladata-deployment
   labels:
-    app: parladata
+    app: parladata-hrastnik
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: parladata
+      app: parladata-hrastnik
   template:
     metadata:
       labels:
-        app: parladata
+        app: parladata-hrastnik
     spec:
       initContainers:
         - name: collectstatic
-          image: parladata
+          image: parladata-hrastnik
           command:
             - python
             - manage.py
@@ -36,7 +36,7 @@ spec:
               memory: 1Gi
               cpu: 200m
         - name: migrate
-          image: parladata
+          image: parladata-hrastnik
           command:
             - python
             - manage.py
@@ -55,8 +55,8 @@ spec:
               memory: 1Gi
               cpu: 200m
       containers:
-        - name: parladata
-          image: parladata
+        - name: parladata-hrastnik
+          image: parladata-hrastnik
           command:
             - gunicorn
             - parladata_project.wsgi:application
