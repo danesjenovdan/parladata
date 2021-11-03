@@ -7,4 +7,4 @@ resources:
 images:
   - name: parlasolr-hrastnik
     newName: rg.fr-par.scw.cloud/djnd/parlasolr-hrastnik
-    newTag: '7ec4b65300064ecf29b49e5b920ab4e3c2985bc0'
+    newTag: 'ab4acdf7e190d0c8116d24e2e87cf261846f38aa'
