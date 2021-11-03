@@ -1,10 +1,10 @@
 
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
-namespace: parlameter
+namespace: parlameter-hrastnik
 resources:
   - solr.yaml
 images:
   - name: parlasolr
-    newName: rg.fr-par.scw.cloud/djnd/parlasolr
-    newTag: 'b8e243ad15dba3009e3537b78f41dd56a77fb35b'
+    newName: rg.fr-par.scw.cloud/djnd/parlasolr-hrastnik
+    newTag: 'latest'
