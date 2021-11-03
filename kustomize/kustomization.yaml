@@ -5,6 +5,6 @@ namespace: parlameter-hrastnik
 resources:
   - solr.yaml
 images:
-  - name: parlasolr
+  - name: parlasolr-hrastnik
     newName: rg.fr-par.scw.cloud/djnd/parlasolr-hrastnik
     newTag: '7ec4b65300064ecf29b49e5b920ab4e3c2985bc0'
