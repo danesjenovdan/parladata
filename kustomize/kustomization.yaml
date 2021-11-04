@@ -1,10 +1,10 @@
 
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
-namespace: parlameter-hrastnik
+namespace: parlameter-lendava
 resources:
   - solr.yaml
 images:
-  - name: parlasolr-hrastnik
-    newName: rg.fr-par.scw.cloud/djnd/parlasolr-hrastnik
+  - name: parlasolr-lendava
+    newName: rg.fr-par.scw.cloud/djnd/parlasolr-lendava
     newTag: 'ab4acdf7e190d0c8116d24e2e87cf261846f38aa'

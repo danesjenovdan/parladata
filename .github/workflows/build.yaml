@@ -2,7 +2,7 @@ name: Publish Docker images
 on:
   push:
     branches:
-      - 'hrastnik'
+      - 'lendava'
 jobs:
   push_to_registry:
     name: Push Docker image to Docker Hub
@@ -22,14 +22,14 @@ jobs:
           username: nologin
           password: ${{ secrets.SCW_SECRET_TOKEN }}
       -
-        name: Build and push SOLR HRASTNIK
+        name: Build and push SOLR LENDAVA
         uses: docker/build-push-action@v2
         with:
           context: ./solr
           push: true
           tags: |
-            rg.fr-par.scw.cloud/djnd/parlasolr-hrastnik:${{ github.sha }}
-            rg.fr-par.scw.cloud/djnd/parlasolr-hrastnik:latest
+            rg.fr-par.scw.cloud/djnd/parlasolr-lendava:${{ github.sha }}
+            rg.fr-par.scw.cloud/djnd/parlasolr-lendava:latest
       -
         name: Update image versions in kustomize/kustomization.yaml
         run: |
