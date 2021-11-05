@@ -7,3 +7,4 @@ import parladata.admin.agenda_item
 import parladata.admin.vote
 import parladata.admin.motion
 import parladata.admin.memberships
+import parladata.admin.media
