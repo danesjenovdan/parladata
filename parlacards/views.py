@@ -16,8 +16,10 @@ from parladata.models.legislation import Law
 from parlacards.models import Quote
 
 from parlacards.serializers.cards import (
+    GroupMediaReportsCardSerializer,
     PersonCardSerializer,
     GroupMembersCardSerializer,
+    PersonMediaReportsCardSerializer,
     SearchDropdownSerializer,
     SessionSpeechesCardSerializer,
     SessionTfidfCardSerializer,
@@ -547,3 +549,19 @@ class SearchDropdown(CardView):
     '''
     thing = Mandate
     card_serializer = SearchDropdownSerializer
+
+
+class PersonMediaReportsView(CardView):
+    '''
+    A person's speeches.
+    '''
+    thing = Person
+    card_serializer = PersonMediaReportsCardSerializer
+
+
+class GroupMediaReportsView(CardView):
+    '''
+    A person's speeches.
+    '''
+    thing = Organization
+    card_serializer = GroupMediaReportsCardSerializer

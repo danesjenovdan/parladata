@@ -31,6 +31,7 @@ urlpatterns = [
     path('person/number-of-spoken-words/', PersonNumberOfSpokenWords.as_view()),
     path('person/tfidf/', PersonTfidfView.as_view()),
     path('person/speeches/', PersonSpeechesView.as_view()),
+    path('person/media-reports/', PersonMediaReportsView.as_view()),
 
     path('group/basic-information/', GroupInfo.as_view()),
     path('group/members/', GroupMembers.as_view()),
@@ -47,6 +48,7 @@ urlpatterns = [
     path('group/style-scores/', GroupStyleScores.as_view()),
     path('group/speeches/', GroupSpeechesView.as_view()),
     path('group/discord/', GroupDiscordView.as_view()),
+    path('group/media-reports/', GroupMediaReportsView.as_view()),
 
     path('session/legislation/', SessionLegislation.as_view()),
     path('session/speeches/', SessionSpeeches.as_view()),
