@@ -541,17 +541,21 @@ class VotersCardSerializer(CardSerializer):
             raise Exception(f'Root organization membership for this mandate does not exist')
         playing_field = membership.member
 
-        people = playing_field.query_voters(self.context['date']).order_by(
-            'personname__value', # TODO: will this work correctly when people have multiple names?
-            'id' # fallback ordering
-        )
+        people = playing_field.query_voters(self.context['date'])
 
         if text := self.context['GET'].get('text', None):
             # TODO: will this work correctly when people have multiple names?
-            people = people.filter(personname__value__icontains=text).order_by('personname__value', 'id')
+            people = people.filter(personname__value__icontains=text)
 
-        # TODO check if sorting of analyses is optimized enough
+        # get order from url
+        order_by = self.context['GET'].get('order_by', 'name')
+        order_reverse = False
 
+        if order_by.startswith('-'):
+            order_by = order_by[1:]
+            order_reverse = True
+
+        # get correct score model based on key
         order_mapping = {
             'speeches_per_session': 'PersonAvgSpeechesPerSession',
             'number_of_questions': 'PersonNumberOfQuestions',
@@ -560,30 +564,28 @@ class VotersCardSerializer(CardSerializer):
             'spoken_words': 'PersonNumberOfSpokenWords',
             'vocabulary_size': 'PersonVocabularySize',
         }
-        order_by = self.context['GET'].get('order_by', 'name')
         property_model_name = order_mapping.get(order_by, None)
-        if order_by == 'name' or not property_model_name:
-            ordered_people = people
+
+        # sort by name
+        if not property_model_name:
+            ordered_people = people.order_by(
+                # TODO: will this work correctly when people have multiple names?
+                '-personname__value' if order_reverse else 'personname__value',
+                'id',
+            )
+        # sort by score model value
         else:
+            # TODO check if sorting of analyses is optimized enough
             scores_module = import_module('parlacards.models')
             ScoreModel = getattr(scores_module, property_model_name)
 
-            latest_scores = ScoreModel.objects.filter(
-                person__in=people
-            ).order_by(
-                'person',
-                '-timestamp'
-            ).distinct(
-                'person'
-            ).values(
-                'person',
-                'value'
-            )
+            latest_scores = ScoreModel.objects.filter(person__in=people) \
+                .order_by('person', '-timestamp') \
+                .distinct('person') \
+                .values('person', 'value')
 
             people_by_id = {person.id: person for person in people}
-
-            sorted_scores = sorted(list(latest_scores), key=lambda x: x['value'], reverse=True)
-
+            sorted_scores = sorted(list(latest_scores), key=lambda x: x['value'], reverse=order_reverse)
             ordered_people = [people_by_id[score['person']] for score in sorted_scores]
 
         requested_page, requested_per_page = parse_pagination_query_params(self.context['GET'])
