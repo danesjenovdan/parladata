@@ -66,6 +66,7 @@ from parlacards.serializers.common import (
 
 from parlacards.solr import parse_search_query_params, solr_select, get_votes_from_solr, get_legislation_from_solr
 from parlacards.pagination import SolrPaginator, pagination_response_data, parse_pagination_query_params
+from parlacards.utils import get_organizations_from_mandate
 
 #
 # PERSON
@@ -528,6 +529,35 @@ class PersonAnalysesSerializer(CommonPersonSerializer):
 
 
 class VotersCardSerializer(CardSerializer):
+    groups = serializers.SerializerMethodField()
+    working_bodies = serializers.SerializerMethodField()
+
+    def get_groups(self, obj):
+        # obj is the mandate
+        root_organization, playing_field = get_organizations_from_mandate(obj, self.context['date'])
+
+        organizations = playing_field.query_parliamentary_groups(self.context['date'])
+        organization_serializer = CommonOrganizationSerializer(
+            organizations,
+            context=self.context,
+            many=True,
+        )
+        return organization_serializer.data
+
+    def get_working_bodies(self, obj):
+        # obj is the mandate
+        memberships = PersonMembership.valid_at(self.context['date'])
+        organizations = Organization.objects.filter(
+            id__in=memberships.values_list('organization'),
+            classification__in=('committee', 'commision', 'other'), # TODO: add other classifications?
+        )
+        organization_serializer = CommonOrganizationSerializer(
+            organizations,
+            context=self.context,
+            many=True,
+        )
+        return organization_serializer.data
+
     def get_results(self, obj):
         # this is implemeted in to_representation for pagination
         return None
@@ -536,10 +566,7 @@ class VotersCardSerializer(CardSerializer):
         # instance is the mandate
         parent_data = super().to_representation(instance)
 
-        membership = OrganizationMembership.valid_at(self.context['date']).filter(mandate=instance).first()
-        if not membership:
-            raise Exception(f'Root organization membership for this mandate does not exist')
-        playing_field = membership.member
+        root_organization, playing_field = get_organizations_from_mandate(instance, self.context['date'])
 
         people = playing_field.query_voters(self.context['date'])
 
@@ -1071,10 +1098,7 @@ class GroupDiscordCardSerializer(GroupScoreCardSerializer):
 class RootGroupBasicInfoCardSerializer(CardSerializer):
     def get_results(self, obj):
         # obj is the mandate
-        membership = OrganizationMembership.valid_at(self.context['date']).filter(mandate=obj).first()
-        if not membership:
-            raise Exception(f'Root organization membership for this mandate does not exist')
-        root_organization = membership.organization
+        root_organization, playing_field = get_organizations_from_mandate(obj, self.context['date'])
 
         serializer = RootOrganizationBasicInfoSerializer(
             root_organization,
@@ -1486,11 +1510,7 @@ class MandateLegislationCardSerializer(CardSerializer):
 class SearchDropdownSerializer(CardSerializer):
     def get_results(self, obj):
         # obj is the mandate
-        membership = OrganizationMembership.valid_at(self.context['date']).filter(mandate=obj).first()
-        if not membership:
-            raise Exception(f'Root organization membership for this mandate does not exist')
-        playing_field = membership.member
-        root_organization = membership.organization
+        root_organization, playing_field = get_organizations_from_mandate(obj, self.context['date'])
 
         people_data = []
         groups_data = []
