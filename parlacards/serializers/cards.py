@@ -67,7 +67,7 @@ from parlacards.serializers.common import (
 
 from parlacards.solr import parse_search_query_params, solr_select, get_votes_from_solr, get_legislation_from_solr
 from parlacards.pagination import SolrPaginator, pagination_response_data, parse_pagination_query_params
-from parlacards.utils import get_organizations_from_mandate
+from parlacards.utils import get_organizations_from_mandate, local_collator
 
 #
 # PERSON
@@ -563,29 +563,24 @@ class VotersCardSerializer(CardSerializer):
         # this is implemeted in to_representation for pagination
         return None
 
-    def to_representation(self, instance):
-        # instance is the mandate
-        parent_data = super().to_representation(instance)
-
-        root_organization, playing_field = get_organizations_from_mandate(instance, self.context['date'])
-
+    def get_filtered_and_ordered_people(self, playing_field, timestamp):
         group_ids = list(filter(lambda x: x.isdigit(), self.context['GET'].get('groups', '').split(',')))
         working_body_ids = list(filter(lambda x: x.isdigit(), self.context['GET'].get('working_bodies', '').split(',')))
         preferred_pronoun = self.context['GET'].get('preferred_pronoun', None)
 
-        people = playing_field.query_voters(self.context['date'])
+        people = playing_field.query_voters(timestamp)
 
         if preferred_pronoun is not None:
             member_ids = PersonPreferredPronoun.objects.filter(
                 Q(owner__in=people),
-                Q(valid_from__lte=self.context['date']) | Q(valid_from__isnull=True),
-                Q(valid_to__gte=self.context['date']) | Q(valid_to__isnull=True),
+                Q(valid_from__lte=timestamp) | Q(valid_from__isnull=True),
+                Q(valid_to__gte=timestamp) | Q(valid_to__isnull=True),
                 Q(value=preferred_pronoun)
             ).values_list('owner', flat=True)
             people = people.filter(id__in=member_ids)
 
         if len(group_ids):
-            member_ids = PersonMembership.valid_at(self.context['date']).filter(
+            member_ids = PersonMembership.valid_at(timestamp).filter(
                 organization=playing_field,
                 role='voter',
                 member_id__in=people,
@@ -594,7 +589,7 @@ class VotersCardSerializer(CardSerializer):
             people = people.filter(id__in=member_ids)
 
         if len(working_body_ids):
-            member_ids = PersonMembership.valid_at(self.context['date']).filter(
+            member_ids = PersonMembership.valid_at(timestamp).filter(
                 organization__classification__in=('committee', 'commision', 'other'), # TODO: add other classifications?
                 member_id__in=people,
                 organization_id__in=working_body_ids,
@@ -613,8 +608,45 @@ class VotersCardSerializer(CardSerializer):
             order_by = order_by[1:]
             order_reverse = True
 
-        # get correct score model based on key
-        order_mapping = {
+        # order by model field
+        field_order_mapping = {
+            'birth_date': 'date_of_birth',
+        }
+        field_name = field_order_mapping.get(order_by, None)
+
+        if field_name:
+            order_string = f'-{field_name}' if order_reverse else field_name
+            return people.order_by(order_string, 'id')
+
+        # order by versionable property model
+        versionable_order_mapping = {
+            'name': 'PersonName',
+            'mandates': 'PersonNumberOfMandates',
+            'education': 'PersonEducationLevel',
+        }
+        versionable_model_name = versionable_order_mapping.get(order_by, None)
+
+        if versionable_model_name:
+            versionable_properties_module = import_module('parladata.models.versionable_properties')
+            PropertyModel = getattr(versionable_properties_module, versionable_model_name)
+
+            active_properties = PropertyModel.objects \
+                .filter(
+                    Q(owner__in=people),
+                    Q(valid_from__lte=timestamp) | Q(valid_from__isnull=True),
+                    Q(valid_to__gte=timestamp) | Q(valid_to__isnull=True),
+                ) \
+                .order_by('owner', '-valid_from') \
+                .distinct('owner') \
+                .values('owner', 'value')
+
+            people_by_id = {person.id: person for person in people}
+            sorted_properties = sorted(list(active_properties), key=lambda p: local_collator.getSortKey(p['value']), reverse=order_reverse)
+
+            return [people_by_id[p['owner']] for p in sorted_properties]
+
+        # order by score model
+        score_order_mapping = {
             'speeches_per_session': 'PersonAvgSpeechesPerSession',
             'number_of_questions': 'PersonNumberOfQuestions',
             'mismatch_of_pg': 'DeviationFromGroup',
@@ -622,20 +654,11 @@ class VotersCardSerializer(CardSerializer):
             'spoken_words': 'PersonNumberOfSpokenWords',
             'vocabulary_size': 'PersonVocabularySize',
         }
-        property_model_name = order_mapping.get(order_by, None)
+        score_model_name = score_order_mapping.get(order_by, None)
 
-        # sort by name
-        if not property_model_name:
-            ordered_people = people.order_by(
-                # TODO: will this work correctly when people have multiple names?
-                '-personname__value' if order_reverse else 'personname__value',
-                'id',
-            )
-        # sort by score model value
-        else:
-            # TODO check if sorting of analyses is optimized enough
+        if score_model_name:
             scores_module = import_module('parlacards.models')
-            ScoreModel = getattr(scores_module, property_model_name)
+            ScoreModel = getattr(scores_module, score_model_name)
 
             latest_scores = ScoreModel.objects.filter(person__in=people) \
                 .order_by('person', '-timestamp') \
@@ -643,8 +666,19 @@ class VotersCardSerializer(CardSerializer):
                 .values('person', 'value')
 
             people_by_id = {person.id: person for person in people}
-            sorted_scores = sorted(list(latest_scores), key=lambda x: x['value'], reverse=order_reverse)
-            ordered_people = [people_by_id[score['person']] for score in sorted_scores]
+            sorted_scores = sorted(list(latest_scores), key=lambda s: s['value'], reverse=order_reverse)
+            return [people_by_id[s['person']] for s in sorted_scores]
+
+        return people.order_by('id')
+
+
+    def to_representation(self, instance):
+        # instance is the mandate
+        parent_data = super().to_representation(instance)
+
+        root_organization, playing_field = get_organizations_from_mandate(instance, self.context['date'])
+
+        ordered_people = self.get_filtered_and_ordered_people(playing_field, self.context['date'])
 
         requested_page, requested_per_page = parse_pagination_query_params(self.context['GET'])
         paginator = Paginator(ordered_people, requested_per_page)
