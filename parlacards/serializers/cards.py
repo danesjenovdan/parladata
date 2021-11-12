@@ -10,6 +10,7 @@ from django.db.models.functions import TruncDay
 from rest_framework import serializers
 
 from parladata.models.ballot import Ballot
+from parladata.models.versionable_properties import PersonPreferredPronoun
 from parladata.models.vote import Vote
 from parladata.models.question import Question
 from parladata.models.memberships import OrganizationMembership, PersonMembership
@@ -568,7 +569,37 @@ class VotersCardSerializer(CardSerializer):
 
         root_organization, playing_field = get_organizations_from_mandate(instance, self.context['date'])
 
+        group_ids = list(filter(lambda x: x.isdigit(), self.context['GET'].get('groups', '').split(',')))
+        working_body_ids = list(filter(lambda x: x.isdigit(), self.context['GET'].get('working_bodies', '').split(',')))
+        preferred_pronoun = self.context['GET'].get('preferred_pronoun', None)
+
         people = playing_field.query_voters(self.context['date'])
+
+        if preferred_pronoun is not None:
+            member_ids = PersonPreferredPronoun.objects.filter(
+                Q(owner__in=people),
+                Q(valid_from__lte=self.context['date']) | Q(valid_from__isnull=True),
+                Q(valid_to__gte=self.context['date']) | Q(valid_to__isnull=True),
+                Q(value=preferred_pronoun)
+            ).values_list('owner', flat=True)
+            people = people.filter(id__in=member_ids)
+
+        if len(group_ids):
+            member_ids = PersonMembership.valid_at(self.context['date']).filter(
+                organization=playing_field,
+                role='voter',
+                member_id__in=people,
+                on_behalf_of__in=group_ids,
+            ).values_list('member', flat=True)
+            people = people.filter(id__in=member_ids)
+
+        if len(working_body_ids):
+            member_ids = PersonMembership.valid_at(self.context['date']).filter(
+                organization__classification__in=('committee', 'commision', 'other'), # TODO: add other classifications?
+                member_id__in=people,
+                organization_id__in=working_body_ids,
+            ).values_list('member', flat=True)
+            people = people.filter(id__in=member_ids)
 
         if text := self.context['GET'].get('text', None):
             # TODO: will this work correctly when people have multiple names?

@@ -99,7 +99,7 @@ class VersionableFieldsOwner(models.Model):
         if active_properties.count() > 1:
             # TODO maybe a more descriptive exception is appropriate
             raise Exception(f'More than one active {property_model_name} at {timestamp}. Check your data.')
-        
+
         return active_properties.first()
 
     @staticmethod
@@ -131,10 +131,10 @@ class VersionableFieldsOwner(models.Model):
                     timestamps.append(latest_versionable_property.valid_from)
             except versionable_property.DoesNotExist:
                 pass
-        
+
         if len(timestamps) == 0:
             return datetime.now()
-        
+
         # sort in place
         timestamps.sort()
         return timestamps[-1]
