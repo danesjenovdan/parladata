@@ -530,14 +530,8 @@ class PersonAnalysesSerializer(CommonPersonSerializer):
 
 
 class VotersCardSerializer(CardSerializer):
-    groups = serializers.SerializerMethodField()
-    working_bodies = serializers.SerializerMethodField()
-
-    def get_groups(self, obj):
-        # obj is the mandate
-        root_organization, playing_field = get_organizations_from_mandate(obj, self.context['date'])
-
-        organizations = playing_field.query_parliamentary_groups(self.context['date'])
+    def _groups(self, playing_field, timestamp):
+        organizations = playing_field.query_parliamentary_groups(timestamp)
         organization_serializer = CommonOrganizationSerializer(
             organizations,
             context=self.context,
@@ -545,9 +539,8 @@ class VotersCardSerializer(CardSerializer):
         )
         return organization_serializer.data
 
-    def get_working_bodies(self, obj):
-        # obj is the mandate
-        memberships = PersonMembership.valid_at(self.context['date'])
+    def _working_bodies(self, timestamp):
+        memberships = PersonMembership.valid_at(timestamp)
         organizations = Organization.objects.filter(
             id__in=memberships.values_list('organization'),
             classification__in=('committee', 'commision', 'other'), # TODO: add other classifications?
@@ -559,11 +552,36 @@ class VotersCardSerializer(CardSerializer):
         )
         return organization_serializer.data
 
-    def get_results(self, obj):
-        # this is implemeted in to_representation for pagination
-        return None
+    def _maximum_score(self, model_name, people):
+        scores_module = import_module('parlacards.models')
+        ScoreModel = getattr(scores_module, model_name)
 
-    def get_filtered_and_ordered_people(self, playing_field, timestamp):
+        latest_scores = ScoreModel.objects.filter(person__in=people) \
+            .order_by('person', '-timestamp') \
+            .distinct('person') \
+            .values_list('value', flat=True)
+
+        return max(latest_scores)
+
+    def _maximum_scores(self, playing_field, timestamp):
+        people = playing_field.query_voters(timestamp)
+
+        score_models_mapping = {
+            'speeches_per_session': 'PersonAvgSpeechesPerSession',
+            'number_of_questions': 'PersonNumberOfQuestions',
+            'mismatch_of_pg': 'DeviationFromGroup',
+            'presence_votes': 'PersonVoteAttendance',
+            'spoken_words': 'PersonNumberOfSpokenWords',
+            'vocabulary_size': 'PersonVocabularySize',
+        }
+        score_maximum_values = {
+            key: self._maximum_score(model_name, people)
+            for key, model_name in score_models_mapping.items()
+        }
+
+        return score_maximum_values
+
+    def _filtered_and_ordered_people(self, playing_field, timestamp):
         group_ids = list(filter(lambda x: x.isdigit(), self.context['GET'].get('groups', '').split(',')))
         working_body_ids = list(filter(lambda x: x.isdigit(), self.context['GET'].get('working_bodies', '').split(',')))
         preferred_pronoun = self.context['GET'].get('preferred_pronoun', None)
@@ -671,6 +689,15 @@ class VotersCardSerializer(CardSerializer):
 
         return people.order_by('id')
 
+    def get_results(self, obj):
+        # obj is the mandate
+        root_organization, playing_field = get_organizations_from_mandate(obj, self.context['date'])
+
+        return {
+            'groups': self._groups(playing_field, self.context['date']),
+            'working_bodies': self._working_bodies(self.context['date']),
+            'maximum_scores': self._maximum_scores(playing_field, self.context['date']),
+        }
 
     def to_representation(self, instance):
         # instance is the mandate
@@ -678,9 +705,9 @@ class VotersCardSerializer(CardSerializer):
 
         root_organization, playing_field = get_organizations_from_mandate(instance, self.context['date'])
 
-        ordered_people = self.get_filtered_and_ordered_people(playing_field, self.context['date'])
+        ordered_people = self._filtered_and_ordered_people(playing_field, self.context['date'])
 
-        requested_page, requested_per_page = parse_pagination_query_params(self.context['GET'])
+        requested_page, requested_per_page = parse_pagination_query_params(self.context['GET'], prefix='members:')
         paginator = Paginator(ordered_people, requested_per_page)
         page = paginator.get_page(requested_page)
 
@@ -693,8 +720,11 @@ class VotersCardSerializer(CardSerializer):
 
         return {
             **parent_data,
-            **pagination_response_data(paginator, page),
-            'results': people_serializer.data,
+            **pagination_response_data(paginator, page, prefix='members:'),
+            'results': {
+                **parent_data['results'],
+                'members': people_serializer.data,
+            },
         }
 
 
