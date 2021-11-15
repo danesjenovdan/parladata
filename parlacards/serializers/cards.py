@@ -10,6 +10,7 @@ from django.db.models.functions import TruncDay
 from rest_framework import serializers
 
 from parladata.models.ballot import Ballot
+from parladata.models.versionable_properties import PersonPreferredPronoun
 from parladata.models.vote import Vote
 from parladata.models.question import Question
 from parladata.models.memberships import OrganizationMembership, PersonMembership
@@ -64,8 +65,9 @@ from parlacards.serializers.common import (
     SessionScoreCardSerializer
 )
 
-from parlacards.solr import parse_search_query_params, solr_select, get_votes_from_solr, get_legislation_from_solr
-from parlacards.pagination import SolrPaginator, pagination_response_data, parse_pagination_query_params
+from parlacards.solr import parse_search_query_params, solr_select
+from parlacards.pagination import create_paginator, create_solr_paginator
+from parlacards.utils import local_collator
 
 #
 # PERSON
@@ -135,20 +137,18 @@ class PersonBallotCardSerializer(PersonScoreCardSerializer):
             options = text.split(',')
             ballots = ballots.filter(option__in=options)
 
-        requested_page, requested_per_page = parse_pagination_query_params(self.context['GET'])
-        paginator = Paginator(ballots, requested_per_page)
-        page = paginator.get_page(requested_page)
+        paged_object_list, pagination_metadata = create_paginator(self.context['GET'], ballots)
 
         # serialize ballots
         ballot_serializer = BallotSerializer(
-            page.object_list,
+            paged_object_list,
             many=True,
             context=self.context
         )
 
         return {
             **parent_data,
-            **pagination_response_data(paginator, page),
+            **pagination_metadata,
             'results': ballot_serializer.data,
         }
 
@@ -421,57 +421,51 @@ class PersonTfidfCardSerializer(PersonScoreCardSerializer):
 
 
 class PersonSpeechesCardSerializer(PersonScoreCardSerializer):
-    def get_results(self, obj):
+    def get_results(self, person):
         # this is implemeted in to_representation for pagination
         return None
 
-    def to_representation(self, instance):
-        parent_data = super().to_representation(instance)
+    def to_representation(self, person):
+        parent_data = super().to_representation(person)
 
-        # instance is the person
-        solr_params = parse_search_query_params(self.context['GET'], people_ids=[instance.id], group_ids=None, highlight=True)
-        requested_page, requested_per_page = parse_pagination_query_params(self.context['GET'])
-        paginator = SolrPaginator(solr_params, requested_per_page)
-        page = paginator.get_page(requested_page)
+        solr_params = parse_search_query_params(self.context['GET'], people_ids=[person.id], group_ids=None, highlight=True)
+        paged_object_list, pagination_metadata = create_solr_paginator(self.context['GET'], solr_params)
 
         # serialize speeches
         speeches_serializer = SpeechWithSessionSerializer(
-            page.object_list,
+            paged_object_list,
             many=True,
             context=self.context
         )
 
         return {
             **parent_data,
-            **pagination_response_data(paginator, page),
+            **pagination_metadata,
             'results': speeches_serializer.data,
         }
 
 
 class GroupSpeechesCardSerializer(GroupScoreCardSerializer):
-    def get_results(self, obj):
+    def get_results(self, group):
         # this is implemeted in to_representation for pagination
         return None
 
-    def to_representation(self, instance):
-        parent_data = super().to_representation(instance)
+    def to_representation(self, group):
+        parent_data = super().to_representation(group)
 
-        # instance is the group
-        solr_params = parse_search_query_params(self.context['GET'], group_ids=[instance.id], highlight=True)
-        requested_page, requested_per_page = parse_pagination_query_params(self.context['GET'])
-        paginator = SolrPaginator(solr_params, requested_per_page)
-        page = paginator.get_page(requested_page)
+        solr_params = parse_search_query_params(self.context['GET'], group_ids=[group.id], highlight=True)
+        paged_object_list, pagination_metadata = create_solr_paginator(self.context['GET'], solr_params)
 
         # serialize speeches
         speeches_serializer = SpeechWithSessionSerializer(
-            page.object_list,
+            paged_object_list,
             many=True,
             context=self.context
         )
 
         return {
             **parent_data,
-            **pagination_response_data(paginator, page),
+            **pagination_metadata,
             'results': speeches_serializer.data,
         }
 
@@ -528,79 +522,185 @@ class PersonAnalysesSerializer(CommonPersonSerializer):
 
 
 class VotersCardSerializer(CardSerializer):
-    def get_results(self, obj):
-        # this is implemeted in to_representation for pagination
-        return None
+    model_fields_mapping = {
+        'birth_date': 'date_of_birth',
+    }
 
-    def to_representation(self, instance):
-        # instance is the mandate
-        parent_data = super().to_representation(instance)
+    versionable_models_mapping = {
+        'name': 'PersonName',
+        'mandates': 'PersonNumberOfMandates',
+        'education': 'PersonEducationLevel',
+    }
 
-        membership = OrganizationMembership.valid_at(self.context['date']).filter(mandate=instance).first()
-        if not membership:
-            raise Exception(f'Root organization membership for this mandate does not exist')
-        playing_field = membership.member
+    score_models_mapping = {
+        'speeches_per_session': 'PersonAvgSpeechesPerSession',
+        'number_of_questions': 'PersonNumberOfQuestions',
+        'mismatch_of_pg': 'DeviationFromGroup',
+        'presence_votes': 'PersonVoteAttendance',
+        'spoken_words': 'PersonNumberOfSpokenWords',
+        'vocabulary_size': 'PersonVocabularySize',
+    }
 
-        people = playing_field.query_voters(self.context['date']).order_by(
-            'personname__value', # TODO: will this work correctly when people have multiple names?
-            'id' # fallback ordering
+    def _groups(self, playing_field, timestamp):
+        organizations = playing_field.query_parliamentary_groups(timestamp)
+        organization_serializer = CommonOrganizationSerializer(
+            organizations,
+            context=self.context,
+            many=True,
         )
+        return organization_serializer.data
+
+    def _working_bodies(self, timestamp):
+        memberships = PersonMembership.valid_at(timestamp)
+        organizations = Organization.objects.filter(
+            id__in=memberships.values_list('organization'),
+            classification__in=('committee', 'commision', 'other'), # TODO: add other classifications?
+        )
+        organization_serializer = CommonOrganizationSerializer(
+            organizations,
+            context=self.context,
+            many=True,
+        )
+        return organization_serializer.data
+
+    def _maximum_score(self, model_name, people):
+        scores_module = import_module('parlacards.models')
+        ScoreModel = getattr(scores_module, model_name)
+
+        latest_scores = ScoreModel.objects.filter(person__in=people) \
+            .order_by('person', '-timestamp') \
+            .distinct('person') \
+            .values_list('value', flat=True)
+
+        return max(latest_scores)
+
+    def _maximum_scores(self, playing_field, timestamp):
+        people = playing_field.query_voters(timestamp)
+
+        score_maximum_values = {
+            key: self._maximum_score(model_name, people)
+            for key, model_name in self.score_models_mapping.items()
+        }
+
+        return score_maximum_values
+
+    def _filtered_and_ordered_people(self, playing_field, timestamp):
+        group_ids = list(filter(lambda x: x.isdigit(), self.context['GET'].get('groups', '').split(',')))
+        working_body_ids = list(filter(lambda x: x.isdigit(), self.context['GET'].get('working_bodies', '').split(',')))
+        preferred_pronoun = self.context['GET'].get('preferred_pronoun', None)
+
+        people = playing_field.query_voters(timestamp)
+
+        if preferred_pronoun is not None:
+            member_ids = PersonPreferredPronoun.objects.valid_at(timestamp) \
+                .filter(owner__in=people, value=preferred_pronoun) \
+                .values_list('owner', flat=True)
+            people = people.filter(id__in=member_ids)
+
+        if len(group_ids):
+            member_ids = PersonMembership.valid_at(timestamp).filter(
+                organization=playing_field,
+                role='voter',
+                member_id__in=people,
+                on_behalf_of__in=group_ids,
+            ).values_list('member', flat=True)
+            people = people.filter(id__in=member_ids)
+
+        if len(working_body_ids):
+            member_ids = PersonMembership.valid_at(timestamp).filter(
+                organization__classification__in=('committee', 'commision', 'other'), # TODO: add other classifications?
+                member_id__in=people,
+                organization_id__in=working_body_ids,
+            ).values_list('member', flat=True)
+            people = people.filter(id__in=member_ids)
 
         if text := self.context['GET'].get('text', None):
             # TODO: will this work correctly when people have multiple names?
-            people = people.filter(personname__value__icontains=text).order_by('personname__value', 'id')
+            people = people.filter(personname__value__icontains=text)
 
-        # TODO check if sorting of analyses is optimized enough
-
-        order_mapping = {
-            'speeches_per_session': 'PersonAvgSpeechesPerSession',
-            'number_of_questions': 'PersonNumberOfQuestions',
-            'mismatch_of_pg': 'DeviationFromGroup',
-            'presence_votes': 'PersonVoteAttendance',
-            'spoken_words': 'PersonNumberOfSpokenWords',
-            'vocabulary_size': 'PersonVocabularySize',
-        }
+        # get order from url
         order_by = self.context['GET'].get('order_by', 'name')
-        property_model_name = order_mapping.get(order_by, None)
-        if order_by == 'name' or not property_model_name:
-            ordered_people = people
-        else:
-            scores_module = import_module('parlacards.models')
-            ScoreModel = getattr(scores_module, property_model_name)
+        order_reverse = False
 
-            latest_scores = ScoreModel.objects.filter(
-                person__in=people
-            ).order_by(
-                'person',
-                '-timestamp'
-            ).distinct(
-                'person'
-            ).values(
-                'person',
-                'value'
-            )
+        if order_by.startswith('-'):
+            order_by = order_by[1:]
+            order_reverse = True
+
+        # order by model field
+        field_name = self.model_fields_mapping.get(order_by, None)
+
+        if field_name:
+            order_string = f'-{field_name}' if order_reverse else field_name
+            return people.order_by(order_string, 'id')
+
+        # order by versionable property model
+        versionable_model_name = self.versionable_models_mapping.get(order_by, None)
+
+        if versionable_model_name:
+            versionable_properties_module = import_module('parladata.models.versionable_properties')
+            PropertyModel = getattr(versionable_properties_module, versionable_model_name)
+
+            active_properties = PropertyModel.objects.valid_at(timestamp) \
+                .filter(owner__in=people) \
+                .order_by('owner', '-valid_from') \
+                .distinct('owner') \
+                .values('owner', 'value')
 
             people_by_id = {person.id: person for person in people}
+            sorted_properties = sorted(list(active_properties), key=lambda p: local_collator.getSortKey(p['value']), reverse=order_reverse)
 
-            sorted_scores = sorted(list(latest_scores), key=lambda x: x['value'], reverse=True)
+            return [people_by_id[p['owner']] for p in sorted_properties]
 
-            ordered_people = [people_by_id[score['person']] for score in sorted_scores]
+        # order by score model
+        score_model_name = self.score_models_mapping.get(order_by, None)
 
-        requested_page, requested_per_page = parse_pagination_query_params(self.context['GET'])
-        paginator = Paginator(ordered_people, requested_per_page)
-        page = paginator.get_page(requested_page)
+        if score_model_name:
+            scores_module = import_module('parlacards.models')
+            ScoreModel = getattr(scores_module, score_model_name)
+
+            latest_scores = ScoreModel.objects.filter(person__in=people) \
+                .order_by('person', '-timestamp') \
+                .distinct('person') \
+                .values('person', 'value')
+
+            people_by_id = {person.id: person for person in people}
+            sorted_scores = sorted(list(latest_scores), key=lambda s: s['value'], reverse=order_reverse)
+            return [people_by_id[s['person']] for s in sorted_scores]
+
+        return people.order_by('id')
+
+    def get_results(self, mandate):
+        root_organization, playing_field = mandate.query_root_organizations(self.context['date'])
+
+        return {
+            'groups': self._groups(playing_field, self.context['date']),
+            'working_bodies': self._working_bodies(self.context['date']),
+            'maximum_scores': self._maximum_scores(playing_field, self.context['date']),
+        }
+
+    def to_representation(self, mandate):
+        parent_data = super().to_representation(mandate)
+
+        root_organization, playing_field = mandate.query_root_organizations(self.context['date'])
+
+        ordered_people = self._filtered_and_ordered_people(playing_field, self.context['date'])
+
+        paged_object_list, pagination_metadata = create_paginator(self.context['GET'], ordered_people, prefix='members:')
 
         # serialize people
         people_serializer = PersonAnalysesSerializer(
-            page.object_list,
+            paged_object_list,
             many=True,
             context=self.context
         )
 
         return {
             **parent_data,
-            **pagination_response_data(paginator, page),
-            'results': people_serializer.data,
+            **pagination_metadata,
+            'results': {
+                **parent_data['results'],
+                'members': people_serializer.data,
+            },
         }
 
 
@@ -731,20 +831,18 @@ class LastSessionCardSerializer(CardSerializer):
             'id' # fallback ordering
         )
 
-        requested_page, requested_per_page = parse_pagination_query_params(self.context['GET'], prefix='votes:')
-        paginator = Paginator(votes, requested_per_page)
-        page = paginator.get_page(requested_page)
+        paged_object_list, pagination_metadata = create_paginator(self.context['GET'], votes, prefix='votes:')
 
         # serialize votes
         vote_serializer = SessionVoteSerializer(
-            page.object_list,
+            paged_object_list,
             many=True,
             context=self.context
         )
 
         return {
             **parent_data,
-            **pagination_response_data(paginator, page, prefix='votes:'),
+            **pagination_metadata,
             'results': {
                 **parent_data['results'],
                 'votes': vote_serializer.data,
@@ -787,19 +885,17 @@ class GroupCardSerializer(GroupScoreCardSerializer):
             'id' # fallback ordering
         )
 
-        requested_page, requested_per_page = parse_pagination_query_params(self.context['GET'], prefix='members:')
-        paginator = Paginator(members, requested_per_page)
-        page = paginator.get_page(requested_page)
+        paged_object_list, pagination_metadata = create_paginator(self.context['GET'], members, prefix='members:')
 
         people_serializer = CommonPersonSerializer(
-            page.object_list,
+            paged_object_list,
             many=True,
             context=self.context
         )
 
         return {
             **parent_data,
-            **pagination_response_data(paginator, page, prefix='members:'),
+            **pagination_metadata,
             'results': {
                 **parent_data['results'],
                 'members': people_serializer.data,
@@ -824,19 +920,17 @@ class GroupMembersCardSerializer(GroupScoreCardSerializer):
             'id' # fallback ordering
         )
 
-        requested_page, requested_per_page = parse_pagination_query_params(self.context['GET'])
-        paginator = Paginator(members, requested_per_page)
-        page = paginator.get_page(requested_page)
+        paged_object_list, pagination_metadata = create_paginator(self.context['GET'], members)
 
         people_serializer = CommonPersonSerializer(
-            page.object_list,
+            paged_object_list,
             many=True,
             context=self.context
         )
 
         return {
             **parent_data,
-            **pagination_response_data(paginator, page),
+            **pagination_metadata,
             'results': people_serializer.data,
         }
 
@@ -915,19 +1009,17 @@ class GroupQuestionCardSerializer(GroupScoreCardSerializer):
             '-timestamp'
         )
 
-        requested_page, requested_per_page = parse_pagination_query_params(self.context['GET'])
-        paginator = Paginator(questions, requested_per_page)
-        page = paginator.get_page(requested_page)
+        paged_object_list, pagination_metadata = create_paginator(self.context['GET'], questions)
 
         question_serializer = QuestionSerializer(
-            page.object_list,
+            paged_object_list,
             many=True,
             context=self.context
         )
 
         return {
             **parent_data,
-            **pagination_response_data(paginator, page),
+            **pagination_metadata,
             'results': question_serializer.data,
         }
 
@@ -952,12 +1044,10 @@ class GroupBallotCardSerializer(GroupScoreCardSerializer):
         if text := self.context['GET'].get('text', None):
             votes = votes.filter(motion__text__icontains=text)
 
-        requested_page, requested_per_page = parse_pagination_query_params(self.context['GET'])
-        paginator = Paginator(votes, requested_per_page)
-        page = paginator.get_page(requested_page)
+        paged_object_list, pagination_metadata = create_paginator(self.context['GET'], votes)
 
         party_ballots = []
-        for vote in page.object_list:
+        for vote in paged_object_list:
             voter_ids = PersonMembership.valid_at(vote.timestamp).filter(
                 # instance is the group
                 on_behalf_of=instance,
@@ -1003,7 +1093,7 @@ class GroupBallotCardSerializer(GroupScoreCardSerializer):
 
         return {
             **parent_data,
-            **pagination_response_data(paginator, page),
+            **pagination_metadata,
             'results': ballot_serializer.data,
         }
 
@@ -1067,12 +1157,8 @@ class GroupDiscordCardSerializer(GroupScoreCardSerializer):
 
 
 class RootGroupBasicInfoCardSerializer(CardSerializer):
-    def get_results(self, obj):
-        # obj is the mandate
-        membership = OrganizationMembership.valid_at(self.context['date']).filter(mandate=obj).first()
-        if not membership:
-            raise Exception(f'Root organization membership for this mandate does not exist')
-        root_organization = membership.organization
+    def get_results(self, mandate):
+        root_organization, playing_field = mandate.query_root_organizations(self.context['date'])
 
         serializer = RootOrganizationBasicInfoSerializer(
             root_organization,
@@ -1124,20 +1210,18 @@ class SessionSpeechesCardSerializer(SessionScoreCardSerializer):
             'id' # fallback ordering
         )
 
-        requested_page, requested_per_page = parse_pagination_query_params(self.context['GET'])
-        paginator = Paginator(speeches, requested_per_page)
-        page = paginator.get_page(requested_page)
+        paged_object_list, pagination_metadata = create_paginator(self.context['GET'], speeches)
 
         # serialize speeches
         speeches_serializer = SpeechSerializer(
-            page.object_list,
+            paged_object_list,
             many=True,
             context=self.context
         )
 
         return {
             **parent_data,
-            **pagination_response_data(paginator, page),
+            **pagination_metadata,
             'results': speeches_serializer.data,
         }
 
@@ -1261,20 +1345,18 @@ class SessionVotesCardSerializer(SessionScoreCardSerializer):
             passed_bool = passed_string == 'true'
             votes = votes.filter(result=passed_bool)
 
-        requested_page, requested_per_page = parse_pagination_query_params(self.context['GET'])
-        paginator = Paginator(votes, requested_per_page)
-        page = paginator.get_page(requested_page)
+        paged_object_list, pagination_metadata = create_paginator(self.context['GET'], votes)
 
         # serialize votes
         vote_serializer = SessionVoteSerializer(
-            page.object_list,
+            paged_object_list,
             many=True,
             context=self.context
         )
 
         return {
             **parent_data,
-            **pagination_response_data(paginator, page),
+            **pagination_metadata,
             'results': vote_serializer.data,
         }
 
@@ -1283,30 +1365,26 @@ class SessionVotesCardSerializer(SessionScoreCardSerializer):
 # SPEECHES
 #
 class MandateSpeechCardSerializer(CardSerializer):
-    def get_results(self, obj):
+    def get_results(self, mandate):
         # this is implemeted in to_representation for pagination
         return None
 
-    def to_representation(self, instance):
-        parent_data = super().to_representation(instance)
+    def to_representation(self, mandate):
+        parent_data = super().to_representation(mandate)
 
-        # instance is the mandate
-        solr_params = parse_search_query_params(self.context['GET'], highlight=True)
-        solr_params['mandate'] = instance.id
-        requested_page, requested_per_page = parse_pagination_query_params(self.context['GET'])
-        paginator = SolrPaginator(solr_params, requested_per_page)
-        page = paginator.get_page(requested_page)
+        solr_params = parse_search_query_params(self.context['GET'], mandate=mandate.id, highlight=True)
+        paged_object_list, pagination_metadata = create_solr_paginator(self.context['GET'], solr_params)
 
         # serialize speeches
         speeches_serializer = HighlightSerializer(
-            page.object_list,
+            paged_object_list,
             many=True,
             context=self.context
         )
 
         return {
             **parent_data,
-            **pagination_response_data(paginator, page),
+            **pagination_metadata,
             'results': speeches_serializer.data,
         }
 
@@ -1397,98 +1475,72 @@ class MandateUsageThroughTimeCardSerializer(CardSerializer):
 
 
 class MandateVotesCardSerializer(CardSerializer):
-    def get_results(self, obj):
+    def get_results(self, mandate):
         # this is implemeted in to_representation for pagination
         return None
 
-    def to_representation(self, instance):
-        parent_data = super().to_representation(instance)
-        # instance is the mandate
+    def to_representation(self, mandate):
+        parent_data = super().to_representation(mandate)
 
-        requested_page, requested_per_page = parse_pagination_query_params(self.context['GET'])
-
-        if text := self.context['GET'].get('text', None):
-            solr_params = parse_search_query_params(self.context['GET'])
-            solr_params['mandate'] = instance.id
-            paginator = SolrPaginator(
-                solr_params,
-                requested_per_page,
-                document_type='vote'
-            )
+        if self.context['GET'].get('text', None):
+            solr_params = parse_search_query_params(self.context['GET'], mandate=mandate.id)
+            paged_object_list, pagination_metadata = create_solr_paginator(self.context['GET'], solr_params, document_type='vote')
         else:
             votes = Vote.objects.filter(
                 timestamp__lte=self.context['date'],
-                motion__session__mandate=instance
+                motion__session__mandate=mandate
             ).order_by('-timestamp')
-            paginator = Paginator(votes, requested_per_page)
-
-        page = paginator.get_page(requested_page)
+            paged_object_list, pagination_metadata = create_paginator(self.context['GET'], votes)
 
         # serialize votes
         vote_serializer = BareVoteSerializer(
-            page.object_list,
+            paged_object_list,
             many=True,
             context=self.context
         )
 
         return {
             **parent_data,
-            **pagination_response_data(paginator, page),
+            **pagination_metadata,
             'results': vote_serializer.data,
         }
 
 
 class MandateLegislationCardSerializer(CardSerializer):
-    def get_results(self, obj):
+    def get_results(self, mandate):
         # this is implemeted in to_representation for pagination
         return None
 
-    def to_representation(self, instance):
-        parent_data = super().to_representation(instance)
+    def to_representation(self, mandate):
+        parent_data = super().to_representation(mandate)
 
-        # instance is the mandate
-        requested_page, requested_per_page = parse_pagination_query_params(self.context['GET'])
-
-        if text := self.context['GET'].get('text', None):
-            solr_params = parse_search_query_params(self.context['GET'])
-            solr_params['mandate'] = instance.id
-            paginator = SolrPaginator(
-                solr_params,
-                requested_per_page,
-                document_type='law'
-            )
+        if self.context['GET'].get('text', None):
+            solr_params = parse_search_query_params(self.context['GET'], mandate=mandate.id)
+            paged_object_list, pagination_metadata = create_solr_paginator(self.context['GET'], solr_params, document_type='law')
         else:
             legislation = Law.objects.filter(
                 Q(timestamp__lte=self.context['date']) | Q(timestamp__isnull=True),
-                session__mandate=instance,
+                session__mandate=mandate,
             )
+            paged_object_list, pagination_metadata = create_paginator(self.context['GET'], legislation)
 
-            paginator = Paginator(legislation, requested_per_page)
-
-        page = paginator.get_page(requested_page)
-
-        # serialize votes
+        # serialize legislation
         legislation_serializer = LegislationSerializer(
-            page.object_list,
+            paged_object_list,
             many=True,
             context=self.context
         )
 
         return {
             **parent_data,
-            **pagination_response_data(paginator, page),
+            **pagination_metadata,
             'results': legislation_serializer.data,
         }
 
 
 class SearchDropdownSerializer(CardSerializer):
-    def get_results(self, obj):
-        # obj is the mandate
-        membership = OrganizationMembership.valid_at(self.context['date']).filter(mandate=obj).first()
-        if not membership:
-            raise Exception(f'Root organization membership for this mandate does not exist')
-        playing_field = membership.member
-        root_organization = membership.organization
+    def get_results(self, mandate):
+        root_organization, playing_field = mandate.query_root_organizations(self.context['date'])
 
         people_data = []
         groups_data = []
