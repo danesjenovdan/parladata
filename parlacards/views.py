@@ -76,8 +76,6 @@ from parlacards.serializers.cards import (
 from parlacards.serializers.speech import SpeechSerializer
 from parlacards.serializers.quote import QuoteSerializer
 
-from parlacards.pagination import pagination_response_data, parse_pagination_query_params
-
 from django.core.cache import cache
 
 
