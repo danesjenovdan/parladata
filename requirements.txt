@@ -32,6 +32,7 @@ pylibmc
 martor
 django-colorfield
 django-admin-sortable2
+pyicu
 
 # tagger/lemmatizer
 sklearn
