@@ -527,9 +527,9 @@ class VotersCardSerializer(CardSerializer):
     }
 
     versionable_models_mapping = {
-        'name': 'PersonName',
-        'mandates': 'PersonNumberOfMandates',
-        'education': 'PersonEducationLevel',
+        'name': ('PersonName', 'value'),
+        'mandates': ('PersonNumberOfMandates', 'value'),
+        'education': ('PersonEducationLevel', 'education_level__text'),
     }
 
     score_models_mapping = {
@@ -634,9 +634,10 @@ class VotersCardSerializer(CardSerializer):
             return people.order_by(order_string, 'id')
 
         # order by versionable property model
-        versionable_model_name = self.versionable_models_mapping.get(order_by, None)
+        versionable_model_tuple = self.versionable_models_mapping.get(order_by, None)
 
-        if versionable_model_name:
+        if versionable_model_tuple:
+            versionable_model_name, versionable_field_name = versionable_model_tuple
             versionable_properties_module = import_module('parladata.models.versionable_properties')
             PropertyModel = getattr(versionable_properties_module, versionable_model_name)
 
@@ -644,12 +645,20 @@ class VotersCardSerializer(CardSerializer):
                 .filter(owner__in=people) \
                 .order_by('owner', '-valid_from') \
                 .distinct('owner') \
-                .values('owner', 'value')
+                .values('owner', versionable_field_name)
 
-            people_by_id = {person.id: person for person in people}
-            sorted_properties = sorted(list(active_properties), key=lambda p: local_collator.getSortKey(p['value']), reverse=order_reverse)
+            is_number_field = len(active_properties) and isinstance(active_properties[0].get(versionable_field_name), (int, float))
+            properties_by_owner_id = {prop['owner']: prop for prop in active_properties}
 
-            return [people_by_id[p['owner']] for p in sorted_properties]
+            def get_property_value(owner_id, default=0):
+                return properties_by_owner_id.get(owner_id, {versionable_field_name: default})[versionable_field_name]
+
+            def get_sort_key(person):
+                if is_number_field:
+                    return get_property_value(person.id, default=0)
+                return local_collator.getSortKey(get_property_value(person.id, default=''))
+
+            return list(sorted(list(people), key=get_sort_key, reverse=order_reverse))
 
         # order by score model
         score_model_name = self.score_models_mapping.get(order_by, None)
