@@ -600,12 +600,9 @@ class VotersCardSerializer(CardSerializer):
         people = playing_field.query_voters(timestamp)
 
         if preferred_pronoun is not None:
-            member_ids = PersonPreferredPronoun.objects.filter(
-                Q(owner__in=people),
-                Q(valid_from__lte=timestamp) | Q(valid_from__isnull=True),
-                Q(valid_to__gte=timestamp) | Q(valid_to__isnull=True),
-                Q(value=preferred_pronoun)
-            ).values_list('owner', flat=True)
+            member_ids = PersonPreferredPronoun.objects.valid_at(timestamp) \
+                .filter(owner__in=people, value=preferred_pronoun) \
+                .values_list('owner', flat=True)
             people = people.filter(id__in=member_ids)
 
         if len(group_ids):
@@ -651,12 +648,8 @@ class VotersCardSerializer(CardSerializer):
             versionable_properties_module = import_module('parladata.models.versionable_properties')
             PropertyModel = getattr(versionable_properties_module, versionable_model_name)
 
-            active_properties = PropertyModel.objects \
-                .filter(
-                    Q(owner__in=people),
-                    Q(valid_from__lte=timestamp) | Q(valid_from__isnull=True),
-                    Q(valid_to__gte=timestamp) | Q(valid_to__isnull=True),
-                ) \
+            active_properties = PropertyModel.objects.valid_at(timestamp) \
+                .filter(owner__in=people) \
                 .order_by('owner', '-valid_from') \
                 .distinct('owner') \
                 .values('owner', 'value')
