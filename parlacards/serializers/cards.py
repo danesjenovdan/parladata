@@ -530,6 +530,25 @@ class PersonAnalysesSerializer(CommonPersonSerializer):
 
 
 class VotersCardSerializer(CardSerializer):
+    model_fields_mapping = {
+        'birth_date': 'date_of_birth',
+    }
+
+    versionable_models_mapping = {
+        'name': 'PersonName',
+        'mandates': 'PersonNumberOfMandates',
+        'education': 'PersonEducationLevel',
+    }
+
+    score_models_mapping = {
+        'speeches_per_session': 'PersonAvgSpeechesPerSession',
+        'number_of_questions': 'PersonNumberOfQuestions',
+        'mismatch_of_pg': 'DeviationFromGroup',
+        'presence_votes': 'PersonVoteAttendance',
+        'spoken_words': 'PersonNumberOfSpokenWords',
+        'vocabulary_size': 'PersonVocabularySize',
+    }
+
     def _groups(self, playing_field, timestamp):
         organizations = playing_field.query_parliamentary_groups(timestamp)
         organization_serializer = CommonOrganizationSerializer(
@@ -566,17 +585,9 @@ class VotersCardSerializer(CardSerializer):
     def _maximum_scores(self, playing_field, timestamp):
         people = playing_field.query_voters(timestamp)
 
-        score_models_mapping = {
-            'speeches_per_session': 'PersonAvgSpeechesPerSession',
-            'number_of_questions': 'PersonNumberOfQuestions',
-            'mismatch_of_pg': 'DeviationFromGroup',
-            'presence_votes': 'PersonVoteAttendance',
-            'spoken_words': 'PersonNumberOfSpokenWords',
-            'vocabulary_size': 'PersonVocabularySize',
-        }
         score_maximum_values = {
             key: self._maximum_score(model_name, people)
-            for key, model_name in score_models_mapping.items()
+            for key, model_name in self.score_models_mapping.items()
         }
 
         return score_maximum_values
@@ -627,22 +638,14 @@ class VotersCardSerializer(CardSerializer):
             order_reverse = True
 
         # order by model field
-        field_order_mapping = {
-            'birth_date': 'date_of_birth',
-        }
-        field_name = field_order_mapping.get(order_by, None)
+        field_name = self.model_fields_mapping.get(order_by, None)
 
         if field_name:
             order_string = f'-{field_name}' if order_reverse else field_name
             return people.order_by(order_string, 'id')
 
         # order by versionable property model
-        versionable_order_mapping = {
-            'name': 'PersonName',
-            'mandates': 'PersonNumberOfMandates',
-            'education': 'PersonEducationLevel',
-        }
-        versionable_model_name = versionable_order_mapping.get(order_by, None)
+        versionable_model_name = self.versionable_models_mapping.get(order_by, None)
 
         if versionable_model_name:
             versionable_properties_module = import_module('parladata.models.versionable_properties')
@@ -664,15 +667,7 @@ class VotersCardSerializer(CardSerializer):
             return [people_by_id[p['owner']] for p in sorted_properties]
 
         # order by score model
-        score_order_mapping = {
-            'speeches_per_session': 'PersonAvgSpeechesPerSession',
-            'number_of_questions': 'PersonNumberOfQuestions',
-            'mismatch_of_pg': 'DeviationFromGroup',
-            'presence_votes': 'PersonVoteAttendance',
-            'spoken_words': 'PersonNumberOfSpokenWords',
-            'vocabulary_size': 'PersonVocabularySize',
-        }
-        score_model_name = score_order_mapping.get(order_by, None)
+        score_model_name = self.score_models_mapping.get(order_by, None)
 
         if score_model_name:
             scores_module = import_module('parlacards.models')
