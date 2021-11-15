@@ -67,7 +67,7 @@ from parlacards.serializers.common import (
 
 from parlacards.solr import parse_search_query_params, solr_select, get_votes_from_solr, get_legislation_from_solr
 from parlacards.pagination import SolrPaginator, pagination_response_data, parse_pagination_query_params
-from parlacards.utils import get_organizations_from_mandate, local_collator
+from parlacards.utils import local_collator
 
 #
 # PERSON
@@ -689,9 +689,8 @@ class VotersCardSerializer(CardSerializer):
 
         return people.order_by('id')
 
-    def get_results(self, obj):
-        # obj is the mandate
-        root_organization, playing_field = get_organizations_from_mandate(obj, self.context['date'])
+    def get_results(self, mandate):
+        root_organization, playing_field = mandate.query_root_organizations(self.context['date'])
 
         return {
             'groups': self._groups(playing_field, self.context['date']),
@@ -699,11 +698,10 @@ class VotersCardSerializer(CardSerializer):
             'maximum_scores': self._maximum_scores(playing_field, self.context['date']),
         }
 
-    def to_representation(self, instance):
-        # instance is the mandate
-        parent_data = super().to_representation(instance)
+    def to_representation(self, mandate):
+        parent_data = super().to_representation(mandate)
 
-        root_organization, playing_field = get_organizations_from_mandate(instance, self.context['date'])
+        root_organization, playing_field = mandate.query_root_organizations(self.context['date'])
 
         ordered_people = self._filtered_and_ordered_people(playing_field, self.context['date'])
 
@@ -1191,9 +1189,8 @@ class GroupDiscordCardSerializer(GroupScoreCardSerializer):
 
 
 class RootGroupBasicInfoCardSerializer(CardSerializer):
-    def get_results(self, obj):
-        # obj is the mandate
-        root_organization, playing_field = get_organizations_from_mandate(obj, self.context['date'])
+    def get_results(self, mandate):
+        root_organization, playing_field = mandate.query_root_organizations(self.context['date'])
 
         serializer = RootOrganizationBasicInfoSerializer(
             root_organization,
@@ -1603,9 +1600,8 @@ class MandateLegislationCardSerializer(CardSerializer):
 
 
 class SearchDropdownSerializer(CardSerializer):
-    def get_results(self, obj):
-        # obj is the mandate
-        root_organization, playing_field = get_organizations_from_mandate(obj, self.context['date'])
+    def get_results(self, mandate):
+        root_organization, playing_field = mandate.query_root_organizations(self.context['date'])
 
         people_data = []
         groups_data = []
