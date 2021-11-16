@@ -14,34 +14,7 @@ from parladata.models.common import *
 
 from collections import Counter
 
-
-
-class LinkOrganizationInline(admin.TabularInline):
-    model = Link
-    fk_name = 'organization'
-    exclude = ['person', 'membership', 'motion', 'question', 'session', 'agenda_item']
-    extra = 0
-
-
-class LinkMembershipInline(admin.TabularInline):
-    model = Link
-    fk_name = 'membership'
-    exclude = ['person', 'organization', 'motion', 'question', 'session', 'agenda_item']
-    extra = 0
-
-
-class LinkMotionInline(admin.TabularInline):
-    model = Link
-    fk_name = 'motion'
-    exclude = ['person', 'membership', 'organization', 'session', 'question', 'agenda_item']
-    extra = 0
-
-
-class LinkQuestionInline(admin.TabularInline):
-    model = Link
-    fk_name = 'question'
-    exclude = ['person', 'organization', 'motion', 'session', 'membership', 'agenda_item']
-    extra = 0
+from parladata.admin.link import *
 
 
 # class CountVoteInline(admin.TabularInline):
@@ -89,7 +62,7 @@ class SpeechAdmin(admin.ModelAdmin):
     fields = ['content', 'motions', 'speaker', 'order', 'tags', 'session', 'lemmatized_content']
     list_filter = ('session', 'tags')
     search_fields = ['speaker__name', 'content']
-    autocomplete_fields = ['motions', 'speaker']
+    autocomplete_fields = ['motions', 'speaker', 'session']
     inlines = [
     ]
     list_display = ('id',
@@ -112,7 +85,7 @@ class SpeechAdmin(admin.ModelAdmin):
 
 
 class QuestionAdmin(admin.ModelAdmin):
-    autocomplete_fields = ['authors']
+    autocomplete_fields = ['authors', 'recipient_people', 'recipient_organizations', 'session']
     search_fields = ["title"]
     inlines = [
         LinkQuestionInline
@@ -126,88 +99,6 @@ class DocumentAdmin(admin.ModelAdmin):
 
     def file_url(self, obj):
         return obj.file.url
-
-
-class MotionAdmin(admin.ModelAdmin):
-    #form = MotionForm
-    list_display = (
-        'id',
-        'text',
-        'session_name',
-        'result',
-        'requirement',
-        'get_for',
-        'get_against',
-        'get_abstain',
-        'get_not',
-        'link_to_vote',
-        'datetime',
-        'tag_list',
-    )
-
-    list_editable = ('result',)
-    list_filter = ('result', 'datetime', 'session')
-    search_fields = ['text', 'title']
-    inlines = [
-        LinkMotionInline,
-    ]
-    list_per_page = 25
-
-    def get_queryset(self, request):
-        return Motion.objects.all().prefetch_related('session', 'vote').order_by('-id')
-
-    def get_for(self, obj):
-        results = dict(Counter(Ballot.objects.filter(vote__motion=obj).values_list("option", flat=True))).get("for", 0)
-        return results
-
-    def get_against(self, obj):
-        results = dict(Counter(Ballot.objects.filter(vote__motion=obj).values_list("option", flat=True))).get("against", 0)
-        return results
-
-    def get_abstain(self, obj):
-        results = dict(Counter(Ballot.objects.filter(vote__motion=obj).values_list("option", flat=True))).get("abstain", 0)
-        return results
-
-    def get_not(self, obj):
-        results = dict(Counter(Ballot.objects.filter(vote__motion=obj).values_list("option", flat=True))).get("absent", 0)
-        return results
-
-    def link_to_vote(self, obj):
-        try:
-            link = reverse("admin:parladata_vote_change", args=[obj.vote.first().id])
-        except:
-            return ''
-        return mark_safe(f'<a href="{link}">Vote</a>')
-
-    def session_name(self, obj):
-        return obj.session.name if obj.session else ''
-
-    def tag_list(self, obj):
-        return u", ".join(o.name for o in obj.tags.all())
-
-
-    link_to_vote.allow_tags = True
-
-    get_for.short_description = 'for'
-    get_against.short_description = 'against'
-    get_abstain.short_description = 'abstain'
-    get_not.short_description = 'absent'
-
-    def get_search_results(self, request, queryset, search_term):
-        url = request.META.get('HTTP_REFERER', '')
-
-        # if autocompelte calls from speech admin then filter motions by speech session
-        if '/admin/parladata/speech/' in url:
-            speech_id = url.split('/')[-3]
-            session = Speech.objects.get(id=speech_id).session
-            queryset = queryset.filter(session=session)
-
-        results = super().get_search_results(
-            request,
-            queryset,
-            search_term
-        )
-        return results
 
 
 class ContactAdmin(admin.ModelAdmin):
@@ -236,22 +127,16 @@ class LawAdmin(admin.ModelAdmin):
     list_display = ('text', 'session', 'status', 'epa')
     list_filter = ('session',)
     search_fields = ['text']
+    autocomplete_fields = ('session', 'mdt_fk')
 
 
 class BallotAdmin(admin.ModelAdmin):
     list_display = ('vote', 'personvoter', 'option')
     autocomplete_fields = ['personvoter', 'orgvoter', 'vote']
 
-class LinkAdmin(admin.ModelAdmin):
-    list_display = ('url', 'name')
-    autocomplete_fields = ['session', 'person', 'motion', 'question', 'agenda_item', 'membership', 'organization']
-
 
 admin.site.register(PersonMembership, MembershipAdmin)
 admin.site.register(Speech, SpeechAdmin)
-admin.site.register(Motion, MotionAdmin)
-#admin.site.register(Area, LeafletGeoAdmin)
-admin.site.register(Link, LinkAdmin)
 admin.site.register(Task)
 admin.site.register(Ballot, BallotAdmin)
 admin.site.register(Question, QuestionAdmin)
