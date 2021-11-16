@@ -16,6 +16,8 @@ class VoteAdmin(admin.ModelAdmin):
     ]
     search_fields = ['name']
 
+    autocomplete_fields = ('motion',)
+
     def the_tags(self, obj):
         return "%s" % (list(obj.tags.values_list('name', flat=True)), )
     
