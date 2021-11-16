@@ -29,6 +29,7 @@ class OrganizationAdmin(admin.ModelAdmin):
     search_fields = ('id', 'organizationname__value') # 'name' maybe?
 
     list_display = ('id', 'name')
+    autocomplete_fields = ('parent', )
 
 
 class ParliamentaryGroup(Organization):
