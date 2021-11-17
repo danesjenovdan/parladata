@@ -33,7 +33,7 @@ class LinkQuestionInline(admin.TabularInline):
 
 class LinkAdmin(admin.ModelAdmin):
     list_display = ('url', 'name')
-    autocomplete_fields = ['session', 'person', 'motion', 'question', 'agenda_item', 'membership', 'organization']
+    autocomplete_fields = ['session', 'person', 'motion', 'question', 'agenda_item', 'organization', 'membership']
 
 
 admin.site.register(Link, LinkAdmin)
