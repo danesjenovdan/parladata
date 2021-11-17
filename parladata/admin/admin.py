@@ -11,6 +11,7 @@ from parladata.models import *
 from parladata.models.task import Task
 from parladata.models.versionable_properties import *
 from parladata.models.common import *
+from parladata.admin.filters import SessionListFilter, AuthorsListFilter
 
 from collections import Counter
 
@@ -42,13 +43,7 @@ class MandateAdmin(admin.ModelAdmin):
     list_filter = ('description', 'beginning',)
     search_fields = ('description', 'beginning',)
 
-class MembershipAdmin(admin.ModelAdmin):
-    inlines = [
-        LinkMembershipInline,
-    ]
-    list_filter = ['role', 'organization', 'on_behalf_of']
-    search_fields = ['member__personname__value', 'role', 'on_behalf_of__organizationname__value', 'organization__organizationname__value']
-    autocomplete_fields = ('member', 'organization', 'on_behalf_of')
+
 
 
 class SpeechForm(forms.ModelForm):
@@ -60,7 +55,7 @@ class SpeechForm(forms.ModelForm):
 class SpeechAdmin(admin.ModelAdmin):
     form = SpeechForm
     fields = ['content', 'motions', 'speaker', 'order', 'tags', 'session', 'lemmatized_content']
-    list_filter = ('session', 'tags')
+    list_filter = (SessionListFilter, 'tags')
     search_fields = ['speaker__name', 'content']
     autocomplete_fields = ['motions', 'speaker', 'session']
     inlines = [
@@ -90,7 +85,7 @@ class QuestionAdmin(admin.ModelAdmin):
     inlines = [
         LinkQuestionInline
     ]
-    list_filter = ('type_of_question', 'session', 'authors')
+    list_filter = ('type_of_question', SessionListFilter, AuthorsListFilter)
 
 
 class DocumentAdmin(admin.ModelAdmin):
@@ -125,7 +120,7 @@ class EducationLevelAdmin(SortableAdminMixin, admin.ModelAdmin):
 
 class LawAdmin(admin.ModelAdmin):
     list_display = ('text', 'session', 'status', 'epa')
-    list_filter = ('session',)
+    list_filter = (SessionListFilter,)
     search_fields = ['text']
     autocomplete_fields = ('session', 'mdt_fk')
 
@@ -135,13 +130,12 @@ class BallotAdmin(admin.ModelAdmin):
     autocomplete_fields = ['personvoter', 'orgvoter', 'vote']
 
 
-admin.site.register(PersonMembership, MembershipAdmin)
+
 admin.site.register(Speech, SpeechAdmin)
 admin.site.register(Task)
 admin.site.register(Ballot, BallotAdmin)
 admin.site.register(Question, QuestionAdmin)
 admin.site.register(Law, LawAdmin)
-admin.site.register(OrganizationMembership)
 admin.site.register(Mandate, MandateAdmin)
 admin.site.register(Document, DocumentAdmin)
 admin.site.register(EducationLevel, EducationLevelAdmin)
