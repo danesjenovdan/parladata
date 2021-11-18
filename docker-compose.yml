@@ -25,6 +25,7 @@ services:
       PARLAMETER_AWS_SECRET_ACCESS_KEY: ""
       PARLAMETER_AWS_STORAGE_BUCKET_NAME: "parlameter"
       PARLAMETER_AWS_LOCATION: "dev"
+      EVENT_REGISTRY_API_KEY: "${EVENT_REGISTRY_API_KEY}" # add to .env file for local usage
     volumes:
       - ./:/app
 
