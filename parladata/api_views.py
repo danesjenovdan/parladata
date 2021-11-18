@@ -277,6 +277,7 @@ class OrganizationMembershipsViewSet(viewsets.ModelViewSet):
     serializer_class = OrganizationMembershipSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
+
 class MandateView(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     queryset = Mandate.objects.all().order_by('-id')
@@ -284,3 +285,22 @@ class MandateView(viewsets.ModelViewSet):
     fields = '__all__'
     filter_backends = (DjangoFilterBackend,)
     filter_fields = ('description',)
+
+
+class MediumView(viewsets.ModelViewSet):
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    queryset = Medium.objects.all().order_by('id')
+    serializer_class = MediumSerializer
+    fields = '__all__'
+    filter_backends = (DjangoFilterBackend,)
+    filter_fields = ('name', 'url', 'active')
+
+
+class MediaReportView(viewsets.ModelViewSet):
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    queryset = MediaReport.objects.all().order_by('id')
+    serializer_class = MediaReportSerializer
+    fields = '__all__'
+    filter_backends = (DjangoFilterBackend, filters.OrderingFilter)
+    filter_fields = ('medium', 'mentioned_people', 'mentioned_organizations', 'mentioned_legislation', 'mentioned_motions', 'mentioned_votes')
+    ordering_fields = ('report_date', 'retrieval_date')
