@@ -9,7 +9,8 @@ class Session(Timestampable):
         ('unknown', 'unknown'),
         ('regular', 'regular'),
         ('irregular', 'irregular'),
-        ('correspondent', 'correspondent')
+        ('correspondent', 'correspondent'),
+        ('urgent', 'urgent')
     ]
 
     mandate = models.ForeignKey('Mandate',

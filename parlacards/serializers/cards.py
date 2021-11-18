@@ -11,6 +11,7 @@ from rest_framework import serializers
 
 from parladata.models.ballot import Ballot
 from parladata.models.versionable_properties import PersonPreferredPronoun
+from parladata.models.media import MediaReport
 from parladata.models.vote import Vote
 from parladata.models.question import Question
 from parladata.models.memberships import OrganizationMembership, PersonMembership
@@ -33,6 +34,7 @@ from parlacards.models import (
     SessionGroupAttendance,
 )
 
+from parlacards.serializers.media import MediaReportSerializer
 from parlacards.serializers.person import PersonBasicInfoSerializer
 from parlacards.serializers.organization import OrganizationBasicInfoSerializer, RootOrganizationBasicInfoSerializer
 from parlacards.serializers.session import SessionSerializer
@@ -1589,3 +1591,29 @@ class SearchDropdownSerializer(CardSerializer):
             'people': people_data,
             'groups': groups_data,
         }
+
+
+class PersonMediaReportsCardSerializer(PersonScoreCardSerializer):
+    def get_results(self, obj):
+        # obj is the person
+        reports = MediaReport.objects.filter(medium__active=True, mentioned_people=obj.id)
+
+        serializer = MediaReportSerializer(
+            reports,
+            many=True,
+            context=self.context
+        )
+        return serializer.data
+
+
+class GroupMediaReportsCardSerializer(GroupScoreCardSerializer):
+    def get_results(self, obj):
+        # obj is the organization
+        reports = MediaReport.objects.filter(medium__active=True, mentioned_organizations=obj.id)
+
+        serializer = MediaReportSerializer(
+            reports,
+            many=True,
+            context=self.context
+        )
+        return serializer.data
