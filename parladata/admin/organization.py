@@ -5,6 +5,7 @@ from django.conf import settings
 
 from parladata.models import Organization, Link, PersonMembership
 from parladata.models.versionable_properties import *
+from parladata.admin.link import LinkOrganizationInline
 
 
 class OrganizationNameInline(admin.TabularInline):
@@ -24,7 +25,8 @@ class OrganizationAdmin(admin.ModelAdmin):
         # LinkPersonInline,
         OrganizationNameInline,
         OrganizationAcronymInline,
-        OrganizationEmailInline
+        OrganizationEmailInline,
+        LinkOrganizationInline,
     ]
     search_fields = ('id', 'organizationname__value') # 'name' maybe?
 

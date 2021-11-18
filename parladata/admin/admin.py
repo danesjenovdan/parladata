@@ -54,7 +54,7 @@ class SpeechForm(forms.ModelForm):
 
 class SpeechAdmin(admin.ModelAdmin):
     form = SpeechForm
-    fields = ['content', 'motions', 'speaker', 'order', 'tags', 'session', 'lemmatized_content']
+    fields = ['content', 'start_time', 'motions', 'speaker', 'order', 'tags', 'session', 'lemmatized_content']
     list_filter = (SessionListFilter, 'tags')
     search_fields = ['speaker__name', 'content']
     autocomplete_fields = ['motions', 'speaker', 'session']
