@@ -16,6 +16,19 @@ from parladata.behaviors.models import (
 )
 from colorfield.fields import ColorField
 
+CLASSIFICATIONS = [
+    ('root', 'root'),
+    ('pg', 'pg'),
+    ('commission', 'commission'),
+    ('committee', 'committee'),
+    ('council', 'council'),
+    ('delegation', 'delegation'),
+    ('friendship_group', 'friendship_group'),
+    ('investigative_commission', 'investigative_commission'),
+    ('other', 'other'),
+]
+
+
 class Organization(Timestampable, Taggable, Parsable, Sluggable, VersionableFieldsOwner):
     """A group with a common purpose or reason
     for existence that goes beyond the set of people belonging to it.
@@ -26,7 +39,8 @@ class Organization(Timestampable, Taggable, Parsable, Sluggable, VersionableFiel
 
     classification = models.TextField(_('classification'),
                                       blank=True, null=True,
-                                      help_text=('An organization category, e.g. committee'))
+                                      help_text=('An organization category, e.g. committee')
+                                      choices=CLASSIFICATIONS,)
 
     # reference to "http://popoloproject.com/schemas/organization.json#"
     parent = models.ForeignKey('Organization',

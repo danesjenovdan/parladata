@@ -15,5 +15,5 @@ class SessionSerializer(CommonCachableSerializer):
     start_time = serializers.DateTimeField()
     end_time = serializers.DateTimeField()
     organizations = CommonOrganizationSerializer(many=True)
-    classification = serializers.CharField() # TODO regular, irregular, urgent
+    classification = serializers.CharField() # TODO regular, irregular, urgent, correspondent
     in_review = serializers.BooleanField()
