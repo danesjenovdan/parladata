@@ -39,7 +39,7 @@ class Organization(Timestampable, Taggable, Parsable, Sluggable, VersionableFiel
 
     classification = models.TextField(_('classification'),
                                       blank=True, null=True,
-                                      help_text=('An organization category, e.g. committee')
+                                      help_text=('An organization category, e.g. committee'),
                                       choices=CLASSIFICATIONS,)
 
     # reference to "http://popoloproject.com/schemas/organization.json#"
