@@ -1,9 +1,11 @@
-from importlib import import_module
-
 from django.contrib import admin
+from django.utils.safestring import mark_safe
+from django.urls import reverse
+from django.conf import settings
 
 from parladata.models import Person, PersonMembership
 from parladata.models.versionable_properties import *
+
 
 class PersonNameInline(admin.TabularInline):
     model = PersonName
@@ -74,11 +76,27 @@ class ParliamentMember(Person):
 
 
 class MPAdmin(PersonAdmin):
+    list_display = ['id', 'name', 'tfidf', 'join_people']
     def get_queryset(self, request):
         MPs_ids = PersonMembership.objects.filter(role='voter').values_list('member', flat=True)
         qs = Person.objects.filter(id__in=MPs_ids)
-        if request.user.is_superuser:
-            return qs
+        return qs
+
+    def tfidf(self, obj):
+        partial_url = reverse('admin:parlacards_persontfidf_changelist')
+        url = f'{settings.BASE_URL}{partial_url}?member={obj.id}'
+        return mark_safe(f'<a href="{url}"><input type="button" value="Tfidf" /></a>')
+
+    def join_people(self, obj):
+        partial_url = '/admin/parladata/parliamentmember/mergepeople/'
+        url = f'{settings.BASE_URL}{partial_url}?real_person={obj.id}'
+        return mark_safe(f'<a href="{url}"><input type="button" value="Join people" /></a>')
+
+    tfidf.allow_tags = True
+    tfidf.short_description = 'TFIDF'
+
+    join_people.allow_tags = True
+    join_people.short_description = 'Join people'
 
 
 admin.site.register(Person, PersonAdmin)

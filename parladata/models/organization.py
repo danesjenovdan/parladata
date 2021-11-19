@@ -14,6 +14,20 @@ from parladata.behaviors.models import (
     Sluggable,
     VersionableFieldsOwner
 )
+from colorfield.fields import ColorField
+
+CLASSIFICATIONS = [
+    ('root', 'root'),
+    ('pg', 'pg'),
+    ('commission', 'commission'),
+    ('committee', 'committee'),
+    ('council', 'council'),
+    ('delegation', 'delegation'),
+    ('friendship_group', 'friendship_group'),
+    ('investigative_commission', 'investigative_commission'),
+    ('other', 'other'),
+]
+
 
 class Organization(Timestampable, Taggable, Parsable, Sluggable, VersionableFieldsOwner):
     """A group with a common purpose or reason
@@ -25,7 +39,8 @@ class Organization(Timestampable, Taggable, Parsable, Sluggable, VersionableFiel
 
     classification = models.TextField(_('classification'),
                                       blank=True, null=True,
-                                      help_text=('An organization category, e.g. committee'))
+                                      help_text=('An organization category, e.g. committee'),
+                                      choices=CLASSIFICATIONS,)
 
     # reference to "http://popoloproject.com/schemas/organization.json#"
     parent = models.ForeignKey('Organization',
@@ -42,6 +57,8 @@ class Organization(Timestampable, Taggable, Parsable, Sluggable, VersionableFiel
 
     description = models.TextField(blank=True, null=True,
                                    help_text='Organization description')
+
+    color = ColorField(default='#09a2cc')
 
     @property
     def name(self):
@@ -95,12 +112,13 @@ class Organization(Timestampable, Taggable, Parsable, Sluggable, VersionableFiel
     # of all the memberships before a given date
     #
     # why? to query speeches only for the time
-    # when the speaker was a member of the organization
+    # when the speaker was a voter member of the organization
     def query_memberships_before(self, timestamp=datetime.now()):
         return PersonMembership.valid_before(
             timestamp
         ).filter(
-            organization=self
+            on_behalf_of=self,
+            role='voter'
         )
 
     def query_organization_members(self, timestamp=datetime.now()):
@@ -122,7 +140,6 @@ class Organization(Timestampable, Taggable, Parsable, Sluggable, VersionableFiel
     def query_voters(self, timestamp=datetime.now()):
         return self.query_members_by_role('voter', timestamp)
 
-
     def query_members_by_role(self, role, timestamp=datetime.now()):
         member_ids = PersonMembership.valid_at(timestamp).filter(
             organization=self,
@@ -133,8 +150,8 @@ class Organization(Timestampable, Taggable, Parsable, Sluggable, VersionableFiel
             id__in=member_ids
         )
 
-    def query_organizations_by_role(self, role, timestamp=datetime.now()):    
-        member_ids = OrganizationMembership.valid_at(date).filter(
+    def query_organizations_by_role(self, role, timestamp=datetime.now()):
+        member_ids = OrganizationMembership.valid_at(timestamp).filter(
             organization=self,
             role=role
         ).values_list('member', flat=True)

@@ -3,6 +3,7 @@ from django.core.paginator import Paginator
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework.permissions import AllowAny
 
 from parladata.models.person import Person
 from parladata.models.organization import Organization
@@ -12,9 +13,13 @@ from parladata.models.speech import Speech
 from parladata.models.vote import Vote
 from parladata.models.legislation import Law
 
+from parlacards.models import Quote
+
 from parlacards.serializers.cards import (
+    GroupMediaReportsCardSerializer,
     PersonCardSerializer,
     GroupMembersCardSerializer,
+    PersonMediaReportsCardSerializer,
     SearchDropdownSerializer,
     SessionSpeechesCardSerializer,
     SessionTfidfCardSerializer,
@@ -66,10 +71,12 @@ from parlacards.serializers.cards import (
     MandateVotesCardSerializer,
     MandateLegislationCardSerializer,
     LegislationDetailCardSerializer,
+    SessionAgendaItemCardSerializer,
+    QuoteCardSerializer,
+    RootGroupBasicInfoCardSerializer,
 )
 from parlacards.serializers.speech import SpeechSerializer
-
-from parlacards.pagination import pagination_response_data, parse_pagination_query_params
+from parlacards.serializers.quote import QuoteSerializer
 
 from django.core.cache import cache
 
@@ -143,7 +150,7 @@ class Voters(CardView):
     '''
     Show a list of all MPs belonging to an organization.
     '''
-    thing = Organization
+    thing = Mandate
     card_serializer = VotersCardSerializer
 
 
@@ -383,6 +390,20 @@ class SingleSpeech(CardView):
     card_serializer = SpeechCardSerializer
 
 
+class SpeechQuote(CardView):
+    thing = Quote
+    card_serializer = QuoteCardSerializer
+
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        serializer = QuoteSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=201)
+        return Response(serializer.errors, status=400)
+
+
 class SingleSession(CardView):
     thing = Session
     card_serializer = SingleSessionCardSerializer
@@ -411,6 +432,11 @@ class GroupTfidfView(CardView):
 class SessionTfidfView(CardView):
     thing = Session
     card_serializer = SessionTfidfCardSerializer
+
+
+class SessionAgendaItemsView(CardView):
+    thing = Session
+    card_serializer = SessionAgendaItemCardSerializer
 
 
 class GroupMostVotesInCommon(CardView):
@@ -451,6 +477,14 @@ class GroupDiscordView(CardView):
     '''
     thing = Organization
     card_serializer = GroupDiscordCardSerializer
+
+
+class RootOrganization(CardView):
+    '''
+    Basic information of root organization.
+    '''
+    thing = Mandate
+    card_serializer = RootGroupBasicInfoCardSerializer
 
 
 class MandateVotes(CardView):
@@ -515,3 +549,19 @@ class SearchDropdown(CardView):
     '''
     thing = Mandate
     card_serializer = SearchDropdownSerializer
+
+
+class PersonMediaReportsView(CardView):
+    '''
+    A person's speeches.
+    '''
+    thing = Person
+    card_serializer = PersonMediaReportsCardSerializer
+
+
+class GroupMediaReportsView(CardView):
+    '''
+    A person's speeches.
+    '''
+    thing = Organization
+    card_serializer = GroupMediaReportsCardSerializer

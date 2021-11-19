@@ -6,6 +6,8 @@ import requests
 from django.conf import settings
 
 from parladata.models.speech import Speech
+from parladata.models.vote import Vote
+from parladata.models.legislation import Law
 
 
 def one_month_later(date, shorten_for=0):
@@ -53,7 +55,9 @@ def solr_select(
     facet=False,
     page=1,
     per_page=20,
-    document_type='speech'
+    document_type='speech',
+    fl='speech_id',
+    mandate=None
 ):
     # TODO solr timeout
     # TODO solr offline
@@ -64,6 +68,8 @@ def solr_select(
         q_params += f' AND party_id:({" OR ".join(map(lambda x: str(x), group_ids))})' # TODO rename to group_id
     if months:
         q_params += f' AND start_time:({" OR ".join(map(lambda x: process_month_string(x), months))})'
+    if mandate:
+        q_params += f' AND term:{mandate}'
 
     params = {
         'wt': 'json',
@@ -71,7 +77,7 @@ def solr_select(
         'rows': per_page,
         'start': (page - 1) * per_page,
         'q': q_params,
-        'fl': 'speech_id'
+        'fl': fl
     }
 
     if highlight:
@@ -202,8 +208,10 @@ def get_speeches_from_solr(
     facet=False,
     page=1,
     per_page=20,
-    document_type='speech'
+    document_type='speech',
+    mandate=None
 ):
+    #TODO make search by mandate
     solr_response = solr_select(
         text_query=text_query,
         people_ids=people_ids,
@@ -213,13 +221,19 @@ def get_speeches_from_solr(
         facet=facet,
         page=page,
         per_page=per_page,
-        document_type=document_type
+        document_type=document_type,
+        mandate=mandate
     )
 
     speech_ids = [solr_doc['speech_id'] for solr_doc in solr_response['response']['docs']]
 
     # get speeches into memory from the db
     speeches = list(Speech.objects.filter(id__in=speech_ids))
+
+    # if len(speech_ids) != len(speeches):
+        # this means that solr still has old speech ids
+        # most likely upload_speeches_to_solr was not run
+        # TODO: report this error somehow
 
     for speech in speeches:
         if solr_response['highlighting'].get(f'speech_{speech.id}', {}).get('content', False):
@@ -242,8 +256,38 @@ def parse_search_query_params(params, **overrides):
         parsed_params['people_ids'] = params['people'].split(',')
     if params.get('groups', False):
         parsed_params['group_ids'] = params['groups'].split(',')
+    if params.get('mandate', False):
+        parsed_params['mandate'] = params['mandate']
 
     return {
         **parsed_params,
         **overrides,
     }
+
+
+def get_votes_from_solr(text_query='*', mandate=None, page=1, per_page=20):
+    solr_response = solr_select(
+        text_query=text_query,
+        page=page,
+        per_page=per_page,
+        document_type='vote',
+        fl="vote_id",
+        mandate=mandate
+    )
+    vote_ids = [solr_doc['vote_id'] for solr_doc in solr_response['response']['docs']]
+    votes = list(Vote.objects.filter(id__in=vote_ids))
+    return (votes, solr_response['response']['numFound'])
+
+
+def get_legislation_from_solr(text_query='*', mandate=None, page=1, per_page=20):
+    solr_response = solr_select(
+        text_query=text_query,
+        page=page,
+        per_page=per_page,
+        document_type='law',
+        fl="law_id",
+        mandate=mandate
+    )
+    law_ids = [solr_doc['law_id'] for solr_doc in solr_response['response']['docs']]
+    legislation = list(Law.objects.filter(id__in=law_ids))
+    return (legislation, solr_response['response']['numFound'])

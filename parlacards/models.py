@@ -163,3 +163,27 @@ class SessionGroupAttendance(SessionScore):
 
 class GroupDiscord(GroupScore):
     pass
+
+
+class Quote(Timestampable):
+    """Model for quoted text from speeches."""
+    speech = models.ForeignKey(
+        'parladata.Speech',
+        related_name="quotes",
+        on_delete=models.CASCADE
+    )
+
+    quote_content = models.TextField(
+        blank=True, null=True,
+        help_text='text quoted in a speech'
+    )
+
+    start_index = models.IntegerField(
+        blank=True, null=True,
+        help_text='index of first character of quote string'
+    )
+
+    end_index = models.IntegerField(
+        blank=True, null=True,
+        help_text='index of last character of quote string'
+    )

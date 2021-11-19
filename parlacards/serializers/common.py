@@ -11,6 +11,8 @@ from parladata.models.person import Person
 from parladata.models.organization import Organization
 from parladata.models.common import Mandate
 
+from datetime import datetime
+
 class VersionableSerializerField(serializers.Field):
     def __init__(self, property_model_name, **kwargs):
         self.property_model_name = property_model_name
@@ -252,7 +254,14 @@ class SessionScoreCardSerializer(CardSerializer):
 
 class CommonPersonSerializer(CommonCachableSerializer):
     def calculate_cache_key(self, instance):
-        return f'CommonPersonSerializer_{instance.id}_{instance.updated_at.strftime("%Y-%m-%d-%H-%M-%s")}'
+        organization = instance.parliamentary_group_on_date(datetime.now())
+
+        if organization:
+            timestamp = max([instance.updated_at, organization.updated_at])
+        else:
+            timestamp = instance.updated_at
+
+        return f'CommonPersonSerializer_{instance.id}_{timestamp.strftime("%Y-%m-%d-%H-%M-%s")}'
 
     def get_group(self, obj):
         active_parliamentary_group_membership = obj.parliamentary_group_on_date(self.context['date'])
@@ -282,6 +291,7 @@ class CommonOrganizationSerializer(CommonCachableSerializer):
     name = VersionableSerializerField(property_model_name='OrganizationName')
     acronym = VersionableSerializerField(property_model_name='OrganizationAcronym')
     slug = serializers.CharField()
+    color = serializers.CharField()
 
 
 class CommonSessionSerializer(CommonCachableSerializer):

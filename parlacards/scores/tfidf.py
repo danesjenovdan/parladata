@@ -1,3 +1,4 @@
+from django.db.models import Q
 from datetime import datetime
 from parladata.models.session import Session
 
@@ -8,7 +9,7 @@ from parladata.models.speech import Speech
 from parlacards.models import PersonTfidf, GroupTfidf, SessionTfidf
 
 from parlacards.scores.common import (
-    get_stopwords,
+    get_lemmatize_method,
     get_dates_between,
     get_fortnights_between
 )
@@ -29,8 +30,9 @@ def calculate_people_tfidf(playing_field, timestamp=datetime.now()):
     playing_field_speeches = Speech.objects.filter_valid_speeches(
         timestamp
     ).filter(
+        Q(start_time__lte=timestamp) | Q(start_time__isnull=True),
         speaker__id__in=competitor_ids,
-        start_time__lte=timestamp
+        lemmatized_content__isnull=False
     )
 
     all_speeches = [
@@ -43,12 +45,12 @@ def calculate_people_tfidf(playing_field, timestamp=datetime.now()):
             )
         ) for competitor_id in competitor_ids
     ]
-
+    get_stopwords = get_lemmatize_method("get_stopwords")
     tfidfVectorizer = TfidfVectorizer(
         lowercase=False, # do not transform to lowercase
         preprocessor=lambda x: x, # do not preprocess
         tokenizer=lambda x: x.split(' '), # tokenize by splitting at ' '
-        stop_words=get_stopwords('sl'),
+        stop_words=get_stopwords(),
         use_idf=True
     )
 
@@ -115,20 +117,21 @@ def calculate_groups_tfidf(playing_field, timestamp=datetime.now()):
             Speech.objects.filter_valid_speeches(
                 timestamp
             ).filter(
+                Q(start_time__lte=timestamp) | Q(start_time__isnull=True),
                 speaker__id__in=group.query_members(timestamp).values('id'),
-                start_time__lte=timestamp
+                lemmatized_content__isnull=False,
             ).values_list(
                 'lemmatized_content',
                 flat=True
             )
         ) for group in groups
     ]
-
+    get_stopwords = get_lemmatize_method("get_stopwords")
     tfidfVectorizer = TfidfVectorizer(
         lowercase=False, # do not transform to lowercase
         preprocessor=lambda x: x, # do not preprocess
         tokenizer=lambda x: x.split(' '), # tokenize by splitting at ' '
-        stop_words=get_stopwords('sl'),
+        stop_words=get_stopwords(),
         use_idf=True
     )
 
@@ -194,8 +197,9 @@ def calculate_sessions_tfidf(playing_field, timestamp=datetime.now()):
     playing_field_speeches = Speech.objects.filter_valid_speeches(
         timestamp
     ).filter(
+        Q(start_time__lte=timestamp) | Q(start_time__isnull=True),
         session__id__in=session_ids,
-        start_time__lte=timestamp
+        lemmatized_content__isnull=False,
     )
 
     all_speeches = [
@@ -209,11 +213,12 @@ def calculate_sessions_tfidf(playing_field, timestamp=datetime.now()):
         ) for session_id in session_ids
     ]
 
+    get_stopwords = get_lemmatize_method("get_stopwords")
     tfidfVectorizer = TfidfVectorizer(
         lowercase=False, # do not transform to lowercase
         preprocessor=lambda x: x, # do not preprocess
         tokenizer=lambda x: x.split(' '), # tokenize by splitting at ' '
-        stop_words=get_stopwords('sl'),
+        stop_words=get_stopwords(),
         use_idf=True
     )
 

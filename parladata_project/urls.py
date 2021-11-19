@@ -3,16 +3,19 @@ from django.urls import path
 from django.conf.urls.static import static
 from django.contrib import admin
 from django.conf import settings
+
 import debug_toolbar
-
-
 from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, SpectacularSwaggerView
+
+from parladata.views import merge_people, add_ballots
 
 urlpatterns = [
     # authentication
     path('oauth/', include(('oauth2_provider.urls', 'oauth'), namespace='oauth2_provider')),
 
     # admin views
+    path('admin/parladata/parliamentmember/mergepeople/', merge_people),
+    path('admin/parladata/vote/addballots/', add_ballots),
     path('admin/', admin.site.urls),
 
     # REST api
@@ -29,4 +32,7 @@ urlpatterns = [
 
     # Django debug toolbar
     path('__debug__/', include(debug_toolbar.urls)),
+
+    # martor markdown editor
+    path('martor/', include('martor.urls')),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
