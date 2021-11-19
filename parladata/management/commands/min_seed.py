@@ -168,7 +168,8 @@ class Command(BaseCommand):
         person_pfc_1_education.save()
         # add education level
         person_pfc_1_education_level = PersonEducationLevel(
-            value=8,
+            # TODO: fix
+            # value=8,
             owner=person_pfc_1
         )
         person_pfc_1_education_level.save()
@@ -225,7 +226,8 @@ class Command(BaseCommand):
         person_pfc_2_education.save()
         # add education level
         person_pfc_2_education_level = PersonEducationLevel(
-            value=9,
+            # TODO: fix
+            # value=9,
             owner=person_pfc_2
         )
         person_pfc_2_education_level.save()
@@ -281,7 +283,8 @@ class Command(BaseCommand):
         person_pfo_1_education.save()
         # add education level
         person_pfo_1_education_level = PersonEducationLevel(
-            value=7,
+            # TODO: fix
+            # value=7,
             owner=person_pfo_1
         )
         person_pfo_1_education_level.save()
