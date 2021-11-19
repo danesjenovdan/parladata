@@ -4,7 +4,9 @@ from django.db import models
 
 from parladata.behaviors.models import Versionable, Timestampable, Taggable
 
-from parlacards.scores.common import tokenize, remove_punctuation, lemmatize_many
+from parlacards.scores.common import tokenize, remove_punctuation, get_lemmatize_method
+
+
 
 class ValidSpeechesManager(models.Manager):
     def filter_valid_speeches(self, timestamp=datetime.now()):
@@ -52,11 +54,11 @@ class Speech(Versionable, Timestampable, Taggable):
 
     def __str__(self):
         return f'{self.speaker.name} @ {self.session.name}:{self.order}'
-    
+
     def lemmatize_self(self):
         if self.lemmatized_content:
             return
-        
+        lemmatize_many = get_lemmatize_method('lemmatize_many')
         self.lemmatized_content = ' '.join(
             [lemmatized_token for lemmatized_token in lemmatize_many(
                 tokenize(
@@ -72,7 +74,7 @@ class Speech(Versionable, Timestampable, Taggable):
     def agenda_item(self):
         if self.agenda_items.all().count() > 1:
             raise Exception('This session belongs to multiple agenda items. Use the plural form "agenda_items".')
-        
+
         return self.agenda_items.first()
 
     @property

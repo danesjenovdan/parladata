@@ -9,6 +9,7 @@ from parladata.models.person import Person
 from parladata.models.ballot import Ballot
 
 from parlacards.serializers.session import SessionSerializer
+from parlacards.serializers.link import LinkSerializer
 
 from parlacards.serializers.common import (
     CommonSerializer,
@@ -131,22 +132,37 @@ class VoteSumsSerializer(CommonCachableSerializer):
         return representation
 
 
+class VoteStatsSerializer(CommonCachableSerializer):
+    def calculate_cache_key(self, instance):
+        # instance is the vote
+        return f'VoteStatsSerializer_{instance.id}_{instance.updated_at.strftime("%Y-%m-%d-%H-%M-%s")}'
+
+    # for is a reserved word FML
+    def to_representation(self, instance):
+        # instance is vote
+        cache_key = self.calculate_cache_key(instance)
+        cached_representation = cache.get(cache_key)
+        if cached_representation:
+            return cached_representation
+
+        representation = instance.get_stats()
+        cache.set(cache_key, representation)
+        return representation
+
+
 class VoteSerializer(CommonSerializer):
     def get_government_sides(self, obj):
         # obj is the vote
+        coalition_stats = obj.get_stats(gov_side='coalition')
+        if not coalition_stats:
+            return []
+        coalition_options = obj.get_option_counts(gov_side='coalition')
+        opposition_stats = obj.get_stats(gov_side='opposition')
+        opposition_options = obj.get_option_counts(gov_side='opposition')
         return [
             {
-                'max': {
-                    'max_option': 'for',
-                    'max_option_percentage': 97.67441860465115
-                },
-                'votes': {
-                    'absent': 1.0,
-                    'abstain': 0.0,
-                    'for': 42.0,
-                    'against': 0.0
-                },
-                'outliers': [],
+                'stats': coalition_stats,
+                'votes': coalition_options,
                 'group': {
                     'name': 'Coalition',
                     'acronym': None,
@@ -154,17 +170,8 @@ class VoteSerializer(CommonSerializer):
                 }
             },
             {
-                'max': {
-                    'max_option': 'against',
-                    'max_option_percentage': 48.93617021276596
-                },
-                'votes': {
-                    'absent': 4.0,
-                    'abstain': 18.0,
-                    'for': 2.0,
-                    'against': 23.0
-                },
-                'outliers': [],
+                'stats': opposition_stats,
+                'votes': opposition_options,
                 'group': {
                     'name': 'Opposition',
                     'acronym': None,
@@ -186,13 +193,12 @@ class VoteSerializer(CommonSerializer):
 
     def get_result(self, obj):
         # obj is the vote
-        # TODO use VoteSumsSerializer for max
-        return {
-            'is_outlier': False, # TODO this is faked
-            'passed': obj.motion.result,
-            'max_option_percentage': 51, # TODO this is faked, it's the percentage of progress bar to fill on the front
-            'max_option': 'for', # TODO this is faked
-        }
+        serializer = VoteStatsSerializer(
+            obj,
+            context=self.context
+        )
+        return serializer.data
+
 
     def get_members(self, obj):
         # obj is the vote
@@ -221,7 +227,10 @@ class VoteSerializer(CommonSerializer):
         return None
 
     def get_documents(self, obj):
-        return None
+        return LinkSerializer(
+            obj.motion.links.all(),
+            many=True
+        ).data
 
     def get_legislation(self, obj):
         return None
@@ -235,7 +244,7 @@ class VoteSerializer(CommonSerializer):
         return serializer.data
 
     all_votes = serializers.SerializerMethodField()
-    government_sides = serializers.SerializerMethodField() # TODO this is faked
+    government_sides = serializers.SerializerMethodField()
     abstract_visible = serializers.SerializerMethodField() # TODO this is faked
     session = serializers.SerializerMethodField()
     result = serializers.SerializerMethodField()
@@ -243,7 +252,7 @@ class VoteSerializer(CommonSerializer):
     groups = serializers.SerializerMethodField()
     id = serializers.IntegerField()
     agenda_items = serializers.SerializerMethodField() # TODO this is faked
-    documents = serializers.SerializerMethodField() # TODO this is faked
+    documents = serializers.SerializerMethodField()
     title = serializers.CharField(source='name')
     legislation = serializers.SerializerMethodField() # TODO this is faked
 
@@ -300,7 +309,6 @@ class BareVoteSerializer(SessionVoteSerializer):
     session = serializers.SerializerMethodField()
 
 
-# TODO THIS IS ALL FAKED OMG HACK WARNING ERROR
 class SpeechVoteSerializer(CommonSerializer):
     result = serializers.SerializerMethodField()
     id = serializers.IntegerField()
@@ -309,25 +317,16 @@ class SpeechVoteSerializer(CommonSerializer):
 
     def get_result(self, obj):
         # obj is the vote
-        options = dict(Counter(list(obj.ballots.values_list('option', flat=True)))) # TODO maybe do this directly on the db
-        max_option = max(options, key=options.get)
-        max_votes = options[max_option]
-        all_votes = sum(options.values())
-        max_percentage = max_votes*100/all_votes
-        return {
-            'is_outlier': False, # TODO this is faked
-            'passed': obj.motion.result,
-            'max_option_percentage': max_percentage,
-            'max_option': max_option,
-        }
+        serializer = VoteStatsSerializer(
+            obj,
+            context=self.context
+        )
+        return serializer.data
 
     def get_votes(self, obj):
-        data = {
-            'for': 0,
-            'against': 0,
-            'absent': 0,
-            'abstain': 0
-        }
-        options = dict(Counter(list(obj.ballots.values_list('option', flat=True)))) # TODO maybe do this directly on the db
-        data.update(options)
-        return data
+        # obj is the vote
+        serializer = VoteSumsSerializer(
+            obj,
+            context=self.context
+        )
+        return serializer.data

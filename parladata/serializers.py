@@ -122,6 +122,7 @@ class LinkSerializer(TaggitSerializer, serializers.ModelSerializer):
 class MotionSerializer(serializers.ModelSerializer):
     vote = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
     links = LinkSerializer(many=True, read_only=True)
+    tags = TagListSerializerField(required=False)
     class Meta:
         model = Motion
         fields = '__all__'
@@ -178,7 +179,20 @@ class OrganizationMembershipSerializer(serializers.ModelSerializer):
             'end_time'
         )
 
+
 class MandateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Mandate
+        fields = '__all__'
+
+
+class MediumSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Medium
+        fields = '__all__'
+
+
+class MediaReportSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = MediaReport
         fields = '__all__'

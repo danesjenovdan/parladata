@@ -12,6 +12,7 @@ urlpatterns = [
     path('misc/last-session/', LastSession.as_view()),
     path('misc/search/', SearchDropdown.as_view()),
     path('misc/menu-search/', SearchDropdown.as_view()),
+    path('misc/basic-information/', RootOrganization.as_view()),
 
     path('person/basic-information/', PersonInfo.as_view()),
     path('person/vocabulary-size/', VocabularySize.as_view()),
@@ -30,6 +31,7 @@ urlpatterns = [
     path('person/number-of-spoken-words/', PersonNumberOfSpokenWords.as_view()),
     path('person/tfidf/', PersonTfidfView.as_view()),
     path('person/speeches/', PersonSpeechesView.as_view()),
+    path('person/media-reports/', PersonMediaReportsView.as_view()),
 
     path('group/basic-information/', GroupInfo.as_view()),
     path('group/members/', GroupMembers.as_view()),
@@ -46,14 +48,17 @@ urlpatterns = [
     path('group/style-scores/', GroupStyleScores.as_view()),
     path('group/speeches/', GroupSpeechesView.as_view()),
     path('group/discord/', GroupDiscordView.as_view()),
+    path('group/media-reports/', GroupMediaReportsView.as_view()),
 
     path('session/legislation/', SessionLegislation.as_view()),
     path('session/speeches/', SessionSpeeches.as_view()),
     path('session/votes/', SessionVotes.as_view()),
     path('session/single/', SingleSession.as_view()),
     path('session/tfidf/', SessionTfidfView.as_view()),
+    path('session/agenda-items/', SessionAgendaItemsView.as_view()),
 
     path('speech/single/', SingleSpeech.as_view()),
+    path('speech/quote/', SpeechQuote.as_view()),
 
     path('vote/single/', SingleVote.as_view()),
     path('legislation/single/', SingleLegislation.as_view()),

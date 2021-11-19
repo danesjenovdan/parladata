@@ -44,6 +44,11 @@ def test_misc_menu_search():
     assert response.status_code == 200
 
 @pytest.mark.django_db()
+def test_misc_basic_information():
+    response = client.get('/v3/cards/misc/basic-information/?id=1')
+    assert response.status_code == 200
+
+@pytest.mark.django_db()
 def test_person_basic_information():
     response = client.get('/v3/cards/person/basic-information/?id=6')
     assert response.status_code == 200
@@ -122,6 +127,11 @@ def test_person_number_of_spoken_words():
 @pytest.mark.django_db()
 def test_person_tfidf():
     response = client.get('/v3/cards/person/tfidf/?id=6')
+    assert response.status_code == 200
+
+@pytest.mark.django_db()
+def test_person_media_reports():
+    response = client.get('/v3/cards/person/media-reports/?id=6')
     assert response.status_code == 200
 
 # TODO: needs settings.SOLR_URL
@@ -206,6 +216,11 @@ def test_group_discord_with_nonexistent_id():
     response = client.get('/v3/cards/group/discord/?id=12000')
     assert response.status_code == 404
 
+@pytest.mark.django_db()
+def test_group_media_reports():
+    response = client.get('/v3/cards/group/media-reports/?id=6')
+    assert response.status_code == 200
+
 # TODO: needs settings.SOLR_URL
 # @pytest.mark.django_db()
 # def test_group_speeches():
@@ -248,6 +263,11 @@ def test_single_session():
     assert response.status_code == 200
 
 @pytest.mark.django_db()
+def test_session_agenda_items():
+    response = client.get('/v3/cards/session/agenda-items/?id=1')
+    assert response.status_code == 200
+
+@pytest.mark.django_db()
 def test_single_law():
     response = client.get('/v3/cards/legislation/single/?id=1')
     assert response.status_code == 200
@@ -285,3 +305,34 @@ def test_search_votes():
 def test_search_legislation():
     response = client.get('/v3/cards/search/legislation/?id=1')
     assert response.status_code == 200
+
+@pytest.mark.django_db()
+def test_create_and_get_quote():
+    response = client.post(
+        '/v3/cards/speech/quote/',
+        {
+            'speech': 1,
+            'start_index': 6,
+            'end_index': 9,
+            'quote_content': 'dan'
+        }
+    )
+    assert response.status_code == 201
+
+    response = client.get('/v3/cards/speech/quote/?id=1')
+    assert response.status_code == 200
+
+
+@pytest.mark.django_db()
+def test_validation_error_on_create_quote():
+    response = client.post(
+        '/v3/cards/speech/quote/',
+        {
+            'speech': 1,
+            'start_index': 6,
+            'end_index': 10,
+            'quote_content': 'ivan'
+        }
+    )
+    assert response.status_code == 400
+    assert 'quote_content' in response.json().keys()

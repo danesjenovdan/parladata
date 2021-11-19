@@ -2,6 +2,11 @@ from django.db import models
 
 from parladata.behaviors.models import Timestampable
 
+QUESTION_TYPES = [
+        ('question', 'question'),
+        ('initiative', 'initiative'),
+    ]
+
 class Question(Timestampable):
     """All questions from members of parlament."""
 
@@ -42,9 +47,11 @@ class Question(Timestampable):
                                       null=True,
                                       help_text='Recipient name as written on dz-rs.si')
 
-    # TODO make this into a choice field
-    type_of_question = models.TextField(blank=True,
-                                   null=True)
+    type_of_question = models.TextField(
+        blank=True,
+        null=True,
+        choices=QUESTION_TYPES,
+    )
 
     def __str__(self):
         author_names = [author.name for author in self.authors.all()]

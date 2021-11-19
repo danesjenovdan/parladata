@@ -4,7 +4,7 @@ from django.contrib.contenttypes.models import ContentType
 
 from parladata.models import (
     Motion, Vote, Organization, OrganizationMembership, Person, Session, Area, Law, Link,
-    Mandate, PersonMembership, Speech
+    Mandate, PersonMembership, Speech, OrganizationEmail, AgendaItem, Ballot, Question, Document
 )
 from parladata.models.versionable_properties import (
     PersonPreviousOccupation, PersonName, PersonEducation, PersonNumberOfMandates, PersonEmail,
@@ -27,9 +27,9 @@ class Command(BaseCommand):
         models = [
             Motion, Vote, Organization, OrganizationMembership, Person, Session, PersonPreviousOccupation,
             PersonName, PersonEducation, PersonNumberOfMandates, PersonEmail, PersonPreferredPronoun,
-            PersonNumberOfVoters, PersonNumberOfPoints, OrganizationName, OrganizationAcronym,
+            PersonNumberOfVoters, PersonNumberOfPoints, OrganizationName, OrganizationEmail, OrganizationAcronym,
             PersonTfidf, GroupTfidf, SessionTfidf, Area, Law, Link, Mandate, PersonEducationLevel,
-            PersonMembership, Speech, Tag
+            PersonMembership, Speech, Tag, AgendaItem, Ballot, Question, Document
         ]
 
         editor, created = Group.objects.get_or_create(name='editor')
