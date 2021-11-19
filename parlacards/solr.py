@@ -230,6 +230,11 @@ def get_speeches_from_solr(
     # get speeches into memory from the db
     speeches = list(Speech.objects.filter(id__in=speech_ids))
 
+    # if len(speech_ids) != len(speeches):
+        # this means that solr still has old speech ids
+        # most likely upload_speeches_to_solr was not run
+        # TODO: report this error somehow
+
     for speech in speeches:
         if solr_response['highlighting'].get(f'speech_{speech.id}', {}).get('content', False):
             speech.content = '[...]'.join(

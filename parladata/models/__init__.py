@@ -14,3 +14,4 @@ from parladata.models.agenda_item import AgendaItem
 from parladata.models.question import Question
 from parladata.models.link import Link
 from parladata.models.document import Document
+from parladata.models.media import Medium, MediaReport

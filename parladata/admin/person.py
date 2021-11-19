@@ -6,6 +6,7 @@ from django.conf import settings
 from parladata.models import Person, PersonMembership
 from parladata.models.versionable_properties import *
 
+
 class PersonNameInline(admin.TabularInline):
     model = PersonName
     extra = 0
