@@ -4,7 +4,7 @@ psycopg2-binary
 djangorestframework
 django-filter
 gunicorn
-django-taggit
+django-taggit==1.5.1
 django-oauth-toolkit
 django-extensions
 ipython
@@ -32,6 +32,7 @@ pylibmc
 martor
 django-colorfield
 django-admin-sortable2
+pyicu
 
 # tagger/lemmatizer
 sklearn

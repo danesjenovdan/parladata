@@ -22,6 +22,8 @@ router.register(r'areas', AreaView)
 router.register(r'agenda-items', AgendaItemView)
 router.register(r'questions', QuestionView)
 router.register(r'organization-memberships', OrganizationMembershipsViewSet)
+router.register(r'media', MediumView)
+router.register(r'media-reports', MediaReportView)
 
 urlpatterns = [
     url(r'^', include(router.urls)),

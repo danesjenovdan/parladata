@@ -36,9 +36,14 @@ services:
       POSTGRES_DB: parladata
     ports:
       - 5432:5432
+    volumes:
+      - pgdata:/var/lib/postgresql/data
 
   cache:
-   image: memcached
-   entrypoint:
-    - memcached
-    - -m 64
+    image: memcached
+    entrypoint:
+      - memcached
+      - -m 64
+
+volumes:
+  pgdata:
