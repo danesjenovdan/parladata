@@ -13,7 +13,7 @@ class SessionLinkInline(admin.TabularInline):
     extra = 0
 
 class SessionAdmin(admin.ModelAdmin):
-    # autocomplete_fields = ['mandate', 'organization', 'organizations']
+    autocomplete_fields = ['mandate', 'organizations']
     inlines = [
         SessionLinkInline
         # SpeechSessionInline,
