@@ -129,6 +129,11 @@ def test_person_tfidf():
     response = client.get('/v3/cards/person/tfidf/?id=6')
     assert response.status_code == 200
 
+@pytest.mark.django_db()
+def test_person_media_reports():
+    response = client.get('/v3/cards/person/media-reports/?id=6')
+    assert response.status_code == 200
+
 # TODO: needs settings.SOLR_URL
 # @pytest.mark.django_db()
 # def test_person_speeches():
@@ -210,6 +215,11 @@ def test_group_discord():
 def test_group_discord_with_nonexistent_id():
     response = client.get('/v3/cards/group/discord/?id=12000')
     assert response.status_code == 404
+
+@pytest.mark.django_db()
+def test_group_media_reports():
+    response = client.get('/v3/cards/group/media-reports/?id=6')
+    assert response.status_code == 200
 
 # TODO: needs settings.SOLR_URL
 # @pytest.mark.django_db()

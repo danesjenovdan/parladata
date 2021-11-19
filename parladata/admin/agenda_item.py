@@ -2,6 +2,7 @@ from django.contrib import admin
 from django.db import models
 
 from parladata.models import AgendaItem, Link
+from parladata.admin.filters import SessionListFilter
 
 class LinkAgendaItemInline(admin.TabularInline):
     model = Link
@@ -15,7 +16,7 @@ class AgendaItemAdmin(admin.ModelAdmin):
         LinkAgendaItemInline,
     ]
     list_display = ('name', 'session',)
-    list_filter = ('session',)
+    list_filter = (SessionListFilter,)
     search_fields = ['name']
     autocomplete_fields = ['session']
 

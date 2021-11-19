@@ -179,7 +179,20 @@ class OrganizationMembershipSerializer(serializers.ModelSerializer):
             'end_time'
         )
 
+
 class MandateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Mandate
+        fields = '__all__'
+
+
+class MediumSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Medium
+        fields = '__all__'
+
+
+class MediaReportSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = MediaReport
         fields = '__all__'

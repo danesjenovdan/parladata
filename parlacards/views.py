@@ -16,8 +16,10 @@ from parladata.models.legislation import Law
 from parlacards.models import Quote
 
 from parlacards.serializers.cards import (
+    GroupMediaReportsCardSerializer,
     PersonCardSerializer,
     GroupMembersCardSerializer,
+    PersonMediaReportsCardSerializer,
     SearchDropdownSerializer,
     SessionSpeechesCardSerializer,
     SessionTfidfCardSerializer,
@@ -75,8 +77,6 @@ from parlacards.serializers.cards import (
 )
 from parlacards.serializers.speech import SpeechSerializer
 from parlacards.serializers.quote import QuoteSerializer
-
-from parlacards.pagination import pagination_response_data, parse_pagination_query_params
 
 from django.core.cache import cache
 
@@ -549,3 +549,19 @@ class SearchDropdown(CardView):
     '''
     thing = Mandate
     card_serializer = SearchDropdownSerializer
+
+
+class PersonMediaReportsView(CardView):
+    '''
+    A person's speeches.
+    '''
+    thing = Person
+    card_serializer = PersonMediaReportsCardSerializer
+
+
+class GroupMediaReportsView(CardView):
+    '''
+    A person's speeches.
+    '''
+    thing = Organization
+    card_serializer = GroupMediaReportsCardSerializer
