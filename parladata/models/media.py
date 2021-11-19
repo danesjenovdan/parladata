@@ -26,6 +26,8 @@ class Medium(Timestampable):
 
 
 class MediaReport(Timestampable):
+    uri = models.TextField(editable=False)
+
     title = models.TextField(
         verbose_name=_('title'),
         help_text=_('Report title'),
