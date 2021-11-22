@@ -75,10 +75,10 @@ def notify_editors_for_new_data():
     new_motions = Motion.objects.filter(created_at__gte=yeterday)
     new_speeches = Speech.objects.filter(created_at__gte=yeterday)
     editor_group = Group.objects.filter(name__icontains="editor").first()
-    sessions = new_speeches.values_list('session__name', flat=True).distinct('session__name')
+    sessions = [speech.session for  speech in new_speeches.distinct('session')]
     new_people = Person.objects.filter(created_at__gte=yeterday)
     new_voters = Person.objects.filter(ballots__isnull=False, person_memberships__isnull=True).distinct('id')
-    
+
     if new_motions or new_speeches or new_people:
         for editor in editor_group.user_set.all():
             send_email(
