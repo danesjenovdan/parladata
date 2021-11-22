@@ -4,11 +4,11 @@ from django.contrib.contenttypes.models import ContentType
 
 from parladata.models import (
     Motion, Vote, Organization, OrganizationMembership, Person, Session, Area, Law, Link,
-    Mandate, PersonMembership, Speech, OrganizationEmail, AgendaItem, Ballot, Question, Document
+    Mandate, PersonMembership, Speech, AgendaItem, Ballot, Question, Document
 )
 from parladata.models.versionable_properties import (
     PersonPreviousOccupation, PersonName, PersonEducation, PersonNumberOfMandates, PersonEmail,
-    PersonPreferredPronoun, PersonNumberOfVoters, PersonNumberOfPoints, OrganizationName,
+    PersonPreferredPronoun, PersonNumberOfVoters, PersonNumberOfPoints, OrganizationName, OrganizationEmail,
     OrganizationAcronym, PersonEducationLevel
 )
 from parlacards.models import PersonTfidf, GroupTfidf, SessionTfidf
