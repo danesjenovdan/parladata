@@ -9,6 +9,8 @@ from collections import Counter
 
 class VoteAdmin(admin.ModelAdmin):
     list_display = ('id', 'name', 'the_tags', 'get_for', 'get_against', 'get_abstain', 'get_abesnt', 'needs_editing', 'add_ballots')
+    # set order of fields in the dashboard
+    fields = ['name', 'timestamp', 'motion', 'result', 'needs_editing', 'tags']
 
     list_filter = ('tags',)
     inlines = [
