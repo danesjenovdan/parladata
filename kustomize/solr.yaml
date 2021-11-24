@@ -30,22 +30,23 @@ spec:
         livenessProbe:
           tcpSocket:
             port: http
-          initialDelaySeconds: 10
-          periodSeconds: 15
+          initialDelaySeconds: 40
+          periodSeconds: 30
+          timeoutSeconds: 5
         readinessProbe:
           httpGet:
             path: /solr/parlasearch/admin/ping
             port: http
-          initialDelaySeconds: 15
+          initialDelaySeconds: 30
           periodSeconds: 30
           timeoutSeconds: 5
         resources:
           requests:
             memory: 1Gi
-            cpu: 500m
+            cpu: 100m
           limits:
             memory: 1Gi
-            cpu: 500m
+            cpu: 100m
       initContainers:
       - name: create-core
         image: parlasolr-ua
@@ -59,10 +60,10 @@ spec:
         resources:
           requests:
             memory: 1Gi
-            cpu: 500m
+            cpu: 100m
           limits:
             memory: 1Gi
-            cpu: 500m
+            cpu: 100m
       - name: link-config-1
         image: parlasolr-ua
         command: ['cp', '-f', '/parlasearch-conf/schema.xml', '/var/solr/data/parlasearch/conf/']
@@ -72,11 +73,11 @@ spec:
           mountPath: /var/solr/data
         resources:
           requests:
-            memory: 200Mi
-            cpu: 100m
+            memory: 100Mi
+            cpu: 50m
           limits:
-            memory: 200Mi
-            cpu: 100m
+            memory: 100Mi
+            cpu: 50m
       - name: link-config-2
         image: parlasolr-ua
         command: ['cp', '-f', '/parlasearch-conf/solrconfig.xml', '/var/solr/data/parlasearch/conf/']
@@ -86,11 +87,11 @@ spec:
           mountPath: /var/solr/data
         resources:
           requests:
-            memory: 200Mi
-            cpu: 100m
+            memory: 100Mi
+            cpu: 50m
           limits:
-            memory: 200Mi
-            cpu: 100m
+            memory: 100Mi
+            cpu: 50m
   volumeClaimTemplates:
   - metadata:
       name: parlasolr-ua-persistent-storage
