@@ -54,7 +54,7 @@ class SpeechForm(forms.ModelForm):
 
 class SpeechAdmin(admin.ModelAdmin):
     form = SpeechForm
-    fields = ['content', 'start_time', 'motions', 'speaker', 'order', 'tags', 'session', 'lemmatized_content']
+    fields = ['session', 'content', 'speaker', 'order', 'motions', 'start_time', 'tags', 'lemmatized_content', 'agenda_items']
     list_filter = (SessionListFilter, 'tags')
     search_fields = ['speaker__name', 'content']
     autocomplete_fields = ['motions', 'speaker', 'session']
@@ -86,6 +86,7 @@ class QuestionAdmin(admin.ModelAdmin):
         LinkQuestionInline
     ]
     list_filter = ('type_of_question', SessionListFilter, AuthorsListFilter)
+    fields = ['title', 'session', 'authors', 'recipient_people', 'recipient_organizations', 'recipient_text', 'type_of_question', 'timestamp', 'answer_timestamp']
 
 
 class DocumentAdmin(admin.ModelAdmin):
