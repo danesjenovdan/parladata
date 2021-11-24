@@ -1,12 +1,12 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
-namespace: parlameter
+namespace: parlameter-ua
 resources:
   # - statefulset.yaml
   - deployment.yaml
   - service.yaml
   - ingress.yaml
 images:
-  - name: parladata
-    newName: rg.fr-par.scw.cloud/djnd/parladata
-    newTag: '599fdfecb3214afd8183d615fe83018892e643cc'
+  - name: parladata-ua
+    newName: rg.fr-par.scw.cloud/djnd/parladata-ua
+    newTag: 'ea329c91633a13f0407e56994ffe93d4ecfd0d52'
