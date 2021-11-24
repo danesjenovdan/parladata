@@ -108,3 +108,14 @@ DEBUG_TOOLBAR_CONFIG = {
 }
 
 LEMMATIZER_LANGUAGE_CODE = os.getenv('LEMMATIZER_LANGUAGE_CODE', 'sl')
+
+if sentry_url := os.getenv('DJANGO_SENTRY_URL', False):
+    import sentry_sdk
+    sentry_sdk.init(
+        sentry_url,
+
+        # Set traces_sample_rate to 1.0 to capture 100%
+        # of transactions for performance monitoring.
+        # We recommend adjusting this value in production.
+        traces_sample_rate=1.0
+    )
