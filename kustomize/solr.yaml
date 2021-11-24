@@ -43,10 +43,10 @@ spec:
         resources:
           requests:
             memory: 1Gi
-            cpu: 500m
+            cpu: 100m
           limits:
             memory: 1Gi
-            cpu: 500m
+            cpu: 100m
       initContainers:
       - name: create-core
         image: parlasolr-hrastnik
@@ -60,10 +60,10 @@ spec:
         resources:
           requests:
             memory: 1Gi
-            cpu: 500m
+            cpu: 100m
           limits:
             memory: 1Gi
-            cpu: 500m
+            cpu: 100m
       - name: link-config-1
         image: parlasolr-hrastnik
         command: ['cp', '-f', '/parlasearch-conf/schema.xml', '/var/solr/data/parlasearch/conf/']
@@ -73,11 +73,11 @@ spec:
           mountPath: /var/solr/data
         resources:
           requests:
-            memory: 200Mi
-            cpu: 100m
+            memory: 100Mi
+            cpu: 50m
           limits:
-            memory: 200Mi
-            cpu: 100m
+            memory: 100Mi
+            cpu: 50m
       - name: link-config-2
         image: parlasolr-hrastnik
         command: ['cp', '-f', '/parlasearch-conf/solrconfig.xml', '/var/solr/data/parlasearch/conf/']
@@ -87,11 +87,11 @@ spec:
           mountPath: /var/solr/data
         resources:
           requests:
-            memory: 200Mi
-            cpu: 100m
+            memory: 100Mi
+            cpu: 50m
           limits:
-            memory: 200Mi
-            cpu: 100m
+            memory: 100Mi
+            cpu: 50m
   volumeClaimTemplates:
   - metadata:
       name: parlasolr-hrastnik-persistent-storage
