@@ -7,4 +7,4 @@ resources:
 images:
   - name: parlasolr-lendava
     newName: rg.fr-par.scw.cloud/djnd/parlasolr-lendava
-    newTag: '70b95a83e4ad67719575dcca3db8ff26c08fa28f'
+    newTag: 'd928681d6115e512ba738f07a246b171f10dc637'
