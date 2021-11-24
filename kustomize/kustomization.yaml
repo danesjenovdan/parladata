@@ -7,4 +7,4 @@ resources:
 images:
   - name: parlasolr-ua
     newName: rg.fr-par.scw.cloud/djnd/parlasolr-ua
-    newTag: 'e93f300e1f47b5016f09783cacb9c22dc666fef1'
+    newTag: 'f3f10a9506036bd9aaef805cc313c83878dca703'
