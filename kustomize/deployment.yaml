@@ -32,10 +32,10 @@ spec:
                 name: parladata-sentry
           resources:
             requests:
-              memory: 1Gi
+              memory: 200Mi
               cpu: 200m
             limits:
-              memory: 1Gi
+              memory: 200Mi
               cpu: 200m
         - name: migrate
           image: parladata-ajdovscina
@@ -53,10 +53,10 @@ spec:
                 name: parladata-sentry
           resources:
             requests:
-              memory: 1Gi
+              memory: 200Mi
               cpu: 200m
             limits:
-              memory: 1Gi
+              memory: 200Mi
               cpu: 200m
       containers:
         - name: parladata-ajdovscina
@@ -88,8 +88,8 @@ spec:
               value: sl
           resources:
             requests:
-              memory: 1Gi
-              cpu: 1000m
+              memory: 200Mi
+              cpu: 200m
             limits:
-              memory: 1Gi
-              cpu: 1000m
+              memory: 200Mi
+              cpu: 200m
