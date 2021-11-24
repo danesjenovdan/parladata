@@ -574,7 +574,10 @@ class VotersCardSerializer(CardSerializer):
             .distinct('person') \
             .values_list('value', flat=True)
 
-        return max(latest_scores)
+        if latest_scores.count() > 0:
+            return max(latest_scores)
+        else:
+            return 0
 
     def _maximum_scores(self, playing_field, timestamp):
         people = playing_field.query_voters(timestamp)
