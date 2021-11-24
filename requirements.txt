@@ -33,6 +33,7 @@ martor
 django-colorfield
 django-admin-sortable2
 pyicu
+sentry-sdk
 
 # tagger/lemmatizer
 sklearn
