@@ -148,3 +148,4 @@ MARTOR_ENABLE_CONFIGS = {
     'living': 'true',       # to enable/disable live updates in preview
 }
 
+MARTOR_ENABLE_LABEL = True

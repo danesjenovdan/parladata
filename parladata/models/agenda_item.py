@@ -20,7 +20,7 @@ class AgendaItem(Timestampable, Taggable):
 
     gov_id = models.TextField(blank=True, null=True, help_text='gov_id of agenda item')
 
-    text = MartorField(null=True, blank=True)
+    text = MartorField(null=True, blank=True, verbose_name='Agenda item content')
 
     def __str__(self):
         return (self.session.name if self.session else '') + ' -> ' + self.name

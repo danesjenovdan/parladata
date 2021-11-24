@@ -40,6 +40,9 @@ class MotionAdmin(admin.ModelAdmin):
     ]
     list_per_page = 25
 
+    # set order of fields in the dashboard
+    fields = ['title', 'session', 'datetime', 'result', 'agenda_items', 'law', 'champions', 'summary', 'text', 'classification', 'requirement', 'parser_names', 'tags']
+
     def get_queryset(self, request):
         return Motion.objects.all().prefetch_related('session', 'vote').order_by('-id')
 
