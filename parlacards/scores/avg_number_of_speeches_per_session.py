@@ -3,6 +3,8 @@ from datetime import datetime
 from parladata.models.session import Session
 from parladata.models.speech import Speech
 from parladata.models.ballot import Ballot
+from parladata.models.memberships import PersonMembership
+from parladata.models.person import Person
 
 from parlacards.models import PersonAvgSpeechesPerSession
 
@@ -55,7 +57,21 @@ def save_person_avg_number_of_speeches_per_session(person, playing_field, timest
 def save_people_avg_number_of_speeches_per_session(playing_field, timestamp=datetime.now()):
     people = playing_field.query_voters(timestamp)
 
-    for person in people:
+    # TODO this is mostly copied from parlacards.scores.tfidf
+    # if a leader exists he should be a competitor as well
+    # TODO this is a very broad filter, it will probably
+    # need to be reworked into something more precise
+    leader_ids = PersonMembership.objects.filter(
+        role='leader'
+    ).order_by(
+        'id'
+    ).values_list(
+        'member__id',
+        flat=True
+    )
+    leaders = Person.objects.filter(id__in=leader_ids)
+
+    for person in people.union(leaders):
         save_person_avg_number_of_speeches_per_session(person, playing_field, timestamp)
 
 def save_people_avg_number_of_speeches_per_session_between(playing_field, datetime_from=datetime.now(), datetime_to=datetime.now()):
