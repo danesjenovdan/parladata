@@ -1,7 +1,7 @@
 from itertools import chain
 from importlib import import_module
 
-from datetime import timedelta
+from datetime import timedelta, datetime
 from django.core.paginator import Paginator
 
 from django.db.models import Q, Count, Max
