@@ -21,7 +21,6 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args, **options):
-        key = os.getenv('ER_API_KEY')
         er = EventRegistry(apiKey=settings.ER_API_KEY)
         self.stdout.write('-' * 80)
 
