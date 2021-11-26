@@ -25,10 +25,10 @@ class Command(BaseCommand):
         days = options['days']
 
         mandate = Mandate.objects.first()
-        playing_field = mandate.query_root_organizations()[0]
+        playing_field = mandate.query_root_organizations()[1]
         groups = playing_field.query_parliamentary_groups()
 
-        medium_uris = [medium.uri for medium in Medium.objects.all()]
+        medium_uris = [medium.uri for medium in Medium.objects.filter(active=True)]
         self.stdout.write(f'Medium URIs: {medium_uris}')
 
         self.stdout.write(f'Parsing form {days} days ago')
@@ -41,7 +41,6 @@ class Command(BaseCommand):
 
             q = QueryArticlesIter(
                 sourceUri=QueryItems.OR(medium_uris),
-                lang=QueryItems.OR(['ukr']),
                 keywords=name,
                 dateStart=datetime.datetime.now() - datetime.timedelta(days=int(days)),
                 isDuplicateFilter='skipDuplicates',
