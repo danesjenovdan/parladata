@@ -16,6 +16,7 @@ env = dict(
     MEDIA_ROOT=os.getenv('DJANGO_MEDIA_ROOT', '/media/'),
     MEDIA_URL=os.getenv('DJANGO_MEDIA_URL_BASE', '/media/'),
     SOLR_URL=os.getenv('PARLAMETER_SOLR_URL', ''),
+    ER_API_KEY=os.getenv('EVENTREGISTRY_API_KEY', '')
 )
 
 
@@ -119,3 +120,5 @@ if sentry_url := os.getenv('DJANGO_SENTRY_URL', False):
         # We recommend adjusting this value in production.
         traces_sample_rate=1.0
     )
+
+ER_API_KEY = env['ER_API_KEY']
