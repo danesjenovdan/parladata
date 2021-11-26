@@ -41,7 +41,6 @@ class Command(BaseCommand):
 
             q = QueryArticlesIter(
                 sourceUri=QueryItems.OR(medium_uris),
-                lang=QueryItems.OR(['ukr']),
                 keywords=name,
                 dateStart=datetime.datetime.now() - datetime.timedelta(days=int(days)),
                 isDuplicateFilter='skipDuplicates',
