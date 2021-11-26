@@ -120,3 +120,5 @@ if sentry_url := os.getenv('DJANGO_SENTRY_URL', False):
         # We recommend adjusting this value in production.
         traces_sample_rate=1.0
     )
+
+ER_API_KEY = env['ER_API_KEY']
