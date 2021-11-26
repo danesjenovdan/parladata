@@ -985,7 +985,24 @@ class GroupQuestionCardSerializer(GroupScoreCardSerializer):
         ).prefetch_related('authors')
 
         if not all_member_questions.exists():
-            return []
+            # TODO this used to return []
+            # this "if" is an optimization
+            # if there are no questions the whole function
+            # takes 10 times longer to execute
+            # this optimization introduced a bug
+            #
+            # it needs to return a properly structured object
+            # it's quite possible, this sort of bug was produced
+            # elsewhere
+            #
+            # also this whole function needs more comments
+            # to explain why it's doing what it's doing
+            paged_object_list, pagination_metadata = create_paginator(self.context['GET'], Question.objects.none())
+            return {
+                **parent_data,
+                **pagination_metadata,
+                'results': []
+            }
 
         memberships = instance.query_memberships_before(timestamp)
         questions = Question.objects.none()
