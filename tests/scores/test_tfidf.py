@@ -10,7 +10,7 @@ def test_calculate_people_tfidf(
 ):
     tfidfs = calculate_people_tfidf(main_organization)
 
-    assert len(tfidfs) == 43
+    assert len(tfidfs) == 44
     assert len(tfidfs[0]['tfidf']) == 20
 
     assert tfidfs[6]['tfidf'][0][0] == ''
@@ -20,13 +20,13 @@ def test_calculate_people_tfidf(
     assert tfidfs[6]['tfidf'][1][1] == 0.0
 
     assert tfidfs[12]['tfidf'][0][0] == 'Toška'
-    assert tfidfs[12]['tfidf'][0][1] == 0.26225307178684293
+    assert tfidfs[12]['tfidf'][0][1] == 0.2686323998804416
 
-    assert tfidfs[12]['tfidf'][-1][0] == 'zanimati'
-    assert tfidfs[12]['tfidf'][-1][1] == 0.11295223422631474
+    assert tfidfs[12]['tfidf'][-1][0] == 'iti'
+    assert tfidfs[12]['tfidf'][-1][1] == 0.11051996765237126
 
-    assert tfidfs[-1]['tfidf'][0][0] == 'hvala'
-    assert tfidfs[-1]['tfidf'][0][1] == 0.3472139395263228
+    assert tfidfs[-1]['tfidf'][0][0] == 'mesten'
+    assert tfidfs[-1]['tfidf'][0][1] == 0.28052894450457266
 
 @pytest.mark.django_db()
 def test_calculate_groups_tfidf(
