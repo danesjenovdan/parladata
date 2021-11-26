@@ -26,11 +26,4 @@ spec:
               - python
               - manage.py
               - fetch_members_articles
-            # resources:
-            #   requests:
-            #     memory: 700Mi
-            #     cpu: 300m
-            #   limits:
-            #     memory: 700mi
-            #     cpu: 300m
           restartPolicy: Never
