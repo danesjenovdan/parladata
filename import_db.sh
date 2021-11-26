@@ -15,7 +15,7 @@ echo "DUMPING DATABASE TO db.dump"
 PGPASSWORD=$DATABASE_PASSWORD \
     pg_dump -U postgres \
         -f db.dump \
-        -d $DATABASE_NAME \
+        -d "$DATABASE_NAME" \
         -p 54321 \
         -h localhost
 
