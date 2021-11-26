@@ -1601,6 +1601,13 @@ class PersonMediaReportsCardSerializer(PersonScoreCardSerializer):
         # obj is the person
         reports = MediaReport.objects.filter(medium__active=True, mentioned_people=obj.id)
 
+        # TODO do this better
+        # workaround: filter reports from the previous week only to reduce
+        # loading time and shorten the card
+        reports = reports.filter(
+            report_date__gte=datetime.now()-timedelta(days=7)
+        )
+
         serializer = MediaReportSerializer(
             reports,
             many=True,
@@ -1613,6 +1620,13 @@ class GroupMediaReportsCardSerializer(GroupScoreCardSerializer):
     def get_results(self, obj):
         # obj is the organization
         reports = MediaReport.objects.filter(medium__active=True, mentioned_organizations=obj.id)
+
+        # TODO do this better
+        # workaround: filter reports from the previous week only to reduce
+        # loading time and shorten the card
+        reports = reports.filter(
+            report_date__gte=datetime.now()-timedelta(days=7)
+        )
 
         serializer = MediaReportSerializer(
             reports,
