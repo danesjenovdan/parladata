@@ -16,6 +16,7 @@ env = dict(
     MEDIA_ROOT=os.getenv('DJANGO_MEDIA_ROOT', '/media/'),
     MEDIA_URL=os.getenv('DJANGO_MEDIA_URL_BASE', '/media/'),
     SOLR_URL=os.getenv('PARLAMETER_SOLR_URL', ''),
+    ER_API_KEY=os.getenv('EVENTREGISTRY_API_KEY', '')
 )
 
 
