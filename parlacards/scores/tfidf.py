@@ -5,6 +5,7 @@ from parladata.models.session import Session
 from sklearn.feature_extraction.text import TfidfVectorizer
 
 from parladata.models.speech import Speech
+from parladata.models.memberships import PersonMembership
 
 from parlacards.models import PersonTfidf, GroupTfidf, SessionTfidf
 
@@ -18,14 +19,36 @@ from parlacards.scores.common import (
 # PERSON
 #
 def calculate_people_tfidf(playing_field, timestamp=datetime.now()):
-    competitor_ids = playing_field.query_voters(
-        timestamp
-    ).order_by(
-        'id'
-    ).values_list(
-        'id',
-        flat=True
+    # TODO we should probably avoid casting
+    # competitor_ids and leader_ids into list
+    competitor_ids = list(
+        playing_field.query_voters(
+            timestamp
+        ).order_by(
+            'id'
+        ).values_list(
+            'id',
+            flat=True
+        )
     )
+
+    # if a leader exists he should be a competitor as well
+    # TODO this is a very broad filter, it will probably
+    # need to be reworked into something more precise
+    leader_ids = list(
+        PersonMembership.objects.filter(
+            role='leader'
+        ).order_by(
+            'id'
+        ).values_list(
+            'member__id',
+            flat=True
+        )
+    )
+    # add leader ids to competitor ids
+    competitor_ids += leader_ids
+    # and sort in place
+    competitor_ids.sort()
 
     playing_field_speeches = Speech.objects.filter_valid_speeches(
         timestamp
