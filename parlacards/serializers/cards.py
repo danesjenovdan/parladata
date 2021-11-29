@@ -1,7 +1,7 @@
 from itertools import chain
 from importlib import import_module
 
-from datetime import timedelta
+from datetime import timedelta, datetime
 from django.core.paginator import Paginator
 
 from django.db.models import Q, Count, Max
@@ -985,7 +985,24 @@ class GroupQuestionCardSerializer(GroupScoreCardSerializer):
         ).prefetch_related('authors')
 
         if not all_member_questions.exists():
-            return []
+            # TODO this used to return []
+            # this "if" is an optimization
+            # if there are no questions the whole function
+            # takes 10 times longer to execute
+            # this optimization introduced a bug
+            #
+            # it needs to return a properly structured object
+            # it's quite possible, this sort of bug was produced
+            # elsewhere
+            #
+            # also this whole function needs more comments
+            # to explain why it's doing what it's doing
+            paged_object_list, pagination_metadata = create_paginator(self.context['GET'], Question.objects.none())
+            return {
+                **parent_data,
+                **pagination_metadata,
+                'results': []
+            }
 
         memberships = instance.query_memberships_before(timestamp)
         questions = Question.objects.none()
@@ -1601,6 +1618,13 @@ class PersonMediaReportsCardSerializer(PersonScoreCardSerializer):
         # obj is the person
         reports = MediaReport.objects.filter(medium__active=True, mentioned_people=obj.id)
 
+        # TODO do this better
+        # workaround: filter reports from the previous week only to reduce
+        # loading time and shorten the card
+        reports = reports.filter(
+            report_date__gte=datetime.now()-timedelta(days=7)
+        )
+
         serializer = MediaReportSerializer(
             reports,
             many=True,
@@ -1613,6 +1637,13 @@ class GroupMediaReportsCardSerializer(GroupScoreCardSerializer):
     def get_results(self, obj):
         # obj is the organization
         reports = MediaReport.objects.filter(medium__active=True, mentioned_organizations=obj.id)
+
+        # TODO do this better
+        # workaround: filter reports from the previous week only to reduce
+        # loading time and shorten the card
+        reports = reports.filter(
+            report_date__gte=datetime.now()-timedelta(days=7)
+        )
 
         serializer = MediaReportSerializer(
             reports,
