@@ -29,6 +29,31 @@ class MembersListFilter(admin.SimpleListFilter):
             return queryset.filter(person_id=self.value())
         return queryset
 
+class MembersAndLeaderListFilter(admin.SimpleListFilter):
+    title = 'member_or_leader'
+
+    parameter_name = 'member'
+
+    def lookups(self, request, model_admin):
+        list_of_members = []
+        queryset = PersonMembership.valid_at(datetime.now()).prefetch_related('member__personname').filter(
+            role__in=['voter', 'leader']
+        ).values(
+            'member_id',
+            'member__personname__value'
+        )
+
+        for person in queryset:
+            list_of_members.append(
+                (str(person['member_id']), person['member__personname__value'])
+            )
+        return sorted(list_of_members, key=lambda tp: tp[1])
+
+    def queryset(self, request, queryset):
+        if self.value():
+            return queryset.filter(person_id=self.value())
+        return queryset
+
 
 class AuthorsListFilter(MembersListFilter):
     title = 'authors'

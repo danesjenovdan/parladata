@@ -16,6 +16,12 @@ class Medium(Timestampable):
         help_text=_('Medium URL'),
     )
 
+    uri = models.TextField(
+        db_index=True,
+        verbose_name=_('uri'),
+        help_text=_('Medium URI'),
+    )
+
     active = models.BooleanField(
         verbose_name=_('active'),
         default=True,
@@ -37,9 +43,15 @@ class MediaReport(Timestampable):
         help_text=_('Report URL'),
     )
 
+    uri = models.TextField(
+        db_index=True,
+        verbose_name=_('uri'),
+        help_text=_('Article URI'),
+    )
+
     report_date = models.DateField()
 
-    retrieval_date = models.DateTimeField()
+    retrieval_date = models.DateTimeField(auto_now=True)
 
     medium = models.ForeignKey(
         Medium,
