@@ -126,8 +126,12 @@ class Person(Timestampable, Parsable, Sluggable, VersionableFieldsOwner):
         )
 
         if active_memberships.count() > 1:
-            # TODO maybe a more descriptive exception is appropriate
-            raise Exception('More than one active membership. Check your data.')
+            raise Exception('\n'.join(
+                [
+                    f'{active_memberships.count()} active memberships for person {self.id}. Check your data.',
+                    f'Membership ids: {list(active_memberships.values_list("id", flat=True))}'
+                ]
+            ))
         
         active_membership = active_memberships.first()
 
