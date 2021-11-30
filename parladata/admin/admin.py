@@ -11,7 +11,7 @@ from parladata.models import *
 from parladata.models.task import Task
 from parladata.models.versionable_properties import *
 from parladata.models.common import *
-from parladata.admin.filters import SessionListFilter, AuthorsListFilter
+from parladata.admin.filters import SessionListFilter, PersonAuthorsListFilter, OrganizationAuthorsListFilter
 
 from collections import Counter
 
@@ -80,13 +80,13 @@ class SpeechAdmin(admin.ModelAdmin):
 
 
 class QuestionAdmin(admin.ModelAdmin):
-    autocomplete_fields = ['authors', 'recipient_people', 'recipient_organizations', 'session']
+    autocomplete_fields = ['person_authors', 'organization_authors', 'recipient_people', 'recipient_organizations', 'session']
     search_fields = ["title"]
     inlines = [
         LinkQuestionInline
     ]
-    list_filter = ('type_of_question', SessionListFilter, AuthorsListFilter)
-    fields = ['title', 'session', 'authors', 'recipient_people', 'recipient_organizations', 'recipient_text', 'type_of_question', 'timestamp', 'answer_timestamp']
+    list_filter = ('type_of_question', SessionListFilter, PersonAuthorsListFilter, OrganizationAuthorsListFilter)
+    fields = ['title', 'session', 'person_authors', 'organization_authors', 'recipient_people', 'recipient_organizations', 'recipient_text', 'type_of_question', 'timestamp', 'answer_timestamp']
 
 
 class DocumentAdmin(admin.ModelAdmin):
