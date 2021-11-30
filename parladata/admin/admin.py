@@ -11,7 +11,7 @@ from parladata.models import *
 from parladata.models.task import Task
 from parladata.models.versionable_properties import *
 from parladata.models.common import *
-from parladata.admin.filters import SessionListFilter, PersonAuthorsListFilter
+from parladata.admin.filters import SessionListFilter, PersonAuthorsListFilter, OrganizationAuthorsListFilter
 
 from collections import Counter
 
@@ -85,7 +85,7 @@ class QuestionAdmin(admin.ModelAdmin):
     inlines = [
         LinkQuestionInline
     ]
-    list_filter = ('type_of_question', SessionListFilter, PersonAuthorsListFilter)
+    list_filter = ('type_of_question', SessionListFilter, PersonAuthorsListFilter, OrganizationAuthorsListFilter)
     fields = ['title', 'session', 'person_authors', 'organization_authors', 'recipient_people', 'recipient_organizations', 'recipient_text', 'type_of_question', 'timestamp', 'answer_timestamp']
 
 
