@@ -409,7 +409,7 @@ class SingleSession(CardView):
     card_serializer = SingleSessionCardSerializer
 
 
-class SingleVote(CardView):
+class SingleVote(CachedCardView):
     thing = Vote
     card_serializer = VoteCardSerializer
 
@@ -537,10 +537,29 @@ class MandateUsageThroughTime(CardView):
 
 class LastSession(CardView):
     '''
-    A group's discord score.
+    Latest session information.
     '''
     thing = Organization
     card_serializer = LastSessionCardSerializer
+
+    # TODO consider refactoring this
+    # overriding because even if the parent organization
+    # exists (which is the "thing" we supply the id of)
+    # the session might now (new, empty installation) we 
+    # should return 404 if the session does not exist
+    def get(self, request, format=None):
+        # if the thing with id exists return serialized data
+        if the_thing := self.thing.objects.filter(id=request.card_id).first():
+            # the_thing is the parent organization,
+            # we should check if any sessions exist
+            if the_thing.sessions.filter(
+                speeches__isnull=False,
+                motions__isnull=False
+            ).count() > 0:
+                return Response(self.get_serializer_data(request, the_thing))
+
+        # otherwise return 404
+        return Response(status=status.HTTP_404_NOT_FOUND)
 
 
 class SearchDropdown(CardView):
