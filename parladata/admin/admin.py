@@ -80,7 +80,7 @@ class SpeechAdmin(admin.ModelAdmin):
 
 
 class QuestionAdmin(admin.ModelAdmin):
-    autocomplete_fields = ['person_authors', 'recipient_people', 'recipient_organizations', 'session']
+    autocomplete_fields = ['person_authors', 'organization_authors', 'recipient_people', 'recipient_organizations', 'session']
     search_fields = ["title"]
     inlines = [
         LinkQuestionInline
