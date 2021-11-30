@@ -19,7 +19,7 @@ class UsersChoiceField(forms.ModelChoiceField):
         if queryset is None:
             queryset = Person.objects.all()
         if widget is None:
-            widget = PersonAutocompleteSelectMultiple(Question._meta.get_field('authors'), admin.site)
+            widget = PersonAutocompleteSelectMultiple(Question._meta.get_field('person_authors'), admin.site)
         super().__init__(queryset, widget=widget, **kwargs)
 
 
@@ -35,7 +35,7 @@ class UserChoiceField(forms.ModelChoiceField):
         if queryset is None:
             queryset = Person.objects.all()
         if widget is None:
-            widget = PersonAutocompleteSelect(Question._meta.get_field('authors'), admin.site)
+            widget = PersonAutocompleteSelect(Question._meta.get_field('person_authors'), admin.site)
         super().__init__(queryset, widget=widget, **kwargs)
 
 
