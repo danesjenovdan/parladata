@@ -409,7 +409,7 @@ class SingleSession(CardView):
     card_serializer = SingleSessionCardSerializer
 
 
-class SingleVote(CardView):
+class SingleVote(CachedCardView):
     thing = Vote
     card_serializer = VoteCardSerializer
 
