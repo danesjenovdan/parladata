@@ -43,8 +43,8 @@ def merge_people(real_person_id, fake_person_ids, print_method=print):
             print_method(f'Fake person {fake_person.id} is author of {fake_person.authored_questions.all().count()} questions.')
             print_method('Moving questions to real person...')
             for question in fake_person.authored_questions.all():
-                question.authors.remove(fake_person)
-                question.authors.add(real_person)
+                question.person_authors.remove(fake_person)
+                question.person_authors.add(real_person)
                 question.save()
             print_method('Done with moving.')
 

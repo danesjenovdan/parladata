@@ -268,7 +268,7 @@ class QuestionView(viewsets.ModelViewSet):
     serializer_class = QuestionSerializer
     fields = '__all__'
     filter_backends = (DjangoFilterBackend, filters.OrderingFilter)
-    filter_fields = ('authors',)
+    filter_fields = ('person_authors',)
     ordering_fields = ('date',)
 
 
