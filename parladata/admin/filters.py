@@ -55,10 +55,10 @@ class MembersAndLeaderListFilter(admin.SimpleListFilter):
         return queryset
 
 
-class AuthorsListFilter(MembersListFilter):
-    title = 'authors'
+class PersonAuthorsListFilter(MembersListFilter):
+    title = 'person_authors'
 
-    parameter_name = 'authors'
+    parameter_name = 'person_authors'
 
 
 class OrganizationsListFilter(admin.SimpleListFilter):
