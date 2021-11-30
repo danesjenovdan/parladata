@@ -25,4 +25,4 @@ class Task(Timestampable, Taggable):
         default=None
     )
     name = models.TextField(blank=False, null=False, help_text='Name of task')
-    payload = models.JSONField(default={}, help_text='Payload kwargs')
+    payload = models.JSONField(help_text='Payload kwargs')

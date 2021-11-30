@@ -22,7 +22,6 @@ class Motion(Timestampable, Taggable, Parsable):
     champions = models.ManyToManyField(
         'Person',
         help_text='The people who proposed the motion.',
-        null=True,
         blank=True
     )
 

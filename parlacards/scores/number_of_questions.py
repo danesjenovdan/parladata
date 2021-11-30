@@ -12,7 +12,7 @@ from parlacards.scores.common import get_dates_between, get_fortnights_between
 # People
 def calculate_number_of_questions_from_person(person, timestamp=datetime.now()):
     return Question.objects.filter(
-        authors=person,
+        person_authors=person,
         timestamp__lte=timestamp
     ).count()
 
@@ -52,7 +52,7 @@ def calculate_group_number_of_question(group, playing_field, timestamp=datetime.
     for member_id in member_ids:
         member_questions = Question.objects.filter(
             timestamp__lte=timestamp,
-            authors__id=member_id,
+            person_authors__id=member_id,
         )
 
         member_memberships = memberships.filter(
@@ -72,6 +72,13 @@ def calculate_group_number_of_question(group, playing_field, timestamp=datetime.
                 Q(**q_params),
                 Q.OR
             )
+
+        organization_questions = Question.objects.filter(
+            timestamp__lte=timestamp,
+            organization_authors=group
+        )
+
+        questions = questions.union(organization_questions)
 
         questions = questions.union(member_questions.filter(q_objects))
 
