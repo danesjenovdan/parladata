@@ -430,7 +430,7 @@ class Command(BaseCommand):
             recipient_text='Prime minister'
         )
         question.save()
-        question.authors.add(person_pfo_1)
+        question.person_authors.add(person_pfo_1)
 
         Law(
             session=session,

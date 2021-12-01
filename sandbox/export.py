@@ -140,7 +140,7 @@ def export_questions():
         out_data.append([
             q.title,
             q.date.isoformat(),
-            ' & '.join(list(q.authors.values_list('name', flat=True))),
+            ' & '.join(list(q.person_authors.values_list('name', flat=True))),
             ' & '.join(list(q.author_orgs.values_list('_acronym', flat=True))),
             ' & '.join(list(q.recipient_person.values_list('name', flat=True))),
             ' & '.join(list(q.recipient_organization.values_list('_name', flat=True))),

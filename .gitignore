@@ -76,4 +76,4 @@ sl.lexicon.guesser
 sl.lexicon.train
 sloleks_clarin*
 
-db.dump
+db*.dump
