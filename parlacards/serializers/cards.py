@@ -159,7 +159,7 @@ class PersonQuestionCardSerializer(PersonScoreCardSerializer):
     def get_results(self, obj):
         # obj is the person
         questions = Question.objects.filter(
-            authors=obj,
+            person_authors=obj,
             timestamp__lte=self.context['date']
         ).order_by(
             '-timestamp'
@@ -328,7 +328,7 @@ class RecentActivityCardSerializer(PersonScoreCardSerializer):
         )
 
         questions = Question.objects.filter(
-            authors__in=[obj],
+            person_authors=obj,
             timestamp__lte=self.context['date'],
             timestamp__gte=from_datetime
         ).order_by(
@@ -981,8 +981,8 @@ class GroupQuestionCardSerializer(GroupScoreCardSerializer):
 
         all_member_questions = Question.objects.filter(
             timestamp__lte=timestamp,
-            authors__id__in=member_ids,
-        ).prefetch_related('authors')
+            person_authors__id__in=member_ids
+        ).prefetch_related('person_authors')
 
         if not all_member_questions.exists():
             # TODO this used to return []
@@ -1008,7 +1008,7 @@ class GroupQuestionCardSerializer(GroupScoreCardSerializer):
         questions = Question.objects.none()
 
         for member_id in member_ids:
-            member_questions = all_member_questions.filter(authors__id=member_id)
+            member_questions = all_member_questions.filter(person_authors__id=member_id)
 
             if not member_questions.exists():
                 continue
@@ -1029,11 +1029,19 @@ class GroupQuestionCardSerializer(GroupScoreCardSerializer):
 
             questions = questions.union(member_questions.filter(q_objects))
 
+        organization_questions = Question.objects.filter(
+            timestamp__lte=timestamp,
+            organization_authors=instance
+        )
+
+        questions = questions.union(organization_questions)
+
         # annotate all the questions
         questions = Question.objects.filter(
             id__in=questions.values('id')
         ).prefetch_related(
-            'authors',
+            'person_authors',
+            'organization_authors',
             'recipient_people',
             'links',
         ).order_by(

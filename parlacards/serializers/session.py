@@ -10,6 +10,10 @@ class SessionSerializer(CommonCachableSerializer):
         timestamp = max([session_timestamp] + list(organization_timestamps))
         return f'SessionSerializer_{instance.id}_{timestamp.strftime("%Y-%m-%d-%H-%M-%s")}'
 
+    def get_has_transcript(self, obj):
+        # obj is the session
+        return obj.speeches.exists()
+
     name = serializers.CharField()
     id = serializers.IntegerField()
     start_time = serializers.DateTimeField()
@@ -17,3 +21,4 @@ class SessionSerializer(CommonCachableSerializer):
     organizations = CommonOrganizationSerializer(many=True)
     classification = serializers.CharField() # TODO regular, irregular, urgent, correspondent
     in_review = serializers.BooleanField()
+    has_transcript = serializers.SerializerMethodField()
