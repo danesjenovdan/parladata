@@ -310,7 +310,7 @@ def import_questions():
                     type_of_question=data['data']['sejm_interpellations.type']
                 )
                 question.save()
-                question.authors.add(*authors)
+                question.person_authors.add(*authors)
                 question.author_orgs.add(*authors_orgs)
             else:
                 print('NIMA LAYERJA')
