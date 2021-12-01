@@ -18,6 +18,3 @@ class Command(BaseCommand):
         save_people_tfidf(playing_field, timestamp=datetime.now())
 
         self.stdout.write('Done')
-
-
-
