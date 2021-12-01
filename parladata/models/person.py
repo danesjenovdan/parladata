@@ -126,6 +126,8 @@ class Person(Timestampable, Parsable, Sluggable, VersionableFieldsOwner):
         )
 
         if active_memberships.count() > 1:
+            # TODO we need a way to bubble these
+            # exceptions up to the end user
             raise Exception('\n'.join(
                 [
                     f'{active_memberships.count()} active memberships for person {self.id}. Check your data.',

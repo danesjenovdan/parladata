@@ -15,7 +15,7 @@ class AgendaItemAdmin(admin.ModelAdmin):
     inlines = [
         LinkAgendaItemInline,
     ]
-    list_display = ('name', 'session',)
+    list_display = ('name', 'session', 'order')
     list_filter = (SessionListFilter,)
     search_fields = ['name']
     autocomplete_fields = ['session']
