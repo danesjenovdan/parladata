@@ -287,6 +287,30 @@ class MandateView(viewsets.ModelViewSet):
     filter_fields = ('description',)
 
 
+class ProcedureViewSet(viewsets.ModelViewSet):
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    queryset = Procedure.objects.all()
+    serializer_class = ProcedureSerializer
+
+
+class ProcedurePhaseViewSet(viewsets.ModelViewSet):
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    queryset = ProcedurePhase.objects.all()
+    serializer_class = ProcedurePhaseSerializer
+
+
+class LegislationConsiderationViewSet(viewsets.ModelViewSet):
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    queryset = LegislationConsideration.objects.all()
+    serializer_class = LegislationConsiderationSerializer
+
+
+class LegislationStatusViewSet(viewsets.ModelViewSet):
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    queryset = LegislationStatus.objects.all()
+    serializer_class = LegislationStatusSerializer
+
+
 class MediumView(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     queryset = Medium.objects.all().order_by('id')
