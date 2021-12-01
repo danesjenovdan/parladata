@@ -110,6 +110,9 @@ DEBUG_TOOLBAR_CONFIG = {
 
 LEMMATIZER_LANGUAGE_CODE = os.getenv('LEMMATIZER_LANGUAGE_CODE', 'sl')
 
+# TODO make separated env variable for LEGISLATION_RESOLVER_LANGUAGE_CODE or use generic env variable
+LEGISLATION_RESOLVER_LANGUAGE_CODE = os.getenv('LEMMATIZER_LANGUAGE_CODE', 'sl')
+
 if sentry_url := os.getenv('DJANGO_SENTRY_URL', False):
     import sentry_sdk
     sentry_sdk.init(
