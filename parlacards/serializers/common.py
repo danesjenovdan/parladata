@@ -45,6 +45,8 @@ class ScoreSerializerField(serializers.Field):
         return math.trunc(score * trunc_factor) / trunc_factor
 
     def calculate_cache_key(self, property_model_name, value_id, timestamp):
+        # something like NumberOfSpokenWords_12_2021-11-13-21
+        # value_id is the id of the person or organization this score belongs to
         return f'{property_model_name}_{value_id}_{timestamp.strftime("%Y-%m-%d-%H")}'
 
     def to_representation(self, value):
@@ -292,6 +294,7 @@ class CommonOrganizationSerializer(CommonCachableSerializer):
     acronym = VersionableSerializerField(property_model_name='OrganizationAcronym')
     slug = serializers.CharField()
     color = serializers.CharField()
+    classification = serializers.CharField()
 
 
 class CommonSessionSerializer(CommonCachableSerializer):
