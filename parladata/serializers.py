@@ -205,7 +205,7 @@ class LegislationStatusSerializer(serializers.ModelSerializer):
 
 
 class LawSerializer(serializers.ModelSerializer):
-    status = LegislationStatusSerializer()
+    status = LegislationStatusSerializer(required=False)
     class Meta:
         model = Law
         fields = '__all__'
