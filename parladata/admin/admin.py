@@ -58,15 +58,14 @@ class SpeechAdmin(admin.ModelAdmin):
     list_filter = (SessionListFilter, 'tags')
     search_fields = ['speaker__name', 'content']
     autocomplete_fields = ['motions', 'speaker', 'session']
-    inlines = [
-    ]
+    inlines = []
     list_display = ('id',
                     'tag_list',
                     'session_name',
                     'speaker')
     list_per_page = 25
     formfield_overrides = {
-        models.ManyToManyField: {'widget': forms.CheckboxSelectMultiple(attrs={'style': 'width: 100%'})},
+        models.ManyToManyField: {'widget': forms.CheckboxSelectMultiple()},
     }
 
     def get_queryset(self, request):
