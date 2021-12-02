@@ -15,7 +15,7 @@ from parladata.models.media import MediaReport
 from parladata.models.vote import Vote
 from parladata.models.question import Question
 from parladata.models.memberships import OrganizationMembership, PersonMembership
-from parladata.models.legislation import Law
+from parladata.models.legislation import Law, LegislationClassification
 from parladata.models.question import Question
 from parladata.models.speech import Speech
 from parladata.models.organization import Organization
@@ -475,6 +475,7 @@ class GroupSpeechesCardSerializer(GroupScoreCardSerializer):
 #
 # MISC
 #
+# TODO move PersonAnalysesSerializer out of here
 class PersonAnalysesSerializer(CommonPersonSerializer):
     def calculate_cache_key(self, instance):
         return f'PersonAnalysesSerializer_{instance.id}_{instance.updated_at.isoformat()}'
@@ -773,18 +774,58 @@ class SessionsCardSerializer(CardSerializer):
 
 
 class LegislationCardSerializer(CardSerializer):
-    def get_results(self, obj):
-        # obj is the mandate
+    # TODO it's smelly that get_results needs
+    # to exist, even though we override everything
+    # in to_representation
+    def get_results(self, mandate):
         serializer = LegislationSerializer(
             Law.objects.filter(
                 Q(timestamp__lte=self.context['date']) | Q(timestamp__isnull=True),
-                session__mandate=obj,
+                session__mandate=mandate,
             ),
             many=True,
             context=self.context
         )
         return serializer.data
 
+    def to_representation(self, mandate):
+        parent_data = super().to_representation(mandate)
+
+        text_filter = self.context['GET'].get('text', '')
+        order = self.context['GET'].get('order_by', '-timestamp')
+
+        legislation = Law.objects.filter(
+            Q(timestamp__lte=self.context['date']) | Q(timestamp__isnull=True),
+            session__mandate=mandate,
+            text__icontains=text_filter,
+        ).order_by(order)
+
+        # check if classification is present in the GET parameter
+        # classifications should be comma-separated
+        # TODO this code still smells
+        classification_filter = self.context['GET'].get('classification', None)
+        if classification_filter:
+            legislation = legislation.filter(
+                classification__name__in=classification_filter.split(',')
+            )
+
+        paged_object_list, pagination_metadata = create_paginator(self.context['GET'], legislation, prefix='legislation:')
+
+        serializer = LegislationSerializer(
+            paged_object_list,
+            many=True,
+            context=self.context
+        )
+
+        classifications = LegislationClassification.objects.all().distinct('name').values_list('name', flat=True)
+
+        return {
+            **parent_data,
+            **pagination_metadata,
+            'results': serializer.data,
+            # TODO standardize this and more importantly, cache it!
+            'classifications': classifications,
+        }
 
 class LegislationDetailCardSerializer(CardSerializer):
     def get_results(self, obj):
