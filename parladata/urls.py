@@ -26,6 +26,7 @@ router.register(r'procedures', ProcedureViewSet)
 router.register(r'procedure-phases', ProcedurePhaseViewSet)
 router.register(r'legislation-consideration', LegislationConsiderationViewSet)
 router.register(r'legislation-status', LegislationStatusViewSet)
+router.register(r'legislation-classifications', LegislationClassificationViewSet)
 router.register(r'media', MediumView)
 router.register(r'media-reports', MediaReportView)
 

@@ -311,6 +311,12 @@ class LegislationStatusViewSet(viewsets.ModelViewSet):
     serializer_class = LegislationStatusSerializer
 
 
+class LegislationClassificationViewSet(viewsets.ModelViewSet):
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    queryset = LegislationClassification.objects.all()
+    serializer_class = LegislationClassificationSerializer
+
+
 class MediumView(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     queryset = Medium.objects.all().order_by('id')
