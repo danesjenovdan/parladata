@@ -3,7 +3,7 @@ from django.utils.safestring import mark_safe
 from django.conf import settings
 from django.urls import reverse
 
-from parladata.models import Law, Procedure, ProcedurePhase, LegislationConsideration, LegislationStatus
+from parladata.models import Law, Procedure, ProcedurePhase, LegislationConsideration, LegislationStatus, LegislationClassification
 
 
 class LawAdmin(admin.ModelAdmin):
@@ -32,8 +32,14 @@ class LegislationStatusAdmin(admin.ModelAdmin):
     search_fields = ('name',)
 
 
+class LegislationClassificationAdmin(admin.ModelAdmin):
+    list_display = ('name',)
+    search_fields = ('name',)
+
+
 admin.site.register(Law, LawAdmin)
 admin.site.register(Procedure, ProcedureAdmin)
 admin.site.register(ProcedurePhase, ProcedurePhaseAdmin)
 admin.site.register(LegislationConsideration, LegislationConsiderationAdmin)
 admin.site.register(LegislationStatus, LegislationStatusAdmin)
+admin.site.register(LegislationClassification, LegislationClassificationAdmin)

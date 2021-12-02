@@ -12,15 +12,18 @@ class LegislationSerializer(CommonSerializer):
     uid = serializers.CharField()
     text = serializers.CharField()
     epa = serializers.CharField()
-    status = serializers.CharField()
+    status = serializers.SerializerMethodField()
     passed = serializers.BooleanField()
-    classification = serializers.CharField()
+    classification = serializers.SerializerMethodField()
     has_votes = serializers.BooleanField()
     has_abstract = serializers.BooleanField()
     timestamp = serializers.DateTimeField()
 
     def get_status(self, obj):
-        return obj.status.name
+        return obj.status.name if obj.status else None
+
+    def get_classification(self, obj):
+        return obj.classification.name if obj.classification else None
 
 
 class LegislationDetailSerializer(LegislationSerializer):
