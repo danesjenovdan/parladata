@@ -61,9 +61,12 @@ class Law(Timestampable, Taggable):
                                  max_length=255,
                                  help_text='Skrajšani, normalni, hitri postopek...')
 
-    # TODO maybe this can be a choice field
-    classification = models.TextField(blank=True, null=True,
-                                   help_text='Type of law')
+    classification = models.ForeignKey(
+        'LegislationClassification',
+        on_delete=models.CASCADE,
+        blank=True,
+        null=True,
+    )
 
     abstract = HTMLField(blank=True,
                      null=True)
@@ -136,6 +139,17 @@ class LegislationConsideration(Timestampable):
 
 
 class LegislationStatus(Timestampable):
+    name = models.TextField(
+        blank=True,
+        null=True,
+        help_text='Status of legisaltion'
+    )
+
+    def __str__(self):
+        return self.name
+
+
+class LegislationClassification(Timestampable):
     name = models.TextField(
         blank=True,
         null=True,
