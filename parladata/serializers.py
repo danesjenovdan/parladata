@@ -204,6 +204,12 @@ class LegislationStatusSerializer(serializers.ModelSerializer):
         fields = ['id', 'name']
 
 
+class LegislationClassificationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = LegislationClassification
+        fields = ['id', 'name']
+
+
 class LawSerializer(serializers.ModelSerializer):
     status = LegislationStatusSerializer(required=False)
     class Meta:
