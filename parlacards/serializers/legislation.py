@@ -40,7 +40,7 @@ class LegislationDetailSerializer(LegislationSerializer):
         ).data
 
     def get_documents(self, obj):
-        links = Link.objects.filter(motion__law=obj)
+        links = Link.objects.filter(motion__law=obj).distinct('url')
         return LinkSerializer(
             links,
             many=True,
