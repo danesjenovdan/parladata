@@ -17,7 +17,8 @@ from parladata.models import (
     Area,
     Session,
     Law,
-    Mandate
+    Mandate,
+    LegislationStatus,
 )
 
 from parladata.models.versionable_properties import *
@@ -469,3 +470,11 @@ class Command(BaseCommand):
             authorization_grant_type= 'password',
             name='client'
         ).save()
+
+        LegislationStatus(name='in_procedure').save()
+        LegislationStatus(name='received').save()
+        LegislationStatus(name='adopted').save()
+        LegislationStatus(name='retracted').save()
+        LegislationStatus(name='rejected').save()
+        LegislationStatus(name='submitted').save()
+        LegislationStatus(name='enacted').save()
