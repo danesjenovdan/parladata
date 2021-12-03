@@ -118,24 +118,15 @@ class EducationLevelAdmin(SortableAdminMixin, admin.ModelAdmin):
 #     fields = ('name', 'education', 'education_level')
 
 
-class LawAdmin(admin.ModelAdmin):
-    list_display = ('text', 'session', 'status', 'epa')
-    list_filter = (SessionListFilter,)
-    search_fields = ['text']
-    autocomplete_fields = ('session', 'mdt_fk')
-
-
 class BallotAdmin(admin.ModelAdmin):
     list_display = ('vote', 'personvoter', 'option')
     autocomplete_fields = ['personvoter', 'orgvoter', 'vote']
-
 
 
 admin.site.register(Speech, SpeechAdmin)
 admin.site.register(Task)
 admin.site.register(Ballot, BallotAdmin)
 admin.site.register(Question, QuestionAdmin)
-admin.site.register(Law, LawAdmin)
 admin.site.register(Mandate, MandateAdmin)
 admin.site.register(Document, DocumentAdmin)
 admin.site.register(EducationLevel, EducationLevelAdmin)
