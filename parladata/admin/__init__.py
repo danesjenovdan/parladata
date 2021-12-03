@@ -8,3 +8,4 @@ import parladata.admin.vote
 import parladata.admin.motion
 import parladata.admin.memberships
 import parladata.admin.media
+import parladata.admin.legislation
