@@ -9,7 +9,7 @@ from parladata.models.speech import Speech
 from parladata.models.motion import Motion
 from parladata.models.vote import Vote
 from parladata.models.ballot import Ballot
-from parladata.models.legislation import Law
+from parladata.models.legislation import Law, Procedure, ProcedurePhase, LegislationConsideration, LegislationStatus, LegislationClassification
 from parladata.models.agenda_item import AgendaItem
 from parladata.models.question import Question
 from parladata.models.link import Link

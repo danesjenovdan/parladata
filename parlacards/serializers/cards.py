@@ -1,8 +1,9 @@
 from itertools import chain
 from importlib import import_module
-
 from datetime import timedelta, datetime
+
 from django.core.paginator import Paginator
+from django.core.cache import cache
 
 from django.db.models import Q, Count, Max
 from django.db.models.functions import TruncDay
@@ -15,13 +16,14 @@ from parladata.models.media import MediaReport
 from parladata.models.vote import Vote
 from parladata.models.question import Question
 from parladata.models.memberships import OrganizationMembership, PersonMembership
-from parladata.models.legislation import Law
+from parladata.models.legislation import Law, LegislationClassification
 from parladata.models.question import Question
 from parladata.models.speech import Speech
 from parladata.models.organization import Organization
 from parladata.models.person import Person
 from parladata.models.link import Link
 
+from parladata.models.organization import CLASSIFICATIONS as ORGANIZATION_CLASSIFICATIONS
 from parlacards.models import (
     SessionTfidf,
     VotingDistance,
@@ -475,6 +477,7 @@ class GroupSpeechesCardSerializer(GroupScoreCardSerializer):
 #
 # MISC
 #
+# TODO move PersonAnalysesSerializer out of here
 class PersonAnalysesSerializer(CommonPersonSerializer):
     def calculate_cache_key(self, instance):
         return f'PersonAnalysesSerializer_{instance.id}_{instance.updated_at.isoformat()}'
@@ -760,31 +763,126 @@ class GroupsCardSerializer(CardSerializer):
 
 
 class SessionsCardSerializer(CardSerializer):
+    # TODO it's smelly that get_results needs
+    # to exist, even though we override everything
+    # in to_representation
     def get_results(self, obj):
-        # obj is the mandate
+        return None
+    
+    def to_representation(self, mandate):
+        parent_data = super().to_representation(mandate)
+
+        order = self.context['GET'].get('order_by', '-start_time')
+
+        sessions = mandate.sessions.filter(
+            Q(start_time__lte=self.context['date']) | Q(start_time__isnull=True)
+        ).order_by(order)
+
+        # check if classification is present in the GET parameter
+        # classifications should be comma-separated
+        # these are organization classifications
+        classification_filter = self.context['GET'].get('classification', None)
+        if classification_filter:
+            sessions = sessions.filter(
+                organizations__classification__in=classification_filter.split(',')
+            )
+        # show only root organization sessions by default
+        else:
+            sessions = sessions.filter(
+                organizations__classification='root'
+            )
+
+        # check if any individual organizations are selected and filter
+        # based on those
+        if organizations_filter := self.context['GET'].get('organizations', None):
+            try:
+                organization_ids = map(lambda x: int(x), organizations_filter.split(','))
+            except ValueError:
+                organization_ids = []
+            sessions = sessions.filter(
+                organizations__id__in=organization_ids
+            )
+
+        paged_object_list, pagination_metadata = create_paginator(self.context['GET'], sessions, prefix='sessions:')
+
         serializer = SessionSerializer(
-            obj.sessions.filter(
-                Q(start_time__lte=self.context['date']) | Q(start_time__isnull=True)
-            ),
+            paged_object_list,
             many=True,
             context=self.context
         )
-        return serializer.data
+
+        # TODO this should probably be a serializer of its own
+        # this is where we prepare all the organizations in a single
+        # dictionary so the front-end card can present filters
+        relevant_organizations = Organization.objects.exclude(classification__in=['pg'])
+        latest_timestamp = relevant_organizations.order_by('-updated_at').first().updated_at
+
+        organizations_cache_key = f'AllOrganizations_{latest_timestamp.strftime("%Y-%m-%d")}'
+
+        # if there's something in the cache return it, otherwise serialize and save
+        if cached_organizations := cache.get(organizations_cache_key):
+            serialized_organizations = cached_organizations
+        else:
+            serialized_organizations = CommonOrganizationSerializer(
+                relevant_organizations,
+                many=True,
+                context=self.context
+            ).data
+            cache.set(organizations_cache_key, serialized_organizations)
+
+        return {
+            **parent_data,
+            **pagination_metadata,
+            'results': serializer.data,
+            'organizations': serialized_organizations,
+        }
 
 
 class LegislationCardSerializer(CardSerializer):
-    def get_results(self, obj):
-        # obj is the mandate
+    # TODO it's smelly that get_results needs
+    # to exist, even though we override everything
+    # in to_representation
+    def get_results(self, mandate):
+        return None
+
+    def to_representation(self, mandate):
+        parent_data = super().to_representation(mandate)
+
+        text_filter = self.context['GET'].get('text', '')
+        order = self.context['GET'].get('order_by', '-timestamp')
+
+        legislation = Law.objects.filter(
+            Q(timestamp__lte=self.context['date']) | Q(timestamp__isnull=True),
+            session__mandate=mandate,
+            text__icontains=text_filter,
+        ).order_by(order)
+
+        # check if classification is present in the GET parameter
+        # classifications should be comma-separated
+        # TODO this code still smells
+        classification_filter = self.context['GET'].get('classification', None)
+        if classification_filter:
+            legislation = legislation.filter(
+                classification__name__in=classification_filter.split(',')
+            )
+
+        paged_object_list, pagination_metadata = create_paginator(self.context['GET'], legislation, prefix='legislation:')
+
         serializer = LegislationSerializer(
-            Law.objects.filter(
-                Q(timestamp__lte=self.context['date']) | Q(timestamp__isnull=True),
-                session__mandate=obj,
-            ),
+            paged_object_list,
             many=True,
             context=self.context
         )
-        return serializer.data
 
+        classifications = LegislationClassification.objects.all().distinct('name').values_list('name', flat=True)
+
+        return {
+            **parent_data,
+            **pagination_metadata,
+            'results': serializer.data,
+            # TODO standardize this and more importantly, cache it!
+            'classifications': classifications,
+        }
 
 class LegislationDetailCardSerializer(CardSerializer):
     def get_results(self, obj):
