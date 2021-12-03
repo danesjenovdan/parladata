@@ -63,6 +63,13 @@ class Link(Timestampable, Taggable):
                                  help_text='The question this link belongs to.',
                                  related_name='links')
 
+    legislation_consideration = models.ForeignKey('LegislationConsideration',
+                                 blank=True,
+                                 null=True,
+                                 on_delete=models.CASCADE,
+                                 help_text='The legislation consideration this link belongs to.',
+                                 related_name='links')
+
     agenda_item = models.ForeignKey(
         'AgendaItem',
         blank=True,
