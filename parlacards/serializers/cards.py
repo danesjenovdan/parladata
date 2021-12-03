@@ -786,6 +786,11 @@ class SessionsCardSerializer(CardSerializer):
             sessions = sessions.filter(
                 organizations__classification__in=classification_filter.split(',')
             )
+        # show only root organization sessions by default
+        else:
+            sessions = sessions.filter(
+                organizations__classification='root'
+            )
 
         # check if any individual organizations are selected and filter
         # based on those
