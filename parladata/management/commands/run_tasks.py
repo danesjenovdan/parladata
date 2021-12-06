@@ -16,7 +16,7 @@ class Command(BaseCommand):
         for task in tasks:
             try:
                 # skip task if it's started in another runner
-                check_task = Task.objects.get(id=tesk.id)
+                check_task = Task.objects.get(id=task.id)
                 if check_task.started_at:
                     continue
                 tasks_module = import_module('parladata.tasks')
