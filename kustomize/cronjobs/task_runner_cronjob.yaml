@@ -17,17 +17,9 @@ spec:
             env:
               - name: DJANGO_SETTINGS_MODULE
                 value: parladata_project.settings.k8s
-              - name: PARSER_MANDATE_START_DATE
-                value: '2019-07-21'
-              - name: PARSER_MAIN_ORG_ID
-                value: '1'
-              - name: PARSER_MANDATE_ID
-                value: '1'
             envFrom:
               - secretRef:
                   name: parladata-credentials
-              - secretRef:
-                  name: parlaparser-credentials
             command:
               - python
               - manage.py
