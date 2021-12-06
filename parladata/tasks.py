@@ -62,6 +62,7 @@ def merge_people(real_person_id, fake_person_ids, print_method=print):
             fake_parser_names = fake_person.parser_names.split('|')
             for fake_parser_name in fake_parser_names:
                 real_person.add_parser_name(fake_parser_name)
+            real_person.save()
             print_method(str(fake_person.delete()))
 
         print_method('\n')
