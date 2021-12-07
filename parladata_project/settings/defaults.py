@@ -2,6 +2,7 @@
 import os
 import raven
 from datetime import datetime
+from corsheaders.defaults import default_headers
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ALLOWED_HOSTS = ['*']
@@ -116,13 +117,17 @@ MANDATE_START_TIME = datetime(day=31, month=7, year=2014)
 # CORS config
 CORS_ORIGIN_ALLOW_ALL = True
 
-REST_FRAMEWORK = { 
-    'DEFAULT_PERMISSION_CLASSES': [ 
-        'rest_framework.permissions.IsAuthenticatedOrReadOnly', 
+CORS_ALLOW_HEADERS = list(default_headers) + [
+    'sentry-trace', # client side sentry can send this header
+]
+
+REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticatedOrReadOnly',
     ],
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
     #'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    'PAGE_SIZE': 10, 
+    'PAGE_SIZE': 10,
     'DEFAULT_FILTER_BACKENDS': ('django_filters.rest_framework.DjangoFilterBackend',),
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'oauth2_provider.contrib.rest_framework.OAuth2Authentication',
