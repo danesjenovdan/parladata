@@ -193,7 +193,7 @@ class CommonCachableSerializer(CommonSerializer):
         cache_key = self.calculate_cache_key(instance)
 
         # only try cache if not explicitly disabled
-        if not self.context['GET'].get('no_cache', False):
+        if not self.context.get('GET', {}).get('no_cache', False):
             if cached_representation := cache.get(cache_key):
                 return cached_representation
 
@@ -255,15 +255,15 @@ class SessionScoreCardSerializer(CardSerializer):
 
 
 class CommonPersonSerializer(CommonCachableSerializer):
-    def calculate_cache_key(self, instance):
-        organization = instance.parliamentary_group_on_date(datetime.now())
+    def calculate_cache_key(self, person):
+        organization = person.parliamentary_group_on_date(datetime.now())
 
         if organization:
-            timestamp = max([instance.updated_at, organization.updated_at])
+            timestamp = max([person.updated_at, organization.updated_at])
         else:
-            timestamp = instance.updated_at
+            timestamp = person.updated_at
 
-        return f'CommonPersonSerializer_{instance.id}_{timestamp.strftime("%Y-%m-%d-%H-%M-%s")}'
+        return f'CommonPersonSerializer_{person.id}_{timestamp.strftime("%Y-%m-%d-%H-%M-%s")}'
 
     def get_group(self, obj):
         active_parliamentary_group_membership = obj.parliamentary_group_on_date(self.context['date'])
@@ -282,7 +282,6 @@ class CommonPersonSerializer(CommonCachableSerializer):
     honorific_suffix = VersionableSerializerField(property_model_name='PersonHonorificSuffix')
     preferred_pronoun = VersionableSerializerField(property_model_name='PersonPreferredPronoun')
     group = serializers.SerializerMethodField()
-    # TODO check if this works
     image = serializers.ImageField()
 
 
