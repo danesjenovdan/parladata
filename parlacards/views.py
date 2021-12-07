@@ -1,5 +1,3 @@
-from django.core.paginator import Paginator
-
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -89,6 +87,7 @@ class CardView(APIView):
     """
     thing = None
     card_serializer = None
+    prefetch = None
 
     def get_serializer_data(self, request, the_thing):
         serializer = self.card_serializer(
@@ -108,8 +107,12 @@ class CardView(APIView):
             raise NotImplementedError('You should define a serializer to use.')
 
         # if the thing with id exists return serialized data
-        if the_thing := self.thing.objects.filter(id=request.card_id).first():
-            return Response(self.get_serializer_data(request, the_thing))
+        the_thing = self.thing.objects.filter(id=request.card_id)
+        # prefetch if something was asked to be prefetched
+        if self.prefetch:
+            the_thing = the_thing.prefetch_related(*self.prefetch)
+        if the_thing_to_serialize := the_thing.first():
+            return Response(self.get_serializer_data(request, the_thing_to_serialize))
 
         # otherwise return 404
         return Response(status=status.HTTP_404_NOT_FOUND)
@@ -409,8 +412,9 @@ class SingleSession(CardView):
     card_serializer = SingleSessionCardSerializer
 
 
-class SingleVote(CachedCardView):
+class SingleVote(CardView):
     thing = Vote
+    prefetch = ['ballots', 'ballots__personvoter'] # this saves ~300 queries on the Ukranian installation
     card_serializer = VoteCardSerializer
 
 
@@ -545,7 +549,7 @@ class LastSession(CardView):
     # TODO consider refactoring this
     # overriding because even if the parent organization
     # exists (which is the "thing" we supply the id of)
-    # the session might now (new, empty installation) we 
+    # the session might not (new, empty installation) we 
     # should return 404 if the session does not exist
     def get(self, request, format=None):
         # if the thing with id exists return serialized data
