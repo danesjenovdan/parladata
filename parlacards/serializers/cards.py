@@ -133,15 +133,15 @@ class PersonBallotCardSerializer(PersonScoreCardSerializer):
         )
 
         # TODO: maybe lemmatize?, maybe search by each word separately?
-        if text := self.context['GET'].get('text', None):
+        if text := self.context.get('GET', {}).get('text', None):
             ballots = ballots.filter(vote__motion__text__icontains=text)
 
         # get options filter
-        if text := self.context['GET'].get('options', None):
+        if text := self.context.get('GET', {}).get('options', None):
             options = text.split(',')
             ballots = ballots.filter(option__in=options)
 
-        paged_object_list, pagination_metadata = create_paginator(self.context['GET'], ballots)
+        paged_object_list, pagination_metadata = create_paginator(self.context.get('GET', {}), ballots)
 
         # serialize ballots
         ballot_serializer = BallotSerializer(
@@ -432,8 +432,8 @@ class PersonSpeechesCardSerializer(PersonScoreCardSerializer):
     def to_representation(self, person):
         parent_data = super().to_representation(person)
 
-        solr_params = parse_search_query_params(self.context['GET'], people_ids=[person.id], group_ids=None, highlight=True)
-        paged_object_list, pagination_metadata = create_solr_paginator(self.context['GET'], solr_params)
+        solr_params = parse_search_query_params(self.context.get('GET', {}), people_ids=[person.id], group_ids=None, highlight=True)
+        paged_object_list, pagination_metadata = create_solr_paginator(self.context.get('GET', {}), solr_params)
 
         # serialize speeches
         speeches_serializer = SpeechWithSessionSerializer(
@@ -457,8 +457,8 @@ class GroupSpeechesCardSerializer(GroupScoreCardSerializer):
     def to_representation(self, group):
         parent_data = super().to_representation(group)
 
-        solr_params = parse_search_query_params(self.context['GET'], group_ids=[group.id], highlight=True)
-        paged_object_list, pagination_metadata = create_solr_paginator(self.context['GET'], solr_params)
+        solr_params = parse_search_query_params(self.context.get('GET', {}), group_ids=[group.id], highlight=True)
+        paged_object_list, pagination_metadata = create_solr_paginator(self.context.get('GET', {}), solr_params)
 
         # serialize speeches
         speeches_serializer = SpeechWithSessionSerializer(
@@ -593,9 +593,9 @@ class VotersCardSerializer(CardSerializer):
         return score_maximum_values
 
     def _filtered_and_ordered_people(self, playing_field, timestamp):
-        group_ids = list(filter(lambda x: x.isdigit(), self.context['GET'].get('groups', '').split(',')))
-        working_body_ids = list(filter(lambda x: x.isdigit(), self.context['GET'].get('working_bodies', '').split(',')))
-        preferred_pronoun = self.context['GET'].get('preferred_pronoun', None)
+        group_ids = list(filter(lambda x: x.isdigit(), self.context.get('GET', {}).get('groups', '').split(',')))
+        working_body_ids = list(filter(lambda x: x.isdigit(), self.context.get('GET', {}).get('working_bodies', '').split(',')))
+        preferred_pronoun = self.context.get('GET', {}).get('preferred_pronoun', None)
 
         people = playing_field.query_voters(timestamp)
 
@@ -622,12 +622,12 @@ class VotersCardSerializer(CardSerializer):
             ).values_list('member', flat=True)
             people = people.filter(id__in=member_ids)
 
-        if text := self.context['GET'].get('text', None):
+        if text := self.context.get('GET', {}).get('text', None):
             # TODO: will this work correctly when people have multiple names?
             people = people.filter(personname__value__icontains=text)
 
         # get order from url
-        order_by = self.context['GET'].get('order_by', 'name')
+        order_by = self.context.get('GET', {}).get('order_by', 'name')
         order_reverse = False
 
         if order_by.startswith('-'):
@@ -702,7 +702,7 @@ class VotersCardSerializer(CardSerializer):
 
         ordered_people = self._filtered_and_ordered_people(playing_field, self.context['date'])
 
-        paged_object_list, pagination_metadata = create_paginator(self.context['GET'], ordered_people, prefix='members:')
+        paged_object_list, pagination_metadata = create_paginator(self.context.get('GET', {}), ordered_people, prefix='members:')
 
         # serialize people
         people_serializer = PersonAnalysesSerializer(
@@ -772,7 +772,7 @@ class SessionsCardSerializer(CardSerializer):
     def to_representation(self, mandate):
         parent_data = super().to_representation(mandate)
 
-        order = self.context['GET'].get('order_by', '-start_time')
+        order = self.context.get('GET', {}).get('order_by', '-start_time')
 
         sessions = mandate.sessions.filter(
             Q(start_time__lte=self.context['date']) | Q(start_time__isnull=True)
@@ -781,7 +781,7 @@ class SessionsCardSerializer(CardSerializer):
         # check if classification is present in the GET parameter
         # classifications should be comma-separated
         # these are organization classifications
-        classification_filter = self.context['GET'].get('classification', None)
+        classification_filter = self.context.get('GET', {}).get('classification', None)
         if classification_filter:
             sessions = sessions.filter(
                 organizations__classification__in=classification_filter.split(',')
@@ -794,7 +794,7 @@ class SessionsCardSerializer(CardSerializer):
 
         # check if any individual organizations are selected and filter
         # based on those
-        if organizations_filter := self.context['GET'].get('organizations', None):
+        if organizations_filter := self.context.get('GET', {}).get('organizations', None):
             try:
                 organization_ids = map(lambda x: int(x), organizations_filter.split(','))
             except ValueError:
@@ -803,7 +803,7 @@ class SessionsCardSerializer(CardSerializer):
                 organizations__id__in=organization_ids
             )
 
-        paged_object_list, pagination_metadata = create_paginator(self.context['GET'], sessions, prefix='sessions:')
+        paged_object_list, pagination_metadata = create_paginator(self.context.get('GET', {}), sessions, prefix='sessions:')
 
         serializer = SessionSerializer(
             paged_object_list,
@@ -848,8 +848,8 @@ class LegislationCardSerializer(CardSerializer):
     def to_representation(self, mandate):
         parent_data = super().to_representation(mandate)
 
-        text_filter = self.context['GET'].get('text', '')
-        order = self.context['GET'].get('order_by', '-timestamp')
+        text_filter = self.context.get('GET', {}).get('text', '')
+        order = self.context.get('GET', {}).get('order_by', '-timestamp')
 
         legislation = Law.objects.filter(
             Q(timestamp__lte=self.context['date']) | Q(timestamp__isnull=True),
@@ -860,13 +860,13 @@ class LegislationCardSerializer(CardSerializer):
         # check if classification is present in the GET parameter
         # classifications should be comma-separated
         # TODO this code still smells
-        classification_filter = self.context['GET'].get('classification', None)
+        classification_filter = self.context.get('GET', {}).get('classification', None)
         if classification_filter:
             legislation = legislation.filter(
                 classification__name__in=classification_filter.split(',')
             )
 
-        paged_object_list, pagination_metadata = create_paginator(self.context['GET'], legislation, prefix='legislation:')
+        paged_object_list, pagination_metadata = create_paginator(self.context.get('GET', {}), legislation, prefix='legislation:')
 
         serializer = LegislationSerializer(
             paged_object_list,
@@ -943,7 +943,7 @@ class LastSessionCardSerializer(CardSerializer):
             'id' # fallback ordering
         )
 
-        paged_object_list, pagination_metadata = create_paginator(self.context['GET'], votes, prefix='votes:')
+        paged_object_list, pagination_metadata = create_paginator(self.context.get('GET', {}), votes, prefix='votes:')
 
         # serialize votes
         vote_serializer = SessionVoteSerializer(
@@ -997,7 +997,7 @@ class GroupCardSerializer(GroupScoreCardSerializer):
             'id' # fallback ordering
         )
 
-        paged_object_list, pagination_metadata = create_paginator(self.context['GET'], members, prefix='members:')
+        paged_object_list, pagination_metadata = create_paginator(self.context.get('GET', {}), members, prefix='members:')
 
         people_serializer = CommonPersonSerializer(
             paged_object_list,
@@ -1032,7 +1032,7 @@ class GroupMembersCardSerializer(GroupScoreCardSerializer):
             'id' # fallback ordering
         )
 
-        paged_object_list, pagination_metadata = create_paginator(self.context['GET'], members)
+        paged_object_list, pagination_metadata = create_paginator(self.context.get('GET', {}), members)
 
         people_serializer = CommonPersonSerializer(
             paged_object_list,
@@ -1095,7 +1095,7 @@ class GroupQuestionCardSerializer(GroupScoreCardSerializer):
             #
             # also this whole function needs more comments
             # to explain why it's doing what it's doing
-            paged_object_list, pagination_metadata = create_paginator(self.context['GET'], Question.objects.none())
+            paged_object_list, pagination_metadata = create_paginator(self.context.get('GET', {}), Question.objects.none())
             return {
                 **parent_data,
                 **pagination_metadata,
@@ -1146,7 +1146,7 @@ class GroupQuestionCardSerializer(GroupScoreCardSerializer):
             '-timestamp'
         )
 
-        paged_object_list, pagination_metadata = create_paginator(self.context['GET'], questions)
+        paged_object_list, pagination_metadata = create_paginator(self.context.get('GET', {}), questions)
 
         question_serializer = QuestionSerializer(
             paged_object_list,
@@ -1178,10 +1178,10 @@ class GroupBallotCardSerializer(GroupScoreCardSerializer):
         )
 
         # TODO: maybe lemmatize?, maybe search by each word separately?
-        if text := self.context['GET'].get('text', None):
+        if text := self.context.get('GET', {}).get('text', None):
             votes = votes.filter(motion__text__icontains=text)
 
-        paged_object_list, pagination_metadata = create_paginator(self.context['GET'], votes)
+        paged_object_list, pagination_metadata = create_paginator(self.context.get('GET', {}), votes)
 
         party_ballots = []
         for vote in paged_object_list:
@@ -1347,7 +1347,7 @@ class SessionSpeechesCardSerializer(SessionScoreCardSerializer):
             'id' # fallback ordering
         )
 
-        paged_object_list, pagination_metadata = create_paginator(self.context['GET'], speeches)
+        paged_object_list, pagination_metadata = create_paginator(self.context.get('GET', {}), speeches)
 
         # serialize speeches
         speeches_serializer = SpeechSerializer(
@@ -1394,10 +1394,9 @@ class SingleSessionCardSerializer(CardSerializer):
 
 
 class VoteCardSerializer(CardSerializer):
-    def get_results(self, obj):
-        # obj is the vote
+    def get_results(self, vote):
         serializer = VoteSerializer(
-            obj,
+            vote,
             context=self.context
         )
         return serializer.data
@@ -1474,15 +1473,15 @@ class SessionVotesCardSerializer(SessionScoreCardSerializer):
         )
 
         # TODO: maybe lemmatize?, maybe search by each word separately?
-        if text := self.context['GET'].get('text', None):
+        if text := self.context.get('GET', {}).get('text', None):
             votes = votes.filter(motion__text__icontains=text)
 
-        passed_string = self.context['GET'].get('passed', None)
+        passed_string = self.context.get('GET', {}).get('passed', None)
         if passed_string in ['true', 'false']:
             passed_bool = passed_string == 'true'
             votes = votes.filter(result=passed_bool)
 
-        paged_object_list, pagination_metadata = create_paginator(self.context['GET'], votes)
+        paged_object_list, pagination_metadata = create_paginator(self.context.get('GET', {}), votes)
 
         # serialize votes
         vote_serializer = SessionVoteSerializer(
@@ -1509,8 +1508,8 @@ class MandateSpeechCardSerializer(CardSerializer):
     def to_representation(self, mandate):
         parent_data = super().to_representation(mandate)
 
-        solr_params = parse_search_query_params(self.context['GET'], mandate=mandate.id, highlight=True)
-        paged_object_list, pagination_metadata = create_solr_paginator(self.context['GET'], solr_params)
+        solr_params = parse_search_query_params(self.context.get('GET', {}), mandate=mandate.id, highlight=True)
+        paged_object_list, pagination_metadata = create_solr_paginator(self.context.get('GET', {}), solr_params)
 
         # serialize speeches
         speeches_serializer = HighlightSerializer(
@@ -1529,7 +1528,7 @@ class MandateSpeechCardSerializer(CardSerializer):
 class MandateUsageByGroupCardSerializer(CardSerializer):
     def get_results(self, obj):
         # obj is the mandate
-        solr_params = parse_search_query_params(self.context['GET'], facet=True)
+        solr_params = parse_search_query_params(self.context.get('GET', {}), facet=True)
         solr_params['mandate'] = obj.id
         solr_response = solr_select(**solr_params, per_page=0)
 
@@ -1556,7 +1555,7 @@ class MandateMostUsedByPeopleCardSerializer(CardSerializer):
     def get_results(self, obj):
         # obj is the mandate
         people_ids = obj.personmemberships.filter(role='voter').values_list('member_id', flat=True)
-        solr_params = parse_search_query_params(self.context['GET'], facet=True)
+        solr_params = parse_search_query_params(self.context.get('GET', {}), facet=True)
         solr_params['mandate'] = obj.id
         solr_response = solr_select(**solr_params, per_page=0)
 
@@ -1594,7 +1593,7 @@ class MandateMostUsedByPeopleCardSerializer(CardSerializer):
 class MandateUsageThroughTimeCardSerializer(CardSerializer):
     def get_results(self, obj):
         # obj is the mandate
-        solr_params = parse_search_query_params(self.context['GET'], facet=True)
+        solr_params = parse_search_query_params(self.context.get('GET', {}), facet=True)
         solr_params['mandate'] = obj.id
         solr_response = solr_select(**solr_params, per_page=0)
 
@@ -1619,15 +1618,15 @@ class MandateVotesCardSerializer(CardSerializer):
     def to_representation(self, mandate):
         parent_data = super().to_representation(mandate)
 
-        if self.context['GET'].get('text', None):
-            solr_params = parse_search_query_params(self.context['GET'], mandate=mandate.id)
-            paged_object_list, pagination_metadata = create_solr_paginator(self.context['GET'], solr_params, document_type='vote')
+        if self.context.get('GET', {}).get('text', None):
+            solr_params = parse_search_query_params(self.context.get('GET', {}), mandate=mandate.id)
+            paged_object_list, pagination_metadata = create_solr_paginator(self.context.get('GET', {}), solr_params, document_type='vote')
         else:
             votes = Vote.objects.filter(
                 timestamp__lte=self.context['date'],
                 motion__session__mandate=mandate
             ).order_by('-timestamp')
-            paged_object_list, pagination_metadata = create_paginator(self.context['GET'], votes)
+            paged_object_list, pagination_metadata = create_paginator(self.context.get('GET', {}), votes)
 
         # serialize votes
         vote_serializer = BareVoteSerializer(
@@ -1651,15 +1650,15 @@ class MandateLegislationCardSerializer(CardSerializer):
     def to_representation(self, mandate):
         parent_data = super().to_representation(mandate)
 
-        if self.context['GET'].get('text', None):
-            solr_params = parse_search_query_params(self.context['GET'], mandate=mandate.id)
-            paged_object_list, pagination_metadata = create_solr_paginator(self.context['GET'], solr_params, document_type='law')
+        if self.context.get('GET', {}).get('text', None):
+            solr_params = parse_search_query_params(self.context.get('GET', {}), mandate=mandate.id)
+            paged_object_list, pagination_metadata = create_solr_paginator(self.context.get('GET', {}), solr_params, document_type='law')
         else:
             legislation = Law.objects.filter(
                 Q(timestamp__lte=self.context['date']) | Q(timestamp__isnull=True),
                 session__mandate=mandate,
             )
-            paged_object_list, pagination_metadata = create_paginator(self.context['GET'], legislation)
+            paged_object_list, pagination_metadata = create_paginator(self.context.get('GET', {}), legislation)
 
         # serialize legislation
         legislation_serializer = LegislationSerializer(
@@ -1682,7 +1681,7 @@ class SearchDropdownSerializer(CardSerializer):
         people_data = []
         groups_data = []
 
-        text = self.context['GET'].get('text', None)
+        text = self.context.get('GET', {}).get('text', None)
 
         if text and len(text) >= 2:
             leader = root_organization.query_members_by_role('leader', self.context['date']).order_by('personname__value', 'id')

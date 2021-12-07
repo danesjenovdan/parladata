@@ -135,7 +135,19 @@ class Organization(Timestampable, Taggable, Parsable, Sluggable, VersionableFiel
         )
 
     def query_parliamentary_groups(self, timestamp=datetime.now()):
-        return self.query_organization_members(timestamp).filter(classification='pg') # TODO rename to parliamentary_group
+        # sometimes we have groups without members
+        # this crashes some serializers (like vote/single
+        # because it can't calculate the max_option for all groups)
+        # so if a group has no members it should be filtered out
+
+        ids_of_groups_with_voters = PersonMembership.objects.filter(
+            models.Q(start_time__lte=timestamp) | models.Q(start_time__isnull=True),
+            models.Q(end_time__gte=timestamp) | models.Q(end_time__isnull=True),
+            organization__in=Organization.objects.filter(classification='pg'),  # TODO rename to parliamentary_group
+            role='member',
+        ).values_list('organization__id', flat=True).distinct('organization__id')
+
+        return self.query_organization_members(timestamp).filter(id__in=ids_of_groups_with_voters)
 
     def query_voters(self, timestamp=datetime.now()):
         return self.query_members_by_role('voter', timestamp)
