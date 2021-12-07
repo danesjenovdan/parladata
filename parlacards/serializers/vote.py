@@ -119,7 +119,6 @@ class VoteSumsSerializer(CommonCachableSerializer):
         # instance is the vote
         return f'VoteSumsSerializer_{instance.id}_{instance.updated_at.strftime("%Y-%m-%d-%H-%M-%s")}'
 
-    # for is a reserved word FML
     def to_representation(self, instance):
         # instance is vote
         cache_key = self.calculate_cache_key(instance)
@@ -131,6 +130,47 @@ class VoteSumsSerializer(CommonCachableSerializer):
         cache.set(cache_key, representation)
         return representation
 
+
+class VoteGovernmentSidesSerializer(CommonCachableSerializer):
+    # TODO this could be a bad cache key
+    # what if a party changed its coalition status
+    def calculate_cache_key(self, vote):
+        return f'VoteSumsSerializer_{vote.id}_{vote.updated_at.strftime("%Y-%m-%d-%H-%M-%s")}'
+
+    def to_representation(self, vote):
+        cache_key = self.calculate_cache_key(vote)
+        cached_representation = cache.get(cache_key)
+        if cached_representation:
+            return cached_representation
+
+        coalition_stats = vote.get_stats(gov_side='coalition')
+        if not coalition_stats:
+            return []
+        coalition_options = vote.get_option_counts(gov_side='coalition')
+        opposition_stats = vote.get_stats(gov_side='opposition')
+        opposition_options = vote.get_option_counts(gov_side='opposition')
+        representation = [
+            {
+                'stats': coalition_stats,
+                'votes': coalition_options,
+                'group': {
+                    'name': 'Coalition',
+                    'acronym': None,
+                    'slug': None
+                }
+            },
+            {
+                'stats': opposition_stats,
+                'votes': opposition_options,
+                'group': {
+                    'name': 'Opposition',
+                    'acronym': None,
+                    'slug': None
+                }
+            }
+        ]
+        cache.set(cache_key, representation)
+        return representation
 
 class VoteStatsSerializer(CommonCachableSerializer):
     def calculate_cache_key(self, instance):
@@ -151,34 +191,12 @@ class VoteStatsSerializer(CommonCachableSerializer):
 
 
 class VoteSerializer(CommonSerializer):
-    def get_government_sides(self, obj):
-        # obj is the vote
-        coalition_stats = obj.get_stats(gov_side='coalition')
-        if not coalition_stats:
-            return []
-        coalition_options = obj.get_option_counts(gov_side='coalition')
-        opposition_stats = obj.get_stats(gov_side='opposition')
-        opposition_options = obj.get_option_counts(gov_side='opposition')
-        return [
-            {
-                'stats': coalition_stats,
-                'votes': coalition_options,
-                'group': {
-                    'name': 'Coalition',
-                    'acronym': None,
-                    'slug': None
-                }
-            },
-            {
-                'stats': opposition_stats,
-                'votes': opposition_options,
-                'group': {
-                    'name': 'Opposition',
-                    'acronym': None,
-                    'slug': None
-                }
-            }
-        ]
+    def get_government_sides(self, vote):
+        serializer = VoteGovernmentSidesSerializer(
+            vote,
+            context=self.context
+        )
+        return serializer.data
 
     def get_abstract_visible(self, obj):
         return False
@@ -199,14 +217,33 @@ class VoteSerializer(CommonSerializer):
         )
         return serializer.data
 
+    def get_members(self, vote):
+        # TODO these are now all cached together
+        # but initial load still takes three minutes in Ukraine
 
-    def get_members(self, obj):
-        # obj is the vote
+        # get the latest timestamp to calculate the cache key
+        # it's either the vote or the latest update to the person
+        vote_timestamp = vote.timestamp
+        latest_voter_timestamp = vote.ballots.all().order_by(
+            '-personvoter__updated_at'
+        ).values(
+            'personvoter__updated_at'
+        ).first()['personvoter__updated_at']
+        timestamp = max([vote_timestamp, latest_voter_timestamp])
+
+        cache_key = f'SingleVoteMembers__{vote.id}__{timestamp.strftime("%Y-%m-%d")}'
+
+        # if there's something in the cache, return
+        if cached_member_ballots := cache.get(cache_key):
+            return cached_member_ballots
+        
+        # nothing in the cache, do the math and set the cache
         serializer = VoteBallotSerializer(
-            obj.ballots.all(),
+            vote.ballots.all(),
             many=True,
             context=self.context
         )
+        cache.set(cache_key, serializer.data)
 
         return serializer.data
 
