@@ -98,6 +98,10 @@ def solr_select(
     url = f'{settings.SOLR_URL}/select'
     response = requests.get(url, params=params, timeout=30)
 
+    # die informatively when Solr is unreachable
+    if response.status_code >= 400:
+        raise Exception(f'Solr unreachable at {settings.SOLR_URL}. Error {response.status_code}.')
+
     return response.json()
 
 
