@@ -435,6 +435,12 @@ class PersonSpeechesCardSerializer(PersonScoreCardSerializer):
         solr_params = parse_search_query_params(self.context.get('GET', {}), people_ids=[person.id], group_ids=None, highlight=True)
         paged_object_list, pagination_metadata = create_solr_paginator(self.context.get('GET', {}), solr_params)
 
+        # TODO this might be better done by Solr directly
+        # sort before serializing
+        # first by order, then by date (in reverse order of sort preference)
+        paged_object_list.sort(key=lambda speech: speech.order, reverse=True)
+        paged_object_list.sort(key=lambda speech: speech.start_time, reverse=True)
+
         # serialize speeches
         speeches_serializer = SpeechWithSessionSerializer(
             paged_object_list,
