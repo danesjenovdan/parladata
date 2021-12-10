@@ -8,11 +8,3 @@ services:
       - 8983:8983
     volumes:
       - ./solr/parlasearch-conf:/parlasearch-conf
-
-  api:
-    container_name: api
-    build: ./api
-    ports:
-      - 7003:7003
-    volumes:
-      - ./api:/api
