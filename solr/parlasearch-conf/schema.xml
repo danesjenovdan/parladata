@@ -14,7 +14,7 @@
 
 
   <!-- general required fields -->
-  <field name="term"          type="pint"         indexed="true"  stored="true" multiValued="false" required="true" />
+  <field name="term"          type="string"         indexed="true"  stored="true" multiValued="false" required="true" />
   <field name="type"          type="string"       indexed="true"  stored="true" multiValued="false" required="true" />
   <!-- specific ids -->
   <field name="speech_id"     type="pint"         indexed="true"  stored="true" multiValued="false" />
