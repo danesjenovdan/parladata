@@ -130,7 +130,7 @@ metadata:
   name: parlasolr
   annotations:
     cert-manager.io/cluster-issuer: "letsencrypt-production"
-    nginx.ingress.kubernetes.io/whitelist-source-range: 51.159.115.36,93.103.238.39,91.236.1.1/24
+    # nginx.ingress.kubernetes.io/whitelist-source-range: 51.159.115.36,93.103.238.39,91.236.1.1/24
 spec:
   tls:
     - hosts:
