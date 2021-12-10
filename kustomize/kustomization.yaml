@@ -4,7 +4,6 @@ kind: Kustomization
 namespace: parlameter-slovenija
 resources:
   - solr.yaml
-  - api.yaml
 images:
   -
     name: parlasearch
