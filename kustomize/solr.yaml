@@ -20,13 +20,6 @@ spec:
       containers:
       - name: parlasolr
         image: parlasolr # kustomize thing
-        resources:
-          requests:
-            memory: "1Gi"
-            cpu: "1000m"
-          limits:
-            memory: "1Gi"
-            cpu: "1000m"
         volumeMounts:
         - name: parlasolr-persistent-storage
           mountPath: /var/solr/data
