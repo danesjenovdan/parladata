@@ -1,4 +1,5 @@
-from django.conf.urls import url, include
+from django.conf.urls import include
+from django.urls import re_path
 from rest_framework import routers
 
 from parladata.api_views import *
@@ -31,7 +32,7 @@ router.register(r'media', MediumView)
 router.register(r'media-reports', MediaReportView)
 
 urlpatterns = [
-    url(r'^', include(router.urls)),
-    url(r'^merge-people', merge_people),
-    url(r'^add-ballots', add_ballots),
+    re_path(r'^', include(router.urls)),
+    re_path(r'^merge-people', merge_people),
+    re_path(r'^add-ballots', add_ballots),
 ]
