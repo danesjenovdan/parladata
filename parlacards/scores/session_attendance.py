@@ -45,7 +45,9 @@ def calculate_session_vote_attendance(session, group, timestamp=datetime.now()):
 
         ballots = ballots.union(member_ballots.filter(q_ballot_objects))
 
-    ballot_options = ballots.values_list('option', flat=True)
+    # WORKAROUND because values_list of union returns distinct values
+    ballot_options = [ballot.option for ballot in ballots]
+
     option_counter = Counter(ballot_options)
 
     ballots_for = option_counter.get('for', 0)

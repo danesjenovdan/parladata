@@ -3,13 +3,14 @@ import math
 from importlib import import_module
 
 from django.core.cache import cache
-from django.db.models import Avg, Max
+from django.db.models import Avg, Max, Q
 
 from rest_framework import serializers
 
 from parladata.models.person import Person
 from parladata.models.organization import Organization
 from parladata.models.common import Mandate
+from parladata.models.organization import PersonMembership
 
 from datetime import datetime
 
@@ -276,7 +277,20 @@ class CommonPersonSerializer(CommonCachableSerializer):
         )
         return serializer.data
 
-    slug = serializers.CharField()
+    def get_slug(self, person):
+        memberships_count = PersonMembership.objects.filter(
+            Q(member=person),
+            Q(start_time__lte=self.context['date']) | Q(start_time__isnull=True),
+            Q(end_time__gte=self.context['date']) | Q(end_time__isnull=True),
+            Q(role__in=['voter', 'leader']),
+        ).count()
+
+        if memberships_count != 0:
+            return person.slug
+
+        return None
+
+    slug = serializers.SerializerMethodField()
     name = VersionableSerializerField(property_model_name='PersonName')
     honorific_prefix = VersionableSerializerField(property_model_name='PersonHonorificPrefix')
     honorific_suffix = VersionableSerializerField(property_model_name='PersonHonorificSuffix')
