@@ -106,7 +106,7 @@ class Vote(Timestampable, Taggable):
         if not option_counts:
             return None
         max_option = max(option_counts, key=option_counts.get)
-        max_percentage = option_counts.get(max_option, 0)
+        max_percentage = option_counts.get(max_option, 0) / sum(option_counts.values()) * 100
         return {
             'is_outlier': False, # TODO remove because this is disabled on the front for now.
             'passed': self.motion.result,

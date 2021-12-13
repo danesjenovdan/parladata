@@ -265,7 +265,7 @@ class VoteSerializer(CommonSerializer):
 
     def get_documents(self, obj):
         return LinkSerializer(
-            obj.motion.links.all(),
+            obj.motion.links.all().order_by('id'),
             many=True
         ).data
 

@@ -192,10 +192,16 @@ class PersonQuestionCardSerializer(PersonScoreCardSerializer):
 
 
 class PersonMembershipCardSerializer(PersonScoreCardSerializer):
-    def get_results(self, obj):
-        # obj is the person
+    def get_results(self, person):
+        # do not show memberships in root organization or parties
+        filtered_classifications = [
+            classification[0] for classification
+            in filter(lambda x: x[0] != 'pg' and x[0] != 'root', ORGANIZATION_CLASSIFICATIONS)
+        ]
+
         memberships = PersonMembership.valid_at(self.context['date']).filter(
-            member=obj,
+            member=person,
+            organization__classification__in=filtered_classifications
         )
         membership_serializer = MembershipSerializer(memberships, context=self.context, many=True)
         return membership_serializer.data
@@ -506,7 +512,7 @@ class PersonAnalysesSerializer(CommonPersonSerializer):
         memberships = PersonMembership.valid_at(self.context['date']).filter(member=person)
         organizations = Organization.objects.filter(
             id__in=memberships.values_list('organization'),
-            classification__in=('committee', 'commision', 'other'), # TODO: add other classifications?
+            classification__in=('committee', 'commission', 'other'), # TODO: add other classifications?
         )
         organization_serializer = CommonOrganizationSerializer(
             organizations,
@@ -565,7 +571,7 @@ class VotersCardSerializer(CardSerializer):
         memberships = PersonMembership.valid_at(timestamp)
         organizations = Organization.objects.filter(
             id__in=memberships.values_list('organization'),
-            classification__in=('committee', 'commision', 'other'), # TODO: add other classifications?
+            classification__in=('committee', 'commission', 'other'), # TODO: add other classifications?
         )
         organization_serializer = CommonOrganizationSerializer(
             organizations,
@@ -622,7 +628,7 @@ class VotersCardSerializer(CardSerializer):
 
         if len(working_body_ids):
             member_ids = PersonMembership.valid_at(timestamp).filter(
-                organization__classification__in=('committee', 'commision', 'other'), # TODO: add other classifications?
+                organization__classification__in=('committee', 'commission', 'other'), # TODO: add other classifications?
                 member_id__in=people,
                 organization_id__in=working_body_ids,
             ).values_list('member', flat=True)
@@ -774,7 +780,7 @@ class SessionsCardSerializer(CardSerializer):
     # in to_representation
     def get_results(self, obj):
         return None
-    
+
     def to_representation(self, mandate):
         parent_data = super().to_representation(mandate)
 
