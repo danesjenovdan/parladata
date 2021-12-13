@@ -295,3 +295,22 @@ def get_legislation_from_solr(text_query='*', mandate=None, page=1, per_page=20)
     law_ids = [solr_doc['law_id'] for solr_doc in solr_response['response']['docs']]
     legislation = list(Law.objects.filter(id__in=law_ids))
     return (legislation, solr_response['response']['numFound'])
+
+
+def delete_solr_documents():
+    headers = {
+        'Content-Type': 'text/xml',
+    }
+    data = '<delete><query>*:*</query></delete>'
+
+    response = requests.post(
+        f'{settings.SOLR_URL}/update',
+        headers=headers,
+        data='<delete><query>*:*</query></delete>'
+    )
+    if response.status_code == 200:
+        requests.post(
+            f'{settings.SOLR_URL}/update',
+            headers=headers,
+            data='<commit />'
+        )

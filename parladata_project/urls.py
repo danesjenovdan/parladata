@@ -27,9 +27,6 @@ urlpatterns = [
     # card data api
     path('v3/cards/', include(('parlacards.urls', 'parlacards'), namespace='parlacards')),
 
-    # legacy URLs
-    path('v1/sandbox/', include(('sandbox.urls', 'sandobx'), namespace='sandbox')),
-
     # Django debug toolbar
     path('__debug__/', include(debug_toolbar.urls)),
 
