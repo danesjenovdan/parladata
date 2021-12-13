@@ -164,6 +164,7 @@ class Taggable(models.Model):
         abstract = True
 
 class Sluggable(models.Model):
+    @property
     def slug(self):
         if self.name:
             return slugify(f'{self.id}-{self.name}')
