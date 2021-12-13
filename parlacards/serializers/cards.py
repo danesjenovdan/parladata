@@ -192,10 +192,16 @@ class PersonQuestionCardSerializer(PersonScoreCardSerializer):
 
 
 class PersonMembershipCardSerializer(PersonScoreCardSerializer):
-    def get_results(self, obj):
-        # obj is the person
+    def get_results(self, person):
+        # do not show memberships in root organization or parties
+        filtered_classifications = [
+            classification[0] for classification
+            in filter(lambda x: x[0] != 'pg' and x[0] != 'root', ORGANIZATION_CLASSIFICATIONS)
+        ]
+
         memberships = PersonMembership.valid_at(self.context['date']).filter(
-            member=obj,
+            member=person,
+            organization__classification__in=filtered_classifications
         )
         membership_serializer = MembershipSerializer(memberships, context=self.context, many=True)
         return membership_serializer.data

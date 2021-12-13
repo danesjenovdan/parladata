@@ -1,4 +1,4 @@
-Django
+Django==3.2.10
 django-autoslug
 psycopg2-binary
 djangorestframework
@@ -15,7 +15,6 @@ django-cors-headers
 django-taggit-serializer
 django-model-utils
 django-tinymce
-Lemmagen
 nltk
 slugify
 Pillow
