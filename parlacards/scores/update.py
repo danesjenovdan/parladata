@@ -94,6 +94,8 @@ def force_run_person_analyses(timestamp=datetime.now(), print_method=print):
     save_people_monthly_vote_attendance(playing_field, timestamp)
     print_method('start calculating voting distances')
     save_voting_distances(playing_field, timestamp)
+    print_method('start calculating number of questions')
+    save_people_number_of_questions(playing_field, timestamp)
     print_method('end analyses for people')
 
 def run_speech_analyses_on_date(playing_field, timestamp):
