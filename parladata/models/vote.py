@@ -103,10 +103,12 @@ class Vote(Timestampable, Taggable):
             * 'opposition': members which's not in coalition
         """
         option_counts = self.get_option_counts(gov_side)
-        if sum(option_counts.values()) == 0:
-            return None
-        max_option = max(option_counts, key=option_counts.get)
-        max_percentage = option_counts.get(max_option, 0) / sum(option_counts.values()) * 100
+        if sum(option_counts.values()) != 0:
+            max_option = max(option_counts, key=option_counts.get)
+            max_percentage = option_counts.get(max_option, 0) / sum(option_counts.values()) * 100
+        else:
+            max_option = None
+            max_percentage = None
         return {
             'is_outlier': False, # TODO remove because this is disabled on the front for now.
             'passed': self.motion.result,
