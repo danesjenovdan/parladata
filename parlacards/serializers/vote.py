@@ -65,6 +65,11 @@ class VoteGroupSerializer(CommonCachableSerializer):
 
     def get_outliers(self, obj):
         # obj is the group
+        # TODO this is very similar to get_stats in parladata.models.vote.Vote
+        sum_of_all_ballots = sum(self.get_annotated_group_ballots(obj).values_list('option_count', flat=True))
+        if sum_of_all_ballots == 0:
+            return []
+
         max_option = self.get_annotated_group_ballots(obj).first()['option']
 
         filtered_group_ballots = self.get_group_ballots(obj).exclude(option__in=['absent', max_option])
@@ -82,8 +87,14 @@ class VoteGroupSerializer(CommonCachableSerializer):
     def get_max(self, obj):
         # obj is group
         # TODO only call DB once
-        max_option_percentage = self.get_annotated_group_ballots(obj).first()['option_count'] * 100 / sum(self.get_annotated_group_ballots(obj).values_list('option_count', flat=True))
-        max_option = self.get_annotated_group_ballots(obj).first()['option']
+        # TODO this is very similar to get_stats in parladata.models.vote.Vote
+        sum_of_all_ballots = sum(self.get_annotated_group_ballots(obj).values_list('option_count', flat=True))
+        if sum_of_all_ballots != 0:
+            max_option_percentage = self.get_annotated_group_ballots(obj).first()['option_count'] * 100 / sum(self.get_annotated_group_ballots(obj).values_list('option_count', flat=True))
+            max_option = self.get_annotated_group_ballots(obj).first()['option']
+        else:
+            max_option = None
+            max_option_percentage = None
         return {
             'max_option_percentage': max_option_percentage,
             'max_option': max_option
@@ -224,11 +235,20 @@ class VoteSerializer(CommonSerializer):
         # get the latest timestamp to calculate the cache key
         # it's either the vote or the latest update to the person
         vote_timestamp = vote.timestamp
-        latest_voter_timestamp = vote.ballots.all().order_by(
-            '-personvoter__updated_at'
-        ).values(
-            'personvoter__updated_at'
-        ).first()['personvoter__updated_at']
+
+        # there is a horrible case where the vote has no ballots
+        # we handle it by checking the ballot count and assigning
+        # latest_voter_timestamp to previously calculated vote_timestamp
+        if vote.ballots.count() == 0:
+            latest_voter_timestamp = vote_timestamp
+        else:
+            # we have ballots
+            latest_voter_timestamp = vote.ballots.all().order_by(
+                '-personvoter__updated_at'
+            ).values(
+                'personvoter__updated_at'
+            ).first()['personvoter__updated_at']
+
         timestamp = max([vote_timestamp, latest_voter_timestamp])
 
         cache_key = f'SingleVoteMembers__{vote.id}__{timestamp.strftime("%Y-%m-%d")}'
