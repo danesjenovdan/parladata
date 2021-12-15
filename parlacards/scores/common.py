@@ -21,13 +21,15 @@ def remove_punctuation(text):
 def tokenize(text):
     return [s for s in text.split(' ') if s != '']
 
-def get_lemmatize_method(name):
+def get_lemmatize_method(name, language_code=None):
     '''
     name: name of lemmatizer method for import
     '''
-    language_code = getattr(
-        settings, 'LEMMATIZER_LANGUAGE_CODE',
-    )
+    if not language_code:
+        language_code = getattr(
+            settings, 'LEMMATIZER_LANGUAGE_CODE',
+        )
+
     mathod_path_string = f'parlacards.lemmatizers.{language_code}.lemmatizer.{name}'
     method = import_string(mathod_path_string)
     return method
