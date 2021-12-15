@@ -98,7 +98,6 @@ class DocumentAdmin(admin.ModelAdmin):
 
 class ContactAdmin(admin.ModelAdmin):
     list_display = ('id', 'value')
-
     search_fields = ['value']
 
 
@@ -119,8 +118,9 @@ class EducationLevelAdmin(SortableAdminMixin, admin.ModelAdmin):
 
 
 class BallotAdmin(admin.ModelAdmin):
-    list_display = ('vote', 'personvoter', 'option')
+    list_display = ['personvoter', 'option', 'vote']
     autocomplete_fields = ['personvoter', 'orgvoter', 'vote']
+    list_filter = ('vote',)
 
 
 admin.site.register(Speech, SpeechAdmin)
