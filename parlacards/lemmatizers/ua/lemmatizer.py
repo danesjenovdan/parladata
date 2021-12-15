@@ -1,6 +1,6 @@
 from uk_stemmer import UkStemmer
 
-STOP_WORDS = [
+STOPWORDS = [
     'а', 
     'аби', 
     'абиде', 
