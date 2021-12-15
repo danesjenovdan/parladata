@@ -8,7 +8,7 @@ from parladata.models import Vote, Ballot
 from collections import Counter
 
 class VoteAdmin(admin.ModelAdmin):
-    list_display = ('id', 'name', 'the_tags', 'get_for', 'get_against', 'get_abstain', 'get_abesnt', 'needs_editing', 'add_ballots')
+    list_display = ('id', 'name', 'the_tags', 'get_for', 'get_against', 'get_abstain', 'get_abesnt', 'needs_editing', 'add_ballots', 'edit_ballots')
     # set order of fields in the dashboard
     fields = ['name', 'timestamp', 'motion', 'result', 'needs_editing', 'tags']
 
@@ -22,13 +22,19 @@ class VoteAdmin(admin.ModelAdmin):
 
     def the_tags(self, obj):
         return "%s" % (list(obj.tags.values_list('name', flat=True)), )
-    
 
     def add_ballots(self, obj):
         partial_url = '/admin/parladata/vote/addballots/'
         url = f'{settings.BASE_URL}{partial_url}?vote_id={obj.id}'
         if not obj.ballots.all():
             return mark_safe(f'<a href="{url}"><input type="button" value="Add ballots" /></a>')
+        else:
+            return ''
+
+    def edit_ballots(self, obj):
+        change_url = reverse('admin:parladata_ballot_changelist')
+        if obj.needs_editing:
+            return mark_safe(f'<a href="{change_url}?vote__id__exact={obj.id}"><input type="button" value="Edit ballots" /></a>')
         else:
             return ''
 
@@ -55,6 +61,8 @@ class VoteAdmin(admin.ModelAdmin):
     the_tags.short_description = 'tags'
     add_ballots.allow_tags = True
     add_ballots.short_description = 'Add ballots'
+    edit_ballots.allow_tags = True
+    edit_ballots.short_description = 'Edit ballots'
 
 
 admin.site.register(Vote, VoteAdmin)
