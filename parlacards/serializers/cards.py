@@ -1751,16 +1751,16 @@ class PersonMediaReportsCardSerializer(PersonScoreCardSerializer):
 
 
 class GroupMediaReportsCardSerializer(GroupScoreCardSerializer):
-    def get_results(self, obj):
-        # obj is the organization
-        reports = MediaReport.objects.filter(medium__active=True, mentioned_organizations=obj.id)
-
+    def get_results(self, organization):
+        reports = MediaReport.objects.filter(
+            medium__active=True,
+            mentioned_organizations=organization.id
+        ).order_by(
+            'report_date'
+        )[:50]
         # TODO do this better
-        # workaround: filter reports from the previous week only to reduce
-        # loading time and shorten the card
-        reports = reports.filter(
-            report_date__gte=datetime.now()-timedelta(days=7)
-        )
+        # this tries to reduce loading time and shorten the card
+        # by only showing the latest 50 reports
 
         serializer = MediaReportSerializer(
             reports,
