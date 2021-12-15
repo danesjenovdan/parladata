@@ -1,8 +1,44 @@
 import pytest
 
+from sklearn.feature_extraction.text import TfidfVectorizer
+
+from parlacards.scores.common import get_lemmatize_method
 from parlacards.scores.tfidf import calculate_people_tfidf, calculate_groups_tfidf, calculate_sessions_tfidf
 
 from tests.fixtures.common import *
+
+def test_stopwords():
+    # TODO these should probably be globals
+    languages = ['sl', 'ua']
+    speeches = {
+        'sl': [
+            'ena dva tri hvala',
+            'pet sedem ne hvala prosim se vidimo'
+        ],
+        'ua': [
+            'дяк шановн головуюч шановн колег я хоч сьогодн звернут до',
+            'депутатів фракці слуг народ нагад вам що у назв ваш фракці є посиланн на народ'
+        ]
+    }
+
+    for language_code in languages:
+        get_stopwords = get_lemmatize_method('get_stopwords', language_code)
+        tfidfVectorizer = TfidfVectorizer(
+            lowercase=False, # do not transform to lowercase
+            preprocessor=lambda x: x, # do not preprocess
+            tokenizer=lambda x: x.split(' '), # tokenize by splitting at ' '
+            stop_words=get_stopwords(),
+            use_idf=True
+        )
+
+        tfidf = tfidfVectorizer.fit_transform(speeches[language_code])
+        feature_names = tfidfVectorizer.get_feature_names()
+
+        assert 'ena' not in feature_names
+        assert 'se' not in feature_names
+        assert 'я' not in feature_names
+        assert 'є' not in feature_names
+
 
 @pytest.mark.django_db()
 def test_calculate_people_tfidf(
