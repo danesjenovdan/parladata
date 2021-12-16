@@ -44,7 +44,7 @@ class ParliamentaryGroup(Organization):
 
 
 class ParliamentaryGroupAdmin(OrganizationAdmin):
-    list_display = ('id', 'name', 'tfidf')
+    list_display = ('id', 'name', 'tfidf', 'join_organizations')
     def get_queryset(self, request):
         group_ids = PersonMembership.objects.filter(role='voter').values_list('on_behalf_of', flat=True)
         qs = Organization.objects.filter(id__in=group_ids)
@@ -54,6 +54,15 @@ class ParliamentaryGroupAdmin(OrganizationAdmin):
         partial_url = reverse('admin:parlacards_grouptfidf_changelist')
         url = f'{settings.BASE_URL}{partial_url}?organization={obj.id}'
         return mark_safe(f'<a href="{url}"><input type="button" value="Tfidf" /></a>')
+
+    def join_organizations(self, obj):
+        partial_url = '/admin/parladata/parliamentarygroup/mergeorganizations/'
+        url = f'{settings.BASE_URL}{partial_url}?real_organization={obj.id}'
+        return mark_safe(f'<a href="{url}"><input type="button" value="Join orgs" /></a>')
+
+
+    join_organizations.allow_tags = True
+    join_organizations.short_description = 'Join ORGS'
 
     tfidf.allow_tags = True
     tfidf.short_description = 'TFIDF'
