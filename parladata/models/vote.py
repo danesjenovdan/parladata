@@ -27,7 +27,7 @@ class Vote(Timestampable, Taggable):
     )
 
     needs_editing = models.BooleanField(
-        "Is vote needs editing",
+        "Vote needs editing",
         default=False
     )
 
