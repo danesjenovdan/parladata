@@ -19,14 +19,31 @@ from parlacards.serializers.common import (
 )
 
 class VoteBallotSerializer(CommonCachableSerializer):
-    def calculate_cache_key(self, instance):
-        # instance is the vote
-        vote_timestamp = instance.updated_at
-        person_timestamp = instance.personvoter.updated_at
-        timestamp = max([vote_timestamp, person_timestamp])
-        return f'VoteBallotSerializer_{instance.id}_{instance.personvoter.id}_{timestamp.strftime("%Y-%m-%d-%H-%M-%s")}'
+    def calculate_cache_key(self, ballot):
+        ballot_timestamp = ballot.updated_at
+        person_timestamp = ballot.personvoter.updated_at
+        timestamp = max([ballot_timestamp, person_timestamp])
+        return f'VoteBallotSerializer_{ballot.id}_{ballot.personvoter.id}_{timestamp.strftime("%Y-%m-%d-%H-%M-%s")}'
 
-    person = CommonPersonSerializer(source='personvoter')
+    # context['date'] should be the date of the vote
+    # so the CommonPersonSerializer returns the state
+    # of the person on the day of the vote
+    # we should make a copy of the context object
+    # since we don't want to mess with other serializers
+    # that might be using it
+    #
+    # I think a shallow copy here is good enough
+    # even if new_context['date'] references the old
+    # datetime object that reference is overridden with
+    # the timestamp of the vote
+    def get_person(self, ballot):
+        new_context = dict.copy(self.context)
+        new_context['date'] = ballot.vote.timestamp
+
+        serializer = CommonPersonSerializer(ballot.personvoter, context=new_context)
+        return serializer.data
+
+    person = serializers.SerializerMethodField()
     option = serializers.CharField()
 
 
