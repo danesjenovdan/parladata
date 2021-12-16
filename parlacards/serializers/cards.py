@@ -1036,8 +1036,7 @@ class GroupMembersCardSerializer(GroupScoreCardSerializer):
         parent_data = super().to_representation(instance)
 
         # instance is the group
-        members = instance.query_members_by_role(
-            role='member',
+        members = instance.query_members(
             timestamp=self.context['date']
         ).order_by(
             'personname__value', # TODO: will this work correctly when people have multiple names?
