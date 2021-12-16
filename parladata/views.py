@@ -11,6 +11,7 @@ from parladata.models.speech import Speech
 from parladata.models.vote import Vote
 from parladata.models.question import Question
 from parladata.models.task import Task
+from parladata.models.common import Mandate
 
 import collections
 
@@ -103,13 +104,29 @@ def add_ballots(request):
         people_abstain = dict(form.data).get('people_abstain', [])
         people_absent = dict(form.data).get('people_absent', [])
         confirmed = dict(form.data)['confirmed'][0]
+        edit = dict(form.data)['edit'][0]
+
+        # v=Vote.objects.get(id=9401)
+        # all_members = os.query_members_by_role(role='voter', timestamp=v.timestamp)
+        # non_absent_voters = v.ballots.values_list('personvoter', flat=True)
+        # absent_people = all_members.exclude(id__in=non_absent_voters)
+
+        # for person in absent_people:
+        #     Ballot(vote=v, personvoter=person,option='absent').save()
+
         if people_for or people_against or people_abstain or people_absent:
-            if confirmed:
+            root_org = Mandate.objects.last().query_root_organizations(timestamp=vote.timestamp)[1]
+            people_with_ballots = people_for + people_against + people_abstain + people_absent
+            all_members = root_org.query_members_by_role(role='voter', timestamp=vote.timestamp)
+            auto_absent_people = all_members.exclude(id__in=people_with_ballots)
+            print(confirmed, type(confirmed))
+            if confirmed == 'True':
+                auto_absent_people_ids = list(auto_absent_people.values_list('id', flat=True))
                 options = {
                     'for': people_for,
                     'against': people_against,
                     'abstain': people_abstain,
-                    'absent': people_absent
+                    'absent': people_absent + auto_absent_people_ids
                 }
                 for option, people in options.items():
                     print(option, people)
@@ -124,8 +141,8 @@ def add_ballots(request):
                 return redirect(reverse("admin:parladata_vote_changelist"))
 
             ballots = []
-            all_ballots = people_for + people_against + people_abstain + people_absent
-            duplicates = [item for item, count in collections.Counter(all_ballots).items() if count > 1]
+            people_with_ballots = people_for + people_against + people_abstain + people_absent
+            duplicates = [item for item, count in collections.Counter(people_with_ballots).items() if count > 1]
             duplicated = Person.objects.filter(id__in=duplicates)
             confirm = False
             if not duplicated:
@@ -144,11 +161,13 @@ def add_ballots(request):
                         'people_against': Person.objects.filter(id__in=people_against),
                         'people_abstain': Person.objects.filter(id__in=people_abstain),
                         'people_absent': Person.objects.filter(id__in=people_absent),
-                        'sum': len(all_ballots),
+                        'people_without_ballot': auto_absent_people,
+                        'sum': len(people_with_ballots),
                         'duplicated': duplicated
                     },
                     'form': form,
                     'confirm': confirm,
+                    'edit': True if edit == 'True' else False,
                     'app_list': app_list,
                     'opts': {'app_label': 'parladata', 'app_config': {'verbose_name': 'vote'}}
                 }
