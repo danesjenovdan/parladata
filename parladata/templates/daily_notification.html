@@ -41,6 +41,18 @@
         </br></br>
         {% endif %}
 
+        {% if new_votes_need_editing %}
+        There are new weird voices that need to be edited:
+        {% for vote in new_votes_need_editing %}
+            <p>
+                <a href="{{ base_url }}{% url 'admin:parladata_vote_change' vote.id %}">{{ vote }}</a>
+            </p>
+        {% endfor %}
+        </br></br>
+        {% endif %}
+
+
+        
     </div>
     <div>
     </div>
