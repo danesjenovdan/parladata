@@ -290,7 +290,7 @@ class VoteSerializer(CommonSerializer):
 
     def get_documents(self, vote):
         serializer = LinkSerializer(
-            vote.motion.links.all().order_by('id'),
+            vote.motion.links.all().exclude(tags__name='vote-pdf').order_by('id'),
             many=True,
             context=self.context,
         )

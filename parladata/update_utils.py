@@ -79,6 +79,8 @@ def notify_editors_for_new_data():
     new_people = Person.objects.filter(created_at__gte=yeterday)
     new_voters = Person.objects.filter(ballots__isnull=False, person_memberships__isnull=True).distinct('id')
 
+    new_votes_need_editing = Vote.objects.filter(created_at__gte=yeterday, needs_editing=True)
+
     if new_motions or new_speeches or new_people:
         for editor in editor_group.user_set.all():
             send_email(
@@ -91,7 +93,8 @@ def notify_editors_for_new_data():
                     'new_speeches': new_speeches,
                     'sessions': sessions,
                     'new_voters': new_voters,
-                    'new_people': new_people
+                    'new_people': new_people,
+                    'new_votes_need_editing': new_votes_need_editing
                 }
             )
 

@@ -10,7 +10,8 @@ from collections import Counter
 class VoteAdmin(admin.ModelAdmin):
     list_display = ('id', 'name', 'the_tags', 'get_for', 'get_against', 'get_abstain', 'get_abesnt', 'needs_editing', 'add_ballots', 'edit_ballots')
     # set order of fields in the dashboard
-    fields = ['name', 'timestamp', 'motion', 'result', 'needs_editing', 'tags']
+    fields = ['name', 'timestamp', 'motion', 'result', 'needs_editing', 'tags', 'edit_ballots', 'get_vote_pdf']
+    readonly_fields = ['edit_ballots', 'get_vote_pdf']
 
     list_filter = ('tags',)
     inlines = [
@@ -54,6 +55,13 @@ class VoteAdmin(admin.ModelAdmin):
         results = dict(Counter(Ballot.objects.filter(vote=obj).values_list("option", flat=True))).get("absent", 0)
         return results
 
+    def get_vote_pdf(self, obj):
+        vote_pdf = obj.motion.links.filter(tags__name='vote-pdf').values_list('url', flat=True).first()
+        if vote_pdf:
+            return mark_safe(f'<a href="{vote_pdf}"><input type="button" value="Vote pdf" /></a>')
+        else:
+            return ''
+
     get_for.short_description = 'for'
     get_against.short_description = 'against'
     get_abstain.short_description = 'abstain'
@@ -63,6 +71,10 @@ class VoteAdmin(admin.ModelAdmin):
     add_ballots.short_description = 'Add ballots'
     edit_ballots.allow_tags = True
     edit_ballots.short_description = 'Edit ballots'
+
+    get_vote_pdf.allow_tags = True
+    get_vote_pdf.short_description = 'Vote pdf'
+
 
 
 admin.site.register(Vote, VoteAdmin)

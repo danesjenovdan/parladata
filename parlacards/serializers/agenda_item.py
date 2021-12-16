@@ -18,7 +18,7 @@ class AgendaItemSerializer(CommonSerializer):
 
     def get_documents(self, obj):
         return LinkSerializer(
-            obj.links.all().order_by('id'),
+            obj.links.all().exclude(tags__name='vote-pdf').order_by('id'),
             many=True
         ).data
 
@@ -44,6 +44,6 @@ class AgendaItemsSerializer(CommonCachableSerializer):
 
     def get_documents(self, obj):
         return LinkSerializer(
-            obj.links.all().order_by('id'),
+            obj.links.all().exclude(tags__name='vote-pdf').order_by('id'),
             many=True
         ).data
