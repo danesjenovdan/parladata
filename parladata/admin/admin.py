@@ -121,6 +121,7 @@ class BallotAdmin(admin.ModelAdmin):
     list_display = ['personvoter', 'option', 'vote']
     autocomplete_fields = ['personvoter', 'orgvoter', 'vote']
     list_filter = ('vote',)
+    list_editable = ['option']
 
 
 admin.site.register(Speech, SpeechAdmin)
