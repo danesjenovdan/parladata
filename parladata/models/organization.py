@@ -144,7 +144,6 @@ class Organization(Timestampable, Taggable, Parsable, Sluggable, VersionableFiel
             models.Q(start_time__lte=timestamp) | models.Q(start_time__isnull=True),
             models.Q(end_time__gte=timestamp) | models.Q(end_time__isnull=True),
             organization__in=Organization.objects.filter(classification='pg'),  # TODO rename to parliamentary_group
-            role='member',
         ).values_list('organization__id', flat=True).distinct('organization__id')
 
         return self.query_organization_members(timestamp).filter(id__in=ids_of_groups_with_voters)
