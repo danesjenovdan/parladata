@@ -11,8 +11,8 @@ from collections import Counter
 class VoteAdmin(admin.ModelAdmin):
     list_display = ('id', 'name', 'the_tags', 'get_for', 'get_against', 'get_abstain', 'get_abesnt', 'needs_editing', 'add_ballots')
     # set order of fields in the dashboard
-    fields = ['name', 'timestamp', 'motion', 'result', 'needs_editing', 'tags', 'get_statistics', 'edit_ballots', 'get_vote_pdf']
-    readonly_fields = ['get_statistics', 'edit_ballots', 'get_vote_pdf']
+    fields = ['name', 'timestamp', 'motion', 'result', 'needs_editing', 'tags', 'get_session', 'get_statistics', 'edit_ballots', 'get_vote_pdf']
+    readonly_fields = ['get_session', 'get_statistics', 'edit_ballots', 'get_vote_pdf']
 
     list_filter = ('tags',)
     inlines = [
@@ -24,6 +24,9 @@ class VoteAdmin(admin.ModelAdmin):
 
     def the_tags(self, obj):
         return "%s" % (list(obj.tags.values_list('name', flat=True)), )
+
+    def get_session(self, obj):
+        return obj.motion.session.name if obj.motion and obj.motion.session else ''
 
     def add_ballots(self, obj):
         partial_url = '/admin/parladata/vote/addballots/'
@@ -96,12 +99,11 @@ class VoteAdmin(admin.ModelAdmin):
     add_ballots.short_description = 'Add ballots'
     edit_ballots.allow_tags = True
     edit_ballots.short_description = 'Edit ballots'
-
     get_vote_pdf.allow_tags = True
     get_vote_pdf.short_description = 'Vote pdf'
-
     get_statistics.allow_tags = True
     get_statistics.short_description = 'Statistics'
+    get_session.short_description = 'Session'
 
 
 
