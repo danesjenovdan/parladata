@@ -114,9 +114,36 @@ class VoteGroupSerializer(CommonCachableSerializer):
 
 
 class VoteSumsSerializer(CommonCachableSerializer):
-    def calculate_cache_key(self, instance):
+    def calculate_cache_key(self, vote):
         # instance is the vote
-        return f'VoteSumsSerializer_{instance.id}_{instance.updated_at.strftime("%Y-%m-%d-%H-%M-%s")}'
+        # get the latest timestamp to calculate the cache key
+        # it's either the vote or the latest update to the person
+        vote_timestamp = vote.timestamp
+
+        # there is a horrible case where the vote has no ballots
+        # we handle it by checking the ballot count and assigning
+        # latest_voter_timestamp to previously calculated vote_timestamp
+        if vote.ballots.count() == 0:
+            latest_voter_timestamp = vote_timestamp
+            latest_ballot_timestamp = vote_timestamp
+        else:
+            # we have ballots
+            # latest person update
+            latest_voter_timestamp = vote.ballots.all().order_by(
+                '-personvoter__updated_at'
+            ).values(
+                'personvoter__updated_at'
+            ).first()['personvoter__updated_at']
+
+            # latest ballot update
+            latest_ballot_timestamp = vote.ballots.all().order_by(
+                '-updated_at'
+            ).values(
+                'updated_at'
+            ).first()['updated_at']
+
+        timestamp = max([vote_timestamp, latest_voter_timestamp, latest_ballot_timestamp])
+        return f'VoteSumsSerializer_{vote.id}_{timestamp.strftime("%Y-%m-%dT%H:%M:%S")}'
 
     def to_representation(self, instance):
         # instance is vote
@@ -131,12 +158,18 @@ class VoteSumsSerializer(CommonCachableSerializer):
 
 
 class VoteGovernmentSidesSerializer(CommonCachableSerializer):
+    # TODO THIS IS ALL BROKEN
     # TODO this could be a bad cache key
     # what if a party changed its coalition status
     def calculate_cache_key(self, vote):
-        return f'VoteSumsSerializer_{vote.id}_{vote.updated_at.strftime("%Y-%m-%d-%H-%M-%s")}'
+        return f'VoteGovernmentSidesSerializer_{vote.id}_{vote.updated_at.strftime("%Y-%m-%dT%H:%M:%S")}'
 
     def to_representation(self, vote):
+        # TODO THIS IS TOTALLY BROKEN, NEEDS A REAL CASE TO BE DEBUGGED
+        # CURRENTLY WE JUST RETURN AN EMPTY LIST
+        return []
+
+        # TODO this code is all wrong, but kept here for reference
         cache_key = self.calculate_cache_key(vote)
         cached_representation = cache.get(cache_key)
         if cached_representation:
@@ -241,17 +274,26 @@ class VoteSerializer(CommonSerializer):
         # latest_voter_timestamp to previously calculated vote_timestamp
         if vote.ballots.count() == 0:
             latest_voter_timestamp = vote_timestamp
+            latest_ballot_timestamp = vote_timestamp
         else:
             # we have ballots
+            # latest person update
             latest_voter_timestamp = vote.ballots.all().order_by(
                 '-personvoter__updated_at'
             ).values(
                 'personvoter__updated_at'
             ).first()['personvoter__updated_at']
 
-        timestamp = max([vote_timestamp, latest_voter_timestamp])
+            # latest ballot update
+            latest_ballot_timestamp = vote.ballots.all().order_by(
+                '-updated_at'
+            ).values(
+                'updated_at'
+            ).first()['updated_at']
 
-        cache_key = f'SingleVoteMembers__{vote.id}__{timestamp.strftime("%Y-%m-%d")}'
+        timestamp = max([vote_timestamp, latest_voter_timestamp, latest_ballot_timestamp])
+
+        cache_key = f'SingleVoteMembers__{vote.id}__{timestamp.strftime("%Y-%m-%dT%H:%M:%S")}'
 
         # if there's something in the cache, return
         if cached_member_ballots := cache.get(cache_key):
