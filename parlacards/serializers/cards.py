@@ -70,7 +70,7 @@ from parlacards.serializers.common import (
 )
 
 from parlacards.solr import parse_search_query_params, solr_select
-from parlacards.pagination import create_paginator, create_solr_paginator
+from parlacards.pagination import calculate_cache_key_for_page, create_paginator, create_solr_paginator
 from parlacards.utils import local_collator
 
 #
@@ -1010,19 +1010,26 @@ class GroupCardSerializer(GroupScoreCardSerializer):
         )
 
         paged_object_list, pagination_metadata = create_paginator(self.context.get('GET', {}), members, prefix='members:')
+        page_cache_key = f'GroupCardSerializer_{calculate_cache_key_for_page(paged_object_list, pagination_metadata)}'
 
-        people_serializer = CommonPersonSerializer(
-            paged_object_list,
-            many=True,
-            context=self.context
-        )
+        # if there's something in the cache return it, otherwise serialize and save
+        if cached_members := cache.get(page_cache_key):
+            page_data = cached_members
+        else:
+            people_serializer = CommonPersonSerializer(
+                paged_object_list,
+                many=True,
+                context=self.context
+            )
+            page_data = people_serializer.data
+            cache.set(page_cache_key, page_data)
 
         return {
             **parent_data,
             **pagination_metadata,
             'results': {
                 **parent_data['results'],
-                'members': people_serializer.data,
+                'members': page_data,
             },
         }
 
