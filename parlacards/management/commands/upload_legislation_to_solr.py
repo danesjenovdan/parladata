@@ -22,22 +22,25 @@ def commit_to_solr(commander, output):
 
 # TODO move this out of here
 def delete_invalid_legislation(law_ids_in_solr):
-    law_ids = Law.objects.all()
+    law_ids = list(Law.objects.all().values_list(
+        'id',
+        flat=True
+    ))
 
     ids_to_delete = list(set(law_ids_in_solr) - set(law_ids))
+    if bool(ids_to_delete):
+        solr_ids_to_delete = ['law_' + str(i) for i in ids_to_delete]
 
-    solr_ids_to_delete = ['law_' + str(i) for i in ids_to_delete]
-
-    data = {
-        'delete': solr_ids_to_delete
-    }
-
-    solr_response = requests.post(settings.SOLR_URL + '/update?commit=true',
-        data=json.dumps(data),
-        headers={
-            'Content-Type': 'application/json'
+        data = {
+            'delete': solr_ids_to_delete
         }
-    )
+
+        solr_response = requests.post(settings.SOLR_URL + '/update?commit=true',
+            data=json.dumps(data),
+            headers={
+                'Content-Type': 'application/json'
+            }
+        )
 
 class Command(BaseCommand):
     help = 'Uploads all legislation to solr'
