@@ -142,7 +142,7 @@ def expand_highlighted_part(highlight, max_length, start_index, end_index):
     highlight_slice = highlight[slice_start:slice_end]
     # if we have more opening tags than closing ones, close the last one
     if highlight_slice.count('<em>') > highlight_slice.count('</em>'):
-        highlight_slice + '</em>'
+        highlight_slice = highlight_slice + '</em>'
 
     return f'{"[...] " if slice_start > 0 else ""}{highlight_slice}{" [...]" if slice_end < full_highlight_length else ""}'
 

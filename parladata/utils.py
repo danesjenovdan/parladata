@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from parladata.models import Organization, Vote, Motion, Session, Person, Speech, Membership, Ballot, Mandate
+from parladata.models import Organization, Vote, Motion, Session, Person, Speech, PersonMembership, OrganizationMembership, Ballot, Mandate
 from django.db.models import Q
 from datetime import datetime, timedelta
 import requests
@@ -50,7 +50,7 @@ def getMPVoteObjects(date_=None):
     if not date_:
         date_ = datetime.now()
 
-    members = Membership.objects.filter(role='voter').exclude(on_behalf_of=None)
+    members = PersonMembership.objects.filter(role='voter').exclude(on_behalf_of=None)
     members = members.filter(Q(start_time__date__lte=date_) |
                              Q(start_time=None),
                              Q(end_time__date__gte=date_) |
@@ -110,7 +110,7 @@ def getFails(organization):
 def getPersonWithoutVotes(organization):
     """Returns all MPs without votes."""
 
-    members = Membership.objects.filter(organization=organization, role='voter').exclude(on_behalf_of=None)
+    members = PersonMembership.objects.filter(organization=organization, role='voter').exclude(on_behalf_of=None)
 
     with open('poor_voters.csv', 'wb') as csvfile:
         csvwriter = csv.writer(csvfile, delimiter=',',
@@ -139,7 +139,7 @@ def postMembersFixer(request):
 
     context = {}
     context["posts"] = []
-    for member in Membership.objects.all():
+    for member in PersonMembership.objects.all():
         posts = member.memberships.all().order_by("start_time")
         start_time = member.start_time
         firstpost = member.memberships.filter(start_time=start_time)
@@ -210,9 +210,9 @@ def membersFlowInOrg(request):
             members_ids = [member for pg in list(pgRange["members"].values()) for member in pg]
             flow.append({"count": {"count": count, "start_date": pgRange["start_date"], "end_date": pgRange["end_date"]}, "members": [member for pg in list(pgRange["members"].values()) for member in pg]})
             if len(flow)>1:
-                flow[-1]["added"] = [{"name": Person.objects.get(id=x).name, "membership": Membership.objects.filter(organization__id=org_id, person__id=x, start_time=(datetime.strptime(flow[-1]["count"]["start_date"], "%d.%m.%Y")).strftime("%Y-%m-%d %H:%M"))[0] if Membership.objects.filter(organization__id=org_id, person__id=x, start_time=(datetime.strptime(flow[-1]["count"]["start_date"], "%d.%m.%Y")).strftime("%Y-%m-%d %H:%M")) else ""} for x in flow[-1]["members"] if x not in flow[-2]["members"]]
-                flow[-1]["removed"] = [{"name": Person.objects.get(id=x).name, "membership": Membership.objects.filter(organization__id=org_id, person__id=x, end_time=(datetime.strptime(flow[-1]["count"]["start_date"], "%d.%m.%Y")-timedelta(days=1)).strftime("%Y-%m-%d %H:%M"))[0] if Membership.objects.filter(organization__id=org_id, person__id=x, end_time=(datetime.strptime(flow[-1]["count"]["start_date"], "%d.%m.%Y")-timedelta(days=1)).strftime("%Y-%m-%d %H:%M")) else None} for x in flow[-2]["members"] if x not in flow[-1]["members"]]
-                context["allMps"] = [{"name": Person.objects.get(id=x).name, "membership": Membership.objects.filter(organization__id=org_id, person__id=x, start_time=(datetime.strptime(flow[-1]["count"]["start_date"], "%d.%m.%Y")).strftime("%Y-%m-%d %H:%M"))[0] if Membership.objects.filter(organization__id=org_id, person__id=x, start_time=(datetime.strptime(flow[-1]["count"]["start_date"], "%d.%m.%Y")).strftime("%Y-%m-%d %H:%M")) else x} for x in flow[-1]["members"]]
+                flow[-1]["added"] = [{"name": Person.objects.get(id=x).name, "membership": PersonMembership.objects.filter(organization__id=org_id, person__id=x, start_time=(datetime.strptime(flow[-1]["count"]["start_date"], "%d.%m.%Y")).strftime("%Y-%m-%d %H:%M"))[0] if PersonMembership.objects.filter(organization__id=org_id, person__id=x, start_time=(datetime.strptime(flow[-1]["count"]["start_date"], "%d.%m.%Y")).strftime("%Y-%m-%d %H:%M")) else ""} for x in flow[-1]["members"] if x not in flow[-2]["members"]]
+                flow[-1]["removed"] = [{"name": Person.objects.get(id=x).name, "membership": PersonMembership.objects.filter(organization__id=org_id, person__id=x, end_time=(datetime.strptime(flow[-1]["count"]["start_date"], "%d.%m.%Y")-timedelta(days=1)).strftime("%Y-%m-%d %H:%M"))[0] if PersonMembership.objects.filter(organization__id=org_id, person__id=x, end_time=(datetime.strptime(flow[-1]["count"]["start_date"], "%d.%m.%Y")-timedelta(days=1)).strftime("%Y-%m-%d %H:%M")) else None} for x in flow[-2]["members"] if x not in flow[-1]["members"]]
+                context["allMps"] = [{"name": Person.objects.get(id=x).name, "membership": PersonMembership.objects.filter(organization__id=org_id, person__id=x, start_time=(datetime.strptime(flow[-1]["count"]["start_date"], "%d.%m.%Y")).strftime("%Y-%m-%d %H:%M"))[0] if PersonMembership.objects.filter(organization__id=org_id, person__id=x, start_time=(datetime.strptime(flow[-1]["count"]["start_date"], "%d.%m.%Y")).strftime("%Y-%m-%d %H:%M")) else x} for x in flow[-1]["members"]]
             else:
                 flow[-1]["added"] = [{"name": Person.objects.get(id=x).name, "person_id": x} for x in flow[-1]["members"]]
         try:
@@ -240,9 +240,9 @@ def membersFlowInPGs(request):
             members_ids = [member for pg in list(pgRange["members"].values()) for member in pg]
             flow.append({"count": {"count": count, "start_date": pgRange["start_date"], "end_date": pgRange["end_date"]}, "members": [member for pg in list(pgRange["members"].values()) for member in pg]})
             if len(flow)>1:
-                flow[-1]["added"] = [{"name": Person.objects.get(id=x).name, "membership": Membership.objects.filter(organization__id=org_id, person__id=x, start_time=(datetime.strptime(flow[-1]["count"]["start_date"], "%d.%m.%Y")).strftime("%Y-%m-%d %H:%M"))[0] if Membership.objects.filter(organization__id=org_id, person__id=x, start_time=(datetime.strptime(flow[-1]["count"]["start_date"], "%d.%m.%Y")).strftime("%Y-%m-%d %H:%M")) else ""} for x in flow[-1]["members"] if x not in flow[-2]["members"]]
-                flow[-1]["removed"] = [{"name": Person.objects.get(id=x).name, "membership": Membership.objects.filter(organization__id=org_id, person__id=x, end_time=(datetime.strptime(flow[-1]["count"]["start_date"], "%d.%m.%Y")-timedelta(days=1)).strftime("%Y-%m-%d %H:%M"))[0] if Membership.objects.filter(organization__id=org_id, person__id=x, end_time=(datetime.strptime(flow[-1]["count"]["start_date"], "%d.%m.%Y")-timedelta(days=1)).strftime("%Y-%m-%d %H:%M")) else None} for x in flow[-2]["members"] if x not in flow[-1]["members"]]
-                context["allMps"] = [{"name": Person.objects.get(id=x).name, "membership": Membership.objects.filter(organization__id=org_id, person__id=x, start_time=(datetime.strptime(flow[-1]["count"]["start_date"], "%d.%m.%Y")).strftime("%Y-%m-%d %H:%M"))[0] if Membership.objects.filter(organization__id=org_id, person__id=x, start_time=(datetime.strptime(flow[-1]["count"]["start_date"], "%d.%m.%Y")).strftime("%Y-%m-%d %H:%M")) else x} for x in flow[-1]["members"]]
+                flow[-1]["added"] = [{"name": Person.objects.get(id=x).name, "membership": PersonMembership.objects.filter(organization__id=org_id, person__id=x, start_time=(datetime.strptime(flow[-1]["count"]["start_date"], "%d.%m.%Y")).strftime("%Y-%m-%d %H:%M"))[0] if PersonMembership.objects.filter(organization__id=org_id, person__id=x, start_time=(datetime.strptime(flow[-1]["count"]["start_date"], "%d.%m.%Y")).strftime("%Y-%m-%d %H:%M")) else ""} for x in flow[-1]["members"] if x not in flow[-2]["members"]]
+                flow[-1]["removed"] = [{"name": Person.objects.get(id=x).name, "membership": PersonMembership.objects.filter(organization__id=org_id, person__id=x, end_time=(datetime.strptime(flow[-1]["count"]["start_date"], "%d.%m.%Y")-timedelta(days=1)).strftime("%Y-%m-%d %H:%M"))[0] if PersonMembership.objects.filter(organization__id=org_id, person__id=x, end_time=(datetime.strptime(flow[-1]["count"]["start_date"], "%d.%m.%Y")-timedelta(days=1)).strftime("%Y-%m-%d %H:%M")) else None} for x in flow[-2]["members"] if x not in flow[-1]["members"]]
+                context["allMps"] = [{"name": Person.objects.get(id=x).name, "membership": PersonMembership.objects.filter(organization__id=org_id, person__id=x, start_time=(datetime.strptime(flow[-1]["count"]["start_date"], "%d.%m.%Y")).strftime("%Y-%m-%d %H:%M"))[0] if PersonMembership.objects.filter(organization__id=org_id, person__id=x, start_time=(datetime.strptime(flow[-1]["count"]["start_date"], "%d.%m.%Y")).strftime("%Y-%m-%d %H:%M")) else x} for x in flow[-1]["members"]]
             else:
                 flow[-1]["added"] = [{"name": Person.objects.get(id=x).name, "person_id": x} for x in flow[-1]["members"]]
         try:
@@ -540,3 +540,57 @@ def hasNumbersOrPdfOrEndWord(inputString):
     has_pdf = 'pdf' in inputString
     is_end_word = inputString in end_words
     return has_number or has_pdf or is_end_word
+
+
+def make_person_merge_statistics(real_person_id, fake_person_ids):
+    data = {}
+
+    real_person = Person.objects.get(id=int(real_person_id))
+    data['real_person'] = {
+        'name': real_person.name,
+        'ballots': real_person.ballots.all().count(),
+        'speeches': real_person.speeches.all().count(),
+        'authored_questions': real_person.authored_questions.all().count(),
+        'received_questions': real_person.received_questions.all().count(),
+    }
+
+    data['fake_people'] = []
+
+    fake_people = Person.objects.filter(id__in=fake_person_ids)
+    print(fake_people)
+
+    for fake_person in fake_people:
+        data['fake_people'].append({
+            'name': fake_person.name,
+            'ballots': fake_person.ballots.all().count(),
+            'speeches': fake_person.speeches.all().count(),
+            'authored_questions': fake_person.authored_questions.all().count(),
+            'received_questions': fake_person.received_questions.all().count(),
+        })
+
+    return data
+
+
+def make_organization_merge_statistics(real_organization_id, fake_organization_ids):
+    data = {}
+
+    real_organization = Organization.objects.get(id=int(real_organization_id))
+    data['real_organization'] = {
+        'name': real_organization.name,
+        'authored_questions': real_organization.questions_org_author.all().count(),
+        'received_questions': real_organization.questions_org.all().count(),
+    }
+
+    data['fake_organizations'] = []
+
+    fake_organizations = Organization.objects.filter(id__in=fake_organization_ids)
+    print(fake_organizations)
+
+    for fake_org in fake_organizations:
+        data['fake_organizations'].append({
+            'name': fake_org.name,
+            'authored_questions': fake_org.questions_org_author.all().count(),
+            'received_questions': fake_org.questions_org.all().count(),
+        })
+
+    return data
