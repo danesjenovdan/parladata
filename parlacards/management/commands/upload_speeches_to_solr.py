@@ -21,10 +21,10 @@ def commit_to_solr(commander, output):
 
 # TODO move this out of here
 def delete_invalid_speeches(commander, speech_ids_in_solr):
-    valid_speech_ids = Speech.objects.filter_valid_speeches().values_list(
+    valid_speech_ids = list(Speech.objects.filter_valid_speeches().values_list(
         'id',
         flat=True
-    )
+    ))
 
     ids_to_delete = list(set(speech_ids_in_solr) - set(valid_speech_ids))
 
