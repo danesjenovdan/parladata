@@ -84,3 +84,11 @@ class SolrPaginator(Paginator):
         # object_list like this `object_list[bottom:top]`
         objects, _ = self.search_method(**self.solr_params, page=number, per_page=top-bottom)
         return self._get_page(objects, number, self)
+
+
+def calculate_cache_key_for_page(object_list, metadata):
+    meta_sorted_items = sorted(metadata.items())
+    meta_string_items = map(lambda tuple: f'{tuple[0]}={tuple[1]}', meta_sorted_items)
+    meta_string = '_'.join(meta_string_items)
+    latest_timestamp = max(map(lambda item: item.updated_at, object_list))
+    return f'{meta_string}_{latest_timestamp.strftime("%Y-%m-%dT%H:%M:%S")}'
