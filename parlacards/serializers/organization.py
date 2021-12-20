@@ -5,11 +5,15 @@ from parladata.models.link import Link
 from parlacards.serializers.common import (
     CommonPersonSerializer,
     CommonSerializer,
+    CommonCachableSerializer,
     VersionableSerializerField,
 )
 
 
-class OrganizationBasicInfoSerializer(CommonSerializer):
+class OrganizationBasicInfoSerializer(CommonCachableSerializer):
+    def calculate_cache_key(self, instance):
+        return f'OrganizationBasicInfoSerializer_{instance.id}_{instance.updated_at.strftime("%Y-%m-%d-%H-%M-%s")}'
+
     # TODO this will return all links they
     # should be filtered to only contain
     # social networks
