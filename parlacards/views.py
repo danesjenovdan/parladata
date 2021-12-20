@@ -181,7 +181,7 @@ class ParliamentaryGroups(CardView):
     card_serializer = GroupsCardSerializer
 
 
-class GroupVoteAttendance(CardView):
+class GroupVoteAttendance(CachedCardView):
     '''
     Group's attendance on votes.
     '''
@@ -221,7 +221,7 @@ class GroupVocabularySize(CardView):
     card_serializer = GroupVocabularySizeCardSerializer
 
 
-class Ballots(CardView):
+class Ballots(CachedCardView):
     '''
     A person's ballots.
     '''
@@ -229,7 +229,7 @@ class Ballots(CardView):
     card_serializer = PersonBallotCardSerializer
 
 
-class GroupBallots(CardView):
+class GroupBallots(CachedCardView):
     '''
     A person's ballots.
     '''
@@ -245,7 +245,7 @@ class Questions(CardView):
     card_serializer = PersonQuestionCardSerializer
 
 
-class MostVotesInCommon(CardView):
+class MostVotesInCommon(CachedCardView):
     '''
     A person's most equal voters.
     '''
@@ -253,7 +253,7 @@ class MostVotesInCommon(CardView):
     card_serializer = MostVotesInCommonCardSerializer
 
 
-class LeastVotesInCommon(CardView):
+class LeastVotesInCommon(CachedCardView):
     '''
     A person's least equal voters.
     '''
@@ -261,7 +261,7 @@ class LeastVotesInCommon(CardView):
     card_serializer = LeastVotesInCommonCardSerializer
 
 
-class PersonMembership(CardView):
+class PersonMembership(CachedCardView):
     '''
     A person's memberships.
     '''
@@ -269,7 +269,7 @@ class PersonMembership(CardView):
     card_serializer = PersonMembershipCardSerializer
 
 
-class PersonAvgSpeechesPerSession(CardView):
+class PersonAvgSpeechesPerSession(CachedCardView):
     '''
     A person's averaga number of speeches per session.
     '''
@@ -277,7 +277,7 @@ class PersonAvgSpeechesPerSession(CardView):
     card_serializer = PersonAvgSpeechesPerSessionCardSerializer
 
 
-class DeviationFromGroup(CardView):
+class DeviationFromGroup(CachedCardView):
     '''
     A person's deviation from group voting.
     '''
@@ -285,7 +285,7 @@ class DeviationFromGroup(CardView):
     card_serializer = DeviationFromGroupCardSerializer
 
 
-class GroupDeviationFromGroup(CardView):
+class GroupDeviationFromGroup(CachedCardView):
     '''
     A person's deviation from group voting.
     '''
@@ -301,7 +301,7 @@ class PersonNumberOfQuestions(CardView):
     card_serializer = PersonNumberOfQuestionsCardSerializer
 
 
-class PersonVoteAttendance(CardView):
+class PersonVoteAttendance(CachedCardView):
     '''
     A person's presence on votes.
     '''
@@ -365,7 +365,7 @@ class GroupStyleScores(CardView):
     card_serializer = GroupStyleScoresCardSerializer
 
 
-class PersonNumberOfSpokenWords(CardView):
+class PersonNumberOfSpokenWords(CachedCardView):
     '''
     A person's style scores.
     '''
@@ -383,7 +383,7 @@ class SessionSpeeches(CardView):
     card_serializer = SessionSpeechesCardSerializer
 
 
-class SessionVotes(CardView):
+class SessionVotes(CachedCardView):
     thing = Session
     card_serializer = SessionVotesCardSerializer
 
@@ -423,17 +423,17 @@ class SingleLegislation(CardView):
     card_serializer = LegislationDetailCardSerializer
 
 
-class PersonTfidfView(CardView):
+class PersonTfidfView(CachedCardView):
     thing = Person
     card_serializer = PersonTfidfCardSerializer
 
 
-class GroupTfidfView(CardView):
+class GroupTfidfView(CachedCardView):
     thing = Organization
     card_serializer = GroupTfidfCardSerializer
 
 
-class SessionTfidfView(CardView):
+class SessionTfidfView(CachedCardView):
     thing = Session
     card_serializer = SessionTfidfCardSerializer
 
@@ -443,7 +443,7 @@ class SessionAgendaItemsView(CardView):
     card_serializer = SessionAgendaItemCardSerializer
 
 
-class GroupMostVotesInCommon(CardView):
+class GroupMostVotesInCommon(CachedCardView):
     '''
     A group's most equal voters.
     '''
@@ -451,7 +451,7 @@ class GroupMostVotesInCommon(CardView):
     card_serializer = GroupMostVotesInCommonCardSerializer
 
 
-class GroupLeastVotesInCommon(CardView):
+class GroupLeastVotesInCommon(CachedCardView):
     '''
     A group's least equal voters.
     '''
@@ -475,7 +475,7 @@ class GroupSpeechesView(CardView):
     card_serializer = GroupSpeechesCardSerializer
 
 
-class GroupDiscordView(CardView):
+class GroupDiscordView(CachedCardView):
     '''
     A group's discord score.
     '''
@@ -574,7 +574,7 @@ class SearchDropdown(CardView):
     card_serializer = SearchDropdownSerializer
 
 
-class PersonMediaReportsView(CardView):
+class PersonMediaReportsView(CachedCardView):
     '''
     A person's speeches.
     '''
