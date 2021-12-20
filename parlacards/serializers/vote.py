@@ -23,7 +23,7 @@ class VoteBallotSerializer(CommonCachableSerializer):
         ballot_timestamp = ballot.updated_at
         person_timestamp = ballot.personvoter.updated_at
         timestamp = max([ballot_timestamp, person_timestamp])
-        return f'VoteBallotSerializer_{ballot.id}_{ballot.personvoter.id}_{timestamp.strftime("%Y-%m-%d-%H-%M-%s")}'
+        return f'VoteBallotSerializer_{ballot.id}_{ballot.personvoter.id}_{timestamp.strftime("%Y-%m-%dT%H:%M:%S")}'
 
     person = CommonPersonSerializer(source='personvoter')
     option = serializers.CharField()
@@ -35,7 +35,7 @@ class VoteGroupSerializer(CommonCachableSerializer):
         vote_timestamp = self.context['vote'].updated_at
         # TODO get latest membership timestamp
         timestamp = max([group_timestamp, vote_timestamp])
-        return f'VoteGroupSerializer_{group.id}_{self.context["vote"].id}_{timestamp.strftime("%Y-%m-%d-%H-%M-%s")}'
+        return f'VoteGroupSerializer_{group.id}_{self.context["vote"].id}_{timestamp.strftime("%Y-%m-%dT%H:%M:%S")}'
 
     def get_group_ballots(self, group):
         vote_ballots = Ballot.objects.filter(vote=self.context['vote'])
@@ -207,7 +207,7 @@ class VoteGovernmentSidesSerializer(CommonCachableSerializer):
 class VoteStatsSerializer(CommonCachableSerializer):
     def calculate_cache_key(self, instance):
         # instance is the vote
-        return f'VoteStatsSerializer_{instance.id}_{instance.updated_at.strftime("%Y-%m-%d-%H-%M-%s")}'
+        return f'VoteStatsSerializer_{instance.id}_{instance.updated_at.strftime("%Y-%m-%dT%H:%M:%S")}'
 
     # for is a reserved word FML
     def to_representation(self, instance):

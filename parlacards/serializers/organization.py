@@ -12,7 +12,7 @@ from parlacards.serializers.common import (
 
 class OrganizationBasicInfoSerializer(CommonCachableSerializer):
     def calculate_cache_key(self, instance):
-        return f'OrganizationBasicInfoSerializer_{instance.id}_{instance.updated_at.strftime("%Y-%m-%d-%H-%M-%s")}'
+        return f'OrganizationBasicInfoSerializer_{instance.id}_{instance.updated_at.strftime("%Y-%m-%dT%H:%M:%S")}'
 
     # TODO this will return all links they
     # should be filtered to only contain
