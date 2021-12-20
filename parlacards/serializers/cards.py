@@ -735,7 +735,7 @@ class VotersCardSerializer(CardSerializer):
 
 class GroupAnalysesSerializer(CommonOrganizationSerializer):
     def calculate_cache_key(self, instance):
-        return f'GroupAnalysesSerializer_{instance.id}_{instance.updated_at.strftime("%Y-%m-%d-%H-%M-%s")}'
+        return f'GroupAnalysesSerializer_{instance.id}_{instance.updated_at.strftime("%Y-%m-%dT%H:%M:%S")}'
 
     def get_group_value(self, group, property_model_name):
         scores_module = import_module('parlacards.models')

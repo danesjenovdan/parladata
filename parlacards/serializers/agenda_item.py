@@ -29,7 +29,7 @@ class AgendaItemsSerializer(CommonCachableSerializer):
 
     def calculate_cache_key(self, instance):
         # instance is the session
-        return f'AgendaItemSerializer{instance.id}_{instance.updated_at.strftime("%Y-%m-%d-%H-%M-%s")}'
+        return f'AgendaItemSerializer{instance.id}_{instance.updated_at.strftime("%Y-%m-%dT%H:%M:%S")}'
 
     def get_agenda_items(self, obj):
         agenda_item_serializer = AgendaItemSerializer(
