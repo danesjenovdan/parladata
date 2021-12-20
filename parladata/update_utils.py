@@ -118,7 +118,7 @@ def set_vote_session(print_method=print):
         start_time = session.speeches.earliest('start_time').start_time
         end_time = session.speeches.latest('start_time').start_time
         motions = Motion.objects.filter(
-            Q(datetime__gte=start_time) | Q(datetime__lte=end_time),
+            datetime__gte=start_time, datetime__lte=end_time,
             session__isnull=True,
         )
         print_method(f'{motions.count()} motions updated with session.')
