@@ -22,22 +22,22 @@ def commit_to_solr(commander, output):
 
 # TODO move this out of here
 def delete_invalid_votes(vote_ids_in_solr):
-    vote_ids = Vote.objects.all()
+    vote_ids = list(Vote.objects.all().values_list('id', flat=True))
 
     ids_to_delete = list(set(vote_ids_in_solr) - set(vote_ids))
+    if bool(ids_to_delete):
+        solr_ids_to_delete = ['vote_' + str(i) for i in ids_to_delete]
 
-    solr_ids_to_delete = ['vote_' + str(i) for i in ids_to_delete]
-
-    data = {
-        'delete': solr_ids_to_delete
-    }
-
-    solr_response = requests.post(settings.SOLR_URL + '/update?commit=true',
-        data=json.dumps(data),
-        headers={
-            'Content-Type': 'application/json'
+        data = {
+            'delete': solr_ids_to_delete
         }
-    )
+
+        solr_response = requests.post(settings.SOLR_URL + '/update?commit=true',
+            data=json.dumps(data),
+            headers={
+                'Content-Type': 'application/json'
+            }
+        )
 
 class Command(BaseCommand):
     help = 'Uploads all votes to solr'
@@ -82,6 +82,6 @@ class Command(BaseCommand):
             if (i > 0) and (i % 100 == 0):
                 commit_to_solr(self, output)
                 output = []
-        
+
         if bool(output):
             commit_to_solr(self, output)
