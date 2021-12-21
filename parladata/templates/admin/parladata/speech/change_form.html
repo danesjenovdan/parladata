@@ -9,3 +9,13 @@
     }
 </style>
 {% endblock %}
+{% block submit_buttons_bottom %}
+{% if original %} {# Only show if changing #}
+    <div class="submit-row">
+        <a href="{% url 'lemmatize-speech' original.pk %}">
+                Lemmatize speech
+        </a>
+    </div>
+{% endif %}
+{{ block.super }}
+{% endblock %}
