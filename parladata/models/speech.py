@@ -55,20 +55,27 @@ class Speech(Versionable, Timestampable, Taggable):
     def __str__(self):
         return f'{self.speaker.name} @ {self.session.name}:{self.order}'
 
-    def lemmatize_self(self):
+    def lemmatize_and_save(self):
         if self.lemmatized_content:
             return
         lemmatize_many = get_lemmatize_method('lemmatize_many')
-        self.lemmatized_content = ' '.join(
+        self.lemmatized_content = self.lemmatize(self.content)
+        self.save()
+    
+    @staticmethod
+    def lemmatize(content):
+        lemmatize_many = get_lemmatize_method('lemmatize_many')
+        lemmatized_content = ' '.join(
             [lemmatized_token for lemmatized_token in lemmatize_many(
                 tokenize(
                     remove_punctuation(
-                        self.content.strip()
+                        content.strip()
                     )
                 )
             )]
         )
-        self.save()
+
+        return lemmatized_content
 
     @property
     def agenda_item(self):

@@ -18,6 +18,13 @@ from parladata.models.organization import Organization
 import collections
 
 
+# TODO maybe require login?
+def lemmatize_speech(request, speech_id):
+    speech = Speech.objects.get(id=speech_id)
+    speech.lemmatized_content = None
+    speech.lemmatize_and_save()
+    return redirect(reverse('admin:parladata_speech_change', args=[speech.id]))
+
 def merge_people(request):
     print('merge people')
     passed_real_person = request.GET.get('real_person', None)
