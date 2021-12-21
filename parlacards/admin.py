@@ -106,7 +106,7 @@ class GroupTfidfAdmin(admin.ModelAdmin):
         return mark_safe(f'<input onclick="location.href=\'{obj.pk}/delete/\'" type="button" value="Delete" />')
 
     def delete_view(self, request, object_id, extra_context=None):
-        self.deleted_group_fk = GroupTfidf.objects.get(id=object_id).organization_id
+        self.deleted_group_fk = GroupTfidf.objects.get(id=object_id).group_id
         return super().delete_view(request, object_id, extra_context)
 
     def response_delete(self, request, obj_display, obj_id):
