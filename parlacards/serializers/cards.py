@@ -1009,6 +1009,26 @@ class GroupCardSerializer(GroupScoreCardSerializer):
             'id' # fallback ordering
         )
 
+        if not members.exists():
+            # this "if" is an optimization
+            # if there are no members we should
+            # not have to cache.
+            #
+            # it also works around a bug introduced in
+            # parlacards.pagination.calculate_cache_key_for_page
+            # if paged_object_list is empty call to max() fails
+            #
+            # we still need to return a properly structured object
+            paged_object_list, pagination_metadata = create_paginator(self.context.get('GET', {}), Question.objects.none())
+            return {
+                **parent_data,
+                **pagination_metadata,
+                'results': {
+                    **parent_data['results'],
+                    'members': [],
+                }
+            }
+
         paged_object_list, pagination_metadata = create_paginator(self.context.get('GET', {}), members, prefix='members:')
         page_cache_key = f'GroupCardSerializer_{calculate_cache_key_for_page(paged_object_list, pagination_metadata)}'
 

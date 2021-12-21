@@ -39,7 +39,7 @@ class SpeechAdmin(admin.ModelAdmin):
     form = SpeechForm
     fields = ['session', 'content', 'speaker', 'order', 'motions', 'start_time', 'tags', 'lemmatized_content']
     list_filter = (SessionListFilter, 'tags')
-    search_fields = ['speaker__name', 'content']
+    search_fields = ['speaker__personname__value', 'content']
     autocomplete_fields = ['motions', 'speaker', 'session']
     inlines = []
     list_display = ('id',
