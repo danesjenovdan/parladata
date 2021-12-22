@@ -117,4 +117,4 @@ class Vote(Timestampable, Taggable):
         }
 
     def __str__(self):
-        return self.name
+        return self.name if self.name else ''
