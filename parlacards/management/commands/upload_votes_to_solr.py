@@ -8,6 +8,8 @@ from django.conf import settings
 from parladata.models.vote import Vote
 from parlacards.serializers.vote import SessionVoteSerializer
 
+from datetime import datetime, timedelta
+
 # TODO move this out of here
 def commit_to_solr(commander, output):
     url = settings.SOLR_URL + '/update?commit=true'
@@ -45,6 +47,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         # get IDs from SOLR so we don't upload
         # vote already there
+        yesterday = datetime.now() - timedelta(days=1)
         url = settings.SOLR_URL + '/select?wt=json&q=type:vote&fl=vote_id&rows=100000000'
         self.stdout.write(f'Getting all IDs from {url} ...')
         solr_response = requests.get(url)
@@ -64,7 +67,11 @@ class Command(BaseCommand):
         delete_invalid_votes(ids_in_solr)
 
         votes = Vote.objects.exclude(id__in=ids_in_solr).prefetch_related('motion', 'motion__session')
-        self.stdout.write(f'Uploading {votes.count()} votes to solr ...')
+
+        updated_votes = Vote.objects.filter(updated_at__gte=yesterday).prefetch_related('motion', 'motion__session')
+        votes = set(list(votes) + list(updated_votes))
+
+        self.stdout.write(f'Uploading {len(votes)} votes to solr ...')
         output = []
         for i, vote in enumerate(votes):
             output.append({
