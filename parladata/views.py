@@ -18,6 +18,7 @@ from parladata.models.organization import Organization
 import collections
 
 
+# TODO maybe require login?
 def merge_people(request):
     print('merge people')
     passed_real_person = request.GET.get('real_person', None)

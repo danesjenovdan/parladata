@@ -18,64 +18,10 @@ from collections import Counter
 from parladata.admin.link import *
 
 
-# class CountVoteInline(admin.TabularInline):
-#     model = Count
-#     fk_name = 'vote'
-#     extra = 0
-
-
-class SpeechSessionInline(admin.TabularInline):
-    model = Speech
-    autocomplete_fields = ['speaker', 'agenda_items', 'party']
-    fk_name = 'session'
-    extra = 0
-
-
-# class MotionSessionInline(admin.TabularInline):
-#     model = Motion
-#     autocomplete_fields = ['person', 'organization', 'party']
-#     fk_name = 'session'
-#     extra = 0
-
-
 class MandateAdmin(admin.ModelAdmin):
     list_display = ('description', 'beginning',)
     list_filter = ('description', 'beginning',)
     search_fields = ('description', 'beginning',)
-
-
-
-
-class SpeechForm(forms.ModelForm):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.fields['motions'].queryset = Motion.objects.filter(
-            session=self.instance.session)
-
-class SpeechAdmin(admin.ModelAdmin):
-    form = SpeechForm
-    fields = ['session', 'content', 'speaker', 'order', 'motions', 'start_time', 'tags', 'lemmatized_content', 'agenda_items']
-    list_filter = (SessionListFilter, 'tags')
-    search_fields = ['speaker__name', 'content']
-    autocomplete_fields = ['motions', 'speaker', 'session']
-    inlines = []
-    list_display = ('id',
-                    'tag_list',
-                    'session_name',
-                    'speaker')
-    list_per_page = 25
-    formfield_overrides = {
-        models.ManyToManyField: {'widget': forms.CheckboxSelectMultiple()},
-    }
-
-    def get_queryset(self, request):
-        return super().get_queryset(request).prefetch_related('tags', 'session', 'speaker')
-
-    def tag_list(self, obj):
-        return u", ".join(o.name for o in obj.tags.all())
-
-    def session_name(self, obj):
-        return obj.session.name
 
 
 class QuestionAdmin(admin.ModelAdmin):
@@ -124,7 +70,6 @@ class BallotAdmin(admin.ModelAdmin):
     list_editable = ['option']
 
 
-admin.site.register(Speech, SpeechAdmin)
 admin.site.register(Task)
 admin.site.register(Ballot, BallotAdmin)
 admin.site.register(Question, QuestionAdmin)

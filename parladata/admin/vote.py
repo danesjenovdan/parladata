@@ -1,4 +1,4 @@
-from django.contrib import admin
+from django.contrib import admin, messages
 from django.utils.safestring import mark_safe
 from django.urls import reverse
 from django.conf import settings
@@ -7,6 +7,20 @@ from django.utils.translation import gettext as _
 from parladata.models import Vote, Ballot
 
 from collections import Counter
+
+@admin.action(description='Clone vote with ballots')
+def clone_vote(modeladmin, request, queryset):
+    if queryset.count() == 1:
+        vote = queryset.first()
+        ballots = vote.ballots.all()
+        new_vote = Vote()
+        new_vote.save()
+        for ballot in ballots:
+            ballot.id = None
+            ballot.vote = new_vote
+            ballot.save()
+    else:
+        modeladmin.message_user(request, 'Too many votes are selected', messages.ERROR)
 
 class VoteAdmin(admin.ModelAdmin):
     list_display = ('id', 'name', 'the_tags', 'get_for', 'get_against', 'get_abstain', 'get_abesnt', 'needs_editing', 'add_ballots')
@@ -19,6 +33,8 @@ class VoteAdmin(admin.ModelAdmin):
         # CountVoteInline,
     ]
     search_fields = ['name']
+
+    actions = [clone_vote]
 
     autocomplete_fields = ('motion',)
 
