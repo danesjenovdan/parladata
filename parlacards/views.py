@@ -221,7 +221,7 @@ class GroupVocabularySize(CardView):
     card_serializer = GroupVocabularySizeCardSerializer
 
 
-class Ballots(CachedCardView):
+class Ballots(CardView):
     '''
     A person's ballots.
     '''
@@ -229,7 +229,7 @@ class Ballots(CachedCardView):
     card_serializer = PersonBallotCardSerializer
 
 
-class GroupBallots(CachedCardView):
+class GroupBallots(CardView):
     '''
     A person's ballots.
     '''
@@ -261,7 +261,7 @@ class LeastVotesInCommon(CachedCardView):
     card_serializer = LeastVotesInCommonCardSerializer
 
 
-class PersonMembership(CachedCardView):
+class PersonMembership(CardView):
     '''
     A person's memberships.
     '''
@@ -383,7 +383,7 @@ class SessionSpeeches(CardView):
     card_serializer = SessionSpeechesCardSerializer
 
 
-class SessionVotes(CachedCardView):
+class SessionVotes(CardView):
     thing = Session
     card_serializer = SessionVotesCardSerializer
 
@@ -582,7 +582,7 @@ class PersonMediaReportsView(CachedCardView):
     card_serializer = PersonMediaReportsCardSerializer
 
 
-class GroupMediaReportsView(CardView):
+class GroupMediaReportsView(CachedCardView):
     '''
     A person's speeches.
     '''
