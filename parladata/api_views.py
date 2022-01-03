@@ -61,7 +61,7 @@ class UntaggedVotesFilter(filters.BaseFilterBackend):
     """
     def filter_queryset(self, request, queryset, view):
         if request.GET.get('filter', '') == 'untagged':
-            tag_list=Vote.tags.all().values_list('name', flat=True)
+            tag_list=Vote.tags.all().order_by('id').values_list('name', flat=True)
             queryset = queryset.exclude(tags__name__in=list(tag_list))
         return queryset
 
@@ -258,7 +258,7 @@ class LegislationView(viewsets.ModelViewSet):
 
 class TagsView(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
-    queryset = Tag.objects.all()
+    queryset = Tag.objects.all().order_by('id')
     serializer_class = TagsSerializer
 
 
@@ -289,7 +289,7 @@ class MandateView(viewsets.ModelViewSet):
 
 class ProcedureViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
-    queryset = Procedure.objects.all()
+    queryset = Procedure.objects.all().order_by('id')
     serializer_class = ProcedureSerializer
 
 
@@ -301,19 +301,19 @@ class ProcedurePhaseViewSet(viewsets.ModelViewSet):
 
 class LegislationConsiderationViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
-    queryset = LegislationConsideration.objects.all()
+    queryset = LegislationConsideration.objects.all().order_by('id')
     serializer_class = LegislationConsiderationSerializer
 
 
 class LegislationStatusViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
-    queryset = LegislationStatus.objects.all()
+    queryset = LegislationStatus.objects.all().order_by('id')
     serializer_class = LegislationStatusSerializer
 
 
 class LegislationClassificationViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
-    queryset = LegislationClassification.objects.all()
+    queryset = LegislationClassification.objects.all().order_by('id')
     serializer_class = LegislationClassificationSerializer
 
 
