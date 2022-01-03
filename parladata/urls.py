@@ -34,5 +34,6 @@ router.register(r'media-reports', MediaReportView)
 urlpatterns = [
     re_path(r'^', include(router.urls)),
     re_path(r'^merge-people', merge_people),
+    re_path(r'^merge-organizations', merge_organizations),
     re_path(r'^add-ballots', add_ballots),
 ]

@@ -48,7 +48,7 @@ class ScoreSerializerField(serializers.Field):
     def calculate_cache_key(self, property_model_name, value_id, timestamp):
         # something like NumberOfSpokenWords_12_2021-11-13-21
         # value_id is the id of the person or organization this score belongs to
-        return f'{property_model_name}_{value_id}_{timestamp.strftime("%Y-%m-%d-%H")}'
+        return f'{property_model_name}_{value_id}_{timestamp.strftime("%Y-%m-%dT%H")}'
 
     def to_representation(self, value):
         # value is going to be the person or
@@ -187,7 +187,7 @@ class CommonCachableSerializer(CommonSerializer):
         raise NotImplementedError('''
             You need to define your own function to calculate the cache key.
             Maybe something like:
-            `return f'ModelName_{instance.id}_{instance.updated_at.strftime("%Y-%m-%d-%H-%M-%s")}'`
+            `return f'ModelName_{instance.id}_{instance.updated_at.strftime("%Y-%m-%dT%H:%M:%S")}'`
         ''')
 
     def to_representation(self, instance):
@@ -264,7 +264,7 @@ class CommonPersonSerializer(CommonCachableSerializer):
         else:
             timestamp = person.updated_at
 
-        return f'CommonPersonSerializer_{person.id}_{timestamp.strftime("%Y-%m-%d-%H-%M-%s")}'
+        return f'CommonPersonSerializer_{person.id}_{timestamp.strftime("%Y-%m-%dT%H:%M:%S")}'
 
     def get_group(self, obj):
         active_parliamentary_group_membership = obj.parliamentary_group_on_date(self.context['date'])
@@ -301,7 +301,7 @@ class CommonPersonSerializer(CommonCachableSerializer):
 
 class CommonOrganizationSerializer(CommonCachableSerializer):
     def calculate_cache_key(self, instance):
-        return f'CommonOrganizationSerializer_{instance.id}_{instance.updated_at.strftime("%Y-%m-%d-%H-%M-%s")}'
+        return f'CommonOrganizationSerializer_{instance.id}_{instance.updated_at.strftime("%Y-%m-%dT%H:%M:%S")}'
 
     name = VersionableSerializerField(property_model_name='OrganizationName')
     acronym = VersionableSerializerField(property_model_name='OrganizationAcronym')
@@ -316,7 +316,7 @@ class CommonSessionSerializer(CommonCachableSerializer):
         session_timestamp = instance.updated_at
         organization_timestamps = instance.organizations.all().values_list('updated_at', flat=True)
         timestamp = max([session_timestamp] + list(organization_timestamps))
-        return f'CommonSessionSerializer_{instance.id}_{timestamp.strftime("%Y-%m-%d-%H-%M-%s")}'
+        return f'CommonSessionSerializer_{instance.id}_{timestamp.strftime("%Y-%m-%dT%H:%M:%S")}'
 
     name = serializers.CharField()
     id = serializers.IntegerField()
