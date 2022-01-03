@@ -95,6 +95,13 @@ class PersonMembership(Membership):
         return PersonMembership.objects.filter(
             Q(start_time__lte=timestamp) | Q(start_time__isnull=True)
         )
+    
+    # after we save a membership we should
+    # make sure the actual member (person)
+    # updates its updated_at timestamp
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        self.member.touch()
 
 
 class OrganizationMembership(Membership):
