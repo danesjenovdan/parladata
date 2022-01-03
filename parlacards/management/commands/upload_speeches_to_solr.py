@@ -7,6 +7,8 @@ from django.conf import settings
 
 from parladata.models.speech import Speech
 
+from datetime import datetime, timedelta
+
 # TODO move this out of here
 def commit_to_solr(commander, output):
     url = settings.SOLR_URL + '/update?commit=true'
@@ -21,10 +23,10 @@ def commit_to_solr(commander, output):
 
 # TODO move this out of here
 def delete_invalid_speeches(commander, speech_ids_in_solr):
-    valid_speech_ids = Speech.objects.filter_valid_speeches().values_list(
+    valid_speech_ids = list(Speech.objects.filter_valid_speeches().values_list(
         'id',
         flat=True
-    )
+    ))
 
     ids_to_delete = list(set(speech_ids_in_solr) - set(valid_speech_ids))
 
@@ -48,6 +50,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         # get IDs from SOLR so we don't upload
         # speeches already there
+        yesterday = datetime.now() - timedelta(days=1)
         url = settings.SOLR_URL + '/select?wt=json&q=type:speech&fl=speech_id&rows=100000000'
         self.stdout.write(f'Getting all IDs from {url} ...')
         solr_response = requests.get(url)
@@ -67,7 +70,9 @@ class Command(BaseCommand):
         delete_invalid_speeches(self, ids_in_solr)
 
         speeches = Speech.objects.exclude(id__in=ids_in_solr)
-        self.stdout.write(f'Uploading {speeches.count()} speeches to solr ...')
+        updated_speeches = Speech.objects.filter(updated_at__gte=yesterday).prefetch_related('session', 'session__mandate')
+        speeches = set(list(speeches) + list(updated_speeches))
+        self.stdout.write(f'Uploading {len(speeches)} speeches to solr ...')
         output = []
         for i, speech in enumerate(speeches):
             maybe_party = speech.speaker.parliamentary_group_on_date(speech.start_time)

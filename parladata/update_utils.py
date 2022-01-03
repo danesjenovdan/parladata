@@ -79,6 +79,8 @@ def notify_editors_for_new_data():
     new_people = Person.objects.filter(created_at__gte=yeterday)
     new_voters = Person.objects.filter(ballots__isnull=False, person_memberships__isnull=True).distinct('id')
 
+    new_votes_need_editing = Vote.objects.filter(created_at__gte=yeterday, needs_editing=True)
+
     if new_motions or new_speeches or new_people:
         for editor in editor_group.user_set.all():
             send_email(
@@ -91,7 +93,8 @@ def notify_editors_for_new_data():
                     'new_speeches': new_speeches,
                     'sessions': sessions,
                     'new_voters': new_voters,
-                    'new_people': new_people
+                    'new_people': new_people,
+                    'new_votes_need_editing': new_votes_need_editing
                 }
             )
 
@@ -107,15 +110,17 @@ def send_email(subject, to_email, template, data, from_email=settings.FROM_EMAIL
     msg.attach_alternative(html_body, "text/html")
     msg.send()
 
-
 def set_vote_session(print_method=print):
-    for session in Session.objects.all():
-        if not session.speeches.count():
-            continue
-        start_time = session.speeches.earliest('start_time').start_time
-        end_time = session.speeches.latest('start_time').start_time
+    sessions = Session.objects.all().order_by('start_time')
+    session_count = sessions.count()
+    for idx, session in enumerate(sessions):
+        start_time = session.start_time
+        if idx + 1 < session_count:
+            end_time = sessions[idx + 1].start_time
+        else:
+            end_time = datetime.max
         motions = Motion.objects.filter(
-            Q(datetime__gte=start_time) | Q(datetime__lte=end_time),
+            datetime__gte=start_time, datetime__lte=end_time,
             session__isnull=True,
         )
         print_method(f'{motions.count()} motions updated with session.')
