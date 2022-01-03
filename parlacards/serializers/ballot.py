@@ -14,7 +14,7 @@ from parlacards.serializers.vote import BareVoteSerializer
 #         ballot_timestamp = instance.updated_at
 #         session_timestamp = instance.vote.motion.session.updated_at
 #         timestamp = max([vote_timestamp, person_timestamp, ballot_timestamp, session_timestamp])
-#         return f'BallotSerializer_{instance.id}_{instance.personvoter.id}_{timestamp.strftime("%Y-%m-%d-%H-%M-%s")}'
+#         return f'BallotSerializer_{instance.id}_{instance.personvoter.id}_{timestamp.strftime("%Y-%m-%dT%H:%M:%S")}'
 
 class BallotSerializer(CommonSerializer):
     def get_vote(self, obj):

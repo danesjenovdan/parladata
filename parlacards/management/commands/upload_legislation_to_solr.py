@@ -7,6 +7,8 @@ from django.conf import settings
 
 from parladata.models.legislation import Law
 
+from datetime import datetime, timedelta
+
 
 # TODO move this out of here
 def commit_to_solr(commander, output):
@@ -22,22 +24,25 @@ def commit_to_solr(commander, output):
 
 # TODO move this out of here
 def delete_invalid_legislation(law_ids_in_solr):
-    law_ids = Law.objects.all()
+    law_ids = list(Law.objects.all().values_list(
+        'id',
+        flat=True
+    ))
 
     ids_to_delete = list(set(law_ids_in_solr) - set(law_ids))
+    if bool(ids_to_delete):
+        solr_ids_to_delete = ['law_' + str(i) for i in ids_to_delete]
 
-    solr_ids_to_delete = ['law_' + str(i) for i in ids_to_delete]
-
-    data = {
-        'delete': solr_ids_to_delete
-    }
-
-    solr_response = requests.post(settings.SOLR_URL + '/update?commit=true',
-        data=json.dumps(data),
-        headers={
-            'Content-Type': 'application/json'
+        data = {
+            'delete': solr_ids_to_delete
         }
-    )
+
+        solr_response = requests.post(settings.SOLR_URL + '/update?commit=true',
+            data=json.dumps(data),
+            headers={
+                'Content-Type': 'application/json'
+            }
+        )
 
 class Command(BaseCommand):
     help = 'Uploads all legislation to solr'
@@ -62,9 +67,12 @@ class Command(BaseCommand):
         # delete invalid legislation
         self.stdout.write('Deleting invalid legislation ...')
         delete_invalid_legislation(ids_in_solr)
+        yesterday = datetime.now() - timedelta(days=1)
 
         legislation = Law.objects.exclude(id__in=ids_in_solr).prefetch_related('session')
-        self.stdout.write(f'Uploading {legislation.count()} legislation to solr ...')
+        updated_legislation = Law.objects.filter(updated_at__gte=yesterday).prefetch_related('session')
+        legislation = set(list(legislation) + list(updated_legislation))
+        self.stdout.write(f'Uploading {len(legislation)} legislation to solr ...')
         output = []
         for i, law in enumerate(legislation):
             output.append({

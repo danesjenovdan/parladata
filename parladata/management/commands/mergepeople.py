@@ -86,6 +86,7 @@ class Command(BaseCommand):
             for fake_parser_name in fake_parser_names:
                 real_person.add_parser_name(fake_parser_name)
             print_method(str(fake_person.delete()))
+        real_person.save()
 
         print_method('\n')
         print_method('DONE')

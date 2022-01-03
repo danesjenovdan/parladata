@@ -70,7 +70,7 @@ from parlacards.serializers.common import (
 )
 
 from parlacards.solr import parse_search_query_params, solr_select
-from parlacards.pagination import create_paginator, create_solr_paginator
+from parlacards.pagination import calculate_cache_key_for_page, create_paginator, create_solr_paginator
 from parlacards.utils import local_collator
 
 #
@@ -735,7 +735,7 @@ class VotersCardSerializer(CardSerializer):
 
 class GroupAnalysesSerializer(CommonOrganizationSerializer):
     def calculate_cache_key(self, instance):
-        return f'GroupAnalysesSerializer_{instance.id}_{instance.updated_at.strftime("%Y-%m-%d-%H-%M-%s")}'
+        return f'GroupAnalysesSerializer_{instance.id}_{instance.updated_at.strftime("%Y-%m-%dT%H:%M:%S")}'
 
     def get_group_value(self, group, property_model_name):
         scores_module = import_module('parlacards.models')
@@ -1009,20 +1009,47 @@ class GroupCardSerializer(GroupScoreCardSerializer):
             'id' # fallback ordering
         )
 
-        paged_object_list, pagination_metadata = create_paginator(self.context.get('GET', {}), members, prefix='members:')
+        if not members.exists():
+            # this "if" is an optimization
+            # if there are no members we should
+            # not have to cache.
+            #
+            # it also works around a bug introduced in
+            # parlacards.pagination.calculate_cache_key_for_page
+            # if paged_object_list is empty call to max() fails
+            #
+            # we still need to return a properly structured object
+            paged_object_list, pagination_metadata = create_paginator(self.context.get('GET', {}), Question.objects.none())
+            return {
+                **parent_data,
+                **pagination_metadata,
+                'results': {
+                    **parent_data['results'],
+                    'members': [],
+                }
+            }
 
-        people_serializer = CommonPersonSerializer(
-            paged_object_list,
-            many=True,
-            context=self.context
-        )
+        paged_object_list, pagination_metadata = create_paginator(self.context.get('GET', {}), members, prefix='members:')
+        page_cache_key = f'GroupCardSerializer_{calculate_cache_key_for_page(paged_object_list, pagination_metadata)}'
+
+        # if there's something in the cache return it, otherwise serialize and save
+        if cached_members := cache.get(page_cache_key):
+            page_data = cached_members
+        else:
+            people_serializer = CommonPersonSerializer(
+                paged_object_list,
+                many=True,
+                context=self.context
+            )
+            page_data = people_serializer.data
+            cache.set(page_cache_key, page_data)
 
         return {
             **parent_data,
             **pagination_metadata,
             'results': {
                 **parent_data['results'],
-                'members': people_serializer.data,
+                'members': page_data,
             },
         }
 
@@ -1036,8 +1063,7 @@ class GroupMembersCardSerializer(GroupScoreCardSerializer):
         parent_data = super().to_representation(instance)
 
         # instance is the group
-        members = instance.query_members_by_role(
-            role='member',
+        members = instance.query_members(
             timestamp=self.context['date']
         ).order_by(
             'personname__value', # TODO: will this work correctly when people have multiple names?
@@ -1731,16 +1757,16 @@ class SearchDropdownSerializer(CardSerializer):
 
 
 class PersonMediaReportsCardSerializer(PersonScoreCardSerializer):
-    def get_results(self, obj):
-        # obj is the person
-        reports = MediaReport.objects.filter(medium__active=True, mentioned_people=obj.id)
-
+    def get_results(self, person):
+        reports = MediaReport.objects.filter(
+            medium__active=True,
+            mentioned_people=person.id
+        ).order_by(
+            'report_date'
+        )[:50]
         # TODO do this better
-        # workaround: filter reports from the previous week only to reduce
-        # loading time and shorten the card
-        reports = reports.filter(
-            report_date__gte=datetime.now()-timedelta(days=7)
-        )
+        # this tries to reduce loading time and shorten the card
+        # by only showing the latest 50 reports
 
         serializer = MediaReportSerializer(
             reports,
