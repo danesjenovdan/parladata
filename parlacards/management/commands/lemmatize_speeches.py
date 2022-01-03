@@ -11,7 +11,7 @@ class Command(BaseCommand):
         print(f'Lemmatizing {speech_count} speeches ...')
 
         for i, speech in enumerate(speeches):
-            speech.lemmatize_self()
+            speech.lemmatize_and_save()
 
             if i % 10 == 0:
                 print(f'Done with {i} speeches ...')

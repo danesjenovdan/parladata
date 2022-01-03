@@ -18,7 +18,7 @@ class AgendaItemSerializer(CommonSerializer):
 
     def get_documents(self, obj):
         return LinkSerializer(
-            obj.links.all().order_by('id'),
+            obj.links.all().exclude(tags__name='vote-pdf').order_by('id'),
             many=True
         ).data
 
@@ -29,7 +29,7 @@ class AgendaItemsSerializer(CommonCachableSerializer):
 
     def calculate_cache_key(self, instance):
         # instance is the session
-        return f'AgendaItemSerializer{instance.id}_{instance.updated_at.strftime("%Y-%m-%d-%H-%M-%s")}'
+        return f'AgendaItemSerializer{instance.id}_{instance.updated_at.strftime("%Y-%m-%dT%H:%M:%S")}'
 
     def get_agenda_items(self, obj):
         agenda_item_serializer = AgendaItemSerializer(
@@ -44,6 +44,6 @@ class AgendaItemsSerializer(CommonCachableSerializer):
 
     def get_documents(self, obj):
         return LinkSerializer(
-            obj.links.all().order_by('id'),
+            obj.links.all().exclude(tags__name='vote-pdf').order_by('id'),
             many=True
         ).data

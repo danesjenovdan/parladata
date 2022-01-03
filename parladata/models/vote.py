@@ -27,7 +27,7 @@ class Vote(Timestampable, Taggable):
     )
 
     needs_editing = models.BooleanField(
-        "Is vote needs editing",
+        "Vote needs editing",
         default=False
     )
 
@@ -117,4 +117,4 @@ class Vote(Timestampable, Taggable):
         }
 
     def __str__(self):
-        return self.name
+        return self.name if self.name else ''
