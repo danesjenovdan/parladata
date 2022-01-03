@@ -41,7 +41,12 @@ class ParlacardsMiddleware:
 
         # try parsing the date
         try:
-            request.card_date = datetime.strptime(date_string, '%Y-%m-%d')
+            parsed_datetime = datetime.strptime(date_string, '%Y-%m-%d')
+            # by default parsed_datetime will be at 00:00:00 (start of day)
+            # to properly compare the date with `<=` and `__lte` set the time at
+            # the end of the day so that timestamps on current day are included
+            end_of_day_datetime = parsed_datetime.replace(hour=23, minute=59, second=59, microsecond=999999)
+            request.card_date = end_of_day_datetime
         # if the date could not be parsed, return
         except ValueError as e:
             content = {'error': f'Can not parse date. Please use the following format: {datetime.now().strftime("%Y-%m-%d")}'}
