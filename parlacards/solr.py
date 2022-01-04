@@ -5,6 +5,8 @@ import requests
 
 from django.conf import settings
 
+from sentry_sdk import capture_message
+
 from parladata.models.speech import Speech
 from parladata.models.vote import Vote
 from parladata.models.legislation import Law
@@ -100,7 +102,19 @@ def solr_select(
 
     # die informatively when Solr is unreachable
     if response.status_code >= 400:
-        raise Exception(f'Solr unreachable at {settings.SOLR_URL}. Error {response.status_code}.')
+        capture_message(
+            f'Solr unreachable at {settings.SOLR_URL}. Error {response.status_code}.',
+            level="warning"
+        )
+        if response.status_code > 500:
+            raise Exception(f'Solr unreachable at {settings.SOLR_URL}. Error {response.status_code}.')
+
+        return {
+            'response': {
+                'docs': [],
+                'numFound': 0,
+            }
+        }
 
     return response.json()
 
