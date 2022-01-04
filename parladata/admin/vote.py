@@ -20,7 +20,7 @@ def clone_vote(modeladmin, request, queryset):
             ballot.vote = new_vote
             ballot.save()
     else:
-        modeladmin.message_user(request, 'Too many votes are selected', messages.ERROR)
+        modeladmin.message_user(request, 'You can only clone one vote at a time.', messages.ERROR)
 
 class VoteAdmin(admin.ModelAdmin):
     list_display = ('id', 'name', 'the_tags', 'get_for', 'get_against', 'get_abstain', 'get_abesnt', 'needs_editing', 'add_ballots')
