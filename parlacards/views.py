@@ -21,8 +21,8 @@ from parlacards.serializers.cards import (
     SearchDropdownSerializer,
     SessionSpeechesCardSerializer,
     SessionTfidfCardSerializer,
-    VotersCardSerializer,
-    GroupsCardSerializer,
+    MiscMembersCardSerializer,
+    MiscGroupsCardSerializer,
     GroupCardSerializer,
     SessionsCardSerializer,
     LegislationCardSerializer,
@@ -60,9 +60,8 @@ from parlacards.serializers.cards import (
     GroupDiscordCardSerializer,
     SingleSessionCardSerializer,
     SessionVotesCardSerializer,
-    LastSessionCardSerializer,
+    MiscLastSessionCardSerializer,
     MandateSpeechCardSerializer,
-    SessionGroupAttendanceSerializer,
     MandateUsageByGroupCardSerializer,
     MandateMostUsedByPeopleCardSerializer,
     MandateUsageThroughTimeCardSerializer,
@@ -75,6 +74,7 @@ from parlacards.serializers.cards import (
 )
 from parlacards.serializers.speech import SpeechSerializer
 from parlacards.serializers.quote import QuoteSerializer
+from parlacards.serializers.group_attendance import SessionGroupAttendanceSerializer
 
 from django.core.cache import cache
 
@@ -154,7 +154,7 @@ class Voters(CardView):
     Show a list of all MPs belonging to an organization.
     '''
     thing = Mandate
-    card_serializer = VotersCardSerializer
+    card_serializer = MiscMembersCardSerializer
 
 
 class GroupInfo(CardView):
@@ -178,7 +178,7 @@ class ParliamentaryGroups(CardView):
     List parties in an organization.
     '''
     thing = Organization
-    card_serializer = GroupsCardSerializer
+    card_serializer = MiscGroupsCardSerializer
 
 
 class GroupVoteAttendance(CachedCardView):
@@ -544,7 +544,7 @@ class LastSession(CardView):
     Latest session information.
     '''
     thing = Organization
-    card_serializer = LastSessionCardSerializer
+    card_serializer = MiscLastSessionCardSerializer
 
     # TODO consider refactoring this
     # overriding because even if the parent organization
