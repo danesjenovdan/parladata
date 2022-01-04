@@ -99,6 +99,10 @@ class PersonMembership(Membership):
     # after we save a membership we should
     # make sure the actual member (person)
     # updates its updated_at timestamp
+    #
+    # WARNING!
+    # this only works because Person
+    # inherits from VersionableFieldsOwner
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
         self.member.touch()
