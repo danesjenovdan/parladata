@@ -98,17 +98,33 @@ def solr_select(
         params['facet.range.end'] = 'NOW'
 
     url = f'{settings.SOLR_URL}/select'
-    response = requests.get(url, params=params, timeout=30)
 
-    # die informatively when Solr is unreachable
-    if response.status_code >= 400:
+    # some failure modes handled
+    # first, assuming that a response comes, we try
+    try:
+        response = requests.get(url, params=params, timeout=30)
+
+        # "die" gracefully when Solr is reachable but "broken"
+        if response.status_code >= 400:
+            # if 404 or similar (also 5xx), just warn and return
+            # an empty but structured response
+            capture_message(
+                f'Solr unreachable at {settings.SOLR_URL}. Error {response.status_code}.',
+                level="warning"
+            )
+            return {
+                'response': {
+                    'docs': [],
+                    'numFound': 0,
+                }
+            }
+    except (requests.ConnectionError, requests.ConnectTimeout) as e:
+        # if the request goes completely wrong, we should also warn
+        # and return an empty response but structured response
         capture_message(
-            f'Solr unreachable at {settings.SOLR_URL}. Error {response.status_code}.',
+            f'Solr does not resolve at: {settings.SOLR_URL}. Error {e}.',
             level="warning"
         )
-        if response.status_code > 500:
-            raise Exception(f'Solr unreachable at {settings.SOLR_URL}. Error {response.status_code}.')
-
         return {
             'response': {
                 'docs': [],
