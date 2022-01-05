@@ -53,7 +53,9 @@ class Speech(Versionable, Timestampable, Taggable):
     objects = ValidSpeechesManager()
 
     def __str__(self):
-        return f'{self.speaker.name} @ {self.session.name}:{self.order}'
+        if self.session:
+            return f'{self.speaker.name} @ {self.session.name}:{self.order}'
+        return f'{self.speaker.name} @ ???:{self.order}'
 
     def lemmatize_and_save(self):
         if self.lemmatized_content:
