@@ -1,4 +1,4 @@
-from django.contrib import admin
+from django.contrib import admin, messages
 from django import forms
 from django.db import models
 
@@ -9,25 +9,28 @@ from parladata.admin.filters import SessionListFilter
 
 @admin.action(description='Duplicate selected speeches')
 def duplicate_speech(modeladmin, request, queryset):
-    for speech in queryset:
-        # first, move all consecutive speeches forward for one order
-        # TODO this is a bit inefficient, maybe problematic for LONG sessions
-        speeches_to_move = Speech.objects.filter(
-            session=speech.session,
-            order__gt=speech.order,
-        )
-        for speech_to_move in speeches_to_move:
-            speech_to_move.order += 1
-            speech_to_move.save()
+    if queryset.count() == 1:
+        for speech in queryset:
+            # first, move all consecutive speeches forward for one order
+            # TODO this is a bit inefficient, maybe problematic for LONG sessions
+            speeches_to_move = Speech.objects.filter(
+                session=speech.session,
+                order__gt=speech.order,
+            )
+            for speech_to_move in speeches_to_move:
+                speech_to_move.order += 1
+                speech_to_move.save()
 
-        # clear lemmatized_content for the speech
-        speech.lemmatized_content = None
-        speech.save()
+            # clear lemmatized_content for the speech
+            speech.lemmatized_content = None
+            speech.save()
 
-        # make a copy of the speech and increment its order
-        speech.pk = None
-        speech.order += 1
-        speech.save()
+            # make a copy of the speech and increment its order
+            speech.pk = None
+            speech.order += 1
+            speech.save()
+    else:
+        modeladmin.message_user(request, 'You can only duplicate one speech at a time.', messages.ERROR)
 
 class SpeechForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
@@ -61,6 +64,8 @@ class SpeechAdmin(admin.ModelAdmin):
         return u", ".join(o.name for o in obj.tags.all())
 
     def session_name(self, obj):
-        return obj.session.name
+        if obj.session:
+            return obj.session.name
+        return 'Speech has no session'
 
 admin.site.register(Speech, SpeechAdmin)
