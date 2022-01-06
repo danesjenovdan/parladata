@@ -61,6 +61,15 @@ def solr_select(
     fl='speech_id',
     mandate=None
 ):
+    # if SOLR_URL is not set, just return an empty response
+    if not settings.SOLR_URL:
+        return {
+            'response': {
+                'docs': [],
+                'numFound': 0,
+            }
+        }
+
     # TODO solr timeout
     # TODO solr offline
     q_params = f'{text_query} AND type:{document_type}'
@@ -102,7 +111,7 @@ def solr_select(
     # some failure modes handled
     # first, assuming that a response comes, we try
     try:
-        response = requests.get(url, params=params, timeout=30)
+        response = requests.get(url, params=params, timeout=3)
 
         # "die" gracefully when Solr is reachable but "broken"
         if response.status_code >= 400:
