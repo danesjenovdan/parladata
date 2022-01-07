@@ -62,7 +62,6 @@ spec:
         - name: parladata-hrastnik
           image: parladata-hrastnik
           command:
-            - exec
             - gunicorn
             - parladata_project.wsgi:application
             - -b
