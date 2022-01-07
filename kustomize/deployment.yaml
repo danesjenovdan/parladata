@@ -62,7 +62,6 @@ spec:
         - name: parladata-ua
           image: parladata-ua
           command:
-            - exec
             - gunicorn
             - parladata_project.wsgi:application
             - -b
