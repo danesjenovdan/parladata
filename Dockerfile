@@ -21,7 +21,7 @@ EXPOSE 8000
 
 ENV DJANGO_SETTINGS_MODULE=parladata_project.settings.k8s
 
-CMD python manage.py runserver 0.0.0.0:8000
+CMD exec python manage.py runserver 0.0.0.0:8000
 
 
 # FROM python:3.8

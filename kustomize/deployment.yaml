@@ -62,6 +62,7 @@ spec:
         - name: parladata
           image: parladata
           command:
+            - exec
             - gunicorn
             - parladata_project.wsgi:application
             - -b
