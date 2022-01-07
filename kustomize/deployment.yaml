@@ -62,7 +62,6 @@ spec:
         - name: parladata-lendava
           image: parladata-lendava
           command:
-            - exec
             - gunicorn
             - parladata_project.wsgi:application
             - -b
