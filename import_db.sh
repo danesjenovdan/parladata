@@ -25,13 +25,10 @@ sudo docker-compose down -v db
 sudo docker-compose up -d
 
 echo
-echo "COPYING THE DUMP FILE TO THE CONTAINER"
-sudo docker-compose cp db.dump db:db.dump
-
-echo
 echo "LOADING DB INTO CONTAINER"
 sudo docker-compose exec db psql -U postgres parladata < 'db.dump'
 
 sudo docker-compose down
+
 echo
-echo "ALL DONE, YOU CAN RUN docker-compose up"
+echo "ALL DONE, YOU CAN RUN docker-compose up AND/OR DELETE db.dump"
