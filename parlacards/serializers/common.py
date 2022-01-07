@@ -209,6 +209,13 @@ class MandateSerializer(CommonSerializer):
 
 
 class CardSerializer(serializers.Serializer):
+    '''
+    This is a generic card serializer.
+
+    It is to be used when you want to serialize a card
+    with results. You need to implement get_results on
+    the inheriting class.
+    '''
     # created_at = serializers.DateTimeField()
     # updated_at = serializers.DateTimeField()
 
