@@ -62,6 +62,7 @@ spec:
         - name: parladata-ajdovscina
           image: parladata-ajdovscina
           command:
+            - exec
             - gunicorn
             - parladata_project.wsgi:application
             - -b
