@@ -78,5 +78,11 @@ class Motion(Timestampable, Taggable, Parsable):
         help_text='Piece of legislation this motion is about'
     )
 
+    gov_id = models.TextField(
+        blank=True,
+        null=True,
+        help_text='Gov ID or identifier for parser'
+    )
+
     def __str__(self):
         return self.title + ' --> ' + (self.session.name if self.session else '')
