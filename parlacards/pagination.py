@@ -82,7 +82,7 @@ class SolrPaginator(Paginator):
 
         # I'm not sure why this is called bottom and top, but Paginator slices
         # object_list like this `object_list[bottom:top]`
-        objects, _ = self.search_method(**self.solr_params, page=number, per_page=top-bottom)
+        objects, _ = self.search_method(**self.solr_params, page=number, per_page=self.per_page)
         return self._get_page(objects, number, self)
 
 
