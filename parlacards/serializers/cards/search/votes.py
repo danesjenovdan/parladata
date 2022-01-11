@@ -1,9 +1,11 @@
+from parladata.models import Vote
+
 from parlacards.serializers.common import CardSerializer
 
 from parlacards.serializers.vote import BareVoteSerializer
 
 from parlacards.solr import parse_search_query_params
-from parlacards.pagination import create_solr_paginator
+from parlacards.pagination import create_paginator, create_solr_paginator
 
 
 class MandateVotesCardSerializer(CardSerializer):
