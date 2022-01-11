@@ -57,13 +57,16 @@ def test_calculate_people_tfidf(
     assert tfidfs[6]['tfidf'][1][1] == 0.0
 
     assert tfidfs[12]['tfidf'][0][0] == 'Toška'
-    assert tfidfs[12]['tfidf'][0][1] == 0.27739371672680996
+    assert tfidfs[12]['tfidf'][0][1] == 0.28239284072011095
 
-    assert tfidfs[12]['tfidf'][-1][0] == 'noben'
-    assert tfidfs[12]['tfidf'][-1][1] == 0.10700431242678085
+    assert tfidfs[12]['tfidf'][-1][0] == 'dotakniti'
+    assert tfidfs[12]['tfidf'][-1][1] == 0.07831793061811108
 
-    assert tfidfs[-1]['tfidf'][0][0] == 'prositi'
-    assert tfidfs[-1]['tfidf'][0][1] == 0.24103916186682672
+    print(tfidfs[-1]['tfidf'][0][0])
+    print(tfidfs[-1]['tfidf'][0][1])
+
+    assert tfidfs[-1]['tfidf'][0][0] == 'predlog'
+    assert tfidfs[-1]['tfidf'][0][1] == 0.25691421540326576
 
 @pytest.mark.django_db()
 def test_calculate_groups_tfidf(
@@ -75,19 +78,19 @@ def test_calculate_groups_tfidf(
     assert len(tfidfs[0]['tfidf']) == 30
 
     assert tfidfs[6]['tfidf'][0][0] == 'praven'
-    assert tfidfs[6]['tfidf'][0][1] == 0.28916923723526916
+    assert tfidfs[6]['tfidf'][0][1] == 0.2932037350293588
 
     assert tfidfs[6]['tfidf'][1][0] == 'komisija'
-    assert tfidfs[6]['tfidf'][1][1] == 0.2819182381993111
+    assert tfidfs[6]['tfidf'][1][1] == 0.28585156983929944
 
     assert tfidfs[0]['tfidf'][0][0] == 'stanovanje'
-    assert tfidfs[0]['tfidf'][0][1] == 0.2551637453343532
+    assert tfidfs[0]['tfidf'][0][1] == 0.257767029557437
 
-    assert tfidfs[0]['tfidf'][-1][0] == 'bistvo'
-    assert tfidfs[0]['tfidf'][-1][1] == 0.10590391095529379
+    assert tfidfs[0]['tfidf'][-1][0] == 'zemljišče'
+    assert tfidfs[0]['tfidf'][-1][1] == 0.07939474591296825
 
     assert tfidfs[1]['tfidf'][0][0] == 'prehod'
-    assert tfidfs[1]['tfidf'][0][1] == 0.5185699199364557
+    assert tfidfs[1]['tfidf'][0][1] == 0.5207197024723063
 
 @pytest.mark.django_db()
 def test_calculate_sessions_tfidf(
@@ -99,16 +102,16 @@ def test_calculate_sessions_tfidf(
     assert len(tfidfs[0]['tfidf']) == 30
 
     assert tfidfs[0]['tfidf'][0][0] == 'šport'
-    assert tfidfs[0]['tfidf'][0][1] == 0.24828183478484658
+    assert tfidfs[0]['tfidf'][0][1] == 0.2573642004102401
 
     assert tfidfs[0]['tfidf'][1][0] == 'predlog'
-    assert tfidfs[0]['tfidf'][1][1] == 0.20547462189090754
+    assert tfidfs[0]['tfidf'][1][1] == 0.2129910624084746
 
     assert tfidfs[1]['tfidf'][0][0] == 'predlog'
-    assert tfidfs[1]['tfidf'][0][1] == 0.2724627492253146
+    assert tfidfs[1]['tfidf'][0][1] == 0.2831133660911137
 
     assert tfidfs[1]['tfidf'][1][0] == 'javen'
-    assert tfidfs[1]['tfidf'][1][1] == 0.2681379436820556
+    assert tfidfs[1]['tfidf'][1][1] == 0.2786195031372865
 
-    assert tfidfs[1]['tfidf'][-2][0] == 'prostorski'
-    assert tfidfs[1]['tfidf'][-2][1] == 0.0908209164084382
+    assert tfidfs[1]['tfidf'][-2][0] == 'pogodba'
+    assert tfidfs[1]['tfidf'][-2][1] == 0.07190180726123523
