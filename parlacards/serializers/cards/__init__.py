@@ -4,4 +4,6 @@ from parlacards.serializers.cards.misc.groups import MiscGroupsCardSerializer
 
 from parlacards.serializers.cards.session.tfidf import SessionTfidfCardSerializer
 
+from parlacards.serializers.cards.search.votes import MandateVotesCardSerializer
+
 from parlacards.serializers.cards.cards import *
