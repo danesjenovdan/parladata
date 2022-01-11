@@ -48,7 +48,7 @@ def test_calculate_people_tfidf(
     tfidfs = calculate_people_tfidf(main_organization)
 
     assert len(tfidfs) == 44
-    assert len(tfidfs[0]['tfidf']) == 20
+    assert len(tfidfs[0]['tfidf']) == 30
 
     assert tfidfs[6]['tfidf'][0][0] == ''
     assert tfidfs[6]['tfidf'][0][1] == 1.0
@@ -72,7 +72,7 @@ def test_calculate_groups_tfidf(
     tfidfs = calculate_groups_tfidf(main_organization)
 
     assert len(tfidfs) == 7
-    assert len(tfidfs[0]['tfidf']) == 20
+    assert len(tfidfs[0]['tfidf']) == 30
 
     assert tfidfs[6]['tfidf'][0][0] == 'praven'
     assert tfidfs[6]['tfidf'][0][1] == 0.28916923723526916
@@ -96,7 +96,7 @@ def test_calculate_sessions_tfidf(
     tfidfs = calculate_sessions_tfidf(main_organization)
 
     assert len(tfidfs) == 2
-    assert len(tfidfs[0]['tfidf']) == 20
+    assert len(tfidfs[0]['tfidf']) == 30
 
     assert tfidfs[0]['tfidf'][0][0] == 'šport'
     assert tfidfs[0]['tfidf'][0][1] == 0.24828183478484658
