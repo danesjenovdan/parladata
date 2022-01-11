@@ -13,6 +13,7 @@ from parladata.models.legislation import Law
 
 
 def one_month_later(date, shorten_for=0):
+    '''Takes a date and returns the date on the same calendar day of the next month.'''
     # damn date math
     try:
         end_date = date.replace(month=date.month+1) - timedelta(days=shorten_for)
@@ -59,7 +60,8 @@ def solr_select(
     per_page=20,
     document_type='speech',
     fl='speech_id',
-    mandate=None
+    mandate=None,
+    sort='start_time desc',
 ):
     # if SOLR_URL is not set, just return an empty response
     if not settings.SOLR_URL:
@@ -70,8 +72,6 @@ def solr_select(
             }
         }
 
-    # TODO solr timeout
-    # TODO solr offline
     q_params = f'{text_query} AND type:{document_type}'
     if people_ids:
         q_params += f' AND person_id:({" OR ".join(map(lambda x: str(x), people_ids))})'
@@ -84,7 +84,7 @@ def solr_select(
 
     params = {
         'wt': 'json',
-        'sort': 'start_time desc',
+        'sort': sort,
         'rows': per_page,
         'start': (page - 1) * per_page,
         'q': q_params,

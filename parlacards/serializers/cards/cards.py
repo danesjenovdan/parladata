@@ -1255,38 +1255,6 @@ class MandateUsageThroughTimeCardSerializer(CardSerializer):
         return objects
 
 
-class MandateVotesCardSerializer(CardSerializer):
-    def get_results(self, mandate):
-        # this is implemeted in to_representation for pagination
-        return None
-
-    def to_representation(self, mandate):
-        parent_data = super().to_representation(mandate)
-
-        if self.context.get('GET', {}).get('text', None):
-            solr_params = parse_search_query_params(self.context.get('GET', {}), mandate=mandate.id)
-            paged_object_list, pagination_metadata = create_solr_paginator(self.context.get('GET', {}), solr_params, document_type='vote')
-        else:
-            votes = Vote.objects.filter(
-                timestamp__lte=self.context['date'],
-                motion__session__mandate=mandate
-            ).order_by('-timestamp')
-            paged_object_list, pagination_metadata = create_paginator(self.context.get('GET', {}), votes)
-
-        # serialize votes
-        vote_serializer = BareVoteSerializer(
-            paged_object_list,
-            many=True,
-            context=self.context
-        )
-
-        return {
-            **parent_data,
-            **pagination_metadata,
-            'results': vote_serializer.data,
-        }
-
-
 class MandateLegislationCardSerializer(CardSerializer):
     def get_results(self, mandate):
         # this is implemeted in to_representation for pagination
