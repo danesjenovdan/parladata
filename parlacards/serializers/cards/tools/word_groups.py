@@ -1,4 +1,8 @@
-from parlacards.serializers.common import CardSerializer
+from parladata.models.person import Person
+from parladata.models.organization import Organization
+from parladata.models.speech import Speech
+
+from parlacards.serializers.common import CardSerializer, CommonPersonSerializer, CommonOrganizationSerializer
 
 from parlacards.solr import parse_search_query_params, solr_select
 
@@ -40,19 +44,41 @@ class WordGroupsCardSerializer(CardSerializer):
 
         # create the person facet count dictionary
         people_facet_counts = result['facet_counts']['facet_fields']['person_id']
-        people_results = {}
+        people = {}
         for i in range(int(len(people_facet_counts) / 2)):
             person_index = 2 * i
             count_index = 2 * i + 1
-            people_results[people_facet_counts[person_index]] = people_facet_counts[count_index]
+            people[people_facet_counts[person_index]] = people_facet_counts[count_index]
+
+        # serialize people and their results
+        people_results = []
+        people_qs = Person.objects.filter(id__in=people.keys())
+        for person in people_qs:
+            serializer = CommonPersonSerializer(person, context=self.context)
+            people_results.append({
+                'person': serializer.data,
+                'value': people[str(person.id)],
+                'number_of_speeches': Speech.objects.filter(speaker__id=person.id).count()
+            })
 
         # create the party facet count dictionary
         party_facet_counts = result['facet_counts']['facet_fields']['party_id']
-        party_results = {}
+        parties = {}
         for i in range(int(len(party_facet_counts) / 2)):
             party_index = 2 * i
             count_index = 2 * i + 1
-            party_results[party_facet_counts[party_index]] = party_facet_counts[count_index]
+            parties[party_facet_counts[party_index]] = party_facet_counts[count_index]
+        
+        # serialize parties and their results
+        party_results = []
+        parties_qs = Organization.objects.filter(id__in=parties.keys())
+        for party in parties_qs:
+            serializer = CommonOrganizationSerializer(party, context=self.context)
+            party_results.append({
+                'group': serializer.data,
+                'value': parties[str(party.id)],
+                'number_of_speeches': Speech.objects.filter(speaker__id=person.id).count()
+            })
 
         return {
             **parent_data,
