@@ -1,6 +1,7 @@
 from parladata.models import *
 from parladata.serializers import *
-from parladata.models.versionable_properties import OrganizationName, OrganizationAcronym, PersonName, PersonPreferredPronoun
+from parladata.models.versionable_properties import (OrganizationName, OrganizationAcronym, PersonName,
+    PersonPreferredPronoun, PersonHonorificPrefix)
 from taggit.models import Tag
 from rest_framework import (viewsets, pagination, permissions,
                             mixins, filters, generics, views)
@@ -20,6 +21,7 @@ from oauth2_provider.contrib.rest_framework import OAuth2Authentication
 from raven.contrib.django.raven_compat.models import client
 
 import logging
+import copy
 logger = logging.getLogger('logger')
 
 
@@ -74,30 +76,27 @@ class OrganizationsFilterSet(FilterSet):
         fields = ('classifications',)
 
 ## Viewsets
-
-class PersonView(viewsets.ModelViewSet):
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
-    queryset = Person.objects.all().order_by('id')
-    serializer_class = PersonSerializer
-
+class VersionableModelViewSet(viewsets.ModelViewSet):
+    """
+    VersionableModelViewSet extend ModelViewSet for models with versionable fields.
+    Subclass needs to define versionable_properties which is dictionary with pairs field: model
+    """
+    versionable_properties = []
     def create(self, request, *args, **kwargs):
-        logging.warning(request.data)
-        name = request.data.pop('name', '')
-        preferred_pronoun = request.data.pop('preferred_pronoun', '')
+        # copy data because validation clear fields which is not in model
+        data = copy.deepcopy(request.data)
 
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-
         serializer.save()
         instance = serializer.instance
-        PersonName(
-            value=name,
-            owner=instance
-        ).save()
-        PersonPreferredPronoun(
-            value=preferred_pronoun,
-            owner=instance
-        ).save()
+        for field_name, versionable_model in self.versionable_properties.items():
+            value = data.pop(field_name, '')
+            if value:
+                versionable_model(
+                    value=value,
+                    owner=instance
+                ).save()
 
         headers = self.get_success_headers(serializer.data)
 
@@ -113,6 +112,18 @@ class PersonView(viewsets.ModelViewSet):
 
         data = self.get_serializer(person).data
         return Response(data, status=status.HTTP_200_OK)
+
+
+class PersonView(VersionableModelViewSet):
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    queryset = Person.objects.all().order_by('id')
+    serializer_class = PersonSerializer
+
+    versionable_properties = {
+        'name': PersonName,
+        'preferred_pronoun': PersonPreferredPronoun,
+        'honorific_prefix': PersonHonorificPrefix,
+    }
 
 
 class AgendaItemView(viewsets.ModelViewSet):
