@@ -68,4 +68,6 @@ urlpatterns = [
     path('search/usage-by-group/', MandateUsageByGroup.as_view()),
     path('search/most-used-by-people/', MandateMostUsedByPeople.as_view()),
     path('search/usage-through-time/', MandateUsageThroughTime.as_view()),
+
+    path('tools/word-groups/', WordGroupsCardView.as_view()),
 ]
