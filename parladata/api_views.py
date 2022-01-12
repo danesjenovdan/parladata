@@ -11,6 +11,7 @@ from rest_framework.decorators import action
 from datetime import datetime
 
 from django_filters.rest_framework import DjangoFilterBackend, Filter, FilterSet
+from django.shortcuts import get_object_or_404
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.authentication import SessionAuthentication, BasicAuthentication
@@ -103,6 +104,16 @@ class PersonView(viewsets.ModelViewSet):
         data = self.get_serializer(instance).data
         return Response(data, status=status.HTTP_201_CREATED, headers=headers)
 
+    @action(detail=True, methods=['post'])
+    def add_parser_name(self, request, pk=None):
+        person = get_object_or_404(Person, pk=pk)
+        parser_name = request.data.get('parser_name')
+        person.add_parser_name(parser_name)
+        person.save()
+
+        data = self.get_serializer(person).data
+        return Response(data, status=status.HTTP_200_OK)
+
 
 class AgendaItemView(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
@@ -117,6 +128,12 @@ class SessionView(viewsets.ModelViewSet):
     filter_backends = (DjangoFilterBackend, filters.OrderingFilter)
     filter_fields = ('organizations',)
     ordering_fields = ('-start_time',)
+
+    @action(detail=True, methods=['post'])
+    def unvalidate_speeches(self, request, pk=None):
+        session = get_object_or_404(Session, pk=pk)
+        session.speeches.all().update(valid_to=datetime.now())
+        return Response({}, status=status.HTTP_200_OK)
 
 
 # class OrganizationNameView(viewsets.ModelViewSet):
