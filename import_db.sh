@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # EDIT DATABASE NAME TO CHOOSE WHICH ONE YOU WANT
-DATABASE_NAME="parladata"
+DATABASE_NAME="parladata-ajdovscina"
 
 # DATABASE PASSWORD IS DYNAMICALLY RETRIEVED FROM THE CLUSTER
 DATABASE_PASSWORD=$(kubectl get secret postgresql -n shared -o jsonpath="{.data.postgresql-password}" | base64 --decode)
@@ -9,6 +9,12 @@ DATABASE_PASSWORD=$(kubectl get secret postgresql -n shared -o jsonpath="{.data.
 echo
 echo "PORT FORWARDING"
 nohup kubectl port-forward pod/postgresql-0 54321:5432 --namespace=shared &>/dev/null &
+
+# store the kubectl pid for later
+KUBECTL_PID=$!
+
+# wait for port forwarding to initialise
+sleep 5
 
 echo
 echo "DUMPING DATABASE TO db.dump"
@@ -24,11 +30,16 @@ echo "DROPPING THE DB VOLUME"
 sudo docker-compose down -v db
 sudo docker-compose up -d
 
+sleep 5
+
 echo
 echo "LOADING DB INTO CONTAINER"
 sudo docker-compose exec db psql -U postgres parladata < 'db.dump'
 
 sudo docker-compose down
+
+echo "STOPPING PORT FORWARDING"
+kill $KUBECTL_PID
 
 echo
 echo "ALL DONE, YOU CAN RUN docker-compose up AND/OR DELETE db.dump"
