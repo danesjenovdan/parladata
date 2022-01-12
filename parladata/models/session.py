@@ -41,8 +41,14 @@ class Session(Timestampable):
         choices=CLASSIFICATIONS,
         default='unknown')
 
-    in_review = models.BooleanField(default=False,
-                                    help_text='Is session still in review?')
+    in_review = models.BooleanField(
+        default=False,
+        help_text='Is session still in review?')
+
+    needs_editing = models.BooleanField(
+        "Session needs editing",
+        default=False
+    )
 
     @property
     def organization(self):
