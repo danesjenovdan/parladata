@@ -96,7 +96,7 @@ def calculate_people_tfidf(playing_field, timestamp=datetime.now()):
 
         output.append({
             'speaker_id': competitor_id,
-            'tfidf': competitor_tfidf[:20]
+            'tfidf': competitor_tfidf[:30]
         })
 
     return output
@@ -179,7 +179,7 @@ def calculate_groups_tfidf(playing_field, timestamp=datetime.now()):
         # dictionary instead of a list of dictionaries
         output.append({
             'group_id': group_id,
-            'tfidf': group_tfidf[:20]
+            'tfidf': group_tfidf[:30]
         })
 
     return output
@@ -266,7 +266,7 @@ def calculate_sessions_tfidf(playing_field, timestamp=datetime.now()):
         # dictionary instead of a list of dictionaries
         output.append({
             'session_id': session_id,
-            'tfidf': session_tfidf[:20]
+            'tfidf': session_tfidf[:30]
         })
 
     return output
