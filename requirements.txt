@@ -34,6 +34,7 @@ django-admin-sortable2
 pyicu
 sentry-sdk
 eventregistry
+django-import-export
 
 # tagger/lemmatizer
 sklearn
