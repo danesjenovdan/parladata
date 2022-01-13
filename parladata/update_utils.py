@@ -24,20 +24,20 @@ relativno kvalificirano večino: (2/3 prisotnih poslancev) ali
 absolutno kvalificirano večino: (vsaj 60 glasov poslancev).
 """
 
-def get_result_for_relative_normal_majority(self, vote):
+def get_result_for_relative_normal_majority(vote):
     options = vote.get_option_counts()
     return options['for'] > options['against']
 
-def get_result_for_absolute_normal_majority(self, vote):
+def get_result_for_absolute_normal_majority(vote):
     options = vote.get_option_counts()
     return options['for'] > (sum(options.values())/2 + 1)
 
 def set_results_to_votes(majority='relative_normal'):
     for vote in Vote.objects.filter(result=None):
         if majority == 'absolute_normal':
-            final_result = self.get_result_for_absolute_normal_majority(vote)
+            final_result = get_result_for_absolute_normal_majority(vote)
         else:
-            final_result = self.get_result_for_relative_normal_majority(vote)
+            final_result = get_result_for_relative_normal_majority(vote)
 
         motion = vote.motion
         motion.result = final_result
