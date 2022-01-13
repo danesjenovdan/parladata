@@ -33,6 +33,7 @@ INSTALLED_APPS = (
     'martor',
     'colorfield',
     'adminsortable2',
+    'import_export',
 )
 
 """MIDDLEWARE = (
