@@ -52,7 +52,7 @@ from parlacards.serializers.cards import (
     PersonTfidfCardSerializer,
     GroupTfidfCardSerializer,
     GroupVoteAttendanceCardSerializer,
-    GroupBallotCardSerializer,
+    GroupVoteCardSerializer,
     GroupMostVotesInCommonCardSerializer,
     GroupLeastVotesInCommonCardSerializer,
     PersonSpeechesCardSerializer,
@@ -234,7 +234,7 @@ class GroupBallots(CardView):
     A person's ballots.
     '''
     thing = Organization
-    card_serializer = GroupBallotCardSerializer
+    card_serializer = GroupVoteCardSerializer
 
 
 class Questions(CardView):

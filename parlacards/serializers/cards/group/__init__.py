@@ -1,1 +1,0 @@
-from parlacards.serializers.cards.group.questions import GroupQuestionCardSerializer

@@ -6,7 +6,7 @@ from parladata.models.question import Question
 from parlacards.serializers.common import GroupScoreCardSerializer
 from parlacards.serializers.question import QuestionSerializer
 
-from parlacards.pagination import calculate_cache_key_for_page, create_paginator, create_solr_paginator
+from parlacards.pagination import calculate_cache_key_for_page, create_paginator
 
 
 class GroupQuestionCardSerializer(GroupScoreCardSerializer):
