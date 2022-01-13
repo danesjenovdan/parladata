@@ -10,7 +10,7 @@ client = APIClient()
 
 @pytest.mark.django_db()
 def test_misc_members():
-    response = client.get('/v3/cards/misc/members/?id=1')
+    response = client.get('/v3/cards/misc/members/?id=1&members:per_page=10&members:page=1&text=&order_by=name&preferred_pronoun=she')
     assert response.status_code == 200
 
 @pytest.mark.django_db()
