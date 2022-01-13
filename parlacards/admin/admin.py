@@ -7,7 +7,7 @@ from django.shortcuts import redirect
 
 from parlacards.models import (SessionTfidf, PersonTfidf, GroupTfidf, Quote)
 from parladata.models.memberships import PersonMembership
-from parladata.admin.filters import MembersListFilter, OrganizationsListFilter, MembersAndLeaderListFilter
+from parladata.admin.filters import MembersListFilter, OrganizationsListFilter, MembersAndLeaderListFilter, SessionListFilter
 
 from django.contrib import admin
 
@@ -16,7 +16,7 @@ from datetime import datetime
 
 class SessionTfidfAdmin(admin.ModelAdmin):
     list_display = ('session_name', 'token', 'value', 'created_at', 'delete')
-    list_filter = ('session',)
+    list_filter = (SessionListFilter,)
     search_fields = ['session__name']
     list_per_page = 20
     ordering = ['-timestamp__date', '-value']
