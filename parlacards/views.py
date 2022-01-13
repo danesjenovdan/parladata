@@ -341,7 +341,7 @@ class GroupNumberOfQuestions(CardView):
     card_serializer = GroupNumberOfQuestionsCardSerializer
 
 
-class GroupQuestions(CachedCardView):
+class GroupQuestions(CardView):
     '''
     A group's questions.
     '''
