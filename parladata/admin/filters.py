@@ -29,6 +29,7 @@ class MembersListFilter(admin.SimpleListFilter):
             return queryset.filter(person_id=self.value())
         return queryset
 
+
 class MembersAndLeaderListFilter(admin.SimpleListFilter):
     title = 'member_or_leader'
 
@@ -167,13 +168,9 @@ class SessionListFilter(admin.SimpleListFilter):
 
     def lookups(self, request, model_admin):
         list_of_sessions = []
-        list_of_sessions = [(str(session['id']), session['name']) for session in Session.objects.all().values('id', 'name')]
+        list_of_sessions = [(str(session['id']), session['name']) for session in Session.objects.all().order_by('start_time').values('id', 'name')]
 
-        # for group in queryset:
-        #     list_of_sessions.append(
-        #         (str(group['id']), group['name'])
-        #     )
-        return sorted(list_of_sessions, key=lambda tp: tp[1])
+        return list_of_sessions
 
     def queryset(self, request, queryset):
         # Compare the requested value to decide how to filter the queryset.
