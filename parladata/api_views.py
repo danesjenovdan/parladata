@@ -236,6 +236,14 @@ class LinkView(viewsets.ModelViewSet):
     filter_fields = ('person', 'tags__name', 'organization', 'question')
 
 
+class DocumentView(viewsets.ModelViewSet):
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    queryset = Document.objects.all().order_by('id')
+    serializer_class = DocumentSerializer
+    filter_backends = (DjangoFilterBackend,)
+    filter_fields = ('tags__name',)
+
+
 class PersonMembershipView(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     queryset = PersonMembership.objects.all().order_by('id')
