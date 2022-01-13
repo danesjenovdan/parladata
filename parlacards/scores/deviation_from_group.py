@@ -25,7 +25,7 @@ def deviation_percentage_between_two_lists(list1, list2):
     
     return mismatches / len(list1) * 100
 
-def get_group_ballot(vote, people_ids, exclude_absent=True):
+def get_group_ballot(vote, people_ids, exclude_absent=False):
     # vote can be a Vote object
     # or an int representing the object id
     ballots = Ballot.objects.filter(
@@ -44,10 +44,9 @@ def get_group_ballot(vote, people_ids, exclude_absent=True):
     # If you don't include the order_by(),
     # you may get incorrect results if the
     # default sorting is not what you expect.
-
     return options_aggregated['option__max']
 
-def calculate_deviation_from_group(person, playing_field, timestamp=datetime.now(), exclude_absent=True):
+def calculate_deviation_from_group(person, playing_field, timestamp=datetime.now(), exclude_absent=False):
     personal_ballots = Ballot.objects.filter(
         personvoter=person,
         vote__timestamp__lte=timestamp
@@ -91,8 +90,6 @@ def calculate_deviation_from_group(person, playing_field, timestamp=datetime.now
         Q(organization=playing_field),
         Q(on_behalf_of=parliamentary_group),
         Q(role='voter')
-    ).exclude(
-        member=person
     ).values_list(
         'member__id'
     )

@@ -4,6 +4,7 @@ from rest_framework import serializers
 
 from parladata.models.organization import Organization
 from parladata.models.memberships import PersonMembership
+from parladata.models.versionable_properties import PersonPreferredPronoun
 
 from parlacards.serializers.common import (
     CardSerializer,

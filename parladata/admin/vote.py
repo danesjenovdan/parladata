@@ -4,9 +4,20 @@ from django.urls import reverse
 from django.conf import settings
 from django.utils.translation import gettext as _
 
+from import_export.resources import ModelResource
+from import_export.admin import ExportMixin
+from import_export.fields import Field
+
 from parladata.models import Vote, Ballot
 
 from collections import Counter
+
+class VoteResource(ModelResource):
+    class Meta:
+        model = Vote
+        fields = ('id', 'name', 'motion__text', 'motion__summary', 'result',)
+        export_order = ('id', 'name', 'motion__text', 'motion__summary', 'result',)
+
 
 @admin.action(description='Clone vote with ballots')
 def clone_vote(modeladmin, request, queryset):
@@ -22,7 +33,9 @@ def clone_vote(modeladmin, request, queryset):
     else:
         modeladmin.message_user(request, 'You can only clone one vote at a time.', messages.ERROR)
 
-class VoteAdmin(admin.ModelAdmin):
+class VoteAdmin(ExportMixin, admin.ModelAdmin):
+    resource_class = VoteResource
+
     list_display = ('id', 'name', 'the_tags', 'get_for', 'get_against', 'get_abstain', 'get_abesnt', 'needs_editing', 'add_ballots')
     # set order of fields in the dashboard
     fields = ['name', 'timestamp', 'motion', 'result', 'needs_editing', 'tags', 'get_session', 'get_statistics', 'edit_ballots', 'get_vote_pdf']
