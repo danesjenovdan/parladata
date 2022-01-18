@@ -1,6 +1,6 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
-namespace: parlameter
+namespace: parlameter-slovenija
 resources:
   # - statefulset.yaml
   - deployment.yaml
@@ -10,6 +10,6 @@ resources:
   # uncomment cronjob to enable it
   #- cronjobs/task_runner_cronjob.yaml
 images:
-  - name: parladata
-    newName: rg.fr-par.scw.cloud/djnd/parladata
-    newTag: '599fdfecb3214afd8183d615fe83018892e643cc'
+  - name: parladata-slovenija
+    newName: rg.fr-par.scw.cloud/djnd/parladata-slovenija
+    newTag: 'latest'
