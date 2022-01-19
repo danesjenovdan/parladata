@@ -29,7 +29,7 @@ spec:
             - secretRef:
                 name: parladata-slovenija-credentials
             - secretRef:
-                name: parladata-slovenija-sentry
+                name: parladata-sentry
           resources:
             requests:
               memory: 200Mi
@@ -50,7 +50,7 @@ spec:
             - secretRef:
                 name: parladata-slovenija-credentials
             - secretRef:
-                name: parladata-slovenija-sentry
+                name: parladata-sentry
           resources:
             requests:
               memory: 200Mi
@@ -80,7 +80,7 @@ spec:
               - secretRef:
                   name: parladata-slovenija-credentials
               - secretRef:
-                  name: parladata-slovenija-sentry
+                  name: parladata-sentry
           env:
             - name: DJANGO_SETTINGS_MODULE
               value: parladata_project.settings.k8s
