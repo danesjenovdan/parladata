@@ -15,6 +15,7 @@ class MembershipAdmin(admin.ModelAdmin):
 
     # set order of fields in the dashboard
     fields = ['member', 'role', 'organization', 'on_behalf_of', 'start_time', 'end_time', 'mandate']
+    readonly_fields = ['created_at', 'updated_at']
 
 
 admin.site.register(PersonMembership, MembershipAdmin)
