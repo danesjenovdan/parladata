@@ -22,7 +22,6 @@ class MandateAdmin(admin.ModelAdmin):
     list_display = ('description', 'beginning',)
     list_filter = ('description', 'beginning',)
     search_fields = ('description', 'beginning',)
-    #readonly_fields = ['created_at', 'updated_at']
 
 
 class QuestionAdmin(admin.ModelAdmin):
