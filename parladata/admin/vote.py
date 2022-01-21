@@ -39,7 +39,7 @@ class VoteAdmin(ExportMixin, admin.ModelAdmin):
     list_display = ('id', 'name', 'the_tags', 'get_for', 'get_against', 'get_abstain', 'get_absent', 'get_did_not_vote', 'needs_editing', 'add_ballots')
     # set order of fields in the dashboard
     fields = ['name', 'timestamp', 'motion', 'result', 'needs_editing', 'tags', 'get_session', 'get_statistics', 'edit_ballots', 'get_vote_pdf']
-    readonly_fields = ['get_session', 'get_statistics', 'edit_ballots', 'get_vote_pdf']
+    readonly_fields = ['get_session', 'get_statistics', 'edit_ballots', 'get_vote_pdf', 'created_at', 'updated_at']
 
     list_filter = ('tags',)
     inlines = [

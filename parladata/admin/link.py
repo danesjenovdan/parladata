@@ -35,6 +35,7 @@ class LinkAdmin(admin.ModelAdmin):
     list_display = ('url', 'name')
     autocomplete_fields = ['session', 'person', 'motion', 'question', 'agenda_item', 'organization', 'membership']
     fields = ['url', 'name', 'tags', 'session', 'agenda_item', 'motion', 'question', 'person', 'organization', 'membership', 'date', 'note']
+    readonly_fields = ['created_at', 'updated_at']
 
 
 admin.site.register(Link, LinkAdmin)
