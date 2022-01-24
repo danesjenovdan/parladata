@@ -18,6 +18,7 @@ def assign_value_to_option_string(option_string):
         'against': -1,
         'abstain': 0,
         'absent': 0,
+        'did not vote': 0,
     }[option_string]
 
 # implement this with numpy

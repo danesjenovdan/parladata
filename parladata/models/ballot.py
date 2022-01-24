@@ -10,7 +10,14 @@ class Ballot(Timestampable):
         ('against', 'against'),
         ('abstain', 'abstain'),
         ('absent', 'absent'),
-]
+
+        # following is a special case for slovenian
+        # municipalities there are situations where
+        # they check if they have a majority of yeses
+        # and if they do they don't ask anyone else
+        # if they are against or abstained
+        ('did not vote', 'did not vote'),
+    ]
 
     vote = models.ForeignKey('Vote',
                              help_text='The vote event',
