@@ -60,6 +60,12 @@
                     <li>{{ person.name }}</li>
                     {% endfor %}
                 </ol>
+                People who did not vote:<br>
+                <ol>
+                    {% for person in ballots.people_did_not_vote %}
+                    <li>{{ person.name }}</li>
+                    {% endfor %}
+                </ol>
                 People you missed. These people automatic gets absent ballot:<br>
                 <ol>
                     {% for person in ballots.people_without_ballot %}
@@ -81,18 +87,20 @@
                     {{ form.edit }}
                     {% if confirm %}
                         <div style="display: none;">
-                            {{ form.people_for }}</br>
-                            {{ form.people_against }}</br>
-                            {{ form.people_abstain }}</br>
-                            {{ form.people_absent }}</br>
+                            {{ form.people_for }}<br>
+                            {{ form.people_against }}<br>
+                            {{ form.people_abstain }}<br>
+                            {{ form.people_absent }}<br>
+                            {{ form.people_did_not_vote }}<br>
                         </div>
                         <input type="submit" value="Confirm adding">
                     {% else %}
                         <h3>Fix data and submit:</h3><br>
-                        People for: {{ form.people_for }}</br>
-                        People against: {{ form.people_against }}</br>
-                        People abstains: {{ form.people_abstain }}</br>
-                        People absent: {{ form.people_absent }}</br>
+                        People for: {{ form.people_for }}<br>
+                        People against: {{ form.people_against }}<br>
+                        People abstains: {{ form.people_abstain }}<br>
+                        People absent: {{ form.people_absent }}<br>
+                        People who did not vote: {{ form.people_did_not_vote }}<br>
                         <input type="submit" value="Submit">
                     {% endif %}
                 </form>
@@ -101,10 +109,11 @@
                     <input type="hidden" name="confirmed" value="False" id="id_confirmed">
                     <input type="hidden" name="edit" value="True" id="id_edit">
                         <div style="display: none;">
-                            {{ form.people_for }}</br>
-                            {{ form.people_against }}</br>
-                            {{ form.people_abstain }}</br>
-                            {{ form.people_absent }}</br>
+                            {{ form.people_for }}<br>
+                            {{ form.people_against }}<br>
+                            {{ form.people_abstain }}<br>
+                            {{ form.people_absent }}<br>
+                            {{ form.people_did_not_vote }}<br>
                         </div>
                         <input type="submit" value="Back">
 
@@ -114,10 +123,11 @@
                     {% csrf_token %}
                     <input type="hidden" name="confirmed" value="False" id="id_confirmed">
                     <input type="hidden" name="edit" value="False" id="id_edit">
-                    People for: {{ form.people_for }}</br>
-                    People against: {{ form.people_against }}</br>
-                    People abstains: {{ form.people_abstain }}</br>
-                    People absent: {{ form.people_absent }}</br>
+                    People for: {{ form.people_for }}<br>
+                    People against: {{ form.people_against }}<br>
+                    People abstains: {{ form.people_abstain }}<br>
+                    People absent: {{ form.people_absent }}<br>
+                    People who did not vote: {{ form.people_did_not_vote }}<br>
                     <input type="submit" value="Submit">
                 </form>
             {% endif %}
