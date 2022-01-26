@@ -10,31 +10,37 @@ class LawAdmin(admin.ModelAdmin):
     list_display = ('text', 'session', 'status', 'epa')
     list_filter = ('session',)
     search_fields = ('text',)
+    readonly_fields = ['created_at', 'updated_at']
 
 
 class ProcedureAdmin(admin.ModelAdmin):
     list_display = ('type',)
     search_fields = ('type',)
+    readonly_fields = ['created_at', 'updated_at']
 
 
 class ProcedurePhaseAdmin(admin.ModelAdmin):
     list_display = ('name',)
     search_fields = ('name',)
+    readonly_fields = ['created_at', 'updated_at']
 
 
 class LegislationConsiderationAdmin(admin.ModelAdmin):
     list_display = ('legislation', 'procedure_phase', 'timestamp')
     autocomplete_fields = ('legislation', 'organization')
+    readonly_fields = ['created_at', 'updated_at']
 
 
 class LegislationStatusAdmin(admin.ModelAdmin):
     list_display = ('name',)
     search_fields = ('name',)
+    readonly_fields = ['created_at', 'updated_at']
 
 
 class LegislationClassificationAdmin(admin.ModelAdmin):
     list_display = ('name',)
     search_fields = ('name',)
+    readonly_fields = ['created_at', 'updated_at']
 
 
 admin.site.register(Law, LawAdmin)

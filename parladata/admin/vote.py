@@ -36,10 +36,10 @@ def clone_vote(modeladmin, request, queryset):
 class VoteAdmin(ExportMixin, admin.ModelAdmin):
     resource_class = VoteResource
 
-    list_display = ('id', 'name', 'the_tags', 'get_for', 'get_against', 'get_abstain', 'get_abesnt', 'needs_editing', 'add_ballots')
+    list_display = ('id', 'name', 'the_tags', 'get_for', 'get_against', 'get_abstain', 'get_absent', 'get_did_not_vote', 'needs_editing', 'add_ballots')
     # set order of fields in the dashboard
     fields = ['name', 'timestamp', 'motion', 'result', 'needs_editing', 'tags', 'get_session', 'get_statistics', 'edit_ballots', 'get_vote_pdf']
-    readonly_fields = ['get_session', 'get_statistics', 'edit_ballots', 'get_vote_pdf']
+    readonly_fields = ['get_session', 'get_statistics', 'edit_ballots', 'get_vote_pdf', 'created_at', 'updated_at']
 
     list_filter = ('tags',)
     inlines = [
@@ -82,8 +82,12 @@ class VoteAdmin(ExportMixin, admin.ModelAdmin):
         results = dict(Counter(Ballot.objects.filter(vote=obj).values_list("option", flat=True))).get("abstain", 0)
         return results
 
-    def get_abesnt(self, obj):
+    def get_absent(self, obj):
         results = dict(Counter(Ballot.objects.filter(vote=obj).values_list("option", flat=True))).get("absent", 0)
+        return results
+    
+    def get_did_not_vote(self, obj):
+        results = dict(Counter(Ballot.objects.filter(vote=obj).values_list("option", flat=True))).get("did not vote", 0)
         return results
 
     def get_vote_pdf(self, obj):
@@ -97,7 +101,8 @@ class VoteAdmin(ExportMixin, admin.ModelAdmin):
         for_votes = self.get_for(obj)
         against = self.get_against(obj)
         abstain = self.get_abstain(obj)
-        abesnt = self.get_abesnt(obj)
+        absent = self.get_absent(obj)
+        did_not_vote = self.get_did_not_vote(obj)
 
         return mark_safe(
             f'''<table>
@@ -106,14 +111,16 @@ class VoteAdmin(ExportMixin, admin.ModelAdmin):
                     <th>{_("against")}</th>
                     <th>{_("abstain")}</th>
                     <th>{_("absent")}</th>
+                    <th>{_('did not vote')}</th>
                     <th>{_("all")}</th>
                 </tr>
                 <tr>
                     <td>{for_votes}</td>
                     <td>{against}</td>
                     <td>{abstain}</td>
-                    <td>{abesnt}</td>
-                    <td>{for_votes + against + abstain + abesnt}</td>
+                    <td>{absent}</td>
+                    <td>{did_not_vote}</th>
+                    <td>{for_votes + against + abstain + absent + did_not_vote}</td>
                 </tr>
             </table>
             '''
@@ -122,7 +129,8 @@ class VoteAdmin(ExportMixin, admin.ModelAdmin):
     get_for.short_description = 'for'
     get_against.short_description = 'against'
     get_abstain.short_description = 'abstain'
-    get_abesnt.short_description = 'absent'
+    get_absent.short_description = 'absent'
+    get_did_not_vote.short_description = 'did not vote'
     the_tags.short_description = 'tags'
     add_ballots.allow_tags = True
     add_ballots.short_description = 'Add ballots'

@@ -61,6 +61,11 @@ class PersonAuthorsListFilter(MembersListFilter):
 
     parameter_name = 'person_authors'
 
+    def queryset(self, request, queryset):
+        if self.value():
+            return queryset.filter(person_authors__id=self.value())
+        return queryset
+
 
 class OrganizationsListFilter(admin.SimpleListFilter):
     title = 'organization'
