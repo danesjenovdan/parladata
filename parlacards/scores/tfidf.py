@@ -293,7 +293,7 @@ def save_sparse_sessions_tfidf_between(playing_field, datetime_from=datetime.now
     for day in get_fortnights_between(datetime_from, datetime_to):
         save_sessions_tfidf(playing_field, timestamp=day)
 
-def save_sessions_tfidf_on_last_speech_date(playing_field, session):
+def save_session_tfidf_on_last_speech_date(playing_field, session):
     timestamp = session.speeches.latest('start_time').start_time
     sessions_tfidf = calculate_sessions_tfidf(playing_field, timestamp)
 
@@ -308,11 +308,26 @@ def save_sessions_tfidf_on_last_speech_date(playing_field, session):
                     playing_field=playing_field
                 ).save()
 
+def save_sessions_tfidf_on_last_speech_date(playing_field, sessions):
+    timestamp = datetime.now()
+    sessions_tfidf = calculate_sessions_tfidf(playing_field, timestamp)
+    session_ids = sessions.values_list('id', flat=True)
+
+    for tfidf in sessions_tfidf:
+        for score in tfidf['tfidf']:
+            if tfidf['session_id'] in session_ids:
+                SessionTfidf(
+                    session_id=tfidf['session_id'],
+                    timestamp=timestamp,
+                    token=score[0],
+                    value=score[1],
+                    playing_field=playing_field
+                ).save()
+
 def save_sessions_tfidf_for_fresh_sessions(playing_field):
     sessions = Session.objects.filter(
         speeches__isnull=False,
         sessiontfidf_related__isnull=True
     ).distinct('id')
 
-    for session in sessions:
-        save_sessions_tfidf_on_last_speech_date(playing_field, session)
+    save_sessions_tfidf_on_last_speech_date(playing_field, sessions)
