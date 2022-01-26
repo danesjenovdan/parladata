@@ -81,3 +81,4 @@ class AddBallotsForm(forms.Form):
     people_against = UsersChoiceField(required=False)
     people_abstain = UsersChoiceField(required=False)
     people_absent = UsersChoiceField(required=False)
+    people_did_not_vote = UserChoiceField(required=False)
