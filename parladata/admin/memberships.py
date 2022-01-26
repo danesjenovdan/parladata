@@ -18,5 +18,10 @@ class MembershipAdmin(admin.ModelAdmin):
     readonly_fields = ['created_at', 'updated_at']
 
 
+class OrganizationMembershipAdmin(admin.ModelAdmin):
+    autocomplete_fields = ('member', 'organization')
+    readonly_fields = ['created_at', 'updated_at']
+
+
 admin.site.register(PersonMembership, MembershipAdmin)
-admin.site.register(OrganizationMembership)
+admin.site.register(OrganizationMembership, OrganizationMembershipAdmin)
