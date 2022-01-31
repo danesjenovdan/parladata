@@ -21,6 +21,7 @@ class SessionAdmin(admin.ModelAdmin):
     ]
     search_fields = ['name']
     list_display = ['id', 'name', 'tfidf', 'start_time']
+    readonly_fields = ['created_at', 'updated_at']
 
     def tfidf(self, obj):
         partial_url = reverse('admin:parlacards_sessiontfidf_changelist')
