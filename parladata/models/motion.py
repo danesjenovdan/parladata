@@ -44,8 +44,6 @@ class Motion(Timestampable, Taggable, Parsable):
     )
 
     title = models.TextField(
-        blank=True,
-        null=True,
         help_text='Title of the motion'
     )
 
