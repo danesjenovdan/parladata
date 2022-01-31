@@ -56,6 +56,7 @@ class SpeechAdmin(admin.ModelAdmin):
         models.ManyToManyField: {'widget': forms.CheckboxSelectMultiple()},
     }
     actions = [duplicate_speech]
+    readonly_fields = ['created_at', 'updated_at']
 
     def get_queryset(self, request):
         return super().get_queryset(request).prefetch_related('tags', 'session', 'speaker')
