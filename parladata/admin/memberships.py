@@ -15,7 +15,13 @@ class MembershipAdmin(admin.ModelAdmin):
 
     # set order of fields in the dashboard
     fields = ['member', 'role', 'organization', 'on_behalf_of', 'start_time', 'end_time', 'mandate']
+    readonly_fields = ['created_at', 'updated_at']
+
+
+class OrganizationMembershipAdmin(admin.ModelAdmin):
+    autocomplete_fields = ('member', 'organization')
+    readonly_fields = ['created_at', 'updated_at']
 
 
 admin.site.register(PersonMembership, MembershipAdmin)
-admin.site.register(OrganizationMembership)
+admin.site.register(OrganizationMembership, OrganizationMembershipAdmin)

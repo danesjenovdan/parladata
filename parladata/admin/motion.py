@@ -28,6 +28,7 @@ class MotionAdmin(admin.ModelAdmin):
         'get_not',
         'link_to_vote',
         'datetime',
+        'created_at',
         'tag_list',
     )
     autocomplete_fields = ('session', 'champions', 'agenda_items', 'law')
@@ -39,6 +40,7 @@ class MotionAdmin(admin.ModelAdmin):
         LinkMotionInline,
     ]
     list_per_page = 25
+    readonly_fields = ['created_at', 'updated_at']
 
     # set order of fields in the dashboard
     fields = ['title', 'session', 'datetime', 'result', 'agenda_items', 'law', 'champions', 'summary', 'text', 'classification', 'requirement', 'parser_names', 'tags']

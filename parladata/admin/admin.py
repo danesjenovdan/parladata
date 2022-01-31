@@ -32,11 +32,14 @@ class QuestionAdmin(admin.ModelAdmin):
     ]
     list_filter = ('type_of_question', SessionListFilter, PersonAuthorsListFilter, OrganizationAuthorsListFilter)
     fields = ['title', 'session', 'person_authors', 'organization_authors', 'recipient_people', 'recipient_organizations', 'recipient_text', 'type_of_question', 'timestamp', 'answer_timestamp']
+    readonly_fields = ['created_at', 'updated_at']
 
 
 class DocumentAdmin(admin.ModelAdmin):
     list_display = ['name', 'file_url']
     list_filter = ()
+
+    readonly_fields = ['created_at', 'updated_at']
 
     def file_url(self, obj):
         return obj.file.url
@@ -45,12 +48,14 @@ class DocumentAdmin(admin.ModelAdmin):
 class ContactAdmin(admin.ModelAdmin):
     list_display = ('id', 'value')
     search_fields = ['value']
+    readonly_fields = ['created_at', 'updated_at']
 
 
 class EducationLevelAdmin(SortableAdminMixin, admin.ModelAdmin):
     ordering = ('order',)
     list_display = ('id', 'text')
     search_fields = ['text']
+    readonly_fields = ['created_at', 'updated_at']
 
 # class PersonEducation(Person):
 #     class Meta:
@@ -68,6 +73,7 @@ class BallotAdmin(admin.ModelAdmin):
     autocomplete_fields = ['personvoter', 'orgvoter', 'vote']
     list_filter = ('vote',)
     list_editable = ['option']
+    readonly_fields = ['created_at', 'updated_at']
 
 
 admin.site.register(Task)

@@ -19,5 +19,6 @@ class AgendaItemAdmin(admin.ModelAdmin):
     list_filter = (SessionListFilter,)
     search_fields = ['name', 'session__name']
     autocomplete_fields = ['session']
+    readonly_fields = ['created_at', 'updated_at']
 
 admin.site.register(AgendaItem, AgendaItemAdmin)
