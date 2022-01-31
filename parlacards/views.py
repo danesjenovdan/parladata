@@ -1,3 +1,5 @@
+from django.db.models import Q
+
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -557,8 +559,7 @@ class LastSession(CardView):
             # the_thing is the parent organization,
             # we should check if any sessions exist
             if the_thing.sessions.filter(
-                speeches__isnull=False,
-                motions__isnull=False
+                Q(speeches__isnull=False) | Q(motions__isnull=False)
             ).count() > 0:
                 return Response(self.get_serializer_data(request, the_thing))
 

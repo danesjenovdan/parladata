@@ -176,6 +176,7 @@ def add_ballots(request):
         people_against = dict(form.data).get('people_against', [])
         people_abstain = dict(form.data).get('people_abstain', [])
         people_absent = dict(form.data).get('people_absent', [])
+        people_did_not_vote = dict(form.data).get('people_did_not_vote', [])
         confirmed = dict(form.data)['confirmed'][0]
         edit = dict(form.data)['edit'][0]
 
@@ -187,9 +188,9 @@ def add_ballots(request):
         # for person in absent_people:
         #     Ballot(vote=v, personvoter=person,option='absent').save()
 
-        if people_for or people_against or people_abstain or people_absent:
+        if people_for or people_against or people_abstain or people_absent or people_did_not_vote:
             root_org = Mandate.objects.last().query_root_organizations(timestamp=vote.timestamp)[1]
-            people_with_ballots = people_for + people_against + people_abstain + people_absent
+            people_with_ballots = people_for + people_against + people_abstain + people_absent + people_did_not_vote
             all_members = root_org.query_members_by_role(role='voter', timestamp=vote.timestamp)
             auto_absent_people = all_members.exclude(id__in=people_with_ballots)
             print(confirmed, type(confirmed))
@@ -199,7 +200,8 @@ def add_ballots(request):
                     'for': people_for,
                     'against': people_against,
                     'abstain': people_abstain,
-                    'absent': people_absent + auto_absent_people_ids
+                    'absent': people_absent + auto_absent_people_ids,
+                    'did not vote': people_did_not_vote,
                 }
                 for option, people in options.items():
                     print(option, people)
@@ -214,7 +216,7 @@ def add_ballots(request):
                 return redirect(reverse("admin:parladata_vote_changelist"))
 
             ballots = []
-            people_with_ballots = people_for + people_against + people_abstain + people_absent
+            people_with_ballots = people_for + people_against + people_abstain + people_absent + people_did_not_vote
             duplicates = [item for item, count in collections.Counter(people_with_ballots).items() if count > 1]
             duplicated = Person.objects.filter(id__in=duplicates)
             confirm = False
@@ -234,6 +236,7 @@ def add_ballots(request):
                         'people_against': Person.objects.filter(id__in=people_against),
                         'people_abstain': Person.objects.filter(id__in=people_abstain),
                         'people_absent': Person.objects.filter(id__in=people_absent),
+                        'people_did_not_vote': Person.objects.filter(id__in=people_did_not_vote),
                         'people_without_ballot': auto_absent_people,
                         'sum': len(people_with_ballots),
                         'duplicated': duplicated
