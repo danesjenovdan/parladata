@@ -155,40 +155,6 @@ class PersonBallotCardSerializer(PersonScoreCardSerializer):
         }
 
 
-class PersonQuestionCardSerializer(PersonScoreCardSerializer):
-    def get_results(self, obj):
-        # obj is the person
-        questions = Question.objects.filter(
-            person_authors=obj,
-            timestamp__lte=self.context['date']
-        ).order_by(
-            '-timestamp'
-        ).annotate(
-            date=TruncDay('timestamp')
-        )
-
-        dates_to_serialize = set(questions.values_list('date', flat=True))
-
-        # this is ripe for optimization
-        # currently iterates over all questions
-        # for every date
-        grouped_questions_to_serialize = [
-            {
-                'date': date,
-                'events': questions.filter(
-                    date=date
-                )
-            } for date in dates_to_serialize
-        ]
-
-        serializer = DailyActivitySerializer(
-            grouped_questions_to_serialize,
-            many=True,
-            context=self.context
-        )
-        return serializer.data
-
-
 class PersonMembershipCardSerializer(PersonScoreCardSerializer):
     def get_results(self, person):
         # do not show memberships in root organization or parties

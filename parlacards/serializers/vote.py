@@ -97,7 +97,7 @@ class VoteGroupSerializer(CommonCachableSerializer):
         }
         return {
             key: group_votes_params.get(key, 0) for
-            key in ['absent', 'abstain', 'for', 'against'] # TODO get this from global var
+            key in [option[0] for option in Ballot.OPTIONS]
         }
 
     def get_group(self, group):
