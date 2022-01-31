@@ -36,6 +36,7 @@ class OrganizationAdmin(admin.ModelAdmin):
     # set order of fields in the dashboard
     # fields = ['name', 'acronym', 'email', 'classification', 'parser_names', 'gov_id', 'parent', 'founding_date', 'dissolution_date', 'description', 'color', 'tags']
     fields = ['classification', 'parser_names', 'gov_id', 'parent', 'founding_date', 'dissolution_date', 'description', 'color', 'tags']
+    readonly_fields = ['created_at', 'updated_at']
 
 
 class ParliamentaryGroup(Organization):
