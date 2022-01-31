@@ -1,3 +1,5 @@
+from django.db.models import Q
+
 from rest_framework import serializers
 
 from parladata.models import Vote
@@ -17,16 +19,13 @@ from parlacards.serializers.cards.session.tfidf import SessionTfidfCardSerialize
 from parlacards.pagination import create_paginator
 
 class MiscLastSessionCardSerializer(CardSerializer):
-    def get_last_session(self, obj):
-        # obj is the parent organization
-        return obj.sessions.filter(
-            speeches__isnull=False,
-            motions__isnull=False
+    def get_last_session(self, organization):
+        return organization.sessions.filter(
+            Q(speeches__isnull=False) | Q(motions__isnull=False),
         ).distinct('id', 'start_time').latest('start_time')
 
-    def get_results(self, obj):
-        # obj is the parent organization
-        last_session = self.get_last_session(obj)
+    def get_results(self, organization):
+        last_session = self.get_last_session(organization)
 
         # tfidf
         tfidf_serializer = SessionTfidfCardSerializer(
@@ -83,9 +82,8 @@ class MiscLastSessionCardSerializer(CardSerializer):
             },
         }
 
-    def get_session(self, obj):
-        # obj is the parent organization
-        session = self.get_last_session(obj)
+    def get_session(self, organization):
+        session = self.get_last_session(organization)
         serializer = SessionSerializer(
             session,
             context=self.context
