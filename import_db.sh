@@ -34,7 +34,7 @@ sleep 5
 
 echo
 echo "LOADING DB INTO CONTAINER"
-sudo docker-compose exec db psql -U postgres parladata < 'db.dump'
+sudo docker container exec -i $(sudo docker-compose ps -q db) psql -U postgres parladata < db.dump
 
 sudo docker-compose down
 

@@ -2,6 +2,7 @@ from django.db import models
 
 from parladata.behaviors.models import Timestampable, Taggable
 from parladata.models.memberships import PersonMembership
+from parladata.models.ballot import Ballot
 
 class Vote(Timestampable, Taggable):
     """Votings which taken place in parlament."""
@@ -91,7 +92,7 @@ class Vote(Timestampable, Taggable):
         # we need this to also show zeroes
         return {
             key: option_counts.get(key, 0) for
-            key in ['absent', 'abstain', 'for', 'against'] # TODO get this from global var
+            key in [option[0] for option in Ballot.OPTIONS]
         }
 
     def get_stats(self, gov_side=None):
