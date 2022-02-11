@@ -13,7 +13,7 @@ env = dict(
     DATABASE_PASSWORD=os.getenv('DJANGO_DATABASE_PASSWORD', 'postgres'),
     STATIC_ROOT=os.getenv('DJANGO_STATIC_ROOT', os.path.join(BASE_DIR, '../static')),
     STATIC_URL=os.getenv('DJANGO_STATIC_URL_BASE', '/static/'),
-    MEDIA_ROOT=os.getenv('DJANGO_MEDIA_ROOT', '/media/'),
+    MEDIA_ROOT=os.getenv('DJANGO_MEDIA_ROOT', os.path.join(BASE_DIR, '../media')),
     MEDIA_URL=os.getenv('DJANGO_MEDIA_URL_BASE', '/media/'),
     SOLR_URL=os.getenv('PARLAMETER_SOLR_URL', ''),
     ER_API_KEY=os.getenv('EVENTREGISTRY_API_KEY', '')
@@ -67,6 +67,11 @@ BASE_URL = os.getenv('DJANGO_BASE_URL', 'http://localhost:8000')
 
 # static files for development
 #STATIC_URL = '/static/'
+
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, '../static_files')
+]
+
 STATIC_ROOT = env['STATIC_ROOT']
 
 # static files for production
