@@ -76,7 +76,8 @@ class Command(BaseCommand):
         output = []
         for i, law in enumerate(legislation):
             output.append({
-                'term': law.session.mandate.id,
+                # WORKAROUND if law has not session then set mandat to 1
+                'term': law.session.mandate.id if law.session else 1,
                 'type': 'law',
                 'id': 'law_' + str(law.id),
                 'law_id': law.id,
