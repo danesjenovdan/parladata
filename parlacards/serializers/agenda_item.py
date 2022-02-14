@@ -2,6 +2,7 @@ from rest_framework import serializers
 from django.db.models import Q
 
 from parladata.models.agenda_item import AgendaItem
+from parladata.models.link import Link
 
 from parlacards.serializers.common import CommonCachableSerializer, CommonSerializer
 
@@ -30,7 +31,8 @@ class AgendaItemsSerializer(CommonCachableSerializer):
     def calculate_cache_key(self, instance):
         # instance is the session
         timestamp = instance.updated_at
-        last_document = instance.links.all().order_by("updated_at").last()
+
+        last_document = Link.objects.filter(agenda_item__session=instance).order_by("updated_at").last()
         if last_document:
             timestamp = max([timestamp, last_document.updated_at])
         return f'AgendaItemSerializer{instance.id}_{timestamp.strftime("%Y-%m-%dT%H:%M:%S")}'
