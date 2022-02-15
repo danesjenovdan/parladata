@@ -1,5 +1,6 @@
 from django.contrib import admin
 from django.db import models
+from adminsortable2.admin import SortableAdminMixin
 
 from parladata.models import Medium, MediaReport
 
@@ -11,7 +12,7 @@ from parladata.models import Medium, MediaReport
 #     extra = 0
 
 
-class MediumAdmin(admin.ModelAdmin):
+class MediumAdmin(SortableAdminMixin, admin.ModelAdmin):
     # inlines = (MediaReportInline,)
     list_display = ('name', 'url', 'active',)
     search_fields = ('name', 'url',)
