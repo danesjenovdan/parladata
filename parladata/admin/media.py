@@ -24,6 +24,13 @@ class MediaReportAdmin(admin.ModelAdmin):
     search_fields = ('title',)
     list_filter = ('medium__name', 'report_date')
     readonly_fields = ['created_at', 'updated_at']
+    autocomplete_fields = [
+        'mentioned_people',
+        'mentioned_organizations',
+        'mentioned_legislation',
+        'mentioned_motions',
+        'mentioned_votes',
+    ]
 
 
 admin.site.register(Medium, MediumAdmin)
