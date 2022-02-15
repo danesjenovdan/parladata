@@ -77,6 +77,12 @@ class Question(Timestampable):
         choices=QUESTION_TYPES,
     )
 
+    gov_id =models.TextField(
+        blank=True,
+        null=True,
+        help_text='Unique identifier of question on government site.'
+    )
+
     def __str__(self):
         person_author_names = " ".join([author.name for author in self.person_authors.all()])
         organization_author_names = " ".join([author.name for author in self.organization_authors.all()])
