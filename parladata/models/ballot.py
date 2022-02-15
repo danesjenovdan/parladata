@@ -1,4 +1,5 @@
 from django.db import models
+from django.core.exceptions import ValidationError
 
 from parladata.behaviors.models import Timestampable
 
@@ -45,14 +46,18 @@ class Ballot(Timestampable):
     def voter(self):
         if self.personvoter and self.orgvoter:
             raise Exception(f'Both personvoter and orgvoter are set for this ballot (id {self.id}). Something is wrong.')
-        
+
         if self.personvoter:
             return self.personvoter
-        
+
         if self.orgvoter:
             return self.orgvoter
-        
+
         raise Exception('No voter is set (neither personvoter or orgvoter).')
 
     def __str__(self):
         return self.voter.name
+
+    def clean(self):
+        if self.personvoter and self.orgvoter:
+            raise ValidationError("The ballot should have only one of personvoter or orgvoter filled field.")

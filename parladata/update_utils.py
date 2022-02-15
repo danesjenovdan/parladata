@@ -74,15 +74,17 @@ def notify_editors_for_new_data():
 
     new_motions = Motion.objects.filter(created_at__gte=yeterday)
     new_speeches = Speech.objects.filter(created_at__gte=yeterday)
-    editor_group = Group.objects.filter(name__icontains="editor").first()
+    editor_permission_group = Group.objects.filter(name__icontains="editor").first()
     sessions = [speech.session for  speech in new_speeches.distinct('session')]
     new_people = Person.objects.filter(created_at__gte=yeterday)
     new_voters = Person.objects.filter(ballots__isnull=False, person_memberships__isnull=True).distinct('id')
 
     new_votes_need_editing = Vote.objects.filter(created_at__gte=yeterday, needs_editing=True)
 
+    assert bool(editor_permission_group), 'There\'s no editor permission group'
+
     if new_motions or new_speeches or new_people:
-        for editor in editor_group.user_set.all():
+        for editor in editor_permission_group.user_set.all():
             send_email(
                 _('New data for edit in parlameter'),
                 editor.email,
