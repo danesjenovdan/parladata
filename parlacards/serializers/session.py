@@ -8,6 +8,11 @@ class SessionSerializer(CommonCachableSerializer):
         session_timestamp = instance.updated_at
         organization_timestamps = instance.organizations.all().values_list('updated_at', flat=True)
         timestamp = max([session_timestamp] + list(organization_timestamps))
+
+        last_speech = instance.speeches.all().order_by("updated_at").last()
+        if last_speech:
+            timestamp = max([timestamp, last_speech.updated_at])
+
         return f'SessionSerializer_{instance.id}_{timestamp.strftime("%Y-%m-%dT%H:%M:%S")}'
 
     def get_has_transcript(self, obj):
