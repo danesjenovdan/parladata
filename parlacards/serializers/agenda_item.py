@@ -3,9 +3,10 @@ from django.db.models import Q
 
 from parladata.models.agenda_item import AgendaItem
 from parladata.models.link import Link
+from parladata.models.vote import Vote
 
 from parlacards.serializers.common import CommonCachableSerializer, CommonSerializer
-
+from parlacards.serializers.vote import SpeechVoteSerializer
 from parlacards.serializers.tag import TagSerializer
 from parlacards.serializers.link import LinkSerializer
 
@@ -25,6 +26,25 @@ class AgendaItemSerializer(CommonSerializer):
             links,
             many=True
         ).data
+
+
+class MinutesAgendaItemSerializer(CommonCachableSerializer):
+    id = serializers.IntegerField()
+    name = serializers.CharField()
+    order = serializers.IntegerField()
+    text = serializers.CharField()
+    votes = serializers.SerializerMethodField()
+
+    def calculate_cache_key(self, agenda_item):
+        timestamp = agenda_item.updated_at
+        last_vote = Vote.objects.filter(motion__agenda_items=agenda_item).order_by("updated_at").last()
+        if last_vote:
+            timestamp = max([timestamp, last_vote.updated_at])
+        return f'MinutesAgendaItemSerializer_{agenda_item.id}_{timestamp.strftime("%Y-%m-%dT%H:%M:%S")}'
+
+    def get_votes(self, agenda_item):
+        votes = Vote.objects.filter(motion__agenda_items=agenda_item)
+        return SpeechVoteSerializer(votes, many=True).data
 
 
 class AgendaItemsSerializer(CommonCachableSerializer):
