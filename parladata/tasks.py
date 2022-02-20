@@ -38,21 +38,21 @@ def merge_people(real_person_id, fake_person_ids, print_method=print):
             speech.save()
         print_method('Done with moving.')
 
-    print_method(f'Real person is author of {real_person.person_authors.all().count()} questions.')
+    print_method(f'Real person is author of {real_person.authored_questions.all().count()} questions.')
     for fake_person in fake_people:
-        print_method(f'Fake person {fake_person.id} is author of {fake_person.person_authors.all().count()} questions.')
+        print_method(f'Fake person {fake_person.id} is author of {fake_person.authored_questions.all().count()} questions.')
         print_method('Moving questions to real person...')
-        for question in fake_person.person_authors.all():
+        for question in fake_person.authored_questions.all():
             question.person_authors.remove(fake_person)
             question.person_authors.add(real_person)
             question.save()
         print_method('Done with moving.')
 
-    print_method(f'Real person is recipient of {real_person.recipient_people.all().count()} questions.')
+    print_method(f'Real person is recipient of {real_person.received_questions.all().count()} questions.')
     for fake_person in fake_people:
-        print_method(f'Fake person {fake_person.id} is recipient of {fake_person.recipient_people.all().count()} questions.')
+        print_method(f'Fake person {fake_person.id} is recipient of {fake_person.received_questions.all().count()} questions.')
         print_method('Moving questions to real person...')
-        for question in fake_person.recipient_people.all():
+        for question in fake_person.received_questions.all():
             question.recipient_people.remove(fake_person)
             question.recipient_people.add(real_person)
             question.save()
