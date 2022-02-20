@@ -55,6 +55,7 @@ urlpatterns = [
     path('session/single/', SingleSession.as_view()),
     path('session/tfidf/', SessionTfidfView.as_view()),
     path('session/agenda-items/', SessionAgendaItemsView.as_view()),
+    path('session/minutes/', SessionMinutesView.as_view()),
 
     path('speech/single/', SingleSpeech.as_view()),
     path('speech/quote/', SpeechQuote.as_view()),
