@@ -10,6 +10,7 @@ from django.db.models.functions import TruncDay
 
 from rest_framework import serializers
 
+from parladata.models.agenda_item import AgendaItem
 from parladata.models.ballot import Ballot
 from parladata.models.versionable_properties import PersonPreferredPronoun
 from parladata.models.media import MediaReport
@@ -56,7 +57,7 @@ from parlacards.serializers.vote import VoteSerializer, SessionVoteSerializer, B
 from parlacards.serializers.tfidf import TfidfSerializer
 from parlacards.serializers.facets import GroupFacetSerializer, PersonFacetSerializer
 from parlacards.serializers.question import QuestionSerializer
-from parlacards.serializers.agenda_item import AgendaItemsSerializer
+from parlacards.serializers.agenda_item import AgendaItemsSerializer, MinutesAgendaItemSerializer
 from parlacards.serializers.common import (
     CardSerializer,
     PersonScoreCardSerializer,
@@ -797,6 +798,34 @@ class SessionAgendaItemCardSerializer(SessionScoreCardSerializer):
             context=self.context
         )
         return serializer.data
+
+
+class SessionMinutesCardSerializer(SessionScoreCardSerializer):
+    def get_results(self, session):
+        # this is implemeted in to_representation for pagination
+        return None
+
+    def to_representation(self, session):
+        parent_data = super().to_representation(session)
+
+        agenda_items = AgendaItem.objects.filter(
+            Q(datetime__lte=self.context['date']) | Q(datetime__isnull=True),
+            session=session,
+        ).order_by('order')
+
+        paged_object_list, pagination_metadata = create_paginator(self.context.get('GET', {}), agenda_items)
+
+        minutes_serializer = MinutesAgendaItemSerializer(
+            paged_object_list,
+            many=True,
+            context=self.context
+        )
+
+        return {
+            **parent_data,
+            **pagination_metadata,
+            'results': minutes_serializer.data,
+        }
 
 
 class SessionSpeechesCardSerializer(SessionScoreCardSerializer):
