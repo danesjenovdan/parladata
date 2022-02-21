@@ -11,6 +11,7 @@ class LawAdmin(admin.ModelAdmin):
     list_filter = ('session',)
     search_fields = ('text',)
     readonly_fields = ['created_at', 'updated_at']
+    list_per_page = 20
 
 
 class ProcedureAdmin(admin.ModelAdmin):
