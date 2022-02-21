@@ -12,6 +12,7 @@ from parladata.models.session import Session
 from parladata.models.speech import Speech
 from parladata.models.vote import Vote
 from parladata.models.legislation import Law
+from parladata.models.agenda_item import AgendaItem
 
 from parlacards.models import Quote
 
@@ -74,6 +75,7 @@ from parlacards.serializers.cards import (
     QuoteCardSerializer,
     RootGroupBasicInfoCardSerializer,
     SessionMinutesCardSerializer,
+    SingleMinutesCardSerializer,
 )
 from parlacards.serializers.speech import SpeechSerializer
 from parlacards.serializers.quote import QuoteSerializer
@@ -424,6 +426,11 @@ class SingleVote(CardView):
 class SingleLegislation(CardView):
     thing = Law
     card_serializer = LegislationDetailCardSerializer
+
+
+class SingleMinutes(CardView):
+    thing = AgendaItem
+    card_serializer = SingleMinutesCardSerializer
 
 
 class PersonTfidfView(CardView):
