@@ -73,6 +73,7 @@ from parlacards.serializers.cards import (
     SessionAgendaItemCardSerializer,
     QuoteCardSerializer,
     RootGroupBasicInfoCardSerializer,
+    SessionMinutesCardSerializer,
 )
 from parlacards.serializers.speech import SpeechSerializer
 from parlacards.serializers.quote import QuoteSerializer
@@ -445,6 +446,11 @@ class SessionAgendaItemsView(CardView):
     card_serializer = SessionAgendaItemCardSerializer
 
 
+class SessionMinutesView(CardView):
+    thing = Session
+    card_serializer = SessionMinutesCardSerializer
+
+
 class GroupMostVotesInCommon(CardView):
     '''
     A group's most equal voters.
@@ -551,7 +557,7 @@ class LastSession(CardView):
     # TODO consider refactoring this
     # overriding because even if the parent organization
     # exists (which is the "thing" we supply the id of)
-    # the session might not (new, empty installation) we 
+    # the session might not (new, empty installation) we
     # should return 404 if the session does not exist
     def get(self, request, format=None):
         # if the thing with id exists return serialized data
