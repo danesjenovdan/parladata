@@ -27,8 +27,13 @@ class Medium(Timestampable):
         default=True,
     )
 
+    order = models.PositiveIntegerField(default=1)
+
     def __str__(self):
         return self.name
+
+    class Meta(object):
+        ordering = ['order']
 
 
 class MediaReport(Timestampable):
