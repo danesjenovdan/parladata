@@ -12,6 +12,7 @@ class MembershipAdmin(admin.ModelAdmin):
     list_filter = ['role', AllOrganizationsListFilter, AllOnBehalfOfListFilter]
     search_fields = ['member__personname__value', 'role', 'on_behalf_of__organizationname__value', 'organization__organizationname__value']
     autocomplete_fields = ('member', 'organization', 'on_behalf_of')
+    list_display = ['member__personname__value', 'organization__organizationname__value', 'role', 'start_time', 'end_time']
 
     # set order of fields in the dashboard
     fields = ['member', 'role', 'organization', 'on_behalf_of', 'start_time', 'end_time', 'mandate']
