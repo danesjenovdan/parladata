@@ -6,6 +6,7 @@ from parlacards.serializers.common import CommonSerializer
 class MediumSerializer(CommonSerializer):
     name = serializers.CharField()
     url = serializers.CharField()
+    order = serializers.IntegerField()
 
 
 class MediaReportSerializer(CommonSerializer):
