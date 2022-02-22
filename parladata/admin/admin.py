@@ -75,7 +75,7 @@ class BallotAdmin(admin.ModelAdmin):
     list_editable = ['option']
     readonly_fields = ['created_at', 'updated_at']
 
-
+admin.site.site_header = 'Parladata'
 admin.site.register(Task)
 admin.site.register(Ballot, BallotAdmin)
 admin.site.register(Question, QuestionAdmin)

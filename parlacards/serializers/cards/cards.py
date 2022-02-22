@@ -57,7 +57,7 @@ from parlacards.serializers.vote import VoteSerializer, SessionVoteSerializer, B
 from parlacards.serializers.tfidf import TfidfSerializer
 from parlacards.serializers.facets import GroupFacetSerializer, PersonFacetSerializer
 from parlacards.serializers.question import QuestionSerializer
-from parlacards.serializers.agenda_item import AgendaItemsSerializer, MinutesAgendaItemSerializer
+from parlacards.serializers.agenda_item import AgendaItemsSerializer, MinutesAgendaItemSerializer, MinutesAgendaItemWithSessionSerializer
 from parlacards.serializers.common import (
     CardSerializer,
     PersonScoreCardSerializer,
@@ -826,6 +826,15 @@ class SessionMinutesCardSerializer(SessionScoreCardSerializer):
             **pagination_metadata,
             'results': minutes_serializer.data,
         }
+
+
+class SingleMinutesCardSerializer(CardSerializer):
+    def get_results(self, agenda_item):
+        serializer = MinutesAgendaItemWithSessionSerializer(
+            agenda_item,
+            context=self.context
+        )
+        return serializer.data
 
 
 class SessionSpeechesCardSerializer(SessionScoreCardSerializer):
