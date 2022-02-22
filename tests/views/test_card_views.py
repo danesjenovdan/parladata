@@ -268,8 +268,18 @@ def test_session_agenda_items():
     assert response.status_code == 200
 
 @pytest.mark.django_db()
+def test_session_minutes():
+    response = client.get('/v3/cards/session/minutes/?id=1')
+    assert response.status_code == 200
+
+@pytest.mark.django_db()
 def test_single_law():
     response = client.get('/v3/cards/legislation/single/?id=1')
+    assert response.status_code == 200
+
+@pytest.mark.django_db()
+def test_single_minutes():
+    response = client.get('/v3/cards/minutes/single/?id=1')
     assert response.status_code == 200
 
 # TODO: needs settings.SOLR_URL
