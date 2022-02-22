@@ -89,3 +89,7 @@ class Speech(Versionable, Timestampable, Taggable):
     @property
     def parliamentary_group(self):
         return self.speaker.parliamentary_group_on_date(datetime=self.start_time)
+
+    class Meta:
+        verbose_name_plural = "Speeches"
+
