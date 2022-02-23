@@ -543,9 +543,10 @@ class LegislationCardSerializer(CardSerializer):
         text_filter = self.context.get('GET', {}).get('text', '')
         order = self.context.get('GET', {}).get('order_by', '-timestamp')
 
+        # TODO remove Q(session__mandate=mandate) after legislation refatoring
         legislation = Law.objects.filter(
             Q(timestamp__lte=self.context['date']) | Q(timestamp__isnull=True),
-            session__mandate=mandate,
+            Q(session__mandate=mandate) | Q(legislationconsideration__session__mandate=mandate),
             text__icontains=text_filter,
         ).order_by(order)
 
