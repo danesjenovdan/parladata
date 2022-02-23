@@ -13,6 +13,7 @@ class LawAdmin(admin.ModelAdmin):
     search_fields = ('text',)
     readonly_fields = ['created_at', 'updated_at']
     list_per_page = 20
+    autocomplete_fields = ('session', 'mdt_fk', 'status', 'classification', 'considerations')
 
 
 class ProcedureAdmin(admin.ModelAdmin):
@@ -33,6 +34,7 @@ class LegislationConsiderationAdmin(admin.ModelAdmin):
     list_display = ('legislation', 'procedure_phase', 'timestamp')
     autocomplete_fields = ('legislation', 'organization', 'session', 'procedure_phase')
     readonly_fields = ['created_at', 'updated_at']
+    search_fields = ('procedure_phase__name',)
 
 
 class LegislationStatusAdmin(admin.ModelAdmin):
