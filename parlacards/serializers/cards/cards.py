@@ -543,12 +543,12 @@ class LegislationCardSerializer(CardSerializer):
         text_filter = self.context.get('GET', {}).get('text', '')
         order = self.context.get('GET', {}).get('order_by', '-timestamp')
 
-        # TODO remove Q(session__mandate=mandate) after legislation refatoring
+        # TODO remove Q(session__mandate=mandate) after legislation refatoringyy
         legislation = Law.objects.filter(
             Q(timestamp__lte=self.context['date']) | Q(timestamp__isnull=True),
             Q(session__mandate=mandate) | Q(legislationconsideration__session__mandate=mandate),
             text__icontains=text_filter,
-        ).order_by(order)
+        ).order_by('id', order).distinct('id')
 
         # check if classification is present in the GET parameter
         # classifications should be comma-separated
