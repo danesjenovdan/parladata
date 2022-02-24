@@ -2,14 +2,14 @@ from django.contrib import admin
 
 from parladata.admin.link import *
 from parladata.models import *
-from parladata.admin.filters import AllOrganizationsListFilter, AllOnBehalfOfListFilter
+from parladata.admin.filters import AllOrganizationsListFilter, AllOnBehalfOfListFilter, MembershipMembersListFilter
 
 
 class MembershipAdmin(admin.ModelAdmin):
     inlines = [
         LinkMembershipInline,
     ]
-    list_filter = ['role', AllOrganizationsListFilter, AllOnBehalfOfListFilter]
+    list_filter = ['role', MembershipMembersListFilter, AllOrganizationsListFilter, AllOnBehalfOfListFilter]
     search_fields = ['member__personname__value', 'role', 'on_behalf_of__organizationname__value', 'organization__organizationname__value']
     autocomplete_fields = ('member', 'organization', 'on_behalf_of')
     list_display = ['member_name', 'organization_name', 'role', 'start_time', 'end_time']
