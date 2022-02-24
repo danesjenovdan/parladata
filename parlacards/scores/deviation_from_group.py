@@ -82,7 +82,8 @@ def calculate_deviation_from_group(person, playing_field, timestamp=datetime.now
     parliamentary_group = voter_membership.on_behalf_of
 
     if not parliamentary_group:
-        raise ValueError(f'{voter_membership} is missing `on_behalf_of` at {timestamp}.')
+        # voter membership without on_behalf_of means that this is unaffiliated member
+        return 0
 
     relevant_people_ids = PersonMembership.objects.filter(
         Q(start_time__lte=timestamp) | Q(start_time__isnull=True),
