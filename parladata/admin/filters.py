@@ -30,6 +30,12 @@ class MembersListFilter(admin.SimpleListFilter):
         return queryset
 
 
+class MembershipMembersListFilter(MembersListFilter):
+    def queryset(self, request, queryset):
+        if self.value():
+            return queryset.filter(member_id=self.value())
+        return queryset
+
 class MembersAndLeaderListFilter(admin.SimpleListFilter):
     title = 'member_or_leader'
 
@@ -76,7 +82,7 @@ class OrganizationsListFilter(admin.SimpleListFilter):
         list_of_groups = []
         queryset = PersonMembership.valid_at(datetime.now()).prefetch_related('on_behalf_of__organizationname__value').filter(
             role='voter'
-        ).order_by('on_behalf_of', 'on_behalf_of__organizationname__value').distinct('on_behalf_of').values('on_behalf_of_id', 'on_behalf_of__organizationname__value')
+        ).exclude(on_behalf_of=None).order_by('on_behalf_of', 'on_behalf_of__organizationname__value').distinct('on_behalf_of').values('on_behalf_of_id', 'on_behalf_of__organizationname__value')
 
         for group in queryset:
             list_of_groups.append(
@@ -155,7 +161,7 @@ class AllOrganizationsListFilter(admin.SimpleListFilter):
         return queryset
 
 
-class AllOnBehalfOfListFilter(AllOrganizationsListFilter):
+class AllOnBehalfOfListFilter(OrganizationsListFilter):
     title = 'on_behalf_of'
     parameter_name = 'on_behalf_of'
 
