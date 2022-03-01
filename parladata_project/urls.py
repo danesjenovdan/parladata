@@ -7,7 +7,7 @@ from django.conf import settings
 import debug_toolbar
 from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, SpectacularSwaggerView
 
-from parladata.views import merge_people, add_ballots, merge_organizations
+from parladata.views import merge_people, add_ballots, add_anonymous_ballots, merge_organizations
 
 urlpatterns = [
     # authentication
@@ -17,6 +17,7 @@ urlpatterns = [
     path('admin/parladata/parliamentmember/mergepeople/', merge_people),
     path('admin/parladata/parliamentarygroup/mergeorganizations/', merge_organizations),
     path('admin/parladata/vote/addballots/', add_ballots),
+    path('admin/parladata/vote/addanonymousballots/', add_anonymous_ballots),
     path('admin/', admin.site.urls),
 
     # REST api

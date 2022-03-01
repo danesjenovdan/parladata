@@ -4,7 +4,7 @@ from django import forms
 from django.contrib import admin
 from django.urls import reverse
 
-from parladata.forms import MergePeopleForm, AddBallotsForm, MergeOrganizationsForm
+from parladata.forms import MergePeopleForm, AddBallotsForm, AddAnonymousBallotsForm, MergeOrganizationsForm
 from parladata.utils import make_person_merge_statistics, make_organization_merge_statistics
 from parladata.models.person import Person
 from parladata.models.ballot import Ballot
@@ -164,6 +164,7 @@ def merge_organizations(request):
 
 
 def add_ballots(request):
+    # TODO this dies if the vote doesn't have a date
     app_list = admin.site.get_app_list(request)
     if request.method == 'POST':
         vote_id = request.GET.get('vote_id', None)
@@ -189,7 +190,7 @@ def add_ballots(request):
         #     Ballot(vote=v, personvoter=person,option='absent').save()
 
         if people_for or people_against or people_abstain or people_absent or people_did_not_vote:
-            root_org = Mandate.objects.last().query_root_organizations(timestamp=vote.timestamp)[1]
+            root_org = Mandate.objects.last().query_root_organizations(timestamp=vote.timestamp)[1] # TODO this is horribly hardcoded
             people_with_ballots = people_for + people_against + people_abstain + people_absent + people_did_not_vote
             all_members = root_org.query_members_by_role(role='voter', timestamp=vote.timestamp)
             auto_absent_people = all_members.exclude(id__in=people_with_ballots)
@@ -267,6 +268,70 @@ def add_ballots(request):
     return render(
         request,
         'add_ballots.html',
+        {
+            'form': form,
+            'app_list': app_list,
+            'opts': {'app_label': 'parladata', 'app_config': {'verbose_name': 'vote'}}
+        }
+    )
+
+def add_anonymous_ballots(request):
+    # TODO this dies if the vote doesn't have a date
+    app_list = admin.site.get_app_list(request)
+    if request.method == 'POST':
+        vote_id = request.GET.get('vote_id', None)
+        vote = Vote.objects.get(id=vote_id)
+        if not vote:
+            return redirect(reverse("admin:parladata_vote_changelist"))
+        form = AddAnonymousBallotsForm(request.POST)
+        form.is_valid()
+        people_for = form.cleaned_data.get('people_for', 0)
+        people_against = form.cleaned_data.get('people_against', 0)
+        people_abstain = form.cleaned_data.get('people_abstain', 0)
+        people_absent = form.cleaned_data.get('people_absent', 0)
+        people_did_not_vote = form.cleaned_data.get('people_did_not_vote', 0)
+        edit = dict(form.data)['edit'][0]
+
+        if people_for or people_against or people_abstain or people_absent or people_did_not_vote:
+            root_org = Mandate.objects.last().query_root_organizations(timestamp=vote.timestamp)[1] # TODO this is horribly hardcoded
+            options = {
+                'for': people_for,
+                'against': people_against,
+                'abstain': people_abstain,
+                'absent': people_absent,
+                'did not vote': people_did_not_vote,
+            }
+            for option, people in options.items():
+                print(option, people)
+                Ballot.objects.bulk_create([
+                    Ballot(
+                        option=option,
+                        vote=vote
+                    )
+                    for i in range(people)
+                ])
+
+            return redirect(reverse("admin:parladata_vote_changelist"))
+
+        else:
+            form.clean()
+            print('cleand form')
+            return render(
+                request,
+                'add_anonymous_ballots.html',
+                {
+                    'form': form,
+                    'app_list': app_list,
+                    'opts': {'app_label': 'parladata', 'app_config': {'verbose_name': 'vote'}}
+                }
+            )
+
+    form = AddAnonymousBallotsForm()
+    print('empty form')
+
+    return render(
+        request,
+        'add_anonymous_ballots.html',
         {
             'form': form,
             'app_list': app_list,
