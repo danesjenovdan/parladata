@@ -82,3 +82,11 @@ class AddBallotsForm(forms.Form):
     people_abstain = UsersChoiceField(required=False)
     people_absent = UsersChoiceField(required=False)
     people_did_not_vote = UserChoiceField(required=False)
+
+class AddAnonymousBallotsForm(forms.Form):
+    edit = forms.BooleanField(widget=HiddenInput())
+    people_for = forms.IntegerField(required=True, initial=0)
+    people_against = forms.IntegerField(required=True, initial=0)
+    people_abstain = forms.IntegerField(required=True, initial=0)
+    people_absent = forms.IntegerField(required=True, initial=0)
+    people_did_not_vote = forms.IntegerField(required=True, initial=0)

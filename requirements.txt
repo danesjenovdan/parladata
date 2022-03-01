@@ -1,4 +1,4 @@
-Django==3.2.10
+Django==3.2.12
 django-autoslug
 psycopg2-binary
 djangorestframework
