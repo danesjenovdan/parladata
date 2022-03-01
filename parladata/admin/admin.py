@@ -69,13 +69,13 @@ class EducationLevelAdmin(SortableAdminMixin, admin.ModelAdmin):
 
 
 class BallotAdmin(admin.ModelAdmin):
-    list_display = ['personvoter', 'option', 'vote']
+    list_display = ['__str__', 'option', 'vote']
     autocomplete_fields = ['personvoter', 'orgvoter', 'vote']
     list_filter = ('vote',)
     list_editable = ['option']
     readonly_fields = ['created_at', 'updated_at']
 
-
+admin.site.site_header = 'Parladata'
 admin.site.register(Task)
 admin.site.register(Ballot, BallotAdmin)
 admin.site.register(Question, QuestionAdmin)

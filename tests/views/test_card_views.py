@@ -258,6 +258,21 @@ def test_single_vote():
     assert response.status_code == 200
 
 @pytest.mark.django_db()
+def test_single_vote_with_only_anonymous_ballots():
+    response = client.get('/v3/cards/vote/single/?id=37')
+    assert response.status_code == 200
+
+@pytest.mark.django_db()
+def test_single_vote_with_some_anonymous_ballots():
+    response = client.get('/v3/cards/vote/single/?id=36')
+    assert response.status_code == 200
+
+@pytest.mark.django_db()
+def test_single_vote_without_ballots():
+    response = client.get('/v3/cards/vote/single/?id=35')
+    assert response.status_code == 200
+
+@pytest.mark.django_db()
 def test_single_session():
     response = client.get('/v3/cards/session/single/?id=1')
     assert response.status_code == 200
