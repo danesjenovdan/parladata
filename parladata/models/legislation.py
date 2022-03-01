@@ -113,6 +113,8 @@ class ProcedurePhase(Timestampable):
         'Procedure',
         on_delete=models.CASCADE,
     )
+    def __str__(self):
+        return self.name
 
 
 class LegislationConsideration(Timestampable):
@@ -135,6 +137,11 @@ class LegislationConsideration(Timestampable):
     procedure_phase = models.ForeignKey(
         'ProcedurePhase',
         on_delete=models.CASCADE
+    )
+    session = models.ForeignKey('Session',
+        blank=True, null=True,
+        on_delete=models.CASCADE,
+        help_text='Session at which the legislation was discussed'
     )
 
 
