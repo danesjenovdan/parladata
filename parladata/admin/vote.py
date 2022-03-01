@@ -36,7 +36,7 @@ def clone_vote(modeladmin, request, queryset):
 class VoteAdmin(ExportMixin, admin.ModelAdmin):
     resource_class = VoteResource
 
-    list_display = ('id', 'name', 'the_tags', 'get_for', 'get_against', 'get_abstain', 'get_absent', 'get_did_not_vote', 'needs_editing', 'add_ballots')
+    list_display = ('name', 'id', 'the_tags', 'get_for', 'get_against', 'get_abstain', 'get_absent', 'get_did_not_vote', 'needs_editing', 'add_ballots', 'add_anonymous_ballots')
     # set order of fields in the dashboard
     fields = ['name', 'timestamp', 'motion', 'result', 'needs_editing', 'tags', 'get_session', 'get_statistics', 'edit_ballots', 'get_vote_pdf']
     readonly_fields = ['get_session', 'get_statistics', 'edit_ballots', 'get_vote_pdf', 'created_at', 'updated_at']
@@ -64,6 +64,11 @@ class VoteAdmin(ExportMixin, admin.ModelAdmin):
             return mark_safe(f'<a href="{url}"><input type="button" value="Add ballots" /></a>')
         else:
             return ''
+    
+    def add_anonymous_ballots(self, obj):
+        partial_url = '/admin/parladata/vote/addanonymousballots/'
+        url = f'{settings.BASE_URL}{partial_url}?vote_id={obj.id}'
+        return mark_safe(f'<a href="{url}"><input type="button" value="Add anonymous ballots" /></a>')
 
     def edit_ballots(self, obj):
         change_url = reverse('admin:parladata_ballot_changelist')
@@ -134,6 +139,8 @@ class VoteAdmin(ExportMixin, admin.ModelAdmin):
     the_tags.short_description = 'tags'
     add_ballots.allow_tags = True
     add_ballots.short_description = 'Add ballots'
+    add_anonymous_ballots.allow_tags = True
+    add_anonymous_ballots.short_description = 'Add anonymous ballots'
     edit_ballots.allow_tags = True
     edit_ballots.short_description = 'Edit ballots'
     get_vote_pdf.allow_tags = True
