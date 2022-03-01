@@ -57,7 +57,7 @@ from parlacards.serializers.vote import VoteSerializer, SessionVoteSerializer, B
 from parlacards.serializers.tfidf import TfidfSerializer
 from parlacards.serializers.facets import GroupFacetSerializer, PersonFacetSerializer
 from parlacards.serializers.question import QuestionSerializer
-from parlacards.serializers.agenda_item import AgendaItemsSerializer, MinutesAgendaItemSerializer
+from parlacards.serializers.agenda_item import AgendaItemsSerializer, MinutesAgendaItemSerializer, MinutesAgendaItemWithSessionSerializer
 from parlacards.serializers.common import (
     CardSerializer,
     PersonScoreCardSerializer,
@@ -543,11 +543,12 @@ class LegislationCardSerializer(CardSerializer):
         text_filter = self.context.get('GET', {}).get('text', '')
         order = self.context.get('GET', {}).get('order_by', '-timestamp')
 
+        # TODO remove Q(session__mandate=mandate) after legislation refatoringyy
         legislation = Law.objects.filter(
             Q(timestamp__lte=self.context['date']) | Q(timestamp__isnull=True),
-            session__mandate=mandate,
+            Q(session__mandate=mandate) | Q(legislationconsideration__session__mandate=mandate),
             text__icontains=text_filter,
-        ).order_by(order)
+        ).order_by('id', order).distinct('id')
 
         # check if classification is present in the GET parameter
         # classifications should be comma-separated
@@ -826,6 +827,15 @@ class SessionMinutesCardSerializer(SessionScoreCardSerializer):
             **pagination_metadata,
             'results': minutes_serializer.data,
         }
+
+
+class SingleMinutesCardSerializer(CardSerializer):
+    def get_results(self, agenda_item):
+        serializer = MinutesAgendaItemWithSessionSerializer(
+            agenda_item,
+            context=self.context
+        )
+        return serializer.data
 
 
 class SessionSpeechesCardSerializer(SessionScoreCardSerializer):
