@@ -14,13 +14,13 @@ def test_calculate_person_vote_attendance(
     last_person
 ):
     attendance = calculate_person_vote_attendance(first_person)
-    assert attendance == 91.89189189189189
+    assert attendance == 91.17647058823529
 
     attendance = calculate_person_vote_attendance(second_person)
     assert attendance == 0
 
     attendance = calculate_person_vote_attendance(last_person)
-    assert attendance == 89.1891891891892
+    assert attendance == 88.57142857142857
 
 
 @pytest.mark.django_db()
@@ -29,7 +29,7 @@ def test_calculate_group_vote_attendance(
     last_group
 ):
     attendance = calculate_group_vote_attendance(first_group)
-    assert attendance == 89.1891891891892
+    assert attendance == 88.23529411764706
 
     attendance = calculate_group_vote_attendance(last_group)
-    assert attendance == 97.05159705159706
+    assert attendance == 96.875

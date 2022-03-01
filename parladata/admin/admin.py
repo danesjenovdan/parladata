@@ -69,7 +69,7 @@ class EducationLevelAdmin(SortableAdminMixin, admin.ModelAdmin):
 
 
 class BallotAdmin(admin.ModelAdmin):
-    list_display = ['personvoter', 'option', 'vote']
+    list_display = ['__str__', 'option', 'vote']
     autocomplete_fields = ['personvoter', 'orgvoter', 'vote']
     list_filter = ('vote',)
     list_editable = ['option']
