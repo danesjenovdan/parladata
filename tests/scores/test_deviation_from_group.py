@@ -18,4 +18,4 @@ def test_calculate_deviation_from_group(
     assert deviation == 0
 
     deviation = calculate_deviation_from_group(last_person, main_organization)
-    assert deviation == 32.432432432432435
+    assert deviation == 34.285714285714285
