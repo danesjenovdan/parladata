@@ -19,6 +19,11 @@ from parlacards.scores.common import (
 # PERSON
 #
 def calculate_people_tfidf(playing_field, timestamp=datetime.now()):
+    '''
+    This function takes the playing field organization and an optional
+    timestamp which defaults to datetime.now() as parameters and
+    calculates each of the playing field's people TFIDF.
+    '''
     # TODO we should probably avoid casting
     # competitor_ids and leader_ids into list
     competitor_ids = list(
@@ -79,7 +84,7 @@ def calculate_people_tfidf(playing_field, timestamp=datetime.now()):
 
     tfidf = tfidfVectorizer.fit_transform(all_speeches)
 
-    feature_names = tfidfVectorizer.get_feature_names()
+    feature_names = tfidfVectorizer.get_feature_names_out()
 
     output = []
     for competitor_index, competitor_id in enumerate(competitor_ids):
@@ -160,7 +165,7 @@ def calculate_groups_tfidf(playing_field, timestamp=datetime.now()):
 
     tfidf = tfidfVectorizer.fit_transform(group_speeches)
 
-    feature_names = tfidfVectorizer.get_feature_names()
+    feature_names = tfidfVectorizer.get_feature_names_out()
 
     output = []
     for group_index, group_id in enumerate(groups.values_list('id', flat=True)):
@@ -210,6 +215,11 @@ def save_sparse_groups_tfidf_between(playing_field, datetime_from=datetime.now()
 # SESSION
 #
 def calculate_sessions_tfidf(playing_field, timestamp=datetime.now()):
+    '''
+    This function takes the playing field organization and an optional
+    timestamp which defaults to datetime.now() as parameters and
+    calculates each of the playing field's sessions' TFIDF.
+    '''
     # TODO this is very similar to calculate_people_tfidf
     # consider refactoring
     session_ids = Session.objects.filter(
@@ -247,7 +257,7 @@ def calculate_sessions_tfidf(playing_field, timestamp=datetime.now()):
 
     tfidf = tfidfVectorizer.fit_transform(all_speeches)
 
-    feature_names = tfidfVectorizer.get_feature_names()
+    feature_names = tfidfVectorizer.get_feature_names_out()
 
     output = []
     for session_index, session_id in enumerate(session_ids):
