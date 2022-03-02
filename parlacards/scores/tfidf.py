@@ -299,7 +299,7 @@ def save_session_tfidf_on_last_speech_date(playing_field, session):
 
     for tfidf in sessions_tfidf:
         for score in tfidf['tfidf']:
-            if tfidf['session_id'] == session.id:
+            if tfidf['session_id'] == session.id and score[1] > 0 and score[0] != '':
                 SessionTfidf(
                     session_id=tfidf['session_id'],
                     timestamp=timestamp,
@@ -315,7 +315,7 @@ def save_sessions_tfidf_on_last_speech_date(playing_field, sessions):
 
     for tfidf in sessions_tfidf:
         for score in tfidf['tfidf']:
-            if tfidf['session_id'] in session_ids:
+            if tfidf['session_id'] in session_ids and score[1] > 0 and score[0] != '':
                 SessionTfidf(
                     session_id=tfidf['session_id'],
                     timestamp=timestamp,
