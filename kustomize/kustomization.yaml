@@ -11,4 +11,4 @@ resources:
 images:
   - name: parladata-lendava
     newName: rg.fr-par.scw.cloud/djnd/parladata-lendava
-    newTag: '8885a940b7dfc84c7ae59776ce7a4db91f72f197'
+    newTag: 'a0a3106ee7aa596817080cf054479dfe10404a25'
