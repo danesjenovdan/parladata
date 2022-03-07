@@ -21,7 +21,7 @@ from parlacards.pagination import create_paginator
 class MiscLastSessionCardSerializer(CardSerializer):
     def get_last_session(self, organization):
         return organization.sessions.filter(
-            Q(speeches__isnull=False) | Q(motions__isnull=False),
+            Q(motions__isnull=False) | Q(sessiontfidf_related__isnull=False)
         ).distinct('id', 'start_time').latest('start_time')
 
     def get_results(self, organization):
