@@ -22,5 +22,8 @@ class AgendaItem(Timestampable, Taggable):
 
     text = MartorField(null=True, blank=True, verbose_name='Agenda item content')
 
+    class Meta:
+        ordering = ['order']
+
     def __str__(self):
         return (self.session.name if self.session else '') + ' -> ' + self.name
