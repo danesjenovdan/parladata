@@ -32,7 +32,7 @@ def test_stopwords():
         )
 
         tfidf = tfidfVectorizer.fit_transform(speeches[language_code])
-        feature_names = tfidfVectorizer.get_feature_names()
+        feature_names = tfidfVectorizer.get_feature_names_out()
 
         assert 'hvala' not in feature_names
         assert 'ena' not in feature_names
