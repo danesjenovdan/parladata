@@ -4,6 +4,8 @@ from django.db import models
 from parladata.models import AgendaItem, Link
 from parladata.admin.filters import SessionListFilter
 
+from adminsortable2.admin import SortableAdminMixin
+
 class LinkAgendaItemInline(admin.TabularInline):
     model = Link
     fk_name = 'agenda_item'
@@ -11,7 +13,7 @@ class LinkAgendaItemInline(admin.TabularInline):
     extra = 0
 
 
-class AgendaItemAdmin(admin.ModelAdmin):
+class AgendaItemAdmin(SortableAdminMixin, admin.ModelAdmin):
     inlines = [
         LinkAgendaItemInline
     ]
@@ -20,6 +22,7 @@ class AgendaItemAdmin(admin.ModelAdmin):
     search_fields = ['name', 'session__name']
     autocomplete_fields = ['session']
     readonly_fields = ['created_at', 'updated_at']
+    ordering = ('order',)
 
     class Media:
         css = {

@@ -20,7 +20,7 @@ class SessionAdmin(admin.ModelAdmin):
         # MotionSessionInline,
     ]
     search_fields = ['name']
-    list_display = ['id', 'name', 'tfidf', 'start_time']
+    list_display = ['id', 'name', 'tfidf', 'agenda_items', 'start_time']
     readonly_fields = ['created_at', 'updated_at']
 
     def tfidf(self, obj):
@@ -30,6 +30,14 @@ class SessionAdmin(admin.ModelAdmin):
 
     tfidf.allow_tags = True
     tfidf.short_description = 'TFIDF'
+
+    def agenda_items(self, obj):
+        partial_url = reverse('admin:parladata_agendaitem_changelist')
+        url = f'{settings.BASE_URL}{partial_url}?session__id__exact={obj.id}'
+        return mark_safe(f'<a href="{url}"><input type="button" value="Agenda items" /></a>')
+
+    agenda_items.allow_tags = True
+    agenda_items.short_description = 'Agenda items'
 
 
 admin.site.register(Session, SessionAdmin)
