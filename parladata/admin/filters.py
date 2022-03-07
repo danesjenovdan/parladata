@@ -149,9 +149,10 @@ class AllOrganizationsListFilter(admin.SimpleListFilter):
         queryset = Organization.objects.all().values('id', 'organizationname__value')
 
         for group in queryset:
-            list_of_groups.append(
-                (str(group['id']), group['organizationname__value'])
-            )
+            if group['organizationname__value']:
+                list_of_groups.append(
+                    (str(group['id']), group['organizationname__value'])
+                )
         return sorted(list_of_groups, key=lambda tp: tp[1])
 
     def queryset(self, request, queryset):
