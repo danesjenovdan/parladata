@@ -5,7 +5,7 @@ class Command(BaseCommand):
     help = 'Lemmatizes all speeches'
 
     def handle(self, *args, **options):
-        speeches = Speech.objects.all()
+        speeches = Speech.objects.filter(lemmatized_content=None)
         speech_count = speeches.count()
 
         print(f'Lemmatizing {speech_count} speeches ...')
