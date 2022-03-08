@@ -340,7 +340,7 @@ class RecentActivityCardSerializer(PersonScoreCardSerializer):
         grouped_events_to_serialize = [
             {
                 'date': date,
-                'events': filter(lambda event: event.date == date, events_to_serialize)
+                'events': list(filter(lambda event: event.date == date, events_to_serialize))
             } for date in dates_to_serialize
         ]
 
