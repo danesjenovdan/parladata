@@ -10,7 +10,10 @@ from parlacards.models import SessionGroupAttendance
 from parlacards.scores.common import get_dates_between, get_fortnights_between
 
 
-def calculate_session_vote_attendance(session, group, timestamp=datetime.now()):
+def calculate_session_vote_attendance(session, group, timestamp=None):
+    if not timestamp:
+        timestamp = datetime.now()
+
     memberships = group.query_memberships_before(timestamp)
     member_ids = memberships.values_list('member_id', flat=True).distinct('member_id')
 
@@ -62,7 +65,10 @@ def calculate_session_vote_attendance(session, group, timestamp=datetime.now()):
     else:
         return present_ballots * 100 / all_ballots
 
-def save_group_vote_attendance_on_session(session, group, playing_field, timestamp=datetime.now()):
+def save_group_vote_attendance_on_session(session, group, playing_field, timestamp=None):
+    if not timestamp:
+        timestamp = datetime.now()
+
     session_attendance = SessionGroupAttendance.objects.filter(
         session=session,
         group=group,
@@ -81,20 +87,36 @@ def save_group_vote_attendance_on_session(session, group, playing_field, timesta
             playing_field=playing_field,
         ).save()
 
-def save_groups_vote_attendance_on_session(session, playing_field, timestamp=datetime.now()):
+def save_groups_vote_attendance_on_session(session, playing_field, timestamp=None):
+    if not timestamp:
+        timestamp = datetime.now()
+
     groups = playing_field.query_parliamentary_groups(timestamp)
     for group in groups:
         save_group_vote_attendance_on_session(session, group, playing_field, timestamp)
 
-def save_groups_vote_attendance_on_sessions(playing_field, timestamp=datetime.now()):
+def save_groups_vote_attendance_on_sessions(playing_field, timestamp=None):
+    if not timestamp:
+        timestamp = datetime.now()
+
     sessions = playing_field.sessions.filter(start_time__lte=timestamp)
     for session in sessions:
         save_groups_vote_attendance_on_session(session, playing_field, timestamp)
 
-def save_groups_vote_attendance_on_session_between(playing_field, datetime_from=datetime.now(), datetime_to=datetime.now()):
+def save_groups_vote_attendance_on_session_between(playing_field, datetime_from=None, datetime_to=None):
+    if not datetime_from:
+        datetime_from = datetime.now()
+    if not datetime_to:
+        datetime_to = datetime.now()
+
     for day in get_dates_between(datetime_from, datetime_to):
         save_groups_vote_attendance_on_sessions(playing_field, timestamp=day)
 
-def save_sparse_groups_vote_attendance_on_session_between(playing_field, datetime_from=datetime.now(), datetime_to=datetime.now()):
+def save_sparse_groups_vote_attendance_on_session_between(playing_field, datetime_from=None, datetime_to=None):
+    if not datetime_from:
+        datetime_from = datetime.now()
+    if not datetime_to:
+        datetime_to = datetime.now()
+
     for day in get_fortnights_between(datetime_from, datetime_to):
         save_groups_vote_attendance_on_sessions(playing_field, timestamp=day)
