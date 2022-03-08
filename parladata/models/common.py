@@ -13,7 +13,10 @@ class Mandate(models.Model):
 
     beginning = models.DateTimeField(blank=True, null=True)
 
-    def query_root_organizations(self, timestamp=datetime.now()):
+    def query_root_organizations(self, timestamp=None):
+        if not timestamp:
+            timestamp = datetime.now()
+
         try:
             membership = OrganizationMembership.valid_at(timestamp).get(mandate=self)
         except OrganizationMembership.DoesNotExist:
