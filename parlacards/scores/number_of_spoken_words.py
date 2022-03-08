@@ -12,6 +12,11 @@ from parlacards.scores.common import (
 def calculate_number_of_spoken_words(speeches):
     number_of_spoken_words = 0
     for speech in speeches:
+        # if there is no lemmatized_content we should bail
+        # the data is not ready to run this analysis
+        if not speech:
+            raise ValueError('Lemmatized speech is missing.')
+
         # count spaces and add 1
         number_of_spoken_words += (speech.count(' ') + 1)
     
