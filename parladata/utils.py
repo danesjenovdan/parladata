@@ -325,11 +325,11 @@ def exportResultOfVotes():
 def migrateVotesInMotions():
     """Migrates objects Votes to Motion."""
 
-    for vote in Motion.objects.filter(created_at__gte=datetime.now() - timedelta(minutes=60)):
+    for vote in Motion.objects.filter(created_at__gte=(datetime.now() - timedelta(minutes=60))):
         org = vote.session.organization
         session_name = vote.session.name
         ses = Session.objects.filter(name=session_name,
-                                     created_at__lte=datetime.now() - timedelta(minutes=60),
+                                     created_at__lte=(datetime.now() - timedelta(minutes=60)),
                                      organization=org)
         vote.session = ses[0]
         vote.save()

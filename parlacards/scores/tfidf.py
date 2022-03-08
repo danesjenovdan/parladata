@@ -18,12 +18,15 @@ from parlacards.scores.common import (
 #
 # PERSON
 #
-def calculate_people_tfidf(playing_field, timestamp=datetime.now()):
+def calculate_people_tfidf(playing_field, timestamp=None):
     '''
     This function takes the playing field organization and an optional
     timestamp which defaults to datetime.now() as parameters and
     calculates each of the playing field's people TFIDF.
     '''
+    if not timestamp:
+        timestamp = datetime.now()
+
     # TODO we should probably avoid casting
     # competitor_ids and leader_ids into list
     competitor_ids = list(
@@ -106,7 +109,10 @@ def calculate_people_tfidf(playing_field, timestamp=datetime.now()):
 
     return output
 
-def save_people_tfidf(playing_field, timestamp=datetime.now()):
+def save_people_tfidf(playing_field, timestamp=None):
+    if not timestamp:
+        timestamp = datetime.now()
+
     people_tfidf = calculate_people_tfidf(playing_field, timestamp)
 
     for tfidf in people_tfidf:
@@ -120,18 +126,31 @@ def save_people_tfidf(playing_field, timestamp=datetime.now()):
                     playing_field=playing_field
                 ).save()
 
-def save_people_tfidf_between(playing_field, datetime_from=datetime.now(), datetime_to=datetime.now()):
+def save_people_tfidf_between(playing_field, datetime_from=None, datetime_to=None):
+    if not datetime_from:
+        datetime_from = datetime.now()
+    if not datetime_to:
+        datetime_to = datetime.now()
+
     for day in get_dates_between(datetime_from, datetime_to):
         save_people_tfidf(playing_field, timestamp=day)
 
-def save_sparse_people_tfidf_between(playing_field, datetime_from=datetime.now(), datetime_to=datetime.now()):
+def save_sparse_people_tfidf_between(playing_field, datetime_from=None, datetime_to=None):
+    if not datetime_from:
+        datetime_from = datetime.now()
+    if not datetime_to:
+        datetime_to = datetime.now()
+
     for day in get_fortnights_between(datetime_from, datetime_to):
         save_people_tfidf(playing_field, timestamp=day)
 
 #
 # GROUP
 #
-def calculate_groups_tfidf(playing_field, timestamp=datetime.now()):
+def calculate_groups_tfidf(playing_field, timestamp=None):
+    if not timestamp:
+        timestamp = datetime.now()
+
     # TODO this is very similar to calculate_people_tfidf
     # consider refactoring
     groups = playing_field.query_organization_members(
@@ -189,7 +208,10 @@ def calculate_groups_tfidf(playing_field, timestamp=datetime.now()):
 
     return output
 
-def save_groups_tfidf(playing_field, timestamp=datetime.now()):
+def save_groups_tfidf(playing_field, timestamp=None):
+    if not timestamp:
+        timestamp = datetime.now()
+
     groups_tfidf = calculate_groups_tfidf(playing_field, timestamp)
 
     for tfidf in groups_tfidf:
@@ -203,23 +225,36 @@ def save_groups_tfidf(playing_field, timestamp=datetime.now()):
                     playing_field=playing_field
                 ).save()
 
-def save_groups_tfidf_between(playing_field, datetime_from=datetime.now(), datetime_to=datetime.now()):
+def save_groups_tfidf_between(playing_field, datetime_from=None, datetime_to=None):
+    if not datetime_from:
+        datetime_from = datetime.now()
+    if not datetime_to:
+        datetime_to = datetime.now()
+
     for day in get_dates_between(datetime_from, datetime_to):
         save_groups_tfidf(playing_field, timestamp=day)
 
-def save_sparse_groups_tfidf_between(playing_field, datetime_from=datetime.now(), datetime_to=datetime.now()):
+def save_sparse_groups_tfidf_between(playing_field, datetime_from=None, datetime_to=None):
+    if not datetime_from:
+        datetime_from = datetime.now()
+    if not datetime_to:
+        datetime_to = datetime.now()
+
     for day in get_fortnights_between(datetime_from, datetime_to):
         save_groups_tfidf(playing_field, timestamp=day)
 
 #
 # SESSION
 #
-def calculate_sessions_tfidf(playing_field, timestamp=datetime.now()):
+def calculate_sessions_tfidf(playing_field, timestamp=None):
     '''
     This function takes the playing field organization and an optional
     timestamp which defaults to datetime.now() as parameters and
     calculates each of the playing field's sessions' TFIDF.
     '''
+    if not timestamp:
+        timestamp = datetime.now()
+
     # TODO this is very similar to calculate_people_tfidf
     # consider refactoring
     session_ids = Session.objects.filter(
@@ -281,7 +316,10 @@ def calculate_sessions_tfidf(playing_field, timestamp=datetime.now()):
 
     return output
 
-def save_sessions_tfidf(playing_field, timestamp=datetime.now()):
+def save_sessions_tfidf(playing_field, timestamp=None):
+    if not timestamp:
+        timestamp = datetime.now()
+
     sessions_tfidf = calculate_sessions_tfidf(playing_field, timestamp)
 
     for tfidf in sessions_tfidf:
@@ -295,11 +333,21 @@ def save_sessions_tfidf(playing_field, timestamp=datetime.now()):
                     playing_field=playing_field
                 ).save()
 
-def save_sessions_tfidf_between(playing_field, datetime_from=datetime.now(), datetime_to=datetime.now()):
+def save_sessions_tfidf_between(playing_field, datetime_from=None, datetime_to=None):
+    if not datetime_from:
+        datetime_from = datetime.now()
+    if not datetime_to:
+        datetime_to = datetime.now()
+
     for day in get_dates_between(datetime_from, datetime_to):
         save_sessions_tfidf(playing_field, timestamp=day)
 
-def save_sparse_sessions_tfidf_between(playing_field, datetime_from=datetime.now(), datetime_to=datetime.now()):
+def save_sparse_sessions_tfidf_between(playing_field, datetime_from=None, datetime_to=None):
+    if not datetime_from:
+        datetime_from = datetime.now()
+    if not datetime_to:
+        datetime_to = datetime.now()
+
     for day in get_fortnights_between(datetime_from, datetime_to):
         save_sessions_tfidf(playing_field, timestamp=day)
 

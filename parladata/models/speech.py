@@ -9,7 +9,10 @@ from parlacards.scores.common import tokenize, remove_punctuation, get_lemmatize
 
 
 class ValidSpeechesManager(models.Manager):
-    def filter_valid_speeches(self, timestamp=datetime.now()):
+    def filter_valid_speeches(self, timestamp=None):
+        if not timestamp:
+            timestamp = datetime.now()
+
         return super().get_queryset().filter(
             models.Q(valid_from__lt=timestamp) | models.Q(valid_from__isnull=True),
             models.Q(valid_to__gt=timestamp) | models.Q(valid_to__isnull=True)
