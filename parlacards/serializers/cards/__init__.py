@@ -7,6 +7,7 @@ from parlacards.serializers.cards.person.questions import PersonQuestionCardSeri
 from parlacards.serializers.cards.group.questions import GroupQuestionCardSerializer
 from parlacards.serializers.cards.group.votes import GroupVoteCardSerializer
 
+from parlacards.serializers.cards.session.single import SingleSessionCardSerializer
 from parlacards.serializers.cards.session.tfidf import SessionTfidfCardSerializer
 
 from parlacards.serializers.cards.search.votes import MandateVotesCardSerializer
