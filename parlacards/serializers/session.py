@@ -24,6 +24,10 @@ class SessionSerializer(CommonCachableSerializer):
 
     def get_has_minutes(self, session):
         return AgendaItem.objects.filter(session=session).exists()
+    
+    def get_has_legislation(self, session):
+        # TODO implement me
+        return False
 
     name = serializers.CharField()
     id = serializers.IntegerField()
@@ -34,3 +38,4 @@ class SessionSerializer(CommonCachableSerializer):
     in_review = serializers.BooleanField()
     has_transcript = serializers.SerializerMethodField()
     has_minutes = serializers.SerializerMethodField()
+    has_legislation = serializers.SerializerMethodField()
