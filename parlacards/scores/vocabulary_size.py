@@ -24,7 +24,8 @@ def calculate_vocabulary_size(speeches):
     word_counter = Counter()
 
     for speech in speeches:
-        # TODO what if there is no lemmatized_content
+        # if there is no lemmatized_content we should bail
+        # the data is not ready to run this analysis
         if not speech:
             raise ValueError('Lemmatized speech is missing.')
         for lemmatized_token in speech.strip().lower().split(' '):
@@ -46,7 +47,10 @@ def calculate_vocabulary_size(speeches):
 #
 # PERSON
 #
-def save_person_vocabulary_size(person, playing_field, timestamp=datetime.now()):
+def save_person_vocabulary_size(person, playing_field, timestamp=None):
+    if not timestamp:
+        timestamp = datetime.now()
+
     # get speeches that started before the timestamp
     speeches = Speech.objects.filter_valid_speeches(timestamp).filter(
         speaker=person,
@@ -61,24 +65,40 @@ def save_person_vocabulary_size(person, playing_field, timestamp=datetime.now())
         playing_field=playing_field,
     ).save()
 
-def save_people_vocabulary_sizes(playing_field, timestamp=datetime.now()):
+def save_people_vocabulary_sizes(playing_field, timestamp=None):
+    if not timestamp:
+        timestamp = datetime.now()
+
     people = playing_field.query_voters(timestamp)
 
     for person in people:
         save_person_vocabulary_size(person, playing_field, timestamp)
 
-def save_people_vocabulary_sizes_between(playing_field, datetime_from=datetime.now(), datetime_to=datetime.now()):
+def save_people_vocabulary_sizes_between(playing_field, datetime_from=None, datetime_to=None):
+    if not datetime_from:
+        datetime_from = datetime.now()
+    if not datetime_to:
+        datetime_to = datetime.now()
+
     for day in get_dates_between(datetime_from, datetime_to):
         save_people_vocabulary_sizes(playing_field, timestamp=day)
 
-def save_sparse_people_vocabulary_sizes_between(playing_field, datetime_from=datetime.now(), datetime_to=datetime.now()):
+def save_sparse_people_vocabulary_sizes_between(playing_field, datetime_from=None, datetime_to=None):
+    if not datetime_from:
+        datetime_from = datetime.now()
+    if not datetime_to:
+        datetime_to = datetime.now()
+
     for day in get_fortnights_between(datetime_from, datetime_to):
         save_people_vocabulary_sizes(playing_field, timestamp=day)
 
 #
 # GROUP
 #
-def save_group_vocabulary_size(group, playing_field, timestamp=datetime.now()):
+def save_group_vocabulary_size(group, playing_field, timestamp=None):
+    if not timestamp:
+        timestamp = datetime.now()
+
     memberships = group.query_memberships_before(timestamp)
     member_ids = memberships.values_list('member_id', flat=True).distinct('member_id')
 
@@ -123,16 +143,29 @@ def save_group_vocabulary_size(group, playing_field, timestamp=datetime.now()):
         playing_field=playing_field,
     ).save()
 
-def save_groups_vocabulary_sizes(playing_field, timestamp=datetime.now()):
+def save_groups_vocabulary_sizes(playing_field, timestamp=None):
+    if not timestamp:
+        timestamp = datetime.now()
+
     groups = playing_field.query_parliamentary_groups(timestamp)
 
     for group in groups:
         save_group_vocabulary_size(group, playing_field, timestamp)
 
-def save_groups_vocabulary_sizes_between(playing_field, datetime_from=datetime.now(), datetime_to=datetime.now()):
+def save_groups_vocabulary_sizes_between(playing_field, datetime_from=None, datetime_to=None):
+    if not datetime_from:
+        datetime_from = datetime.now()
+    if not datetime_to:
+        datetime_to = datetime.now()
+
     for day in get_dates_between(datetime_from, datetime_to):
         save_groups_vocabulary_sizes(playing_field, timestamp=day)
 
-def save_sparse_groups_vocabulary_sizes_between(playing_field, datetime_from=datetime.now(), datetime_to=datetime.now()):
+def save_sparse_groups_vocabulary_sizes_between(playing_field, datetime_from=None, datetime_to=None):
+    if not datetime_from:
+        datetime_from = datetime.now()
+    if not datetime_to:
+        datetime_to = datetime.now()
+
     for day in get_fortnights_between(datetime_from, datetime_to):
         save_groups_vocabulary_sizes(playing_field, timestamp=day)
