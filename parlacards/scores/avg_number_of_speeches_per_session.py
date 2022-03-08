@@ -9,7 +9,10 @@ from parlacards.models import PersonAvgSpeechesPerSession
 from parlacards.scores.common import get_dates_between, get_fortnights_between
 
 
-def calculate_person_avg_number_of_speeches(person, timestamp=datetime.now()):
+def calculate_person_avg_number_of_speeches(person, timestamp=None):
+    if not timestamp:
+        timestamp = datetime.now()
+
     person_speeches = Speech.objects.filter_valid_speeches(timestamp).filter(
         speaker=person,
         start_time__lte=timestamp
@@ -44,7 +47,10 @@ def calculate_person_avg_number_of_speeches(person, timestamp=datetime.now()):
     else:
         return num_of_speeches / no_of_sessions_with_activity
 
-def save_person_avg_number_of_speeches_per_session(person, playing_field, timestamp=datetime.now()):
+def save_person_avg_number_of_speeches_per_session(person, playing_field, timestamp=None):
+    if not timestamp:
+        timestamp = datetime.now()
+
     PersonAvgSpeechesPerSession(
         person=person,
         value=calculate_person_avg_number_of_speeches(person, timestamp),
@@ -52,16 +58,29 @@ def save_person_avg_number_of_speeches_per_session(person, playing_field, timest
         playing_field=playing_field,
     ).save()
 
-def save_people_avg_number_of_speeches_per_session(playing_field, timestamp=datetime.now()):
+def save_people_avg_number_of_speeches_per_session(playing_field, timestamp=None):
+    if not timestamp:
+        timestamp = datetime.now()
+
     people = playing_field.query_voters(timestamp)
 
     for person in people:
         save_person_avg_number_of_speeches_per_session(person, playing_field, timestamp)
 
-def save_people_avg_number_of_speeches_per_session_between(playing_field, datetime_from=datetime.now(), datetime_to=datetime.now()):
+def save_people_avg_number_of_speeches_per_session_between(playing_field, datetime_from=None, datetime_to=None):
+    if not datetime_from:
+        datetime_from = datetime.now()
+    if not datetime_to:
+        datetime_to = datetime.now()
+
     for day in get_dates_between(datetime_from, datetime_to):
         save_people_avg_number_of_speeches_per_session(playing_field, timestamp=day)
 
-def save_sparse_people_avg_number_of_speeches_per_session_between(playing_field, datetime_from=datetime.now(), datetime_to=datetime.now()):
+def save_sparse_people_avg_number_of_speeches_per_session_between(playing_field, datetime_from=None, datetime_to=None):
+    if not datetime_from:
+        datetime_from = datetime.now()
+    if not datetime_to:
+        datetime_to = datetime.now()
+
     for day in get_fortnights_between(datetime_from, datetime_to):
         save_people_avg_number_of_speeches_per_session(playing_field, timestamp=day)

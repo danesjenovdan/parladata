@@ -10,10 +10,12 @@ from parlacards.models import PersonMonthlyVoteAttendance, GroupMonthlyVoteAtten
 
 from parlacards.scores.common import get_dates_between, get_fortnights_between
 
-def calculate_person_monthly_vote_attendance(person, playing_field, timestamp=datetime.now()):
+def calculate_person_monthly_vote_attendance(person, playing_field, timestamp=None):
     """
     Returns monthly ballots count of voter
     """
+    if not timestamp:
+        timestamp = datetime.now()
 
     data = []
 
@@ -62,7 +64,10 @@ def calculate_person_monthly_vote_attendance(person, playing_field, timestamp=da
 
     return data
 
-def save_person_monthly_vote_attendance(person, playing_field, timestamp=datetime.now()):
+def save_person_monthly_vote_attendance(person, playing_field, timestamp=None):
+    if not timestamp:
+        timestamp = datetime.now()
+
     monthly_results = calculate_person_monthly_vote_attendance(person, playing_field, timestamp)
     for result in monthly_results:
         if result['total'] > 0:
@@ -91,27 +96,43 @@ def save_person_monthly_vote_attendance(person, playing_field, timestamp=datetim
                     playing_field=playing_field,
                 ).save()
 
-def save_people_monthly_vote_attendance(playing_field, timestamp=datetime.now()):
+def save_people_monthly_vote_attendance(playing_field, timestamp=None):
+    if not timestamp:
+        timestamp = datetime.now()
+
     people = playing_field.query_voters(timestamp)
 
     for person in people:
         save_person_monthly_vote_attendance(person, playing_field, timestamp)
 
-def save_people_monthly_vote_attendance_between(playing_field, datetime_from=datetime.now(), datetime_to=datetime.now()):
+def save_people_monthly_vote_attendance_between(playing_field, datetime_from=None, datetime_to=None):
+    if not datetime_from:
+        datetime_from = datetime.now()
+    if not datetime_to:
+        datetime_to = datetime.now()
+
     for day in get_dates_between(datetime_from, datetime_to):
         save_people_monthly_vote_attendance(playing_field, timestamp=day)
 
-def save_sparse_people_monthly_vote_attendance_between(playing_field, datetime_from=datetime.now(), datetime_to=datetime.now()):
+def save_sparse_people_monthly_vote_attendance_between(playing_field, datetime_from=None, datetime_to=None):
+    if not datetime_from:
+        datetime_from = datetime.now()
+    if not datetime_to:
+        datetime_to = datetime.now()
+
     for day in get_fortnights_between(datetime_from, datetime_to):
         save_people_monthly_vote_attendance(playing_field, timestamp=day)
 
 
 # GROUPS
 
-def calculate_group_monthly_vote_attendance(group, playing_field, timestamp=datetime.now()):
+def calculate_group_monthly_vote_attendance(group, playing_field, timestamp=None):
     """
     Returns monthly ballots count of voter
     """
+    if not timestamp:
+        timestamp = datetime.now()
+
     memberships = group.query_memberships_before(timestamp)
     member_ids = memberships.values_list('member_id', flat=True).distinct('member_id')
 
@@ -171,7 +192,10 @@ def calculate_group_monthly_vote_attendance(group, playing_field, timestamp=date
 
     return data
 
-def save_group_monthly_vote_attendance(group, playing_field, timestamp=datetime.now()):
+def save_group_monthly_vote_attendance(group, playing_field, timestamp=None):
+    if not timestamp:
+        timestamp = datetime.now()
+
     monthly_results = calculate_group_monthly_vote_attendance(group, playing_field, timestamp)
     for month, result in monthly_results.items():
         present_count = result['for'] + result['abstain'] + result['against']
@@ -199,16 +223,29 @@ def save_group_monthly_vote_attendance(group, playing_field, timestamp=datetime.
                 playing_field=playing_field,
             ).save()
 
-def save_groups_monthly_vote_attendance(playing_field, timestamp=datetime.now()):
+def save_groups_monthly_vote_attendance(playing_field, timestamp=None):
+    if not timestamp:
+        timestamp = datetime.now()
+
     groups = playing_field.query_parliamentary_groups(timestamp)
 
     for group in groups:
         save_group_monthly_vote_attendance(group, playing_field, timestamp)
 
-def save_groups_monthly_vote_attendance_between(playing_field, datetime_from=datetime.now(), datetime_to=datetime.now()):
+def save_groups_monthly_vote_attendance_between(playing_field, datetime_from=None, datetime_to=None):
+    if not datetime_from:
+        datetime_from = datetime.now()
+    if not datetime_to:
+        datetime_to = datetime.now()
+
     for day in get_dates_between(datetime_from, datetime_to):
         save_groups_monthly_vote_attendance(playing_field, timestamp=day)
 
-def save_sparse_groups_monthly_vote_attendance_between(playing_field, datetime_from=datetime.now(), datetime_to=datetime.now()):
+def save_sparse_groups_monthly_vote_attendance_between(playing_field, datetime_from=None, datetime_to=None):
+    if not datetime_from:
+        datetime_from = datetime.now()
+    if not datetime_to:
+        datetime_to = datetime.now()
+
     for day in get_fortnights_between(datetime_from, datetime_to):
         save_groups_monthly_vote_attendance(playing_field, timestamp=day)
