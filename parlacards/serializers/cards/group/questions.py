@@ -31,14 +31,14 @@ class GroupQuestionCardSerializer(GroupScoreCardSerializer):
         ).prefetch_related('person_authors')
 
         if not all_member_questions.exists():
-            # this used to return []
             # this "if" is an optimization
             # if there are no questions the whole function
             # takes 10 times longer to execute
-            # this optimization introduced a bug
+            # this used to return []
+            # which introduced a bug
             #
             # it needs to return a properly structured object
-            # it's quite possible, this sort of bug was produced
+            # it's quite possible this sort of bug was produced
             # elsewhere
             #
             # also this whole function needs more comments

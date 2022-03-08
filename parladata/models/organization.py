@@ -85,16 +85,28 @@ class Organization(Timestampable, Taggable, Parsable, Sluggable, VersionableFiel
         )
 
     # TODO make all membership queries depend on a date
-    def number_of_members_at(self, timestamp=datetime.now()):
+    def number_of_members_at(self, timestamp=None):
+        if not timestamp:
+            timestamp = datetime.now()
+
         return PersonMembership.valid_at(timestamp).filter(organization=self).distinct('member').count()
 
-    def number_of_organization_members_at(self, timestamp=datetime.now()):
+    def number_of_organization_members_at(self, timestamp=None):
+        if not timestamp:
+            timestamp = datetime.now()
+
         return OrganizationMembership.valid_at(timestamp).filter(organization=self).distinct('member').count()
 
-    def number_of_voters_at(self, timestamp=datetime.now()):
+    def number_of_voters_at(self, timestamp=None):
+        if not timestamp:
+            timestamp = datetime.now()
+
         return PersonMembership.valid_at(timestamp).filter(organization=self, role='voter').distinct('member').count()
 
-    def number_of_organization_voters_at(self, timestamp=datetime.now()):
+    def number_of_organization_voters_at(self, timestamp=None):
+        if not timestamp:
+            timestamp = datetime.now()
+
         return OrganizationMembership.valid_at(timestamp).filter(organization=self, role='voter').distinct('member').count()
 
     @property
@@ -102,7 +114,10 @@ class Organization(Timestampable, Taggable, Parsable, Sluggable, VersionableFiel
         return bool(self.memberships.filter(role='voter'))
 
     # TODO maybe we need to run distinct here
-    def query_members(self, timestamp=datetime.now()):
+    def query_members(self, timestamp=None):
+        if not timestamp:
+            timestamp = datetime.now()
+
         member_ids = PersonMembership.valid_at(timestamp).filter(organization=self).values_list('member', flat=True)
         return Person.objects.filter(
             id__in=member_ids
@@ -113,7 +128,10 @@ class Organization(Timestampable, Taggable, Parsable, Sluggable, VersionableFiel
     #
     # why? to query speeches only for the time
     # when the speaker was a voter member of the organization
-    def query_memberships_before(self, timestamp=datetime.now()):
+    def query_memberships_before(self, timestamp=None):
+        if not timestamp:
+            timestamp = datetime.now()
+
         return PersonMembership.valid_before(
             timestamp
         ).filter(
@@ -121,7 +139,10 @@ class Organization(Timestampable, Taggable, Parsable, Sluggable, VersionableFiel
             role='voter'
         )
 
-    def query_organization_members(self, timestamp=datetime.now()):
+    def query_organization_members(self, timestamp=None):
+        if not timestamp:
+            timestamp = datetime.now()
+
         member_ids = OrganizationMembership.valid_at(
             timestamp
         ).filter(
@@ -134,7 +155,10 @@ class Organization(Timestampable, Taggable, Parsable, Sluggable, VersionableFiel
             id__in=member_ids
         )
 
-    def query_parliamentary_groups(self, timestamp=datetime.now()):
+    def query_parliamentary_groups(self, timestamp=None):
+        if not timestamp:
+            timestamp = datetime.now()
+
         # sometimes we have groups without members
         # this crashes some serializers (like vote/single
         # because it can't calculate the max_option for all groups)
@@ -148,10 +172,16 @@ class Organization(Timestampable, Taggable, Parsable, Sluggable, VersionableFiel
 
         return self.query_organization_members(timestamp).filter(id__in=ids_of_groups_with_voters)
 
-    def query_voters(self, timestamp=datetime.now()):
+    def query_voters(self, timestamp=None):
+        if not timestamp:
+            timestamp = datetime.now()
+
         return self.query_members_by_role('voter', timestamp)
 
-    def query_members_by_role(self, role, timestamp=datetime.now()):
+    def query_members_by_role(self, role, timestamp=None):
+        if not timestamp:
+            timestamp = datetime.now()
+
         member_ids = PersonMembership.valid_at(timestamp).filter(
             organization=self,
             role=role
@@ -161,7 +191,10 @@ class Organization(Timestampable, Taggable, Parsable, Sluggable, VersionableFiel
             id__in=member_ids
         )
 
-    def query_organizations_by_role(self, role, timestamp=datetime.now()):
+    def query_organizations_by_role(self, role, timestamp=None):
+        if not timestamp:
+            timestamp = datetime.now()
+
         member_ids = OrganizationMembership.valid_at(timestamp).filter(
             organization=self,
             role=role
