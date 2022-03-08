@@ -27,7 +27,8 @@ def calculate_style_score(speeches, styled_lemmas):
     styled_words_counter = Counter()
 
     for speech in speeches:
-        # TODO what if there is no lemmatized_content
+        # if there is no lemmatized_content we should bail
+        # the data is not ready to run this analysis
         if not speech:
             raise ValueError('Lemmatized speech is missing.')
         for token in speech.strip().lower().split(' '):
