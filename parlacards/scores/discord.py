@@ -9,7 +9,10 @@ from parladata.models.memberships import PersonMembership
 from parlacards.models import GroupDiscord
 from parlacards.scores.common import get_dates_between, get_fortnights_between
 
-def calculate_group_discord(group, timestamp=datetime.now()):
+def calculate_group_discord(group, timestamp=None):
+    if not timestamp:
+        timestamp = datetime.now()
+
     # get all relevant votes
     votes = Vote.objects.filter(
         timestamp__lte=timestamp
@@ -54,7 +57,10 @@ def calculate_group_discord(group, timestamp=datetime.now()):
     average_discord = sum(vote_discords) / len(vote_discords)
     return average_discord
 
-def save_group_discord(group, playing_field, timestamp=datetime.now()):
+def save_group_discord(group, playing_field, timestamp=None):
+    if not timestamp:
+        timestamp = datetime.now()
+
     discord = calculate_group_discord(group)
 
     GroupDiscord(
@@ -64,16 +70,29 @@ def save_group_discord(group, playing_field, timestamp=datetime.now()):
         playing_field=playing_field
     ).save()
 
-def save_groups_discords(playing_field, timestamp=datetime.now()):
+def save_groups_discords(playing_field, timestamp=None):
+    if not timestamp:
+        timestamp = datetime.now()
+
     groups = playing_field.query_parliamentary_groups(timestamp)
     for group in groups:
         save_group_discord(group, playing_field, timestamp)
 
-def save_groups_discords_between(playing_field, datetime_from=datetime.now(), datetime_to=datetime.now()):
+def save_groups_discords_between(playing_field, datetime_from=None, datetime_to=None):
+    if not datetime_from:
+        datetime_from = datetime.now()
+    if not datetime_to:
+        datetime_to = datetime.now()
+
     for day in get_dates_between(datetime_from, datetime_to):
         save_groups_discords(playing_field, timestamp=day)
 
-def save_sparse_groups_discords_between(playing_field, datetime_from=datetime.now(), datetime_to=datetime.now()):
+def save_sparse_groups_discords_between(playing_field, datetime_from=None, datetime_to=None):
+    if not datetime_from:
+        datetime_from = datetime.now()
+    if not datetime_to:
+        datetime_to = datetime.now()
+
     for day in get_fortnights_between(datetime_from, datetime_to):
         save_groups_discords(playing_field, timestamp=day)
 

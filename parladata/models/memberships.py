@@ -117,8 +117,11 @@ class OrganizationMembership(Membership):
     )
 
     @staticmethod
-    def valid_at(date=datetime.now()):
+    def valid_at(timestamp=None):
+        if not timestamp:
+            timestamp = datetime.now()
+
         return OrganizationMembership.objects.filter(
-            Q(start_time__lte=date) | Q(start_time__isnull=True),
-            Q(end_time__gte=date) | Q(end_time__isnull=True),
+            Q(start_time__lte=timestamp) | Q(start_time__isnull=True),
+            Q(end_time__gte=timestamp) | Q(end_time__isnull=True),
         )
