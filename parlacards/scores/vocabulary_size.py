@@ -24,7 +24,8 @@ def calculate_vocabulary_size(speeches):
     word_counter = Counter()
 
     for speech in speeches:
-        # TODO what if there is no lemmatized_content
+        # if there is no lemmatized_content we should bail
+        # the data is not ready to run this analysis
         if not speech:
             raise ValueError('Lemmatized speech is missing.')
         for lemmatized_token in speech.strip().lower().split(' '):
