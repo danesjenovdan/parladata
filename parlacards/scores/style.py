@@ -41,7 +41,10 @@ def calculate_style_score(speeches, styled_lemmas):
 #
 # PERSON
 #
-def save_person_style_scores(person, playing_field, timestamp=datetime.now()):
+def save_person_style_scores(person, playing_field, timestamp=None):
+    if not timestamp:
+        timestamp = datetime.now()
+
     # get speeches that started before the timestamp
     speeches = Speech.objects.filter_valid_speeches(timestamp).filter(
         speaker=person,
@@ -58,24 +61,40 @@ def save_person_style_scores(person, playing_field, timestamp=datetime.now()):
             playing_field=playing_field,
         ).save()
 
-def save_people_style_scores(playing_field, timestamp=datetime.now()):
+def save_people_style_scores(playing_field, timestamp=None):
+    if not timestamp:
+        timestamp = datetime.now()
+
     people = playing_field.query_voters(timestamp)
 
     for person in people:
         save_person_style_scores(person, playing_field, timestamp)
 
-def save_people_style_scores_between(playing_field, datetime_from=datetime.now(), datetime_to=datetime.now()):
+def save_people_style_scores_between(playing_field, datetime_from=None, datetime_to=None):
+    if not datetime_from:
+        datetime_from = datetime.now()
+    if not datetime_to:
+        datetime_to = datetime.now()
+
     for day in get_dates_between(datetime_from, datetime_to):
         save_people_style_scores(playing_field, timestamp=day)
 
-def save_sparse_people_style_scores_between(playing_field, datetime_from=datetime.now(), datetime_to=datetime.now()):
+def save_sparse_people_style_scores_between(playing_field, datetime_from=None, datetime_to=None):
+    if not datetime_from:
+        datetime_from = datetime.now()
+    if not datetime_to:
+        datetime_to = datetime.now()
+
     for day in get_fortnights_between(datetime_from, datetime_to):
         save_people_style_scores(playing_field, timestamp=day)
 
 #
 # GROUP
 #
-def save_group_style_scores(group, playing_field, timestamp=datetime.now()):
+def save_group_style_scores(group, playing_field, timestamp=None):
+    if not timestamp:
+        timestamp = datetime.now()
+
     # get speeches that started before the timestamp
     speeches = Speech.objects.filter_valid_speeches(timestamp).filter(
         speaker__id__in=group.query_members(timestamp).values('id'),
@@ -92,7 +111,10 @@ def save_group_style_scores(group, playing_field, timestamp=datetime.now()):
             playing_field=playing_field,
         ).save()
 
-def save_groups_style_scores(playing_field, timestamp=datetime.now()):
+def save_groups_style_scores(playing_field, timestamp=None):
+    if not timestamp:
+        timestamp = datetime.now()
+
     groups = playing_field.query_organization_members(
         timestamp
     ).order_by(
@@ -102,10 +124,20 @@ def save_groups_style_scores(playing_field, timestamp=datetime.now()):
     for group in groups:
         save_group_style_scores(group, playing_field, timestamp)
 
-def save_groups_style_scores_between(playing_field, datetime_from=datetime.now(), datetime_to=datetime.now()):
+def save_groups_style_scores_between(playing_field, datetime_from=None, datetime_to=None):
+    if not datetime_from:
+        datetime_from = datetime.now()
+    if not datetime_to:
+        datetime_to = datetime.now()
+
     for day in get_dates_between(datetime_from, datetime_to):
         save_groups_style_scores(playing_field, timestamp=day)
 
-def save_sparse_groups_style_scores_between(playing_field, datetime_from=datetime.now(), datetime_to=datetime.now()):
+def save_sparse_groups_style_scores_between(playing_field, datetime_from=None, datetime_to=None):
+    if not datetime_from:
+        datetime_from = datetime.now()
+    if not datetime_to:
+        datetime_to = datetime.now()
+
     for day in get_fortnights_between(datetime_from, datetime_to):
         save_groups_style_scores(playing_field, timestamp=day)
