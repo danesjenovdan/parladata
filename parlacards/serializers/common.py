@@ -10,7 +10,7 @@ from rest_framework import serializers
 from parladata.models.person import Person
 from parladata.models.organization import Organization
 from parladata.models.common import Mandate
-from parladata.models.organization import PersonMembership
+from parladata.models.memberships import PersonMembership, OrganizationMembership
 
 from datetime import datetime
 
@@ -310,11 +310,18 @@ class CommonOrganizationSerializer(CommonCachableSerializer):
     def calculate_cache_key(self, instance):
         return f'CommonOrganizationSerializer_{instance.id}_{instance.updated_at.strftime("%Y-%m-%dT%H:%M:%S")}'
 
+    def get_is_in_coalition(self, obj):
+        return OrganizationMembership.valid_at(self.context['date']).filter(
+            member=obj,
+            organization__classification='coalition'
+        ).exists()
+
     name = VersionableSerializerField(property_model_name='OrganizationName')
     acronym = VersionableSerializerField(property_model_name='OrganizationAcronym')
     slug = serializers.CharField()
     color = serializers.CharField()
     classification = serializers.CharField()
+    is_in_coalition = serializers.SerializerMethodField()
 
 
 class CommonSessionSerializer(CommonCachableSerializer):
