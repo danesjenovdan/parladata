@@ -141,6 +141,7 @@ class LegislationConsideration(Timestampable):
     session = models.ForeignKey('Session',
         blank=True, null=True,
         on_delete=models.CASCADE,
+        related_name='legislation_considereations',
         help_text='Session at which the legislation was discussed'
     )
 
