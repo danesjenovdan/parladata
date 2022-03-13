@@ -26,6 +26,7 @@ CLASSIFICATIONS = [
     ('friendship_group', 'friendship_group'),
     ('investigative_commission', 'investigative_commission'),
     ('other', 'other'),
+    ('coalition', 'coalition'),
 ]
 
 
