@@ -75,6 +75,15 @@ class OrganizationsFilterSet(FilterSet):
 
 ## Viewsets
 
+
+
+class CountViewSet(viewsets.ModelViewSet):
+    @action(detail=False, methods=['get'])
+    def count(self, request, pk=None):
+        count = self.filter_queryset(self.get_queryset()).count()
+        return Response({'count': count}, status=status.HTTP_200_OK)
+
+
 class PersonView(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     queryset = Person.objects.all().order_by('id')
@@ -178,7 +187,7 @@ class OrganizationView(viewsets.ModelViewSet):
         return Response(data, status=status.HTTP_201_CREATED, headers=headers)
 
 
-class SpeechView(viewsets.ModelViewSet):
+class SpeechView(CountViewSet):
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     queryset = Speech.objects.all().order_by('id')
     serializer_class = SpeechSerializer
