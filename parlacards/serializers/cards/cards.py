@@ -783,7 +783,7 @@ class SessionLegislationCardSerializer(SessionScoreCardSerializer):
         serializer = LegislationSerializer(
             Law.objects.filter(
                 Q(timestamp__lte=self.context['date']) | Q(timestamp__isnull=True),
-                session=obj,
+                legislationconsideration__session=obj,
             ),
             many=True,
             context=self.context
