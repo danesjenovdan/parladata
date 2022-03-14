@@ -11,6 +11,7 @@ from import_export.fields import Field
 
 from parladata.models import Person, PersonMembership
 from parladata.models.versionable_properties import *
+from parladata.admin.link import LinkPersonSocialInline
 
 
 class PersonNameInline(admin.TabularInline):
@@ -72,6 +73,7 @@ class PersonAdmin(admin.ModelAdmin):
         PersonNumberOfMandatesInline,
         PersonNumberOfVotersInline,
         PersonEmailInline,
+        LinkPersonSocialInline,
     ]
     search_fields = ('id', 'personname__value', 'parser_names')
     list_display = ('id', 'name')
