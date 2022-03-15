@@ -400,9 +400,10 @@ class SessionVoteSerializer(CommonSerializer):
         return True
 
     def get_title(self, obj):
-        # TODO return motion object
+        # TODO return motion object 
         # and handle it on the front-end
-        return obj.motion.title
+        # TODO changed obj.motion.title to obj.name   check this if has a sense
+        return obj.name
 
     def get_all_votes(self, obj):
         # obj is the vote
