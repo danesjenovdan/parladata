@@ -96,9 +96,9 @@ class AgendaItemsSerializer(CommonCachableSerializer):
         return agenda_item_serializer.data
 
     def get_documents(self, obj):
-        links = Link.objects.filter(
-            Q(agenda_item__session=obj)|Q(motion__in=obj.motions.all())
-        ).distinct('url', 'id').order_by('id')
+        links = obj.links.all().exclude(
+            tags__name='vote-pdf'
+        ).order_by('id')
         return LinkSerializer(
             links,
             many=True
