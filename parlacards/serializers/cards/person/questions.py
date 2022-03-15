@@ -28,7 +28,7 @@ class PersonQuestionCardSerializer(PersonScoreCardSerializer):
                 'events': questions.filter(
                     date=date
                 ).order_by('-timestamp')
-            } for date in dates_to_serialize
+            } for date in dates_to_serialize[:10] # TODO remove slice and implement pagination
         ]
 
         serializer = DailyActivitySerializer(
