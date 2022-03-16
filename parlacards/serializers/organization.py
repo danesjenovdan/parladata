@@ -19,7 +19,7 @@ class OrganizationBasicInfoSerializer(CommonCachableSerializer):
     # social networks
     def get_social_networks(self, obj):
         links = Link.objects.filter(organization=obj)
-        return {link.note: link.url for link in links}
+        return [{'type': link.note, 'url': link.url} for link in links]
 
     def get_presidents(self, obj):
         presidents = obj.query_members_by_role('president')

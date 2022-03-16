@@ -1,39 +1,30 @@
-from django.db.models.functions import TruncDay
-
+from parlacards.pagination import create_paginator
+from parlacards.serializers.common import PersonScoreCardSerializer
+from parlacards.serializers.question import QuestionSerializer
 from parladata.models.question import Question
 
-from parlacards.serializers.common import PersonScoreCardSerializer
-from parlacards.serializers.recent_activity import DailyActivitySerializer
 
 class PersonQuestionCardSerializer(PersonScoreCardSerializer):
-    def get_results(self, obj):
-        # obj is the person
-        questions = Question.objects.filter(
-            person_authors=obj,
-            timestamp__lte=self.context['date']
-        ).order_by(
-            '-timestamp'
-        ).annotate(
-            date=TruncDay('timestamp')
-        )
+    def get_results(self, person):
+        # this is implemeted in to_representation for pagination
+        return None
 
-        dates_to_serialize = sorted(set(questions.values_list('date', flat=True)), reverse=True)
+    def to_representation(self, person):
+        parent_data = super().to_representation(person)
 
-        # this is ripe for optimization
-        # currently iterates over all questions
-        # for every date
-        grouped_questions_to_serialize = [
-            {
-                'date': date,
-                'events': questions.filter(
-                    date=date
-                ).order_by('-timestamp')
-            } for date in dates_to_serialize
-        ]
+        questions = Question.objects.filter(person_authors=person, timestamp__lte=self.context['date']) \
+            .order_by('-timestamp')
 
-        serializer = DailyActivitySerializer(
-            grouped_questions_to_serialize,
+        paged_object_list, pagination_metadata = create_paginator(self.context.get('GET', {}), questions)
+
+        questions_serializer = QuestionSerializer(
+            paged_object_list,
             many=True,
-            context=self.context
+            context=self.context,
         )
-        return serializer.data
+
+        return {
+            **parent_data,
+            **pagination_metadata,
+            'results': questions_serializer.data,
+        }
