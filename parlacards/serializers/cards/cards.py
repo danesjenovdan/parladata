@@ -543,12 +543,13 @@ class LegislationCardSerializer(CardSerializer):
         text_filter = self.context.get('GET', {}).get('text', '')
         order = self.context.get('GET', {}).get('order_by', '-timestamp')
 
-        # TODO remove Q(session__mandate=mandate) after legislation refatoringyy
-        legislation = Law.objects.filter(
+        distinct_legislation_ids = Law.objects.filter(
             Q(timestamp__lte=self.context['date']) | Q(timestamp__isnull=True),
-            Q(session__mandate=mandate) | Q(legislationconsideration__session__mandate=mandate),
+            legislationconsideration__session__mandate=mandate,
             text__icontains=text_filter,
-        ).order_by('id', order).distinct('id')
+        ).distinct('id')
+        # needs to be a new query because distinct and order_by need the same field as first param
+        legislation = Law.objects.filter(id__in=distinct_legislation_ids).order_by(order, 'id')
 
         # check if classification is present in the GET parameter
         # classifications should be comma-separated
@@ -778,12 +779,11 @@ class RootGroupBasicInfoCardSerializer(CardSerializer):
 # SESSION
 #
 class SessionLegislationCardSerializer(SessionScoreCardSerializer):
-    def get_results(self, obj):
-        # obj is the session
+    def get_results(self, session):
         serializer = LegislationSerializer(
             Law.objects.filter(
                 Q(timestamp__lte=self.context['date']) | Q(timestamp__isnull=True),
-                legislationconsideration__session=obj,
+                legislationconsideration__session=session,
             ),
             many=True,
             context=self.context
