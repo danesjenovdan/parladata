@@ -530,53 +530,6 @@ class SessionsCardSerializer(CardSerializer):
         }
 
 
-class LegislationCardSerializer(CardSerializer):
-    # TODO it's smelly that get_results needs
-    # to exist, even though we override everything
-    # in to_representation
-    def get_results(self, mandate):
-        return None
-
-    def to_representation(self, mandate):
-        parent_data = super().to_representation(mandate)
-
-        text_filter = self.context.get('GET', {}).get('text', '')
-        order = self.context.get('GET', {}).get('order_by', '-timestamp')
-
-        # TODO remove Q(session__mandate=mandate) after legislation refatoringyy
-        legislation = Law.objects.filter(
-            Q(timestamp__lte=self.context['date']) | Q(timestamp__isnull=True),
-            Q(session__mandate=mandate) | Q(legislationconsideration__session__mandate=mandate),
-            text__icontains=text_filter,
-        ).order_by('id', order).distinct('id')
-
-        # check if classification is present in the GET parameter
-        # classifications should be comma-separated
-        # TODO this code still smells
-        classification_filter = self.context.get('GET', {}).get('classification', None)
-        if classification_filter:
-            legislation = legislation.filter(
-                classification__name__in=classification_filter.split(',')
-            )
-
-        paged_object_list, pagination_metadata = create_paginator(self.context.get('GET', {}), legislation, prefix='legislation:')
-
-        serializer = LegislationSerializer(
-            paged_object_list,
-            many=True,
-            context=self.context
-        )
-
-        classifications = LegislationClassification.objects.all().distinct('name').values_list('name', flat=True)
-
-        return {
-            **parent_data,
-            **pagination_metadata,
-            'results': serializer.data,
-            # TODO standardize this and more importantly, cache it!
-            'classifications': classifications,
-        }
-
 class LegislationDetailCardSerializer(CardSerializer):
     def get_results(self, obj):
         # obj is the law
@@ -777,20 +730,6 @@ class RootGroupBasicInfoCardSerializer(CardSerializer):
 #
 # SESSION
 #
-class SessionLegislationCardSerializer(SessionScoreCardSerializer):
-    def get_results(self, obj):
-        # obj is the session
-        serializer = LegislationSerializer(
-            Law.objects.filter(
-                Q(timestamp__lte=self.context['date']) | Q(timestamp__isnull=True),
-                legislationconsideration__session=obj,
-            ),
-            many=True,
-            context=self.context
-        )
-        return serializer.data
-
-
 class SessionAgendaItemCardSerializer(SessionScoreCardSerializer):
     def get_results(self, obj):
         # obj is the session
