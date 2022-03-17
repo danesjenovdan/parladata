@@ -7,6 +7,7 @@ from rest_framework import serializers
 
 from parladata.models.person import Person
 from parladata.models.ballot import Ballot
+from parladata.models.organization import Organization
 
 from parlacards.serializers.session import SessionSerializer
 from parlacards.serializers.link import LinkSerializer
@@ -165,52 +166,34 @@ class VoteSumsSerializer(CommonCachableSerializer):
         return representation
 
 
-class VoteGovernmentSidesSerializer(CommonCachableSerializer):
-    # TODO THIS IS ALL BROKEN
-    # TODO this could be a bad cache key
-    # what if a party changed its coalition status
+class VoteGovernmentSideSerializer(CommonCachableSerializer):
     def calculate_cache_key(self, vote):
-        return f'VoteGovernmentSidesSerializer_{vote.id}_{vote.updated_at.strftime("%Y-%m-%dT%H:%M:%S")}'
+        timestamp = vote.updated_at
+        # TODO get latest membership timestamp
+        return f'VoteGovernmentSideSerializer_{vote.id}_{self.context["gov_side"]}_{timestamp.strftime("%Y-%m-%dT%H:%M:%S")}'
 
-    def to_representation(self, vote):
-        # TODO THIS IS TOTALLY BROKEN, NEEDS A REAL CASE TO BE DEBUGGED
-        # CURRENTLY WE JUST RETURN AN EMPTY LIST
+    def get_outliers(self, vote):
+        # TODO implemet this
         return []
 
-        # TODO this code is all wrong, but kept here for reference
-        cache_key = self.calculate_cache_key(vote)
-        cached_representation = cache.get(cache_key)
-        if cached_representation:
-            return cached_representation
+    def get_max(self, vote):
+        return vote.get_stats(gov_side=self.context['gov_side'])
 
-        coalition_stats = vote.get_stats(gov_side='coalition')
-        if not coalition_stats:
-            return []
-        coalition_options = vote.get_option_counts(gov_side='coalition')
-        opposition_stats = vote.get_stats(gov_side='opposition')
-        opposition_options = vote.get_option_counts(gov_side='opposition')
-        representation = [
-            {
-                'stats': coalition_stats,
-                'votes': coalition_options,
-                'group': {
-                    'name': 'Coalition',
-                    'acronym': None,
-                    'slug': None
-                }
-            },
-            {
-                'stats': opposition_stats,
-                'votes': opposition_options,
-                'group': {
-                    'name': 'Opposition',
-                    'acronym': None,
-                    'slug': None
-                }
-            }
-        ]
-        cache.set(cache_key, representation)
-        return representation
+    def get_votes(self, vote):
+        return vote.get_option_counts(gov_side=self.context['gov_side'])
+
+    def get_group(self, vote):
+        return {
+            'name': self.context['gov_side'],
+            'acronym': None,
+            'slug': None
+        }
+
+    max = serializers.SerializerMethodField()
+    votes = serializers.SerializerMethodField()
+    outliers = serializers.SerializerMethodField()
+    group = serializers.SerializerMethodField()
+
 
 class VoteStatsSerializer(CommonCachableSerializer):
     def calculate_cache_key(self, instance):
@@ -246,11 +229,22 @@ class VoteSerializer(CommonSerializer):
         return new_context
 
     def get_government_sides(self, vote):
-        serializer = VoteGovernmentSidesSerializer(
+        if not Organization.objects.filter(classification='coalition').exists():
+            return []
+
+        coalition_context = dict.copy(self.context)
+        coalition_context['gov_side'] = 'coalition'
+        coaliton_serializer = VoteGovernmentSideSerializer(
             vote,
-            context=self.context,
+            context=coalition_context
         )
-        return serializer.data
+        opposition_context = dict.copy(self.context)
+        opposition_context['gov_side'] = 'opposition'
+        opposition_serializer = VoteGovernmentSideSerializer(
+            vote,
+            context=opposition_context
+        )
+        return [coaliton_serializer.data, opposition_serializer.data]
 
     def get_abstract_visible(self, vote):
         return False
