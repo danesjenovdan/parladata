@@ -20,7 +20,7 @@ class SessionAdmin(admin.ModelAdmin):
         # MotionSessionInline,
     ]
     search_fields = ['name']
-    list_display = ['id', 'name', 'tfidf', 'agenda_items', 'start_time']
+    list_display = ['id', 'name', 'tfidf', 'agenda_items', 'start_time', 'in_review']
     readonly_fields = ['created_at', 'updated_at']
 
     def tfidf(self, obj):
