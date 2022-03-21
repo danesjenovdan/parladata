@@ -77,6 +77,7 @@ class BallotAdmin(admin.ModelAdmin):
 
 class AreaAdmin(admin.ModelAdmin):
     list_display = ['name', 'identifier', 'parent', 'classification']
+    search_fields = ['name']
 
 
 admin.site.site_header = 'Parladata'
