@@ -75,6 +75,7 @@ class PersonAdmin(admin.ModelAdmin):
         PersonEmailInline,
         LinkPersonSocialInline,
     ]
+    autocomplete_fields = ['districts']
     search_fields = ('id', 'personname__value', 'parser_names')
     list_display = ('id', 'name')
     readonly_fields = ['created_at', 'updated_at']
