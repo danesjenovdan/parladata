@@ -7,4 +7,4 @@ resources:
 images:
   - name: parlasolr-ajdovscina
     newName: rg.fr-par.scw.cloud/djnd/parlasolr-ajdovscina
-    newTag: '82825db41b5fea129ecc8c9231cd3585c848f26b'
+    newTag: '67fd8d4f4e6a8631ffc652c3f106f62650568504'
