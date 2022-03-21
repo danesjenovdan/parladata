@@ -68,7 +68,7 @@ spec:
         image: parlasolr-ajdovscina
         command: ['cp', '-f', '/parlasearch-conf/schema.xml', '/var/solr/data/parlasearch/conf/']
         volumeMounts:
-        - name: parlasolr-persistent-storage
+        - name: parlasolr-ajdovscina-persistent-storage
           # /var/solr/data it's SOLR_HOME set in Docker file
           mountPath: /var/solr/data
         resources:
