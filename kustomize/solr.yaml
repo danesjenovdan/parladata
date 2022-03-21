@@ -21,7 +21,7 @@ spec:
       - name: parlasolr-ajdovscina
         image: parlasolr-ajdovscina # kustomize thing
         volumeMounts:
-        - name: parlasolr-persistent-storage
+        - name: parlasolr-ajdovscina-persistent-storage
           mountPath: /var/solr/data
         ports:
         - name: http
@@ -54,7 +54,7 @@ spec:
         # create parlasearch core with a convenience script
         command: ['sh', '-c', '/opt/docker-solr/scripts/precreate-core parlasearch']
         volumeMounts:
-        - name: parlasolr-persistent-storage
+        - name: parlasolr-ajdovscina-persistent-storage
           # /var/solr/data it's SOLR_HOME set in Docker file
           mountPath: /var/solr/data
         resources:
@@ -82,7 +82,7 @@ spec:
         image: parlasolr-ajdovscina
         command: ['cp', '-f', '/parlasearch-conf/solrconfig.xml', '/var/solr/data/parlasearch/conf/']
         volumeMounts:
-        - name: parlasolr-persistent-storage
+        - name: parlasolr-ajdovscina-persistent-storage
           # /var/solr/data it's SOLR_HOME set in Docker file
           mountPath: /var/solr/data
         resources:
