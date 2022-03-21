@@ -75,8 +75,13 @@ class BallotAdmin(admin.ModelAdmin):
     list_editable = ['option']
     readonly_fields = ['created_at', 'updated_at']
 
+class AreaAdmin(admin.ModelAdmin):
+    list_display = ['name', 'identifier', 'parent', 'classification']
+
+
 admin.site.site_header = 'Parladata'
 admin.site.register(Task)
+admin.site.register(Area, AreaAdmin)
 admin.site.register(Ballot, BallotAdmin)
 admin.site.register(Question, QuestionAdmin)
 admin.site.register(Mandate, MandateAdmin)
