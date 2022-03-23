@@ -20,7 +20,7 @@ class LegislationSerializer(CommonCachableSerializer):
     timestamp = serializers.DateTimeField()
 
     def calculate_cache_key(self, legislation):
-        return f'LegislationSerializer_{legislation.id}_{legislation.timestamp.strftime("%Y-%m-%dT%H:%M:%S")}'
+        return f'LegislationSerializer_{legislation.id}_{legislation.updated_at.strftime("%Y-%m-%dT%H:%M:%S")}'
 
     def get_status(self, obj):
         return obj.status.name if obj.status else None
@@ -35,7 +35,7 @@ class LegislationDetailSerializer(LegislationSerializer):
     documents = serializers.SerializerMethodField()
 
     def calculate_cache_key(self, legislation):
-        return f'LegislationDetailSerializer_{legislation.id}_{legislation.timestamp.strftime("%Y-%m-%dT%H:%M:%S")}'
+        return f'LegislationDetailSerializer_{legislation.id}_{legislation.updated_at.strftime("%Y-%m-%dT%H:%M:%S")}'
 
     def get_votes(self, obj):
         votes = Vote.objects.filter(motion__law=obj)
