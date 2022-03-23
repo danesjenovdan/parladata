@@ -15,4 +15,5 @@ class Command(BaseCommand):
                 vote,
                 context={'date': datetime.today()}
             )
-            serializer.get_members(vote)
+            # call serializer.data to actually cache everything
+            serializer.data
