@@ -271,7 +271,7 @@ class CommonPersonSerializer(CommonCachableSerializer):
         else:
             timestamp = person.updated_at
 
-        return f'CommonPersonSerializer_{person.id}_{timestamp.strftime("%Y-%m-%dT%H:%M:%S")}'
+        return f'CommonPersonSerializer_{person.id}_{self.context["date"].strftime("%Y-%m-%dT%H:%M:%S")}_{timestamp.strftime("%Y-%m-%dT%H:%M:%S")}'
 
     def get_group(self, obj):
         active_parliamentary_group_membership = obj.parliamentary_group_on_date(self.context['date'])
