@@ -17,7 +17,7 @@ class RecentActivityCardSerializer(PersonScoreCardSerializer):
 
         # get all events (questions, ballots, speeches) for person
         # Important: bacause we join all of them in a union, they all need to
-        # have the same number of values {id, timestamp, type}
+        # have the same number and types of values {id, timestamp, type}
         questions = Question.objects.filter(
             person_authors=person,
             timestamp__lte=self.context['date'],
@@ -47,10 +47,10 @@ class RecentActivityCardSerializer(PersonScoreCardSerializer):
         }
 
         # map from {id, timestamp, type} to full Question, Ballot, or Speech object
-        def map_to_db_object(o):
-            return next((dbo for dbo in db_objects[o['type']] if dbo.id == o['id']), None)
-
-        paged_object_list = map(map_to_db_object, paged_event_ids)
+        paged_object_list = map(
+            lambda id_object: next(db_object for db_object in db_objects[id_object['type']] if db_object.id == id_object['id']),
+            paged_event_ids,
+        )
 
         event_serializer = EventSerializer(
             paged_object_list,
