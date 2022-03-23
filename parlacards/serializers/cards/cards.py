@@ -45,7 +45,6 @@ from parlacards.serializers.legislation import LegislationSerializer, Legislatio
 from parlacards.serializers.ballot import BallotSerializer
 from parlacards.serializers.voting_distance import VotingDistanceSerializer, GroupVotingDistanceSerializer
 from parlacards.serializers.membership import MembershipSerializer
-from parlacards.serializers.recent_activity import DailyActivitySerializer
 from parlacards.serializers.style_scores import StyleScoresSerializer
 from parlacards.serializers.speech import (
     SpeechSerializer,
@@ -277,79 +276,6 @@ class GroupDeviationFromGroupCardSerializer(GroupScoreCardSerializer):
                 'value': deviation_score.value
             } for deviation_score in relevant_deviations
         ]
-
-
-class RecentActivityCardSerializer(PersonScoreCardSerializer):
-    '''
-    Serializes recent activity since 30 days in the past.
-    '''
-
-    def get_results(self, obj):
-        # obj is the person
-
-        # we're getting events for the past 30 days
-        from_datetime = self.context['date'] - timedelta(days=30)
-
-        ballots = Ballot.objects.filter(
-            personvoter=obj,
-            vote__timestamp__lte=self.context['date'],
-            vote__timestamp__gte=from_datetime
-        ).order_by(
-            '-vote__timestamp'
-        ).annotate(
-            date=TruncDay('vote__timestamp')
-        )
-
-        questions = Question.objects.filter(
-            person_authors=obj,
-            timestamp__lte=self.context['date'],
-            timestamp__gte=from_datetime
-        ).order_by(
-            '-timestamp'
-        ).annotate(
-            date=TruncDay('timestamp')
-        )
-
-        speeches = Speech.objects.filter_valid_speeches(
-            self.context['date']
-        ).filter(
-            speaker=obj,
-            start_time__lte=self.context['date'],
-            start_time__gte=from_datetime
-        ).order_by(
-            '-start_time'
-        ).annotate(
-            date=TruncDay('start_time')
-        )
-
-        dates_to_serialize = set([
-            *ballots.values_list('date', flat=True),
-            *questions.values_list('date', flat=True),
-            *speeches.values_list('date', flat=True)
-        ])
-
-        # Do NOT use chain directly if you want to iterate over it multiple
-        # times. `chain` is just an iterator and will NOT reset on subsequent
-        # iterations. Iteration functions will just keep calling next() on it
-        # and just see an empty list.
-        events_to_serialize = list(chain(ballots, questions, speeches))
-
-        # this is ripe for optimization
-        # currently iterates over all events
-        # for every date
-        grouped_events_to_serialize = [
-            {
-                'date': date,
-                'events': list(filter(lambda event: event.date == date, events_to_serialize))
-            } for date in dates_to_serialize
-        ]
-
-        serializer = DailyActivitySerializer(
-            grouped_events_to_serialize,
-            many=True,
-            context=self.context
-        )
-        return serializer.data
 
 
 class StyleScoresCardSerializer(PersonScoreCardSerializer):
