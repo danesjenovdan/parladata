@@ -11,4 +11,4 @@ resources:
 images:
   - name: parladata-hrastnik
     newName: rg.fr-par.scw.cloud/djnd/parladata-hrastnik
-    newTag: '09bda2945043c97def07071862b152887c424696'
+    newTag: '7175a290e00e9501ffacd971b74ffbff44465f2c'
