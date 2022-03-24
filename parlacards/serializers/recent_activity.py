@@ -44,8 +44,3 @@ class EventSerializer(CommonSerializer):
             **serializer.data,
             'type': event_type
         }
-
-
-class DailyActivitySerializer(CommonSerializer):
-    date = serializers.DateTimeField()
-    events = EventSerializer(many=True)
