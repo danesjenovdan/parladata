@@ -572,7 +572,7 @@ class LastSession(CardView):
             # the_thing is the parent organization,
             # we should check if any sessions exist
             if the_thing.sessions.filter(
-                Q(speeches__isnull=False) | Q(motions__isnull=False)
+                Q(motions__isnull=False) | Q(sessiontfidf_related__isnull=False)
             ).count() > 0:
                 return Response(self.get_serializer_data(request, the_thing))
 
