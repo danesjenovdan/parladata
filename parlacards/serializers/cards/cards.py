@@ -40,7 +40,6 @@ from parlacards.models import (
 from parlacards.serializers.media import MediaReportSerializer
 from parlacards.serializers.person import PersonBasicInfoSerializer
 from parlacards.serializers.organization import OrganizationBasicInfoSerializer, RootOrganizationBasicInfoSerializer
-from parlacards.serializers.session import SessionSerializer
 from parlacards.serializers.legislation import LegislationSerializer, LegislationDetailSerializer
 from parlacards.serializers.ballot import BallotSerializer
 from parlacards.serializers.voting_distance import VotingDistanceSerializer, GroupVotingDistanceSerializer
@@ -115,7 +114,7 @@ class GroupVocabularySizeCardSerializer(GroupScoreCardSerializer):
 
 class PersonBallotCardSerializer(PersonScoreCardSerializer):
     def get_results(self, obj):
-        # this is implemeted in to_representation for pagination
+        # this is implemented in to_representation for pagination
         return None
 
     def to_representation(self, instance):
@@ -323,7 +322,7 @@ class PersonTfidfCardSerializer(PersonScoreCardSerializer):
 
 class PersonSpeechesCardSerializer(PersonScoreCardSerializer):
     def get_results(self, person):
-        # this is implemeted in to_representation for pagination
+        # this is implemented in to_representation for pagination
         return None
 
     def to_representation(self, person):
@@ -354,7 +353,7 @@ class PersonSpeechesCardSerializer(PersonScoreCardSerializer):
 
 class GroupSpeechesCardSerializer(GroupScoreCardSerializer):
     def get_results(self, group):
-        # this is implemeted in to_representation for pagination
+        # this is implemented in to_representation for pagination
         return None
 
     def to_representation(self, group):
@@ -380,82 +379,6 @@ class GroupSpeechesCardSerializer(GroupScoreCardSerializer):
 #
 # MISC
 #
-class SessionsCardSerializer(CardSerializer):
-    # TODO it's smelly that get_results needs
-    # to exist, even though we override everything
-    # in to_representation
-    def get_results(self, obj):
-        return None
-
-    def to_representation(self, mandate):
-        parent_data = super().to_representation(mandate)
-
-        order = self.context.get('GET', {}).get('order_by', '-start_time')
-
-        sessions = mandate.sessions.filter(
-            Q(start_time__lte=self.context['date']) | Q(start_time__isnull=True)
-        ).order_by(order)
-
-        # check if classification is present in the GET parameter
-        # classifications should be comma-separated
-        # these are organization classifications
-        classification_filter = self.context.get('GET', {}).get('classification', None)
-        if classification_filter:
-            sessions = sessions.filter(
-                organizations__classification__in=classification_filter.split(',')
-            )
-        # show only root organization sessions by default
-        else:
-            sessions = sessions.filter(
-                organizations__classification='root'
-            )
-
-        # check if any individual organizations are selected and filter
-        # based on those
-        if organizations_filter := self.context.get('GET', {}).get('organizations', None):
-            try:
-                organization_ids = map(lambda x: int(x), organizations_filter.split(','))
-            except ValueError:
-                organization_ids = []
-            sessions = sessions.filter(
-                organizations__id__in=organization_ids
-            )
-
-        paged_object_list, pagination_metadata = create_paginator(self.context.get('GET', {}), sessions, prefix='sessions:')
-
-        serializer = SessionSerializer(
-            paged_object_list,
-            many=True,
-            context=self.context
-        )
-
-        # TODO this should probably be a serializer of its own
-        # this is where we prepare all the organizations in a single
-        # dictionary so the front-end card can present filters
-        relevant_organizations = Organization.objects.exclude(classification__in=['pg'])
-        latest_timestamp = relevant_organizations.order_by('-updated_at').first().updated_at
-
-        organizations_cache_key = f'AllOrganizations_{latest_timestamp.strftime("%Y-%m-%d")}'
-
-        # if there's something in the cache return it, otherwise serialize and save
-        if cached_organizations := cache.get(organizations_cache_key):
-            serialized_organizations = cached_organizations
-        else:
-            serialized_organizations = CommonOrganizationSerializer(
-                relevant_organizations,
-                many=True,
-                context=self.context
-            ).data
-            cache.set(organizations_cache_key, serialized_organizations)
-
-        return {
-            **parent_data,
-            **pagination_metadata,
-            'results': serializer.data,
-            'organizations': serialized_organizations,
-        }
-
-
 class LegislationDetailCardSerializer(CardSerializer):
     def get_results(self, obj):
         # obj is the law
@@ -537,7 +460,7 @@ class GroupCardSerializer(GroupScoreCardSerializer):
 
 class GroupMembersCardSerializer(GroupScoreCardSerializer):
     def get_results(self, obj):
-        # this is implemeted in to_representation for pagination
+        # this is implemented in to_representation for pagination
         return None
 
     def to_representation(self, instance):
@@ -668,7 +591,7 @@ class SessionAgendaItemCardSerializer(SessionScoreCardSerializer):
 
 class SessionMinutesCardSerializer(SessionScoreCardSerializer):
     def get_results(self, session):
-        # this is implemeted in to_representation for pagination
+        # this is implemented in to_representation for pagination
         return None
 
     def to_representation(self, session):
@@ -705,7 +628,7 @@ class SingleMinutesCardSerializer(CardSerializer):
 
 class SessionSpeechesCardSerializer(SessionScoreCardSerializer):
     def get_results(self, obj):
-        # this is implemeted in to_representation for pagination
+        # this is implemented in to_representation for pagination
         return None
 
     def to_representation(self, instance):
@@ -793,7 +716,7 @@ class GroupTfidfCardSerializer(GroupScoreCardSerializer):
 
 class SessionVotesCardSerializer(SessionScoreCardSerializer):
     def get_results(self, obj):
-        # this is implemeted in to_representation for pagination
+        # this is implemented in to_representation for pagination
         return None
 
     def to_representation(self, instance):
@@ -837,7 +760,7 @@ class SessionVotesCardSerializer(SessionScoreCardSerializer):
 #
 class MandateSpeechCardSerializer(CardSerializer):
     def get_results(self, mandate):
-        # this is implemeted in to_representation for pagination
+        # this is implemented in to_representation for pagination
         return None
 
     def to_representation(self, mandate):
@@ -947,7 +870,7 @@ class MandateUsageThroughTimeCardSerializer(CardSerializer):
 
 class MandateLegislationCardSerializer(CardSerializer):
     def get_results(self, mandate):
-        # this is implemeted in to_representation for pagination
+        # this is implemented in to_representation for pagination
         return None
 
     def to_representation(self, mandate):
