@@ -38,7 +38,7 @@ class LegislationMixin:
 
 class LegislationCardSerializer(CardSerializer, LegislationMixin):
     def get_results(self, mandate):
-        # this is implemeted in to_representation for pagination
+        # this is implemented in to_representation for pagination
         return None
 
     def to_representation(self, mandate):
