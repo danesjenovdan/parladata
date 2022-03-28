@@ -82,7 +82,8 @@ def calculate_people_tfidf(playing_field, timestamp=None):
         preprocessor=lambda x: x, # do not preprocess
         tokenizer=lambda x: x.split(' '), # tokenize by splitting at ' '
         stop_words=get_stopwords(),
-        use_idf=True
+        use_idf=True,
+        sublinear_tf=True
     )
 
     tfidf = tfidfVectorizer.fit_transform(all_speeches)
@@ -179,7 +180,8 @@ def calculate_groups_tfidf(playing_field, timestamp=None):
         preprocessor=lambda x: x, # do not preprocess
         tokenizer=lambda x: x.split(' '), # tokenize by splitting at ' '
         stop_words=get_stopwords(),
-        use_idf=True
+        use_idf=True,
+        sublinear_tf=True
     )
 
     tfidf = tfidfVectorizer.fit_transform(group_speeches)
@@ -287,7 +289,8 @@ def calculate_sessions_tfidf(playing_field, timestamp=None):
         preprocessor=lambda x: x, # do not preprocess
         tokenizer=lambda x: x.split(' '), # tokenize by splitting at ' '
         stop_words=get_stopwords(),
-        use_idf=True
+        use_idf=True,
+        sublinear_tf=True
     )
 
     tfidf = tfidfVectorizer.fit_transform(all_speeches)
