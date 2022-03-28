@@ -121,7 +121,8 @@ class Vote(Timestampable, Taggable):
             max_percentage = None
         return {
             'max_option_percentage': max_percentage,
-            'max_option': max_option
+            'max_option': max_option,
+            "passed": self.result,
         }
 
     def __str__(self):
