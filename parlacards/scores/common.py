@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
 from string import punctuation
+import re
 
 from django.utils.module_loading import import_string
 from django.conf import settings
@@ -29,7 +30,7 @@ def remove_punctuation(text):
     return text.translate(str.maketrans('', '', punctuation))
 
 def tokenize(text):
-    return [s for s in text.split(' ') if s != '']
+    return [s for s in re.split(r'\s', text) if s != '']
 
 def get_lemmatize_method(name, language_code=None):
     '''
