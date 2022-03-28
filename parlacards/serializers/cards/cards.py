@@ -45,7 +45,6 @@ from parlacards.serializers.legislation import LegislationSerializer, Legislatio
 from parlacards.serializers.ballot import BallotSerializer
 from parlacards.serializers.voting_distance import VotingDistanceSerializer, GroupVotingDistanceSerializer
 from parlacards.serializers.membership import MembershipSerializer
-from parlacards.serializers.recent_activity import DailyActivitySerializer
 from parlacards.serializers.style_scores import StyleScoresSerializer
 from parlacards.serializers.speech import (
     SpeechSerializer,
@@ -57,7 +56,7 @@ from parlacards.serializers.vote import VoteSerializer, SessionVoteSerializer, B
 from parlacards.serializers.tfidf import TfidfSerializer
 from parlacards.serializers.facets import GroupFacetSerializer, PersonFacetSerializer
 from parlacards.serializers.question import QuestionSerializer
-from parlacards.serializers.agenda_item import AgendaItemsSerializer, MinutesAgendaItemSerializer
+from parlacards.serializers.agenda_item import AgendaItemsSerializer, MinutesAgendaItemSerializer, MinutesAgendaItemWithSessionSerializer
 from parlacards.serializers.common import (
     CardSerializer,
     PersonScoreCardSerializer,
@@ -279,79 +278,6 @@ class GroupDeviationFromGroupCardSerializer(GroupScoreCardSerializer):
         ]
 
 
-class RecentActivityCardSerializer(PersonScoreCardSerializer):
-    '''
-    Serializes recent activity since 30 days in the past.
-    '''
-
-    def get_results(self, obj):
-        # obj is the person
-
-        # we're getting events for the past 30 days
-        from_datetime = self.context['date'] - timedelta(days=30)
-
-        ballots = Ballot.objects.filter(
-            personvoter=obj,
-            vote__timestamp__lte=self.context['date'],
-            vote__timestamp__gte=from_datetime
-        ).order_by(
-            '-vote__timestamp'
-        ).annotate(
-            date=TruncDay('vote__timestamp')
-        )
-
-        questions = Question.objects.filter(
-            person_authors=obj,
-            timestamp__lte=self.context['date'],
-            timestamp__gte=from_datetime
-        ).order_by(
-            '-timestamp'
-        ).annotate(
-            date=TruncDay('timestamp')
-        )
-
-        speeches = Speech.objects.filter_valid_speeches(
-            self.context['date']
-        ).filter(
-            speaker=obj,
-            start_time__lte=self.context['date'],
-            start_time__gte=from_datetime
-        ).order_by(
-            '-start_time'
-        ).annotate(
-            date=TruncDay('start_time')
-        )
-
-        dates_to_serialize = set([
-            *ballots.values_list('date', flat=True),
-            *questions.values_list('date', flat=True),
-            *speeches.values_list('date', flat=True)
-        ])
-
-        # Do NOT use chain directly if you want to iterate over it multiple
-        # times. `chain` is just an iterator and will NOT reset on subsequent
-        # iterations. Iteration functions will just keep calling next() on it
-        # and just see an empty list.
-        events_to_serialize = list(chain(ballots, questions, speeches))
-
-        # this is ripe for optimization
-        # currently iterates over all events
-        # for every date
-        grouped_events_to_serialize = [
-            {
-                'date': date,
-                'events': filter(lambda event: event.date == date, events_to_serialize)
-            } for date in dates_to_serialize
-        ]
-
-        serializer = DailyActivitySerializer(
-            grouped_events_to_serialize,
-            many=True,
-            context=self.context
-        )
-        return serializer.data
-
-
 class StyleScoresCardSerializer(PersonScoreCardSerializer):
     def get_results(self, obj):
         # obj is person
@@ -529,52 +455,6 @@ class SessionsCardSerializer(CardSerializer):
             'organizations': serialized_organizations,
         }
 
-
-class LegislationCardSerializer(CardSerializer):
-    # TODO it's smelly that get_results needs
-    # to exist, even though we override everything
-    # in to_representation
-    def get_results(self, mandate):
-        return None
-
-    def to_representation(self, mandate):
-        parent_data = super().to_representation(mandate)
-
-        text_filter = self.context.get('GET', {}).get('text', '')
-        order = self.context.get('GET', {}).get('order_by', '-timestamp')
-
-        legislation = Law.objects.filter(
-            Q(timestamp__lte=self.context['date']) | Q(timestamp__isnull=True),
-            session__mandate=mandate,
-            text__icontains=text_filter,
-        ).order_by(order)
-
-        # check if classification is present in the GET parameter
-        # classifications should be comma-separated
-        # TODO this code still smells
-        classification_filter = self.context.get('GET', {}).get('classification', None)
-        if classification_filter:
-            legislation = legislation.filter(
-                classification__name__in=classification_filter.split(',')
-            )
-
-        paged_object_list, pagination_metadata = create_paginator(self.context.get('GET', {}), legislation, prefix='legislation:')
-
-        serializer = LegislationSerializer(
-            paged_object_list,
-            many=True,
-            context=self.context
-        )
-
-        classifications = LegislationClassification.objects.all().distinct('name').values_list('name', flat=True)
-
-        return {
-            **parent_data,
-            **pagination_metadata,
-            'results': serializer.data,
-            # TODO standardize this and more importantly, cache it!
-            'classifications': classifications,
-        }
 
 class LegislationDetailCardSerializer(CardSerializer):
     def get_results(self, obj):
@@ -776,20 +656,6 @@ class RootGroupBasicInfoCardSerializer(CardSerializer):
 #
 # SESSION
 #
-class SessionLegislationCardSerializer(SessionScoreCardSerializer):
-    def get_results(self, obj):
-        # obj is the session
-        serializer = LegislationSerializer(
-            Law.objects.filter(
-                Q(timestamp__lte=self.context['date']) | Q(timestamp__isnull=True),
-                session=obj,
-            ),
-            many=True,
-            context=self.context
-        )
-        return serializer.data
-
-
 class SessionAgendaItemCardSerializer(SessionScoreCardSerializer):
     def get_results(self, obj):
         # obj is the session
@@ -826,6 +692,15 @@ class SessionMinutesCardSerializer(SessionScoreCardSerializer):
             **pagination_metadata,
             'results': minutes_serializer.data,
         }
+
+
+class SingleMinutesCardSerializer(CardSerializer):
+    def get_results(self, agenda_item):
+        serializer = MinutesAgendaItemWithSessionSerializer(
+            agenda_item,
+            context=self.context
+        )
+        return serializer.data
 
 
 class SessionSpeechesCardSerializer(SessionScoreCardSerializer):
@@ -874,16 +749,6 @@ class QuoteCardSerializer(CardSerializer):
     def get_results(self, obj):
         # obj is the quote
         serializer = QuoteWithSessionSerializer(
-            obj,
-            context=self.context
-        )
-        return serializer.data
-
-
-class SingleSessionCardSerializer(CardSerializer):
-    def get_results(self, obj):
-        # obj is the session
-        serializer = SessionSerializer(
             obj,
             context=self.context
         )

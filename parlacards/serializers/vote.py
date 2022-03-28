@@ -7,6 +7,7 @@ from rest_framework import serializers
 
 from parladata.models.person import Person
 from parladata.models.ballot import Ballot
+from parladata.models.organization import Organization
 
 from parlacards.serializers.session import SessionSerializer
 from parlacards.serializers.link import LinkSerializer
@@ -20,10 +21,14 @@ from parlacards.serializers.common import (
 
 class VoteBallotSerializer(CommonCachableSerializer):
     def calculate_cache_key(self, ballot):
-        ballot_timestamp = ballot.updated_at
-        person_timestamp = ballot.personvoter.updated_at
-        timestamp = max([ballot_timestamp, person_timestamp])
-        return f'VoteBallotSerializer_{ballot.id}_{ballot.personvoter.id}_{timestamp.strftime("%Y-%m-%dT%H:%M:%S")}'
+        # if there is a personvoter, the cache key should take that into consideration
+        if ballot.personvoter:
+            ballot_timestamp = ballot.updated_at
+            person_timestamp = ballot.personvoter.updated_at
+            timestamp = max([ballot_timestamp, person_timestamp])
+            return f'VoteBallotSerializer_{ballot.id}_{ballot.personvoter.id}_{timestamp.strftime("%Y-%m-%dT%H:%M:%S")}'
+
+        return f'VoteBallotSerializer_{ballot.id}_{ballot.updated_at.strftime("%Y-%m-%dT%H:%M:%S")}'
 
     person = CommonPersonSerializer(source='personvoter')
     option = serializers.CharField()
@@ -120,28 +125,32 @@ class VoteSumsSerializer(CommonCachableSerializer):
         # it's either the vote or the latest update to the person
         vote_timestamp = vote.timestamp
 
-        # there is a horrible case where the vote has no ballots
+        # there is a special case where the vote has no ballots
         # we handle it by checking the ballot count and assigning
         # latest_voter_timestamp to previously calculated vote_timestamp
         if vote.ballots.count() == 0:
+            return f'VoteSumsSerializer_{vote.id}_{vote_timestamp.strftime("%Y-%m-%dT%H:%M:%S")}'
+        
+        # the other special case is when all the ballots are anonymous
+        elif vote.ballots.filter(personvoter__isnull=False).count() == 0:
             latest_voter_timestamp = vote_timestamp
-            latest_ballot_timestamp = vote_timestamp
+
+        # we have ballots and at least one of them has a personvoter
         else:
-            # we have ballots
-            # latest person update
-            latest_voter_timestamp = vote.ballots.all().order_by(
+            latest_voter_timestamp = vote.ballots.filter(personvoter__isnull=False).order_by(
                 '-personvoter__updated_at'
             ).values(
                 'personvoter__updated_at'
             ).first()['personvoter__updated_at']
 
-            # latest ballot update
-            latest_ballot_timestamp = vote.ballots.all().order_by(
-                '-updated_at'
-            ).values(
-                'updated_at'
-            ).first()['updated_at']
+        # there are ballots so we need the latest ballot update
+        latest_ballot_timestamp = vote.ballots.all().order_by(
+            '-updated_at'
+        ).values(
+            'updated_at'
+        ).first()['updated_at']
 
+        # finally we calculate the timestamp and cache key
         timestamp = max([vote_timestamp, latest_voter_timestamp, latest_ballot_timestamp])
         return f'VoteSumsSerializer_{vote.id}_{timestamp.strftime("%Y-%m-%dT%H:%M:%S")}'
 
@@ -157,52 +166,34 @@ class VoteSumsSerializer(CommonCachableSerializer):
         return representation
 
 
-class VoteGovernmentSidesSerializer(CommonCachableSerializer):
-    # TODO THIS IS ALL BROKEN
-    # TODO this could be a bad cache key
-    # what if a party changed its coalition status
+class VoteGovernmentSideSerializer(CommonCachableSerializer):
     def calculate_cache_key(self, vote):
-        return f'VoteGovernmentSidesSerializer_{vote.id}_{vote.updated_at.strftime("%Y-%m-%dT%H:%M:%S")}'
+        timestamp = vote.updated_at
+        # TODO get latest membership timestamp
+        return f'VoteGovernmentSideSerializer_{vote.id}_{self.context["gov_side"]}_{timestamp.strftime("%Y-%m-%dT%H:%M:%S")}'
 
-    def to_representation(self, vote):
-        # TODO THIS IS TOTALLY BROKEN, NEEDS A REAL CASE TO BE DEBUGGED
-        # CURRENTLY WE JUST RETURN AN EMPTY LIST
+    def get_outliers(self, vote):
+        # TODO implemet this
         return []
 
-        # TODO this code is all wrong, but kept here for reference
-        cache_key = self.calculate_cache_key(vote)
-        cached_representation = cache.get(cache_key)
-        if cached_representation:
-            return cached_representation
+    def get_max(self, vote):
+        return vote.get_stats(gov_side=self.context['gov_side'])
 
-        coalition_stats = vote.get_stats(gov_side='coalition')
-        if not coalition_stats:
-            return []
-        coalition_options = vote.get_option_counts(gov_side='coalition')
-        opposition_stats = vote.get_stats(gov_side='opposition')
-        opposition_options = vote.get_option_counts(gov_side='opposition')
-        representation = [
-            {
-                'stats': coalition_stats,
-                'votes': coalition_options,
-                'group': {
-                    'name': 'Coalition',
-                    'acronym': None,
-                    'slug': None
-                }
-            },
-            {
-                'stats': opposition_stats,
-                'votes': opposition_options,
-                'group': {
-                    'name': 'Opposition',
-                    'acronym': None,
-                    'slug': None
-                }
-            }
-        ]
-        cache.set(cache_key, representation)
-        return representation
+    def get_votes(self, vote):
+        return vote.get_option_counts(gov_side=self.context['gov_side'])
+
+    def get_group(self, vote):
+        return {
+            'name': self.context['gov_side'],
+            'acronym': None,
+            'slug': None
+        }
+
+    max = serializers.SerializerMethodField()
+    votes = serializers.SerializerMethodField()
+    outliers = serializers.SerializerMethodField()
+    group = serializers.SerializerMethodField()
+
 
 class VoteStatsSerializer(CommonCachableSerializer):
     def calculate_cache_key(self, instance):
@@ -238,11 +229,22 @@ class VoteSerializer(CommonSerializer):
         return new_context
 
     def get_government_sides(self, vote):
-        serializer = VoteGovernmentSidesSerializer(
+        if not Organization.objects.filter(classification='coalition').exists():
+            return []
+
+        coalition_context = dict.copy(self.context)
+        coalition_context['gov_side'] = 'coalition'
+        coaliton_serializer = VoteGovernmentSideSerializer(
             vote,
-            context=self.context,
+            context=coalition_context
         )
-        return serializer.data
+        opposition_context = dict.copy(self.context)
+        opposition_context['gov_side'] = 'opposition'
+        opposition_serializer = VoteGovernmentSideSerializer(
+            vote,
+            context=opposition_context
+        )
+        return [coaliton_serializer.data, opposition_serializer.data]
 
     def get_abstract_visible(self, vote):
         return False
@@ -265,34 +267,36 @@ class VoteSerializer(CommonSerializer):
         # TODO these are now all cached together
         # but initial load still takes three minutes in Ukraine
 
+        # there is a special case where the vote has no ballots
+        # we can return []
+        if vote.ballots.count() == 0:
+            return []
+
+        # the other special case is when all the ballots are anonymous
+        # we can return []
+        if vote.ballots.filter(personvoter__isnull=False).count() == 0:
+            return []
+
         # get the latest timestamp to calculate the cache key
         # it's either the vote or the latest update to the person
         vote_timestamp = vote.timestamp
 
-        # there is a horrible case where the vote has no ballots
-        # we handle it by checking the ballot count and assigning
-        # latest_voter_timestamp to previously calculated vote_timestamp
-        if vote.ballots.count() == 0:
-            latest_voter_timestamp = vote_timestamp
-            latest_ballot_timestamp = vote_timestamp
-        else:
-            # we have ballots
-            # latest person update
-            latest_voter_timestamp = vote.ballots.all().order_by(
-                '-personvoter__updated_at'
-            ).values(
-                'personvoter__updated_at'
-            ).first()['personvoter__updated_at']
+        # we did not return so we have ballots and at least one of them has a personvoter
+        latest_voter_timestamp = vote.ballots.filter(personvoter__isnull=False).order_by(
+            '-personvoter__updated_at'
+        ).values(
+            'personvoter__updated_at'
+        ).first()['personvoter__updated_at']
 
-            # latest ballot update
-            latest_ballot_timestamp = vote.ballots.all().order_by(
-                '-updated_at'
-            ).values(
-                'updated_at'
-            ).first()['updated_at']
+
+        # latest ballot update
+        latest_ballot_timestamp = vote.ballots.all().order_by(
+            '-updated_at'
+        ).values(
+            'updated_at'
+        ).first()['updated_at']
 
         timestamp = max([vote_timestamp, latest_voter_timestamp, latest_ballot_timestamp])
-
         cache_key = f'SingleVoteMembers__{vote.id}__{timestamp.strftime("%Y-%m-%dT%H:%M:%S")}'
 
         # if there's something in the cache, return
@@ -314,6 +318,16 @@ class VoteSerializer(CommonSerializer):
         return serializer.data
 
     def get_groups(self, vote):
+        # there is a horrible case where the vote has no ballots
+        # we can return []
+        if vote.ballots.count() == 0:
+            return []
+
+        # the other horrible case is when all the ballots are anonymous
+        # we can return []
+        if vote.ballots.filter(personvoter__isnull=False).count() == 0:
+            return []
+
         # we want to get and serialize groups that were active on the day of the vote
         # this also includes new_context['vote'] that is needed by VoteGroupSerializer
         new_context = self._get_context_for_vote_date(vote)
@@ -380,9 +394,10 @@ class SessionVoteSerializer(CommonSerializer):
         return True
 
     def get_title(self, obj):
-        # TODO return motion object
+        # TODO return motion object 
         # and handle it on the front-end
-        return obj.motion.title
+        # TODO changed obj.motion.title to obj.name   check this if has a sense
+        return obj.name
 
     def get_all_votes(self, obj):
         # obj is the vote

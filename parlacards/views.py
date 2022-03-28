@@ -12,6 +12,7 @@ from parladata.models.session import Session
 from parladata.models.speech import Speech
 from parladata.models.vote import Vote
 from parladata.models.legislation import Law
+from parladata.models.agenda_item import AgendaItem
 
 from parlacards.models import Quote
 
@@ -40,7 +41,6 @@ from parlacards.serializers.cards import (
     GroupDeviationFromGroupCardSerializer,
     PersonNumberOfQuestionsCardSerializer,
     PersonVoteAttendanceCardSerializer,
-    RecentActivityCardSerializer,
     PersonMonthlyVoteAttendanceCardSerializer,
     GroupMonthlyVoteAttendanceCardSerializer,
     GroupNumberOfQuestionsCardSerializer,
@@ -74,10 +74,12 @@ from parlacards.serializers.cards import (
     QuoteCardSerializer,
     RootGroupBasicInfoCardSerializer,
     SessionMinutesCardSerializer,
+    SingleMinutesCardSerializer,
 )
 from parlacards.serializers.speech import SpeechSerializer
 from parlacards.serializers.quote import QuoteSerializer
 from parlacards.serializers.group_attendance import SessionGroupAttendanceSerializer
+from parlacards.serializers.cards.person.recent_activity import RecentActivityCardSerializer
 
 from django.core.cache import cache
 
@@ -426,6 +428,11 @@ class SingleLegislation(CardView):
     card_serializer = LegislationDetailCardSerializer
 
 
+class SingleMinutes(CardView):
+    thing = AgendaItem
+    card_serializer = SingleMinutesCardSerializer
+
+
 class PersonTfidfView(CachedCardView):
     thing = Person
     card_serializer = PersonTfidfCardSerializer
@@ -565,7 +572,7 @@ class LastSession(CardView):
             # the_thing is the parent organization,
             # we should check if any sessions exist
             if the_thing.sessions.filter(
-                Q(speeches__isnull=False) | Q(motions__isnull=False)
+                Q(motions__isnull=False) | Q(sessiontfidf_related__isnull=False)
             ).count() > 0:
                 return Response(self.get_serializer_data(request, the_thing))
 

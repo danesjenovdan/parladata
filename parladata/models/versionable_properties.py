@@ -7,6 +7,7 @@ from parladata.models.common import EducationLevel
 class PersonVersionableProperty(VersionableProperty):
     owner = models.ForeignKey(
         'parladata.Person',
+        related_name="%(class)s",
         on_delete=models.CASCADE)
 
     class Meta:
@@ -66,6 +67,7 @@ class PersonNumberOfPoints(PersonVersionableProperty):
 class OrganizationVersionableProperty(VersionableProperty):
     owner = models.ForeignKey(
         'parladata.Organization',
+        related_name="%(class)s",
         on_delete=models.CASCADE)
 
     class Meta:

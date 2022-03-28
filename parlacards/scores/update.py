@@ -16,7 +16,10 @@ from parladata.models.organization import Organization
 
 from datetime import datetime, timedelta
 
-def run_analyises_for_new_data(timestamp=datetime.now()):
+def run_analyises_for_new_data(timestamp=None):
+    if not timestamp:
+        timestamp = datetime.now()
+
     from_timestamp = timestamp - timedelta(days=1)
 
     new_motions = Motion.objects.filter(created_at__gte=from_timestamp)
@@ -55,7 +58,10 @@ def run_analyises_for_new_data(timestamp=datetime.now()):
         playing_field = Organization.objects.get(id=playing_field)
         run_question_analyses_on_date(playing_field, timestamp)
 
-def force_run_analyses(timestamp=datetime.now(), print_method=print):
+def force_run_analyses(timestamp=None, print_method=print):
+    if not timestamp:
+        timestamp = datetime.now()
+
     playing_field = Organization.objects.first()
     print_method('start vote analyses')
     run_vote_analyses_on_date(playing_field, timestamp)
@@ -66,7 +72,10 @@ def force_run_analyses(timestamp=datetime.now(), print_method=print):
     print_method('finish')
 
 
-def force_run_group_analyses(timestamp=datetime.now(), print_method=print):
+def force_run_group_analyses(timestamp=None, print_method=print):
+    if not timestamp:
+        timestamp = datetime.now()
+
     playing_field = Organization.objects.first()
     print_method('start analyses for groups')
     save_group_number_of_questions(playing_field, timestamp)
@@ -77,7 +86,10 @@ def force_run_group_analyses(timestamp=datetime.now(), print_method=print):
     save_groups_vote_attendance(playing_field, timestamp)
     save_groups_vocabulary_sizes(playing_field, timestamp)
 
-def force_run_person_analyses(timestamp=datetime.now(), print_method=print):
+def force_run_person_analyses(timestamp=None, print_method=print):
+    if not timestamp:
+        timestamp = datetime.now()
+
     playing_field = Organization.objects.first()
     print_method('start analyses for people')
     print_method('start calculating ang number of speeches')

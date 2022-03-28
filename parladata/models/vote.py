@@ -53,23 +53,32 @@ class Vote(Timestampable, Taggable):
 
             # root org is parliament/municipality
             root_organization = self.motion.session.organizations.first()
-            coalition_membership = root_organization.organizationmemberships_children.active_at(
+            coalition_organization_membership = root_organization.organizationmemberships_children.active_at(
                 vote_start_time
             ).filter(
-                member__tags__name='coalition'
-            ).prefetch_related('member').first()
+                member__classification='coalition'
+            ).first()
+
+            if not coalition_organization_membership:
+                return {}
+
+            coalition = coalition_organization_membership.member
+
+            coalition_organization_ids = coalition.organizationmemberships_children.active_at(
+                vote_start_time
+            ).values_list('member', flat=True)
 
             # if coalition is not set then return empty dict
-            if not coalition_membership:
+            if not coalition_organization_ids:
                 return {}
             else:
-                coalition = coalition_membership.member
-                coalition_groups = coalition.query_organization_members(vote_start_time)
                 coalition_voter_ids = PersonMembership.objects.filter(
-                    role='voter',
-                    on_behalf_of__in=coalition_groups,
+                    on_behalf_of__id__in=coalition_organization_ids,
                     organization=root_organization,
-                ).active_at(vote_start_time).values_list('member_id')
+                    role='voter'
+                ).active_at(
+                    vote_start_time
+                ).values_list('member_id')
 
             if gov_side == 'coalition':
                 ballots = self.ballots.filter(personvoter_id__in=coalition_voter_ids)
@@ -111,10 +120,9 @@ class Vote(Timestampable, Taggable):
             max_option = None
             max_percentage = None
         return {
-            'is_outlier': False, # TODO remove because this is disabled on the front for now.
-            'passed': self.motion.result,
             'max_option_percentage': max_percentage,
-            'max_option': max_option
+            'max_option': max_option,
+            "passed": self.result,
         }
 
     def __str__(self):

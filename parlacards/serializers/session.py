@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from django.db.models import Q
 
 from parlacards.serializers.common import CommonCachableSerializer, CommonOrganizationSerializer
 from parladata.models.agenda_item import AgendaItem
@@ -25,6 +26,11 @@ class SessionSerializer(CommonCachableSerializer):
     def get_has_minutes(self, session):
         return AgendaItem.objects.filter(session=session).exists()
 
+    def get_has_legislation(self, session):
+        return session.legislation_considerations.filter(
+            Q(timestamp__lte=self.context['date']) | Q(timestamp__isnull=True)
+        ).exists()
+
     name = serializers.CharField()
     id = serializers.IntegerField()
     start_time = serializers.DateTimeField()
@@ -34,3 +40,4 @@ class SessionSerializer(CommonCachableSerializer):
     in_review = serializers.BooleanField()
     has_transcript = serializers.SerializerMethodField()
     has_minutes = serializers.SerializerMethodField()
+    has_legislation = serializers.SerializerMethodField()

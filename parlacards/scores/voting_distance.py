@@ -30,7 +30,10 @@ def euclidean(v1, v2):
 #
 # PERSON
 #
-def calculate_voting_distance(from_person, to_person, timestamp=datetime.now()):
+def calculate_voting_distance(from_person, to_person, timestamp=None):
+    if not timestamp:
+        timestamp = datetime.now()
+
     from_ballots = Ballot.objects.filter(
         personvoter=from_person,
         vote__timestamp__lte=timestamp
@@ -65,7 +68,10 @@ def calculate_voting_distance(from_person, to_person, timestamp=datetime.now()):
 
     return euclidean(from_coordinates, to_coordinates)
 
-def save_voting_distance(from_person, to_person, playing_field, timestamp=datetime.now()):
+def save_voting_distance(from_person, to_person, playing_field, timestamp=None):
+    if not timestamp:
+        timestamp = datetime.now()
+
     VotingDistance(
         person=from_person,
         target=to_person,
@@ -74,7 +80,10 @@ def save_voting_distance(from_person, to_person, playing_field, timestamp=dateti
         playing_field=playing_field
     ).save()
 
-def save_voting_distances(playing_field, timestamp=datetime.now()):
+def save_voting_distances(playing_field, timestamp=None):
+    if not timestamp:
+        timestamp = datetime.now()
+
     people = playing_field.query_voters(timestamp)
     pairs = combinations(people, 2)
 
@@ -97,11 +106,21 @@ def save_voting_distances(playing_field, timestamp=datetime.now()):
             playing_field=playing_field
         ).save()
 
-def save_voting_distances_between(playing_field, datetime_from=datetime.now(), datetime_to=datetime.now()):
+def save_voting_distances_between(playing_field, datetime_from=None, datetime_to=None):
+    if not datetime_from:
+        datetime_from = datetime.now()
+    if not datetime_to:
+        datetime_to = datetime.now()
+
     for day in get_dates_between(datetime_from, datetime_to):
         save_voting_distances(playing_field, timestamp=day)
 
-def save_sparse_voting_distances_between(playing_field, datetime_from=datetime.now(), datetime_to=datetime.now()):
+def save_sparse_voting_distances_between(playing_field, datetime_from=None, datetime_to=None):
+    if not datetime_from:
+        datetime_from = datetime.now()
+    if not datetime_to:
+        datetime_to = datetime.now()
+
     for day in get_fortnights_between(datetime_from, datetime_to):
         save_voting_distances(playing_field, timestamp=day)
 
@@ -109,7 +128,10 @@ def save_sparse_voting_distances_between(playing_field, datetime_from=datetime.n
 # GROUP
 #
 
-def calculate_group_voting_distance(group, playing_field, timestamp=datetime.now()):
+def calculate_group_voting_distance(group, playing_field, timestamp=None):
+    if not timestamp:
+        timestamp = datetime.now()
+
     # get all relevant votes
     votes = Vote.objects.filter(
         timestamp__lte=timestamp
@@ -199,7 +221,10 @@ def calculate_group_voting_distance(group, playing_field, timestamp=datetime.now
 
     return output
 
-def save_group_voting_distance(group, playing_field, timestamp=datetime.now()):
+def save_group_voting_distance(group, playing_field, timestamp=None):
+    if not timestamp:
+        timestamp = datetime.now()
+
     distances = calculate_group_voting_distance(group, playing_field)
 
     for person_id in distances.keys():
@@ -211,16 +236,29 @@ def save_group_voting_distance(group, playing_field, timestamp=datetime.now()):
             playing_field=playing_field
         ).save()
 
-def save_groups_voting_distances(playing_field, timestamp=datetime.now()):
+def save_groups_voting_distances(playing_field, timestamp=None):
+    if not timestamp:
+        timestamp = datetime.now()
+
     groups = playing_field.query_parliamentary_groups(timestamp)
     for group in groups:
         save_group_voting_distance(group, playing_field, timestamp)
 
-def save_groups_voting_distances_between(playing_field, datetime_from=datetime.now(), datetime_to=datetime.now()):
+def save_groups_voting_distances_between(playing_field, datetime_from=None, datetime_to=None):
+    if not datetime_from:
+        datetime_from = datetime.now()
+    if not datetime_to:
+        datetime_to = datetime.now()
+
     for day in get_dates_between(datetime_from, datetime_to):
         save_groups_voting_distances(playing_field, timestamp=day)
 
-def save_sparse_groups_voting_distances_between(playing_field, datetime_from=datetime.now(), datetime_to=datetime.now()):
+def save_sparse_groups_voting_distances_between(playing_field, datetime_from=None, datetime_to=None):
+    if not datetime_from:
+        datetime_from = datetime.now()
+    if not datetime_to:
+        datetime_to = datetime.now()
+
     for day in get_fortnights_between(datetime_from, datetime_to):
         save_groups_voting_distances(playing_field, timestamp=day)
 
@@ -234,7 +272,10 @@ def save_sparse_groups_voting_distances_between(playing_field, datetime_from=dat
 
 # TODO this is not used, but still interesting
 # leaving it here in case we persuade product people this is interesting
-def calculate_voting_distance_between_groups(from_group, to_group, timestamp=datetime.now()):
+def calculate_voting_distance_between_groups(from_group, to_group, timestamp=None):
+    if not timestamp:
+        timestamp = datetime.now()
+
     # get all relevant votes
     votes = Vote.objects.filter(
         timestamp__lte=timestamp
@@ -319,7 +360,10 @@ def calculate_voting_distance_between_groups(from_group, to_group, timestamp=dat
 
     return euclidean(from_coordinates, to_coordinates)
 
-def save_voting_distance_between_groups(playing_field, timestamp=datetime.now()):
+def save_voting_distance_between_groups(playing_field, timestamp=None):
+    if not timestamp:
+        timestamp = datetime.now()
+
     groups = playing_field.query_parliamentary_groups(timestamp)
     pairs = combinations(groups, 2)
 
