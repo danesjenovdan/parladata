@@ -2,6 +2,7 @@ from importlib import import_module
 
 from rest_framework import serializers
 
+from parladata.models.area import Area
 from parladata.models.organization import Organization
 from parladata.models.memberships import PersonMembership
 from parladata.models.versionable_properties import PersonPreferredPronoun
@@ -116,6 +117,19 @@ class MiscMembersCardSerializer(CardSerializer):
             many=True,
         )
         return organization_serializer.data
+
+    def _districts(self, timestamp):
+        memberships = PersonMembership.valid_at(timestamp)
+        districts = Area.objects.filter(
+            candidates__in=memberships.values_list('member'),
+            classification='district',
+        ).distinct('id')
+        district_serializer = AreaSerializer(
+            districts,
+            context=self.context,
+            many=True,
+        )
+        return district_serializer.data
 
     def _maximum_score(self, model_name, people):
         scores_module = import_module('parlacards.models')
@@ -241,6 +255,7 @@ class MiscMembersCardSerializer(CardSerializer):
         return {
             'groups': self._groups(playing_field, self.context['date']),
             'working_bodies': self._working_bodies(self.context['date']),
+            'districts': self._districts(self.context['date']),
             'maximum_scores': self._maximum_scores(playing_field, self.context['date']),
         }
 
