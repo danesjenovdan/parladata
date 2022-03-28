@@ -6,6 +6,7 @@ from parlacards.pagination import create_paginator
 from parlacards.serializers.common import CardSerializer, CommonOrganizationSerializer
 from parlacards.serializers.session import SessionSerializer
 from parladata.models.organization import Organization
+from parladata.models.session import Session
 
 
 class SessionListOrganizationSerializer(CommonOrganizationSerializer):
@@ -32,11 +33,26 @@ class SessionsCardSerializer(CardSerializer):
             Q(classification__isnull=True) | Q(classification__in=('pg', 'friendship_group', 'delegation', 'coalition')),
         )
 
+        # cache whole list of organizations
+        timestamp = relevant_organizations.order_by('-updated_at').first().updated_at
+        sessions = Session.objects.filter(organizations__in=relevant_organizations)
+        session_count = sessions.count()
+        latest_session = sessions.order_by('-updated_at').first()
+        if latest_session:
+            timestamp = max([timestamp, latest_session.updated_at])
+
+        organizations_cache_key = f'SessionCardRelevantOrganizations_{session_count}_{timestamp.strftime("%Y-%m-%dT%H:%M:%S")}'
+
+        # if there's something in the cache return it
+        if cached_organizations := cache.get(organizations_cache_key):
+            return cached_organizations
+
         organization_serializer = SessionListOrganizationSerializer(
             relevant_organizations,
             many=True,
             context=self.context,
         )
+        cache.set(organizations_cache_key, organization_serializer.data)
 
         return organization_serializer.data
 
