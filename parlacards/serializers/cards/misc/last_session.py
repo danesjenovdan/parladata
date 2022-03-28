@@ -48,7 +48,7 @@ class MiscLastSessionCardSerializer(CardSerializer):
         return {
             'tfidf': tfidf_results,
             'attendance': attendance_serializer.data,
-            'votes': None, # this is implemeted in to_representation for pagination
+            'votes': None, # this is implemented in to_representation for pagination
         }
 
     def to_representation(self, instance):
