@@ -6,7 +6,7 @@ from parlacards.serializers.legislation import LegislationSerializer
 
 class SessionLegislationCardSerializer(CardSerializer, LegislationMixin):
     def get_results(self, session):
-        # this is implemeted in to_representation for pagination
+        # this is implemented in to_representation for pagination
         return None
 
     def to_representation(self, session):
