@@ -46,7 +46,10 @@ def get_group_ballot(vote, people_ids, exclude_absent=False):
     # default sorting is not what you expect.
     return options_aggregated['option__max']
 
-def calculate_deviation_from_group(person, playing_field, timestamp=datetime.now(), exclude_absent=False):
+def calculate_deviation_from_group(person, playing_field, timestamp=None, exclude_absent=False):
+    if not timestamp:
+        timestamp = datetime.now()
+
     personal_ballots = Ballot.objects.filter(
         personvoter=person,
         vote__timestamp__lte=timestamp
@@ -82,7 +85,8 @@ def calculate_deviation_from_group(person, playing_field, timestamp=datetime.now
     parliamentary_group = voter_membership.on_behalf_of
 
     if not parliamentary_group:
-        raise ValueError(f'{voter_membership} is missing `on_behalf_of` at {timestamp}.')
+        # voter membership without on_behalf_of means that this is unaffiliated member
+        return 0
 
     relevant_people_ids = PersonMembership.objects.filter(
         Q(start_time__lte=timestamp) | Q(start_time__isnull=True),
@@ -108,7 +112,10 @@ def calculate_deviation_from_group(person, playing_field, timestamp=datetime.now
 
     return deviation_percentage_between_two_lists(personal_options, group_options)
 
-def save_deviation_from_group(person, playing_field, timestamp=datetime.now()):
+def save_deviation_from_group(person, playing_field, timestamp=None):
+    if not timestamp:
+        timestamp = datetime.now()
+
     DeviationFromGroup(
         person=person,
         playing_field=playing_field,
@@ -116,7 +123,10 @@ def save_deviation_from_group(person, playing_field, timestamp=datetime.now()):
         value=calculate_deviation_from_group(person, playing_field, timestamp)
     ).save()
 
-def save_people_deviations_from_group(playing_field, timestamp=datetime.now()):
+def save_people_deviations_from_group(playing_field, timestamp=None):
+    if not timestamp:
+        timestamp = datetime.now()
+
     people = playing_field.query_voters(timestamp)
 
     for person in people:
@@ -126,10 +136,20 @@ def save_people_deviations_from_group(playing_field, timestamp=datetime.now()):
             # TODO log this?
             print('ERROR', e)
 
-def save_people_deviations_from_group_between(playing_field, datetime_from=datetime.now(), datetime_to=datetime.now()):
+def save_people_deviations_from_group_between(playing_field, datetime_from=None, datetime_to=None):
+    if not datetime_from:
+        datetime_from = datetime.now()
+    if not datetime_to:
+        datetime_to = datetime.now()
+
     for day in get_dates_between(datetime_from, datetime_to):
         save_people_deviations_from_group(playing_field, timestamp=day)
 
-def save_sparse_people_deviations_from_group_between(playing_field, datetime_from=datetime.now(), datetime_to=datetime.now()):
+def save_sparse_people_deviations_from_group_between(playing_field, datetime_from=None, datetime_to=None):
+    if not datetime_from:
+        datetime_from = datetime.now()
+    if not datetime_to:
+        datetime_to = datetime.now()
+
     for day in get_fortnights_between(datetime_from, datetime_to):
         save_people_deviations_from_group(playing_field, timestamp=day)

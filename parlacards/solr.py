@@ -88,7 +88,7 @@ def solr_select(
         'rows': per_page,
         'start': (page - 1) * per_page,
         'q': q_params,
-        'fl': fl
+        'fl': fl,
     }
 
     if highlight:
@@ -273,6 +273,10 @@ def get_speeches_from_solr(
     # get speeches into memory from the db
     speeches = list(Speech.objects.filter(id__in=speech_ids))
 
+    # db can return randomly ordered speeches, sort to match solr order
+    speech_order_dict = {speech_id: i for i, speech_id in enumerate(speech_ids)}
+    speeches = list(sorted(speeches, key=lambda speech: speech_order_dict[speech.id]))
+
     # if len(speech_ids) != len(speeches):
         # this means that solr still has old speech ids
         # most likely upload_speeches_to_solr was not run
@@ -319,6 +323,11 @@ def get_votes_from_solr(text_query='*', mandate=None, page=1, per_page=20):
     )
     vote_ids = [solr_doc['vote_id'] for solr_doc in solr_response['response']['docs']]
     votes = list(Vote.objects.filter(id__in=vote_ids))
+
+    # db can return randomly ordered votes, sort to match solr order
+    vote_order_dict = {vote_id: i for i, vote_id in enumerate(vote_ids)}
+    votes = list(sorted(votes, key=lambda vote: vote_order_dict[vote.id]))
+
     return (votes, solr_response['response']['numFound'])
 
 
@@ -333,6 +342,11 @@ def get_legislation_from_solr(text_query='*', mandate=None, page=1, per_page=20)
     )
     law_ids = [solr_doc['law_id'] for solr_doc in solr_response['response']['docs']]
     legislation = list(Law.objects.filter(id__in=law_ids))
+
+    # db can return randomly ordered legislation, sort to match solr order
+    law_order_dict = {law_id: i for i, law_id in enumerate(law_ids)}
+    legislation = list(sorted(legislation, key=lambda law: law_order_dict[law.id]))
+
     return (legislation, solr_response['response']['numFound'])
 
 

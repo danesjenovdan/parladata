@@ -18,7 +18,15 @@ from parlacards.scores.common import (
 #
 # PERSON
 #
-def calculate_people_tfidf(playing_field, timestamp=datetime.now()):
+def calculate_people_tfidf(playing_field, timestamp=None):
+    '''
+    This function takes the playing field organization and an optional
+    timestamp which defaults to datetime.now() as parameters and
+    calculates each of the playing field's people TFIDF.
+    '''
+    if not timestamp:
+        timestamp = datetime.now()
+
     # TODO we should probably avoid casting
     # competitor_ids and leader_ids into list
     competitor_ids = list(
@@ -74,12 +82,13 @@ def calculate_people_tfidf(playing_field, timestamp=datetime.now()):
         preprocessor=lambda x: x, # do not preprocess
         tokenizer=lambda x: x.split(' '), # tokenize by splitting at ' '
         stop_words=get_stopwords(),
-        use_idf=True
+        use_idf=True,
+        sublinear_tf=True
     )
 
     tfidf = tfidfVectorizer.fit_transform(all_speeches)
 
-    feature_names = tfidfVectorizer.get_feature_names()
+    feature_names = tfidfVectorizer.get_feature_names_out()
 
     output = []
     for competitor_index, competitor_id in enumerate(competitor_ids):
@@ -101,7 +110,10 @@ def calculate_people_tfidf(playing_field, timestamp=datetime.now()):
 
     return output
 
-def save_people_tfidf(playing_field, timestamp=datetime.now()):
+def save_people_tfidf(playing_field, timestamp=None):
+    if not timestamp:
+        timestamp = datetime.now()
+
     people_tfidf = calculate_people_tfidf(playing_field, timestamp)
 
     for tfidf in people_tfidf:
@@ -115,18 +127,31 @@ def save_people_tfidf(playing_field, timestamp=datetime.now()):
                     playing_field=playing_field
                 ).save()
 
-def save_people_tfidf_between(playing_field, datetime_from=datetime.now(), datetime_to=datetime.now()):
+def save_people_tfidf_between(playing_field, datetime_from=None, datetime_to=None):
+    if not datetime_from:
+        datetime_from = datetime.now()
+    if not datetime_to:
+        datetime_to = datetime.now()
+
     for day in get_dates_between(datetime_from, datetime_to):
         save_people_tfidf(playing_field, timestamp=day)
 
-def save_sparse_people_tfidf_between(playing_field, datetime_from=datetime.now(), datetime_to=datetime.now()):
+def save_sparse_people_tfidf_between(playing_field, datetime_from=None, datetime_to=None):
+    if not datetime_from:
+        datetime_from = datetime.now()
+    if not datetime_to:
+        datetime_to = datetime.now()
+
     for day in get_fortnights_between(datetime_from, datetime_to):
         save_people_tfidf(playing_field, timestamp=day)
 
 #
 # GROUP
 #
-def calculate_groups_tfidf(playing_field, timestamp=datetime.now()):
+def calculate_groups_tfidf(playing_field, timestamp=None):
+    if not timestamp:
+        timestamp = datetime.now()
+
     # TODO this is very similar to calculate_people_tfidf
     # consider refactoring
     groups = playing_field.query_organization_members(
@@ -155,12 +180,13 @@ def calculate_groups_tfidf(playing_field, timestamp=datetime.now()):
         preprocessor=lambda x: x, # do not preprocess
         tokenizer=lambda x: x.split(' '), # tokenize by splitting at ' '
         stop_words=get_stopwords(),
-        use_idf=True
+        use_idf=True,
+        sublinear_tf=True
     )
 
     tfidf = tfidfVectorizer.fit_transform(group_speeches)
 
-    feature_names = tfidfVectorizer.get_feature_names()
+    feature_names = tfidfVectorizer.get_feature_names_out()
 
     output = []
     for group_index, group_id in enumerate(groups.values_list('id', flat=True)):
@@ -184,7 +210,10 @@ def calculate_groups_tfidf(playing_field, timestamp=datetime.now()):
 
     return output
 
-def save_groups_tfidf(playing_field, timestamp=datetime.now()):
+def save_groups_tfidf(playing_field, timestamp=None):
+    if not timestamp:
+        timestamp = datetime.now()
+
     groups_tfidf = calculate_groups_tfidf(playing_field, timestamp)
 
     for tfidf in groups_tfidf:
@@ -198,18 +227,36 @@ def save_groups_tfidf(playing_field, timestamp=datetime.now()):
                     playing_field=playing_field
                 ).save()
 
-def save_groups_tfidf_between(playing_field, datetime_from=datetime.now(), datetime_to=datetime.now()):
+def save_groups_tfidf_between(playing_field, datetime_from=None, datetime_to=None):
+    if not datetime_from:
+        datetime_from = datetime.now()
+    if not datetime_to:
+        datetime_to = datetime.now()
+
     for day in get_dates_between(datetime_from, datetime_to):
         save_groups_tfidf(playing_field, timestamp=day)
 
-def save_sparse_groups_tfidf_between(playing_field, datetime_from=datetime.now(), datetime_to=datetime.now()):
+def save_sparse_groups_tfidf_between(playing_field, datetime_from=None, datetime_to=None):
+    if not datetime_from:
+        datetime_from = datetime.now()
+    if not datetime_to:
+        datetime_to = datetime.now()
+
     for day in get_fortnights_between(datetime_from, datetime_to):
         save_groups_tfidf(playing_field, timestamp=day)
 
 #
 # SESSION
 #
-def calculate_sessions_tfidf(playing_field, timestamp=datetime.now()):
+def calculate_sessions_tfidf(playing_field, timestamp=None):
+    '''
+    This function takes the playing field organization and an optional
+    timestamp which defaults to datetime.now() as parameters and
+    calculates each of the playing field's sessions' TFIDF.
+    '''
+    if not timestamp:
+        timestamp = datetime.now()
+
     # TODO this is very similar to calculate_people_tfidf
     # consider refactoring
     session_ids = Session.objects.filter(
@@ -242,12 +289,13 @@ def calculate_sessions_tfidf(playing_field, timestamp=datetime.now()):
         preprocessor=lambda x: x, # do not preprocess
         tokenizer=lambda x: x.split(' '), # tokenize by splitting at ' '
         stop_words=get_stopwords(),
-        use_idf=True
+        use_idf=True,
+        sublinear_tf=True
     )
 
     tfidf = tfidfVectorizer.fit_transform(all_speeches)
 
-    feature_names = tfidfVectorizer.get_feature_names()
+    feature_names = tfidfVectorizer.get_feature_names_out()
 
     output = []
     for session_index, session_id in enumerate(session_ids):
@@ -271,7 +319,10 @@ def calculate_sessions_tfidf(playing_field, timestamp=datetime.now()):
 
     return output
 
-def save_sessions_tfidf(playing_field, timestamp=datetime.now()):
+def save_sessions_tfidf(playing_field, timestamp=None):
+    if not timestamp:
+        timestamp = datetime.now()
+
     sessions_tfidf = calculate_sessions_tfidf(playing_field, timestamp)
 
     for tfidf in sessions_tfidf:
@@ -285,11 +336,21 @@ def save_sessions_tfidf(playing_field, timestamp=datetime.now()):
                     playing_field=playing_field
                 ).save()
 
-def save_sessions_tfidf_between(playing_field, datetime_from=datetime.now(), datetime_to=datetime.now()):
+def save_sessions_tfidf_between(playing_field, datetime_from=None, datetime_to=None):
+    if not datetime_from:
+        datetime_from = datetime.now()
+    if not datetime_to:
+        datetime_to = datetime.now()
+
     for day in get_dates_between(datetime_from, datetime_to):
         save_sessions_tfidf(playing_field, timestamp=day)
 
-def save_sparse_sessions_tfidf_between(playing_field, datetime_from=datetime.now(), datetime_to=datetime.now()):
+def save_sparse_sessions_tfidf_between(playing_field, datetime_from=None, datetime_to=None):
+    if not datetime_from:
+        datetime_from = datetime.now()
+    if not datetime_to:
+        datetime_to = datetime.now()
+
     for day in get_fortnights_between(datetime_from, datetime_to):
         save_sessions_tfidf(playing_field, timestamp=day)
 
@@ -299,7 +360,7 @@ def save_session_tfidf_on_last_speech_date(playing_field, session):
 
     for tfidf in sessions_tfidf:
         for score in tfidf['tfidf']:
-            if tfidf['session_id'] == session.id:
+            if tfidf['session_id'] == session.id and score[1] > 0 and score[0] != '':
                 SessionTfidf(
                     session_id=tfidf['session_id'],
                     timestamp=timestamp,
@@ -315,7 +376,7 @@ def save_sessions_tfidf_on_last_speech_date(playing_field, sessions):
 
     for tfidf in sessions_tfidf:
         for score in tfidf['tfidf']:
-            if tfidf['session_id'] in session_ids:
+            if tfidf['session_id'] in session_ids and score[1] > 0 and score[0] != '':
                 SessionTfidf(
                     session_id=tfidf['session_id'],
                     timestamp=timestamp,

@@ -42,21 +42,17 @@ class Ballot(Timestampable):
                               help_text='Yes, no, abstain',
                               choices=OPTIONS)
 
-    @property
-    def voter(self):
+    def __str__(self):
         if self.personvoter and self.orgvoter:
-            raise Exception(f'Both personvoter and orgvoter are set for this ballot (id {self.id}). Something is wrong.')
+            raise Exception(f'Both personvoter and orgvoter are set for this ballot (id {self.id}). Something is wrong with your data, this should never happen.')
 
         if self.personvoter:
-            return self.personvoter
+            return self.personvoter.name
 
         if self.orgvoter:
-            return self.orgvoter
+            return self.orgvoter.name
 
-        raise Exception('No voter is set (neither personvoter or orgvoter).')
-
-    def __str__(self):
-        return self.voter.name
+        return 'Anonymous ballot'
 
     def clean(self):
         if self.personvoter and self.orgvoter:
