@@ -11,7 +11,7 @@ from parlacards.pagination import calculate_cache_key_for_page, create_paginator
 
 class GroupQuestionCardSerializer(GroupScoreCardSerializer):
     def get_results(self, obj):
-        # this is implemeted in to_representation for pagination
+        # this is implemented in to_representation for pagination
         return None
 
     # TODO this is very similar to GroupCardSerializer

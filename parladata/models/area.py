@@ -1,9 +1,9 @@
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
-from parladata.behaviors.models import Timestampable
+from parladata.behaviors.models import Sluggable, Timestampable
 
-class Area(Timestampable):
+class Area(Timestampable, Sluggable):
     """Places of any kind."""
 
     name = models.TextField(_('name'),

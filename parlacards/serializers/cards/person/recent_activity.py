@@ -9,7 +9,7 @@ from parladata.models.speech import Speech
 
 class RecentActivityCardSerializer(PersonScoreCardSerializer):
     def get_results(self, person):
-        # this is implemeted in to_representation for pagination
+        # this is implemented in to_representation for pagination
         return None
 
     def to_representation(self, person):
