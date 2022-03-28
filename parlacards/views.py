@@ -27,7 +27,6 @@ from parlacards.serializers.cards import (
     MiscMembersCardSerializer,
     MiscGroupsCardSerializer,
     GroupCardSerializer,
-    SessionsCardSerializer,
     LegislationCardSerializer,
     PersonVocabularySizeCardSerializer,
     GroupVocabularySizeCardSerializer,
@@ -80,6 +79,7 @@ from parlacards.serializers.speech import SpeechSerializer
 from parlacards.serializers.quote import QuoteSerializer
 from parlacards.serializers.group_attendance import SessionGroupAttendanceSerializer
 from parlacards.serializers.cards.person.recent_activity import RecentActivityCardSerializer
+from parlacards.serializers.cards.misc.sessions import SessionsCardSerializer
 
 from django.core.cache import cache
 
