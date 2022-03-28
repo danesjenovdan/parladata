@@ -35,6 +35,7 @@ pyicu
 sentry-sdk
 eventregistry
 django-import-export
+djangorestframework-csv
 
 # tagger/lemmatizer
 sklearn
