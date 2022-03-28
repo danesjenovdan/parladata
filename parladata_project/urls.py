@@ -29,6 +29,9 @@ urlpatterns = [
     # card data api
     path('v3/cards/', include(('parlacards.urls', 'parlacards'), namespace='parlacards')),
 
+    # card export api
+    path('v3/data/', include('data_export_api.urls')),
+
     # Django debug toolbar
     path('__debug__/', include(debug_toolbar.urls)),
 
