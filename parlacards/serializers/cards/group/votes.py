@@ -12,7 +12,7 @@ from parlacards.pagination import create_paginator
 
 class GroupVoteCardSerializer(GroupScoreCardSerializer):
     def get_results(self, obj):
-        # this is implemeted in to_representation for pagination
+        # this is implemented in to_representation for pagination
         return None
 
     def to_representation(self, instance):
