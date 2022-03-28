@@ -158,6 +158,7 @@ class MiscMembersCardSerializer(CardSerializer):
     def _filtered_and_ordered_people(self, playing_field, timestamp):
         group_ids = list(filter(lambda x: x.isdigit(), self.context.get('GET', {}).get('groups', '').split(',')))
         working_body_ids = list(filter(lambda x: x.isdigit(), self.context.get('GET', {}).get('working_bodies', '').split(',')))
+        district_ids = list(filter(lambda x: x.isdigit(), self.context.get('GET', {}).get('districts', '').split(',')))
         preferred_pronoun = self.context.get('GET', {}).get('preferred_pronoun', None)
 
         people = playing_field.query_voters(timestamp)
@@ -184,6 +185,9 @@ class MiscMembersCardSerializer(CardSerializer):
                 organization_id__in=working_body_ids,
             ).values_list('member', flat=True)
             people = people.filter(id__in=member_ids)
+
+        if len(district_ids):
+            people = people.filter(districts__id__in=district_ids)
 
         if text := self.context.get('GET', {}).get('text', None):
             # TODO: will this work correctly when people have multiple names?
