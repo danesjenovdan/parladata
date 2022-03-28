@@ -6,6 +6,7 @@ from parladata.models.organization import Organization
 from parladata.models.memberships import PersonMembership
 from parladata.models.versionable_properties import PersonPreferredPronoun
 
+from parlacards.serializers.area import AreaSerializer
 from parlacards.serializers.common import (
     CardSerializer,
     CommonPersonSerializer,
@@ -21,7 +22,7 @@ class PersonAnalysesSerializer(CommonPersonSerializer):
     def calculate_cache_key(self, instance):
         return f'PersonAnalysesSerializer_{instance.id}_{instance.updated_at.isoformat()}'
 
-    def get_person_value(self, person, property_model_name):
+    def _get_person_value(self, person, property_model_name):
         scores_module = import_module('parlacards.models')
         ScoreModel = getattr(scores_module, property_model_name)
 
@@ -35,7 +36,7 @@ class PersonAnalysesSerializer(CommonPersonSerializer):
 
         return None
 
-    def get_working_bodies(self, person):
+    def _get_working_bodies(self, person):
         memberships = PersonMembership.valid_at(self.context['date']).filter(member=person)
         organizations = Organization.objects.filter(
             id__in=memberships.values_list('organization'),
@@ -48,18 +49,27 @@ class PersonAnalysesSerializer(CommonPersonSerializer):
         )
         return organization_serializer.data
 
+    def _get_districts(self, person):
+        districts_serializer = AreaSerializer(
+            person.districts,
+            context=self.context,
+            many=True,
+        )
+        return districts_serializer.data
+
     def get_results(self, person):
         return {
             'mandates': person.number_of_mandates,
-            'speeches_per_session': self.get_person_value(person, 'PersonAvgSpeechesPerSession'),
-            'number_of_questions': self.get_person_value(person, 'PersonNumberOfQuestions'),
-            'mismatch_of_pg': self.get_person_value(person, 'DeviationFromGroup'),
-            'presence_votes': self.get_person_value(person, 'PersonVoteAttendance'),
+            'speeches_per_session': self._get_person_value(person, 'PersonAvgSpeechesPerSession'),
+            'number_of_questions': self._get_person_value(person, 'PersonNumberOfQuestions'),
+            'mismatch_of_pg': self._get_person_value(person, 'DeviationFromGroup'),
+            'presence_votes': self._get_person_value(person, 'PersonVoteAttendance'),
             'birth_date': person.date_of_birth.isoformat() if person.date_of_birth else None,
             'education': person.education_level,
-            'spoken_words': self.get_person_value(person, 'PersonNumberOfSpokenWords'),
-            'vocabulary_size': self.get_person_value(person, 'PersonVocabularySize'),
-            'working_bodies': self.get_working_bodies(person),
+            'spoken_words': self._get_person_value(person, 'PersonNumberOfSpokenWords'),
+            'vocabulary_size': self._get_person_value(person, 'PersonVocabularySize'),
+            'working_bodies': self._get_working_bodies(person),
+            'districts': self._get_districts(person),
         }
 
     results = serializers.SerializerMethodField()
