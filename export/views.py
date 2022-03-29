@@ -18,7 +18,6 @@ class ExportVotesView(views.APIView):
         dataset = VoteResource().export()
         filename = "votes"
 
-        print(format)
         if (format == "json"):
             return HttpResponse(dataset.json, headers={
                 'Content-Disposition': f'attachment; filename="{filename}.json"',
@@ -36,7 +35,6 @@ class ExportVotesView(views.APIView):
 class ExportParliamentMembersView(views.APIView):
     renderer_classes = [r.CSVRenderer, JSONRenderer ]
 
-    print(format)
     def get(self, request, format=None):
         dataset = MPResource().export()
         filename = "parliament-members"
