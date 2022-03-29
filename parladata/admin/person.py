@@ -101,7 +101,9 @@ class MPResource(resources.ModelResource):
         return person.name
 
     def dehydrate_age(self, person):
-        return int((datetime.now().date() - person.date_of_birth).days / 365.2425)
+        if person.date_of_birth:
+            return int((datetime.now().date() - person.date_of_birth).days / 365.2425)
+        return None
     
     def dehydrate_education_level(self, person):
         return person.education_level
