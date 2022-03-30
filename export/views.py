@@ -7,10 +7,11 @@ from .resources import VoteResource, MPResource
 
 from rest_framework_csv import renderers as r
 from rest_framework.renderers import JSONRenderer, BaseRenderer
+from drf_excel.renderers import XLSXRenderer
 
 
 class ExportVotesView(views.APIView):
-    renderer_classes = [r.CSVRenderer, JSONRenderer ]
+    renderer_classes = [r.CSVRenderer, JSONRenderer, XLSXRenderer ]
 
     def get(self, request, format=None):
         dataset = VoteResource().export()
@@ -24,6 +25,11 @@ class ExportVotesView(views.APIView):
             # return Response(dataset.csv)
             return HttpResponse(dataset.csv, headers={
                 'Content-Disposition': f'attachment; filename="{filename}.csv"',
+            })
+        elif (format == "xlsx"):
+            return HttpResponse(dataset.xlsx, headers={
+                'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                'Content-Disposition': f'attachment; filename="{filename}.xlsx"',
             })
         
         # format not supported
