@@ -37,7 +37,6 @@ eventregistry
 tablib
 django-import-export
 djangorestframework-csv
-drf-excel
 
 # tagger/lemmatizer
 sklearn

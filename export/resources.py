@@ -64,31 +64,6 @@ class ExportModelResource(ModelResource):
         # close list at the end
         yield ']'
 
-    def export_as_generator_excel(self, queryset=None, *args, **kwargs):
-        # todo: make it work
-        self.before_export(queryset, *args, **kwargs)
-        if queryset is None:
-            queryset = self.get_queryset()
-        headers = self.get_export_headers()
-        data = tablib.Dataset(headers=headers)
-        yield data.xlsx
-
-        if isinstance(queryset, QuerySet):
-            # Iterate without the queryset cache, to avoid wasting memory when
-            # exporting large datasets.
-            iterable = queryset.iterator()
-        else:
-            iterable = queryset
-        for obj in iterable:
-            # Return subset of the data (one row)
-            data = tablib.Dataset(headers=headers)
-            data.append(self.export_resource(obj))
-            yield data.xlsx
-
-        self.after_export(queryset, data, *args, **kwargs)
-
-        yield
-
 
 class MPResource(ExportModelResource):
     name = Field()
