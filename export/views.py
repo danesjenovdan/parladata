@@ -1,7 +1,7 @@
 from rest_framework import views
 from rest_framework import status
 from rest_framework.response import Response
-from django.http import HttpResponse
+from django.http import HttpResponse, StreamingHttpResponse
 
 from .resources import VoteResource, MPResource
 
@@ -18,18 +18,33 @@ class ExportVotesView(views.APIView):
         filename = "votes"
 
         if (format == "json"):
-            return HttpResponse(dataset.json, headers={
-                'Content-Disposition': f'attachment; filename="{filename}.json"',
+            # return HttpResponse(dataset.json, headers={
+            #     'Content-Disposition': f'attachment; filename="{filename}.json"',
+            # })
+            dataset_json = VoteResource().export_as_generator_json()
+            return StreamingHttpResponse(dataset_json, headers={
+                'Content-Disposition': f'attachment; filename="{filename}.json"'
             })
+
         elif (format == "csv"):
             # return Response(dataset.csv)
-            return HttpResponse(dataset.csv, headers={
-                'Content-Disposition': f'attachment; filename="{filename}.csv"',
+            # return HttpResponse(dataset.csv, headers={
+            #     'Content-Disposition': f'attachment; filename="{filename}.csv"',
+            # })
+            dataset_csv = VoteResource().export_as_generator_csv()
+            return StreamingHttpResponse(dataset_csv, headers={
+                'Content-Disposition': f'attachment; filename="{filename}.csv"'
             })
+
         elif (format == "xlsx"):
-            return HttpResponse(dataset.xlsx, headers={
+            # return HttpResponse(dataset.xlsx, headers={
+            #     'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            #     'Content-Disposition': f'attachment; filename="{filename}.xlsx"',
+            # })
+            dataset_xlsx = VoteResource().export_as_generator_excel()
+            return StreamingHttpResponse(dataset_xlsx, headers={
                 'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-                'Content-Disposition': f'attachment; filename="{filename}.xlsx"',
+                'Content-Disposition': f'attachment; filename="{filename}.xlsx"'
             })
         
         # format not supported
@@ -54,7 +69,3 @@ class ExportParliamentMembersView(views.APIView):
 
         # format not supported
         return Response({'detail': 'format not supported'}, status=status.HTTP_404_NOT_FOUND)
-
-
-# TODO: zamenjaj HttpResponse s StreamingHttpResponse?
-# https://docs.djangoproject.com/en/4.0/ref/request-response/#django.http.StreamingHttpResponse

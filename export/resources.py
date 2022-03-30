@@ -1,3 +1,6 @@
+import tablib
+from django.db.models.query import QuerySet
+
 from import_export.resources import ModelResource
 from import_export.fields import Field
 
@@ -5,7 +8,89 @@ from parladata.models import Person, Vote
 from parlacards.models import GroupDiscord, PersonNumberOfSpokenWords
 
 
-class MPResource(ModelResource):
+class ExportModelResource(ModelResource):
+    def export_as_generator_csv(self, queryset=None, *args, **kwargs):
+        self.before_export(queryset, *args, **kwargs)
+        if queryset is None:
+            queryset = self.get_queryset()
+        headers = self.get_export_headers()
+        data = tablib.Dataset(headers=headers)
+        # write headers
+        yield data.csv
+
+        if isinstance(queryset, QuerySet):
+            # Iterate without the queryset cache, to avoid wasting memory when
+            # exporting large datasets.
+            iterable = queryset.iterator()
+        else:
+            iterable = queryset
+        for obj in iterable:
+            # Return subset of the data (one row)
+            data = tablib.Dataset()
+            data.append(self.export_resource(obj))
+            yield data.csv
+
+        self.after_export(queryset, data, *args, **kwargs)
+
+        yield '\n'
+    
+    def export_as_generator_json(self, queryset=None, *args, **kwargs):
+        self.before_export(queryset, *args, **kwargs)
+        if queryset is None:
+            queryset = self.get_queryset()
+        headers = self.get_export_headers()
+        # no need to yield headers because this is json
+        # but we do yield start of list
+        yield '['
+
+        if isinstance(queryset, QuerySet):
+            # Iterate without the queryset cache, to avoid wasting memory when
+            # exporting large datasets.
+            iterable = queryset.iterator()
+        else:
+            iterable = queryset
+        for obj in iterable:
+            # Return subset of the data (one row)
+            # here Dataset needs headers to create json keys
+            data = tablib.Dataset(headers=headers)
+            data.append(self.export_resource(obj))
+            # data.json will return a LIST of object(s) for each iteration
+            # so we cut out first '[' and last ']' and add comma
+            yield data.json[1:-1] + ','
+            # note to self: should probably think of something less hacky
+
+        self.after_export(queryset, data, *args, **kwargs)
+
+        # close list at the end
+        yield ']'
+
+    def export_as_generator_excel(self, queryset=None, *args, **kwargs):
+        # todo: make it work
+        self.before_export(queryset, *args, **kwargs)
+        if queryset is None:
+            queryset = self.get_queryset()
+        headers = self.get_export_headers()
+        data = tablib.Dataset(headers=headers)
+        yield data.xlsx
+
+        if isinstance(queryset, QuerySet):
+            # Iterate without the queryset cache, to avoid wasting memory when
+            # exporting large datasets.
+            iterable = queryset.iterator()
+        else:
+            iterable = queryset
+        for obj in iterable:
+            # Return subset of the data (one row)
+            data = tablib.Dataset(headers=headers)
+            data.append(self.export_resource(obj))
+            yield data.xlsx
+
+        self.after_export(queryset, data, *args, **kwargs)
+
+        yield
+
+
+class MPResource(ExportModelResource):
     name = Field()
     age = Field()
     education_level = Field()
@@ -35,7 +120,7 @@ class MPResource(ModelResource):
         return person.number_of_mandates
 
 
-class VoteResource(ModelResource):
+class VoteResource(ExportModelResource):
     class Meta:
         model = Vote
         fields = ('id', 'name', 'motion__text', 'motion__summary', 'result',)
