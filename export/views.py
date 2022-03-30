@@ -3,9 +3,7 @@ from rest_framework import status
 from rest_framework.response import Response
 from django.http import HttpResponse
 
-# import ModelResource objects from parladata admin
-from parladata.admin.vote import VoteResource
-from parladata.admin.person import MPResource
+from .resources import VoteResource, MPResource
 
 from rest_framework_csv import renderers as r
 from rest_framework.renderers import JSONRenderer, BaseRenderer
