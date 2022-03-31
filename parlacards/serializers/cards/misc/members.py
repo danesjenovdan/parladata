@@ -7,6 +7,15 @@ from parladata.models.organization import Organization
 from parladata.models.memberships import PersonMembership
 from parladata.models.versionable_properties import PersonPreferredPronoun
 
+from parlacards.models import (
+    PersonAvgSpeechesPerSession,
+    PersonNumberOfQuestions,
+    DeviationFromGroup,
+    PersonVoteAttendance,
+    PersonNumberOfSpokenWords,
+    PersonVocabularySize,
+)
+
 from parlacards.serializers.area import AreaSerializer
 from parlacards.serializers.common import (
     CardSerializer,
@@ -20,8 +29,29 @@ from parlacards.utils import local_collator
 
 
 class PersonAnalysesSerializer(CommonPersonSerializer):
-    def calculate_cache_key(self, instance):
-        return f'PersonAnalysesSerializer_{instance.id}_{instance.updated_at.isoformat()}'
+    def calculate_cache_key(self, person):
+        all_analyses = (
+            PersonAvgSpeechesPerSession,
+            PersonNumberOfQuestions,
+            DeviationFromGroup,
+            PersonVoteAttendance,
+            PersonNumberOfSpokenWords,
+            PersonVocabularySize,
+        )
+
+        timestamp = max(
+            [
+                person.updated_at,
+                *[
+                    analysis.objects.filter(person=person)
+                    .order_by('-timestamp')
+                    .first().timestamp
+                    for analysis in all_analyses
+                ],
+            ]
+        )
+
+        return f'PersonAnalysesSerializer_{person.id}_{timestamp.isoformat()}'
 
     def _get_person_value(self, person, property_model_name):
         scores_module = import_module('parlacards.models')
@@ -163,13 +193,15 @@ class MiscMembersCardSerializer(CardSerializer):
 
         people = playing_field.query_voters(timestamp)
 
+        # filter by preferred pronouns
         if preferred_pronoun is not None:
             member_ids = PersonPreferredPronoun.objects.valid_at(timestamp) \
                 .filter(owner__in=people, value=preferred_pronoun) \
                 .values_list('owner', flat=True)
             people = people.filter(id__in=member_ids)
 
-        if len(group_ids):
+        # filter by group ids
+        if len(group_ids) > 0:
             member_ids = PersonMembership.valid_at(timestamp).filter(
                 organization=playing_field,
                 role='voter',
@@ -178,7 +210,8 @@ class MiscMembersCardSerializer(CardSerializer):
             ).values_list('member', flat=True)
             people = people.filter(id__in=member_ids)
 
-        if len(working_body_ids):
+        # filter by working body ids
+        if len(working_body_ids) > 0:
             member_ids = PersonMembership.valid_at(timestamp).filter(
                 organization__classification__in=('committee', 'commission', 'other'), # TODO: add other classifications?
                 member_id__in=people,
@@ -186,9 +219,11 @@ class MiscMembersCardSerializer(CardSerializer):
             ).values_list('member', flat=True)
             people = people.filter(id__in=member_ids)
 
-        if len(district_ids):
+        # filter by district ids
+        if len(district_ids) > 0:
             people = people.filter(districts__id__in=district_ids)
 
+        # filter by name text search
         if text := self.context.get('GET', {}).get('text', None):
             # TODO: will this work correctly when people have multiple names?
             people = people.filter(personname__value__icontains=text)
@@ -197,20 +232,19 @@ class MiscMembersCardSerializer(CardSerializer):
         order_by = self.context.get('GET', {}).get('order_by', 'name')
         order_reverse = False
 
+        # determine if order should be reversed
         if order_by.startswith('-'):
             order_by = order_by[1:]
             order_reverse = True
 
         # order by model field
-        field_name = self.model_fields_mapping.get(order_by, None)
-
-        if field_name:
-            order_string = f'-{field_name}' if order_reverse else field_name
+        field_name_to_order_by = self.model_fields_mapping.get(order_by, None)
+        if field_name_to_order_by:
+            order_string = f'-{field_name_to_order_by}' if order_reverse else field_name_to_order_by
             return people.order_by(order_string, 'id')
 
         # order by versionable property model
         versionable_model_tuple = self.versionable_models_mapping.get(order_by, None)
-
         if versionable_model_tuple:
             versionable_model_name, versionable_field_name = versionable_model_tuple
             versionable_properties_module = import_module('parladata.models.versionable_properties')
