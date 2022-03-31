@@ -7,9 +7,34 @@ from parlacards.serializers.common import (
     CommonOrganizationSerializer,
 )
 
+from parlacards.models import (
+    GroupDiscord,
+    GroupVocabularySize,
+    GroupNumberOfQuestions,
+    GroupVoteAttendance,
+)
+
 class GroupAnalysesSerializer(CommonOrganizationSerializer):
-    def calculate_cache_key(self, instance):
-        return f'GroupAnalysesSerializer_{instance.id}_{instance.updated_at.strftime("%Y-%m-%dT%H:%M:%S")}'
+    def calculate_cache_key(self, group):
+        all_analyses = (
+            GroupDiscord,
+            GroupVocabularySize,
+            GroupNumberOfQuestions,
+            GroupVoteAttendance,
+        )
+
+        timestamp = max(
+            [
+                group.updated_at,
+                *[
+                    analysis.objects.filter(group=group)
+                    .order_by('-timestamp')
+                    .first().timestamp
+                    for analysis in all_analyses
+                ],
+            ]
+        )
+        return f'GroupAnalysesSerializer_{group.id}_{timestamp.isoformat()}'
 
     def get_group_value(self, group, property_model_name):
         scores_module = import_module('parlacards.models')
