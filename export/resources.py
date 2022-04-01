@@ -1,4 +1,6 @@
 import tablib
+from datetime import datetime
+
 from django.db.models.query import QuerySet
 
 from import_export.resources import ModelResource
