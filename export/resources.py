@@ -9,7 +9,13 @@ from parlacards.models import GroupDiscord, PersonNumberOfSpokenWords
 
 
 class ExportModelResource(ModelResource):
+    """
+    Extends ModelResource class with additional functions that allow exporting data from admin using a generator.
+    """
     def export_as_generator_csv(self, queryset=None, *args, **kwargs):
+        """
+        Generator function that returns queryset in csv format.
+        """
         self.before_export(queryset, *args, **kwargs)
         if queryset is None:
             queryset = self.get_queryset()
@@ -35,6 +41,9 @@ class ExportModelResource(ModelResource):
         yield '\n'
     
     def export_as_generator_json(self, queryset=None, *args, **kwargs):
+        """
+        Generator function that returns queryset in json format.
+        """
         self.before_export(queryset, *args, **kwargs)
         if queryset is None:
             queryset = self.get_queryset()

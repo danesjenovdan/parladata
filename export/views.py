@@ -10,6 +10,9 @@ from rest_framework.renderers import JSONRenderer, BaseRenderer
 
 
 class ExportVotesView(views.APIView):
+    """
+    Export all votes from database and return them as a file in one of the allowed formats (json, csv).
+    """
     renderer_classes = [r.CSVRenderer, JSONRenderer ]
 
     def get(self, request, format=None):
@@ -32,6 +35,9 @@ class ExportVotesView(views.APIView):
 
 
 class ExportParliamentMembersView(views.APIView):
+    """
+    Export all parliament members from database and return them as a file in one of the allowed formats (json, csv).
+    """
     renderer_classes = [r.CSVRenderer, JSONRenderer ]
 
     def get(self, request, format=None):
