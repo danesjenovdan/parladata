@@ -1,5 +1,3 @@
-from datetime import datetime, timedelta
-
 from django.contrib import admin
 from django.utils.safestring import mark_safe
 from django.urls import reverse
@@ -83,9 +81,6 @@ class PersonAdmin(admin.ModelAdmin):
 class ParliamentMember(Person):
     class Meta:
         proxy = True
-
-
-
 
 class MPAdmin(ExportMixin, PersonAdmin):
     resource_class = MPResource
