@@ -9,4 +9,4 @@ urlpatterns = [
     path('export-parliament-members', ExportParliamentMembersView.as_view())
 ]
 
-urlpatterns = format_suffix_patterns(urlpatterns, allowed=['json', 'csv', 'xlsx' ])
+urlpatterns = format_suffix_patterns(urlpatterns, allowed=['json', 'csv'])
