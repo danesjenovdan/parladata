@@ -60,14 +60,16 @@ class ExportModelResource(ModelResource):
             iterable = queryset.iterator()
         else:
             iterable = queryset
-        for obj in iterable:
+        for index, obj in enumerate(iterable):
             # Return subset of the data (one row)
             # here Dataset needs headers to create json keys
             data = tablib.Dataset(headers=headers)
             data.append(self.export_resource(obj))
             # data.json will return a LIST of object(s) for each iteration
             # so we cut out first '[' and last ']' and add comma
-            yield data.json[1:-1] + ','
+            if (index != 0):
+                yield ','
+            yield data.json[1:-1]
             # note to self: should probably think of something less hacky
 
         self.after_export(queryset, data, *args, **kwargs)
@@ -113,7 +115,7 @@ class VoteResource(ExportModelResource):
         export_order = ('id', 'name', 'motion__text', 'motion__summary', 'result',)
 
 
-class GroupDiscordResource(ModelResource):
+class GroupDiscordResource(ExportModelResource):
     name = Field()
 
     class Meta:
@@ -125,7 +127,7 @@ class GroupDiscordResource(ModelResource):
         return score.group.name
 
 
-class PersonNumberOfSpokenWordsResource(ModelResource):
+class PersonNumberOfSpokenWordsResource(ExportModelResource):
     name = Field()
 
     class Meta:
