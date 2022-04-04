@@ -23,12 +23,12 @@ class ExportResourceView(views.APIView):
             dataset_json = self.resource.export_as_generator_json()
             return StreamingHttpResponse(dataset_json, headers={
                 'Content-Disposition': f'attachment; filename="{self.filename}.json"'
-            })
+            }, content_type="application/json")
         elif (format == "csv"):
             dataset_csv = self.resource.export_as_generator_csv()
             return StreamingHttpResponse(dataset_csv, headers={
                 'Content-Disposition': f'attachment; filename="{self.filename}.csv"'
-            })
+            }, content_type="text/csv")
         
         # format not supported
         return Response({'detail': 'format not supported'}, status=status.HTTP_404_NOT_FOUND)
