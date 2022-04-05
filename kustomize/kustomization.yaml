@@ -12,4 +12,4 @@ resources:
 images:
   - name: parladata-bosna
     newName: rg.fr-par.scw.cloud/djnd/parladata-bosna
-    newTag: '599fdfecb3214afd8183d615fe83018892e643cc'
+    newTag: 'latest'
