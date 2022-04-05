@@ -287,22 +287,18 @@ class MiscMembersCardSerializer(CardSerializer):
 
         return people.order_by('id')
 
-    def get_results(self, mandate):
-        root_organization, playing_field = mandate.query_root_organizations(self.context['date'])
-
+    def get_results(self, parent_organization):
         return {
-            'groups': self._groups(playing_field, self.context['date']),
+            'groups': self._groups(parent_organization, self.context['date']),
             'working_bodies': self._working_bodies(self.context['date']),
             'districts': self._districts(self.context['date']),
-            'maximum_scores': self._maximum_scores(playing_field, self.context['date']),
+            'maximum_scores': self._maximum_scores(parent_organization, self.context['date']),
         }
 
-    def to_representation(self, mandate):
-        parent_data = super().to_representation(mandate)
+    def to_representation(self, parent_organization):
+        parent_data = super().to_representation(parent_organization)
 
-        root_organization, playing_field = mandate.query_root_organizations(self.context['date'])
-
-        ordered_people = self._filtered_and_ordered_people(playing_field, self.context['date'])
+        ordered_people = self._filtered_and_ordered_people(parent_organization, self.context['date'])
 
         paged_object_list, pagination_metadata = create_paginator(self.context.get('GET', {}), ordered_people, prefix='members:')
 
