@@ -158,7 +158,7 @@ class Voters(CardView):
     '''
     Show a list of all MPs belonging to an organization.
     '''
-    thing = Mandate
+    thing = Organization
     card_serializer = MiscMembersCardSerializer
 
 
