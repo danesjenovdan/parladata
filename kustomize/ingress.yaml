@@ -8,10 +8,10 @@ metadata:
 spec:
   tls:
     - hosts:
-        - parladata-bih.lb.djnd.si
+        - parladata-bosna.lb.djnd.si
       secretName: parladata-bosna-tls
   rules:
-    - host: parladata-bih.lb.djnd.si
+    - host: parladata-bosna.lb.djnd.si
       http:
         paths:
           - path: /
@@ -36,10 +36,10 @@ metadata:
 spec:
   tls:
     - hosts:
-        - files.parladata-bih.lb.djnd.si
+        - files.parladata-bosna.lb.djnd.si
       secretName: parladata-bosna-nginx-tls
   rules:
-    - host: files.parladata-bih.lb.djnd.si
+    - host: files.parladata-bosna.lb.djnd.si
       http:
         paths:
           - path: /
