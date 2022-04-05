@@ -39,17 +39,12 @@ class PersonAnalysesSerializer(CommonPersonSerializer):
             PersonVocabularySize,
         )
 
-        timestamp = max(
-            [
-                person.updated_at,
-                *[
-                    analysis.objects.filter(person=person)
-                    .order_by('-timestamp')
-                    .first().timestamp
-                    for analysis in all_analyses
-                ],
-            ]
-        )
+        analysis_timestamps = []
+        for analysis in all_analyses:
+            if analysis_object := analysis.objects.filter(person=person).order_by('-timestamp').first():
+                analysis_timestamps.append(analysis_object.timestamp)
+
+        timestamp = max([person.updated_at, *analysis_timestamps])
 
         return f'PersonAnalysesSerializer_{person.id}_{timestamp.isoformat()}'
 
