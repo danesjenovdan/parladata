@@ -23,17 +23,13 @@ class GroupAnalysesSerializer(CommonOrganizationSerializer):
             GroupVoteAttendance,
         )
 
-        timestamp = max(
-            [
-                group.updated_at,
-                *[
-                    analysis.objects.filter(group=group)
-                    .order_by('-timestamp')
-                    .first().timestamp
-                    for analysis in all_analyses
-                ],
-            ]
-        )
+        analysis_timestamps = []
+        for analysis in all_analyses:
+            if analysis_object := analysis.objects.filter(group=group).order_by('-timestamp').first():
+                analysis_timestamps.append(analysis_object.timestamp)
+
+        timestamp = max([group.updated_at, *analysis_timestamps])
+
         return f'GroupAnalysesSerializer_{group.id}_{timestamp.isoformat()}'
 
     def get_group_value(self, group, property_model_name):
