@@ -26,7 +26,7 @@ class GroupQuestionCardSerializer(GroupScoreCardSerializer):
 
         # query all questions ever asked by the group's members
         all_member_questions = Question.objects.filter(
-            timestamp__lte=timestamp,
+            Q(timestamp__lte=timestamp) | Q(timestamp__isnull=True),
             person_authors__id__in=member_ids
         ).prefetch_related('person_authors')
 
@@ -87,7 +87,7 @@ class GroupQuestionCardSerializer(GroupScoreCardSerializer):
 
         # get all questions that were asked by the organization, not by individual members
         organization_questions = Question.objects.filter(
-            timestamp__lte=timestamp,
+            Q(timestamp__lte=timestamp) | Q(timestamp__isnull=True),
             organization_authors=group
         )
 
