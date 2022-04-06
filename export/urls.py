@@ -5,8 +5,8 @@ from .views import *
 
 
 urlpatterns = [
-    path('export-votes', ExportVotesView.as_view()),
-    path('export-parliament-members', ExportParliamentMembersView.as_view())
+    path('mandate/<int:mandate_id>/votes', ExportVotesView.as_view()),
+    path('mandate/<int:mandate_id>/parliament-members', ExportParliamentMembersView.as_view())
 ]
 
 urlpatterns = format_suffix_patterns(urlpatterns, allowed=['json', 'csv'])

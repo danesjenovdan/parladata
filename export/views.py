@@ -18,14 +18,14 @@ class ExportResourceView(views.APIView):
     filename = None
     resource = None
 
-    def get(self, request, format=None):
+    def get(self, request, format=None, mandate_id=None):
         if (format == "json"):
-            dataset_json = self.resource.export_as_generator_json()
+            dataset_json = self.resource.export_as_generator_json(mandate_id=mandate_id)
             return StreamingHttpResponse(dataset_json, headers={
                 'Content-Disposition': f'attachment; filename="{self.filename}.json"'
             }, content_type="application/json")
         elif (format == "csv"):
-            dataset_csv = self.resource.export_as_generator_csv()
+            dataset_csv = self.resource.export_as_generator_csv(mandate_id=mandate_id)
             return StreamingHttpResponse(dataset_csv, headers={
                 'Content-Disposition': f'attachment; filename="{self.filename}.csv"'
             }, content_type="text/csv")
