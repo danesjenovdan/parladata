@@ -1,6 +1,5 @@
 import pytest
 import json
-import io
 
 from export.views import *
 
@@ -42,13 +41,12 @@ def test_export_votes_json_status():
     assert response.headers['content-type'] == 'application/json'
     # containts correct fields
     content = json.loads(response.getvalue())
-    if len(content) > 0:
-        json_keys = content[0].keys()
-        assert 'id' in json_keys
-        assert 'name' in json_keys
-        assert 'motion__text' in json_keys
-        assert 'motion__summary' in json_keys
-        assert 'result' in json_keys
+    json_keys = content[0].keys()
+    assert 'id' in json_keys
+    assert 'name' in json_keys
+    assert 'motion__text' in json_keys
+    assert 'motion__summary' in json_keys
+    assert 'result' in json_keys
 
 @pytest.mark.django_db()
 def test_export_votes_wrong_format():
@@ -91,15 +89,14 @@ def test_export_parliament_members_json_status():
     assert response.headers['content-type'] == 'application/json'
     # containts correct fields
     content = json.loads(response.getvalue())
-    if len(content) > 0:
-        json_keys = content[0].keys()
-        assert 'id' in json_keys
-        assert 'name' in json_keys
-        assert 'date_of_birth' in json_keys
-        assert 'age' in json_keys
-        assert 'education_level' in json_keys
-        assert 'preferred_pronoun' in json_keys
-        assert 'number_of_mandates' in json_keys
+    json_keys = content[0].keys()
+    assert 'id' in json_keys
+    assert 'name' in json_keys
+    assert 'date_of_birth' in json_keys
+    assert 'age' in json_keys
+    assert 'education_level' in json_keys
+    assert 'preferred_pronoun' in json_keys
+    assert 'number_of_mandates' in json_keys
 
 @pytest.mark.django_db()
 def test_export_parliament_members_wrong_format():
