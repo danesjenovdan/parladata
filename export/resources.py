@@ -14,13 +14,13 @@ class ExportModelResource(ModelResource):
     """
     Extends ModelResource class with additional functions that allow exporting data from admin using a generator.
     """
-    def export_as_generator_csv(self, queryset=None, *args, **kwargs):
+    def export_as_generator_csv(self, queryset=None, mandate_id=None, *args, **kwargs):
         """
         Generator function that returns queryset in csv format.
         """
         self.before_export(queryset, *args, **kwargs)
         if queryset is None:
-            queryset = self.get_queryset()
+            queryset = self.get_queryset(mandate_id=mandate_id)
         headers = self.get_export_headers()
         data = tablib.Dataset(headers=headers)
         # write headers
@@ -42,13 +42,13 @@ class ExportModelResource(ModelResource):
 
         yield '\n'
     
-    def export_as_generator_json(self, queryset=None, *args, **kwargs):
+    def export_as_generator_json(self, queryset=None, mandate_id=None, *args, **kwargs):
         """
         Generator function that returns queryset in json format.
         """
         self.before_export(queryset, *args, **kwargs)
         if queryset is None:
-            queryset = self.get_queryset()
+            queryset = self.get_queryset(mandate_id=mandate_id)
         headers = self.get_export_headers()
         # no need to yield headers because this is json
         # but we do yield start of list
@@ -109,6 +109,19 @@ class MPResource(ExportModelResource):
 
 
 class VoteResource(ExportModelResource):
+    def get_queryset(self, mandate_id=None):
+        """
+        Returns a queryset of all votes for given mandate id.
+        Or returns all votes if there is no mandate id.
+        """
+        if mandate_id:
+            votes = Vote.objects.filter(
+                motion__session__mandate=mandate_id
+            )
+            return votes
+        else:
+            return Vote.objects.all()
+    
     class Meta:
         model = Vote
         fields = ('id', 'name', 'motion__text', 'motion__summary', 'result',)
