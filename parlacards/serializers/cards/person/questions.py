@@ -1,3 +1,5 @@
+from django.db.models import Q
+
 from parlacards.pagination import create_paginator
 from parlacards.serializers.common import PersonScoreCardSerializer
 from parlacards.serializers.question import QuestionSerializer
@@ -12,10 +14,14 @@ class PersonQuestionCardSerializer(PersonScoreCardSerializer):
     def to_representation(self, person):
         parent_data = super().to_representation(person)
 
-        questions = Question.objects.filter(person_authors=person, timestamp__lte=self.context['date']) \
-            .order_by('-timestamp')
+        questions = Question.objects.filter(
+            Q(timestamp__lte=self.context["date"]) | Q(timestamp__isnull=True),
+            person_authors=person,
+        ).order_by("-timestamp")
 
-        paged_object_list, pagination_metadata = create_paginator(self.context.get('GET', {}), questions)
+        paged_object_list, pagination_metadata = create_paginator(
+            self.context.get("GET", {}), questions
+        )
 
         questions_serializer = QuestionSerializer(
             paged_object_list,
@@ -26,5 +32,5 @@ class PersonQuestionCardSerializer(PersonScoreCardSerializer):
         return {
             **parent_data,
             **pagination_metadata,
-            'results': questions_serializer.data,
+            "results": questions_serializer.data,
         }

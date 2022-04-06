@@ -56,4 +56,4 @@ jobs:
       with:
         destination_branch: "bih"
         github_token: ${{ secrets.GITHUB_TOKEN }}
-        pr_title: "Pulling ${{ github.ref }} into slovenija"
+        pr_title: "Pulling ${{ github.ref }} into bih"
