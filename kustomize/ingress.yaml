@@ -8,10 +8,10 @@ metadata:
 spec:
   tls:
     - hosts:
-        - parladata.lb.djnd.si
+        - parladata-lendava.lb.djnd.si
       secretName: parladata-tls
   rules:
-    - host: parladata.lb.djnd.si
+    - host: parladata-lendava.lb.djnd.si
       http:
         paths:
           - path: /
