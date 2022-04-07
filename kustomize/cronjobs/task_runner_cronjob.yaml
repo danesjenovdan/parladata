@@ -1,7 +1,7 @@
 apiVersion: batch/v1beta1
 kind: CronJob
 metadata:
-  name: parlameter-task-runner
+  name: parlameter-bosna-task-runner
 spec:
   schedule: "15 * * * *"
   successfulJobsHistoryLimit: 1
@@ -12,14 +12,14 @@ spec:
       template:
         spec:
           containers:
-          - name: parladata-task-runner
-            image: parladata
+          - name: parlameter-bosna-task-runner
+            image: parladata-bosna
             env:
               - name: DJANGO_SETTINGS_MODULE
                 value: parladata_project.settings.k8s
             envFrom:
               - secretRef:
-                  name: parladata-credentials
+                  name: parladata-bosna-credentials
             command:
               - python
               - manage.py
