@@ -16,7 +16,7 @@ metadata:
   name: parladata-nginx
 spec:
   selector:
-    app: parladata-nginx
+    app: parladata-lendava
   ports:
     - protocol: TCP
       port: 80
