@@ -13,7 +13,7 @@ def test_export_as_generator_json():
     chunks_joined = ''.join(chunks)
     res = json.loads(chunks_joined)
     # check num of results
-    assert len(res) == 118
+    assert len(res) == 43
     # check keys
     json_keys = res[0].keys()
     assert 'id' in json_keys
@@ -33,7 +33,7 @@ def test_export_as_generator_csv():
     lines = chunks_joined.splitlines()
     headers = lines[0].split(',')
     # check num of results
-    assert len(lines) == 120 # len(results) + headers + empty line
+    assert len(lines) == 45 # len(results) + headers + empty line
     # check headers
     assert 'id' in headers
     assert 'name' in headers

@@ -6,7 +6,7 @@ from django.db.models.query import QuerySet
 from import_export.resources import ModelResource
 from import_export.fields import Field
 
-from parladata.models import Person, Vote
+from parladata.models import Person, Vote, Mandate
 from parlacards.models import GroupDiscord, PersonNumberOfSpokenWords
 
 
@@ -49,7 +49,13 @@ class ExportModelResource(ModelResource):
         self.before_export(queryset, *args, **kwargs)
         if queryset is None:
             queryset = self.get_queryset(mandate_id=mandate_id)
+
+        if len(queryset) == 0:
+            yield '[]'
+            raise StopIteration
+
         headers = self.get_export_headers()
+
         # no need to yield headers because this is json
         # but we do yield start of list
         yield '['
@@ -79,6 +85,23 @@ class ExportModelResource(ModelResource):
 
 
 class MPResource(ExportModelResource):
+    def get_queryset(self, mandate_id=None):
+        """
+        Returns a queryset of all parliament members for given mandate id.
+        Or returns all parliament members if there is no mandate id.
+        """
+
+        if mandate_id:
+            if (mandate := Mandate.objects.get(id=mandate_id)):
+                root_organization, playing_field = mandate.query_root_organizations()
+                members = playing_field.query_members()
+                return members
+            # if mandate does not exist return empty queryset
+            else:
+                return Person.objects.none()
+        else:
+            return Person.objects.all()
+
     name = Field()
     age = Field()
     education_level = Field()
