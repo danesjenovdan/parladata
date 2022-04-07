@@ -1,18 +1,18 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: parladata-deployment
+  name: parladata-slovenija-deployment
   labels:
-    app: parladata
+    app: parladata-slovenija
 spec:
-  replicas: 1
+  replicas: 2
   selector:
     matchLabels:
-      app: parladata
+      app: parladata-slovenija
   template:
     metadata:
       labels:
-        app: parladata
+        app: parladata-slovenija
     spec:
       volumes:
         - name: parladata-persistent-storage
@@ -20,7 +20,7 @@ spec:
             claimName: parladata-pvc
       initContainers:
         - name: collectstatic
-          image: parladata
+          image: parladata-slovenija
           volumeMounts:
             - name: parladata-persistent-storage
               mountPath: /pvc
@@ -34,7 +34,7 @@ spec:
               value: parladata_project.settings.k8s
           envFrom:
             - secretRef:
-                name: parladata-credentials
+                name: parladata-slovenija-credentials
             - secretRef:
                 name: parladata-sentry
           resources:
@@ -45,7 +45,7 @@ spec:
               memory: 200Mi
               cpu: 200m
         - name: migrate
-          image: parladata
+          image: parladata-slovenija
           command:
             - python
             - manage.py
@@ -55,7 +55,7 @@ spec:
               value: parladata_project.settings.k8s
           envFrom:
             - secretRef:
-                name: parladata-credentials
+                name: parladata-slovenija-credentials
             - secretRef:
                 name: parladata-sentry
           resources:
@@ -66,8 +66,8 @@ spec:
               memory: 200Mi
               cpu: 200m
       containers:
-        - name: parladata
-          image: parladata
+        - name: parladata-slovenija
+          image: parladata-slovenija
           volumeMounts:
             - name: parladata-persistent-storage
               mountPath: /pvc
@@ -88,7 +88,7 @@ spec:
             - containerPort: 8000
           envFrom:
               - secretRef:
-                  name: parladata-credentials
+                  name: parladata-slovenija-credentials
               - secretRef:
                   name: parladata-sentry
           env:
@@ -99,10 +99,10 @@ spec:
           resources:
             requests:
               memory: 400Mi
-              cpu: 200m
+              cpu: 500m
             limits:
               memory: 400Mi
-              cpu: 200m
+              cpu: 500m
         - name: parladata-nginx
           ports:
             - name: http
