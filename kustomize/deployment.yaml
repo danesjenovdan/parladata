@@ -3,16 +3,16 @@ kind: Deployment
 metadata:
   name: parladata-deployment
   labels:
-    app: parladata
+    app: parladata-hrastnik
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: parladata
+      app: parladata-hrastnik
   template:
     metadata:
       labels:
-        app: parladata
+        app: parladata-hrastnik
     spec:
       volumes:
         - name: parladata-persistent-storage
@@ -20,7 +20,7 @@ spec:
             claimName: parladata-pvc
       initContainers:
         - name: collectstatic
-          image: parladata
+          image: parladata-hrastnik
           volumeMounts:
             - name: parladata-persistent-storage
               mountPath: /pvc
@@ -45,7 +45,7 @@ spec:
               memory: 200Mi
               cpu: 200m
         - name: migrate
-          image: parladata
+          image: parladata-hrastnik
           command:
             - python
             - manage.py
@@ -66,8 +66,8 @@ spec:
               memory: 200Mi
               cpu: 200m
       containers:
-        - name: parladata
-          image: parladata
+        - name: parladata-hrastnik
+          image: parladata-hrastnik
           volumeMounts:
             - name: parladata-persistent-storage
               mountPath: /pvc
