@@ -4,19 +4,13 @@ from django.urls import reverse
 from django.conf import settings
 from django.utils.translation import gettext as _
 
-from import_export.resources import ModelResource
 from import_export.admin import ExportMixin
-from import_export.fields import Field
 
 from parladata.models import Vote, Ballot
 
-from collections import Counter
+from export.resources import VoteResource
 
-class VoteResource(ModelResource):
-    class Meta:
-        model = Vote
-        fields = ('id', 'name', 'motion__text', 'motion__summary', 'result',)
-        export_order = ('id', 'name', 'motion__text', 'motion__summary', 'result',)
+from collections import Counter
 
 
 @admin.action(description='Clone vote with ballots')
