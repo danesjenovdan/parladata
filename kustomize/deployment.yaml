@@ -15,14 +15,13 @@ spec:
         app: parladata
     spec:
       volumes:
-        - name: parladata-persistent-storage
-          persistentVolumeClaim:
-            claimName: parladata-pvc
+        - name: parladata-shared-storage
+          emptyDir: {}
       initContainers:
         - name: collectstatic
           image: parladata
           volumeMounts:
-            - name: parladata-persistent-storage
+            - name: parladata-shared-storage
               mountPath: /pvc
           command:
             - python
@@ -69,7 +68,7 @@ spec:
         - name: parladata
           image: parladata
           volumeMounts:
-            - name: parladata-persistent-storage
+            - name: parladata-shared-storage
               mountPath: /pvc
           command:
             - gunicorn
@@ -110,5 +109,5 @@ spec:
               protocol: TCP
           image: nginx:alpine
           volumeMounts:
-            - name: parladata-persistent-storage
+            - name: parladata-shared-storage
               mountPath: /usr/share/nginx/html
