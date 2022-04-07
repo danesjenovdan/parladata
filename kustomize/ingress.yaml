@@ -1,31 +1,31 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: parladata
+  name: parladata-ajdovscina
   annotations:
     cert-manager.io/cluster-issuer: "letsencrypt-production"
     nginx.ingress.kubernetes.io/proxy-body-size: 10m
 spec:
   tls:
     - hosts:
-        - parladata.lb.djnd.si
-      secretName: parladata-tls
+        - parladata-ajdovscina.lb.djnd.si
+      secretName: parladata-ajdovscina-tls
   rules:
-    - host: parladata.lb.djnd.si
+    - host: parladata-ajdovscina.lb.djnd.si
       http:
         paths:
           - path: /
             pathType: Prefix
             backend:
               service:
-                name: parladata
+                name: parladata-ajdovscina
                 port:
                   number: 8000
 ---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: parladata-nginx
+  name: parladata-ajdovscina-nginx
   annotations:
     cert-manager.io/cluster-issuer: "letsencrypt-production"
     nginx.ingress.kubernetes.io/enable-cors: "true"
@@ -36,16 +36,16 @@ metadata:
 spec:
   tls:
     - hosts:
-        - files.parladata.lb.djnd.si
-      secretName: parladata-nginx-tls
+        - files.parladata-ajdovscina.lb.djnd.si
+      secretName: parladata-ajdovscina-nginx-tls
   rules:
-    - host: files.parladata.lb.djnd.si
+    - host: files.parladata-ajdovscina.lb.djnd.si
       http:
         paths:
           - path: /
             pathType: Prefix
             backend:
               service:
-                name: parladata-nginx
+                name: parladata-ajdovscina-nginx
                 port:
                   number: 80
