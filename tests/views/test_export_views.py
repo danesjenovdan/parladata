@@ -17,7 +17,7 @@ client = APIClient()
 
 @pytest.mark.django_db()
 def test_export_votes_csv():
-    response = client.get('/v3/data/export-votes.csv')
+    response = client.get('/v3/export/mandate/1/votes.csv')
     # successful response
     assert response.status_code == 200
     # correct response type
@@ -34,7 +34,7 @@ def test_export_votes_csv():
 
 @pytest.mark.django_db()
 def test_export_votes_json_status():
-    response = client.get('/v3/data/export-votes.json')
+    response = client.get('/v3/export/mandate/1/votes.json')
     # successful response
     assert response.status_code == 200
     # correct response type
@@ -50,12 +50,12 @@ def test_export_votes_json_status():
 
 @pytest.mark.django_db()
 def test_export_votes_wrong_format():
-    response = client.get('/v3/data/export-votes.xslx')
+    response = client.get('/v3/export/mandate/1/votes.xslx')
     assert response.status_code == 404
 
 @pytest.mark.django_db()
 def test_export_votes_no_format():
-    response = client.get('/v3/data/export-votes')
+    response = client.get('/v3/export/mandate/1/votes')
     assert response.status_code == 404
 
 
@@ -63,7 +63,7 @@ def test_export_votes_no_format():
 
 @pytest.mark.django_db()
 def test_export_parliament_members_csv_status():
-    response = client.get('/v3/data/export-parliament-members.csv')
+    response = client.get('/v3/export/mandate/1/parliament-members.csv')
     # successful response
     assert response.status_code == 200
     # correct response type
@@ -82,7 +82,7 @@ def test_export_parliament_members_csv_status():
 
 @pytest.mark.django_db()
 def test_export_parliament_members_json_status():
-    response = client.get('/v3/data/export-parliament-members.json')
+    response = client.get('/v3/export/mandate/1/parliament-members.json')
     # successful response
     assert response.status_code == 200
     # correct response type
@@ -100,10 +100,10 @@ def test_export_parliament_members_json_status():
 
 @pytest.mark.django_db()
 def test_export_parliament_members_wrong_format():
-    response = client.get('/v3/data/export-parliament-members.xslx')
+    response = client.get('/v3/export/mandate/1/parliament-members.xslx')
     assert response.status_code == 404
 
 @pytest.mark.django_db()
 def test_export_parliament_members_no_format():
-    response = client.get('/v3/data/export-parliament-members')
+    response = client.get('/v3/export/mandate/1/parliament-members')
     assert response.status_code == 404
