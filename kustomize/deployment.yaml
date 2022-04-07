@@ -14,9 +14,16 @@ spec:
       labels:
         app: parladata
     spec:
+      volumes:
+        - name: parladata-persistent-storage
+          persistentVolumeClaim:
+            claimName: parladata-pvc
       initContainers:
         - name: collectstatic
           image: parladata
+          volumeMounts:
+            - name: parladata-persistent-storage
+              mountPath: /pvc
           command:
             - python
             - manage.py
@@ -61,6 +68,9 @@ spec:
       containers:
         - name: parladata
           image: parladata
+          volumeMounts:
+            - name: parladata-persistent-storage
+              mountPath: /pvc
           command:
             - gunicorn
             - parladata_project.wsgi:application
@@ -93,3 +103,12 @@ spec:
             limits:
               memory: 400Mi
               cpu: 200m
+        - name: parladata-nginx
+          ports:
+            - name: http
+              containerPort: 80
+              protocol: TCP
+          image: nginx:alpine
+          volumeMounts:
+            - name: parladata-persistent-storage
+              mountPath: /usr/share/nginx/html
