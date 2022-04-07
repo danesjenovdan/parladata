@@ -5,6 +5,7 @@ resources:
   - deployment.yaml
   - service.yaml
   - ingress.yaml
+  - pvc.yaml
 
   # uncomment cronjob to enable it
   #- cronjobs/task_runner_cronjob.yaml
