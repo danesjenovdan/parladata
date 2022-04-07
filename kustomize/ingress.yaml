@@ -29,6 +29,6 @@ spec:
             pathType: Prefix
             backend:
               service:
-                name: parladata-lendava
+                name: parladata-nginx
                 port:
-                  number: 8000
+                  number: 80
