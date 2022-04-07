@@ -18,13 +18,20 @@ class GroupVoteCardSerializer(GroupScoreCardSerializer):
     def to_representation(self, instance):
         parent_data = super().to_representation(instance)
 
-        # instance is the group
-        votes = Vote.objects.filter(
-            timestamp__lte=self.context['date']
-        ).order_by(
-            '-timestamp',
-            '-id' # fallback ordering
-        )
+        root_organization_membership = instance.organization_memberships.filter(organization__classification='root').first()
+
+        if root_organization_membership:
+            root_organization = root_organization_membership.organization
+            # instance is the group
+            votes = Vote.objects.filter(
+                timestamp__lte=self.context['date'],
+                motion__session__organizations=root_organization
+            ).order_by(
+                '-timestamp',
+                '-id' # fallback ordering
+            )
+        else:
+            raise ValueError(f'This organization does not have a membership in root organization.')
 
         # TODO: maybe lemmatize?, maybe search by each word separately?
         if text := self.context.get('GET', {}).get('text', None):
