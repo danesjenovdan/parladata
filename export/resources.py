@@ -52,7 +52,7 @@ class ExportModelResource(ModelResource):
 
         if len(queryset) == 0:
             yield '[]'
-            raise StopIteration
+            return
 
         headers = self.get_export_headers()
 
@@ -88,16 +88,17 @@ class MPResource(ExportModelResource):
     def get_queryset(self, mandate_id=None):
         """
         Returns a queryset of all parliament members for given mandate id.
-        Or returns all parliament members if there is no mandate id.
+        Or returns all persons if there is no mandate id.
         """
 
         if mandate_id:
-            if (mandate := Mandate.objects.get(id=mandate_id)):
+            try:
+                mandate = Mandate.objects.get(id=mandate_id)
                 root_organization, playing_field = mandate.query_root_organizations()
                 members = playing_field.query_members()
                 return members
             # if mandate does not exist return empty queryset
-            else:
+            except:
                 return Person.objects.none()
         else:
             return Person.objects.all()
