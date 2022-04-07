@@ -14,6 +14,12 @@ class ExportModelResource(ModelResource):
     """
     Extends ModelResource class with additional functions that allow exporting data from admin using a generator.
     """
+    def get_queryset(self, mandate_id=None):
+        """
+        TODO: overwrite to include mandate_id
+        """
+        return self._meta.model.objects.all()
+
     def export_as_generator_csv(self, queryset=None, mandate_id=None, *args, **kwargs):
         """
         Generator function that returns queryset in csv format.
