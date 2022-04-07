@@ -31,7 +31,7 @@ class GroupVoteCardSerializer(GroupScoreCardSerializer):
                 '-id' # fallback ordering
             )
         else:
-            assert False, 'This organization does not have a membership in root organization.'
+            raise ValueError(f'This organization does not have a membership in root organization.')
 
         # TODO: maybe lemmatize?, maybe search by each word separately?
         if text := self.context.get('GET', {}).get('text', None):
