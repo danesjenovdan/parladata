@@ -12,6 +12,7 @@ client = APIClient()
 # does endpoint return the correct content type
 # does response content contain correct fields
 # does endpoint return 404 for wrong format or no format
+# does endpoint return empty file for non-existing mandate
 
 # --- ExportVotesView ---
 
@@ -33,7 +34,7 @@ def test_export_votes_csv():
     assert 'result' in headers
 
 @pytest.mark.django_db()
-def test_export_votes_json_status():
+def test_export_votes_json():
     response = client.get('/v3/export/mandate/1/votes.json')
     # successful response
     assert response.status_code == 200
@@ -58,11 +59,34 @@ def test_export_votes_no_format():
     response = client.get('/v3/export/mandate/1/votes')
     assert response.status_code == 404
 
+@pytest.mark.django_db()
+def test_export_votes_json_wrong_mandate():
+    response = client.get('/v3/export/mandate/2/votes.json')
+    assert response.status_code == 200
+    assert response.headers['content-type'] == 'application/json'
+    content = json.loads(response.getvalue())
+    assert content == []
+
+@pytest.mark.django_db()
+def test_export_votes_csv_wrong_mandate():
+    response = client.get('/v3/export/mandate/2/votes.csv')
+    assert response.status_code == 200
+    assert response.headers['content-type'] == 'text/csv'
+    content = response.getvalue()
+    lines = content.splitlines()
+    assert len(lines) == 2 # headers and empty line
+    headers = lines[0].decode("utf-8").split(',')
+    assert 'id' in headers
+    assert 'name' in headers
+    assert 'motion__text' in headers
+    assert 'motion__summary' in headers
+    assert 'result' in headers
+
 
 # --- ExportParliamentMembersView ---
 
 @pytest.mark.django_db()
-def test_export_parliament_members_csv_status():
+def test_export_parliament_members_csv():
     response = client.get('/v3/export/mandate/1/parliament-members.csv')
     # successful response
     assert response.status_code == 200
@@ -81,7 +105,7 @@ def test_export_parliament_members_csv_status():
     assert 'number_of_mandates' in headers
 
 @pytest.mark.django_db()
-def test_export_parliament_members_json_status():
+def test_export_parliament_members_json():
     response = client.get('/v3/export/mandate/1/parliament-members.json')
     # successful response
     assert response.status_code == 200
@@ -107,3 +131,28 @@ def test_export_parliament_members_wrong_format():
 def test_export_parliament_members_no_format():
     response = client.get('/v3/export/mandate/1/parliament-members')
     assert response.status_code == 404
+
+@pytest.mark.django_db()
+def test_export_parliament_members_json_wrong_mandate():
+    response = client.get('/v3/export/mandate/2/parliament-members.json')
+    assert response.status_code == 200
+    assert response.headers['content-type'] == 'application/json'
+    content = json.loads(response.getvalue())
+    assert content == []
+
+@pytest.mark.django_db()
+def test_export_parliament_members_csv_wrong_mandate():
+    response = client.get('/v3/export/mandate/2/parliament-members.csv')
+    assert response.status_code == 200
+    assert response.headers['content-type'] == 'text/csv'
+    content = response.getvalue()
+    lines = content.splitlines()
+    assert len(lines) == 2 # headers and empty line
+    headers = lines[0].decode("utf-8").split(',')
+    assert 'id' in headers
+    assert 'name' in headers
+    assert 'date_of_birth' in headers
+    assert 'age' in headers
+    assert 'education_level' in headers
+    assert 'preferred_pronoun' in headers
+    assert 'number_of_mandates' in headers
