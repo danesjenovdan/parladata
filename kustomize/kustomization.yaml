@@ -6,11 +6,8 @@ resources:
   - deployment.yaml
   - service.yaml
   - ingress.yaml
-  - pvc.yaml
-
-  # uncomment cronjob to enable it
-  #- cronjobs/task_runner_cronjob.yaml
+  - cronjobs/task_runner_cronjob.yaml
 images:
   - name: parladata
     newName: rg.fr-par.scw.cloud/djnd/parladata
-    newTag: '599fdfecb3214afd8183d615fe83018892e643cc'
+    newTag: 'ac5908e07e51d92252124479b422cea7ed2aace9'
