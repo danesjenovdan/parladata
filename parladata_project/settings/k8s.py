@@ -98,7 +98,6 @@ FROM_EMAIL = os.getenv('PARLAMETER_FROM_EMAIL', 'test@test.si')
 # DJANGO STORAGE SETTINGS
 if os.getenv('PARLAMETER_ENABLE_S3', False):
     DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
-    STATICFILES_STORAGE = 'storages.backends.s3boto3.S3StaticStorage'
     AWS_ACCESS_KEY_ID = os.getenv('PARLAMETER_AWS_ACCESS_KEY_ID', '')
     AWS_SECRET_ACCESS_KEY = os.getenv('PARLAMETER_AWS_SECRET_ACCESS_KEY', '')
     AWS_STORAGE_BUCKET_NAME = os.getenv('PARLAMETER_AWS_STORAGE_BUCKET_NAME', '')
