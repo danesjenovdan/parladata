@@ -3,16 +3,16 @@ kind: Deployment
 metadata:
   name: parladata-deployment
   labels:
-    app: parladata
+    app: parladata-lendava
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: parladata
+      app: parladata-lendava
   template:
     metadata:
       labels:
-        app: parladata
+        app: parladata-lendava
     spec:
       volumes:
         - name: parladata-persistent-storage
@@ -20,7 +20,7 @@ spec:
             claimName: parladata-pvc
       initContainers:
         - name: collectstatic
-          image: parladata
+          image: parladata-lendava
           volumeMounts:
             - name: parladata-persistent-storage
               mountPath: /pvc
@@ -45,7 +45,7 @@ spec:
               memory: 200Mi
               cpu: 200m
         - name: migrate
-          image: parladata
+          image: parladata-lendava
           command:
             - python
             - manage.py
@@ -66,8 +66,8 @@ spec:
               memory: 200Mi
               cpu: 200m
       containers:
-        - name: parladata
-          image: parladata
+        - name: parladata-lendava
+          image: parladata-lendava
           volumeMounts:
             - name: parladata-persistent-storage
               mountPath: /pvc
