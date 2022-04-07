@@ -1,18 +1,18 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: parladata-deployment
+  name: parladata-ajdovscina
   labels:
-    app: parladata
+    app: parladata-ajdovscina
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: parladata
+      app: parladata-ajdovscina
   template:
     metadata:
       labels:
-        app: parladata
+        app: parladata-ajdovscina
     spec:
       volumes:
         - name: parladata-persistent-storage
@@ -20,7 +20,7 @@ spec:
             claimName: parladata-pvc
       initContainers:
         - name: collectstatic
-          image: parladata
+          image: parladata-ajdovscina
           volumeMounts:
             - name: parladata-persistent-storage
               mountPath: /pvc
@@ -45,7 +45,7 @@ spec:
               memory: 200Mi
               cpu: 200m
         - name: migrate
-          image: parladata
+          image: parladata-ajdovscina
           command:
             - python
             - manage.py
@@ -66,8 +66,8 @@ spec:
               memory: 200Mi
               cpu: 200m
       containers:
-        - name: parladata
-          image: parladata
+        - name: parladata-ajdovscina
+          image: parladata-ajdovscina
           volumeMounts:
             - name: parladata-persistent-storage
               mountPath: /pvc
