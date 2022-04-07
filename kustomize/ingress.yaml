@@ -9,9 +9,20 @@ spec:
   tls:
     - hosts:
         - parladata-lendava.lb.djnd.si
+        - files.parladata-lendava.lb.djnd.si
       secretName: parladata-tls
   rules:
     - host: parladata-lendava.lb.djnd.si
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: parladata-lendava
+                port:
+                  number: 8000
+    - host: files.parladata-lendava.lb.djnd.si
       http:
         paths:
           - path: /
