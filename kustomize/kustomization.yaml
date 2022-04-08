@@ -6,6 +6,7 @@ resources:
   - service.yaml
   - ingress.yaml
   - pvc.yaml
+  - solr.yaml
 
   # uncomment cronjob to enable it
   #- cronjobs/task_runner_cronjob.yaml
@@ -13,3 +14,6 @@ images:
   - name: parladata-hrastnik
     newName: rg.fr-par.scw.cloud/djnd/parladata-hrastnik
     newTag: 'eab8d4d3f43c11dd808c8ad569629177ac3537a1'
+  - name: parlasolr-hrastnik
+    newName: rg.fr-par.scw.cloud/djnd/parlasolr-hrastnik
+    newTag: 'b8e243ad15dba3009e3537b78f41dd56a77fb35b'
