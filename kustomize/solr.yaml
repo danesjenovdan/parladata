@@ -1,27 +1,27 @@
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: parlasolr
+  name: parlasolr-ajdovscina
   labels:
-    app: parlasolr
+    app: parlasolr-ajdovscina
 spec:
-  serviceName: parlasolr
+  serviceName: parlasolr-ajdovscina
   replicas: 1
   selector:
     matchLabels:
-      app: parlasolr
+      app: parlasolr-ajdovscina
   template:
     metadata:
       labels:
-        app: parlasolr
+        app: parlasolr-ajdovscina
     spec:
       securityContext:
         fsGroup: 8983
       containers:
-      - name: parlasolr
-        image: parlasolr # kustomize thing
+      - name: parlasolr-ajdovscina
+        image: parlasolr-ajdovscina # kustomize thing
         volumeMounts:
-        - name: parlasolr-persistent-storage
+        - name: parlasolr-ajdovscina-persistent-storage
           mountPath: /var/solr/data
         ports:
         - name: http
@@ -49,12 +49,12 @@ spec:
             cpu: 200m
       initContainers:
       - name: create-core
-        image: parlasolr
+        image: parlasolr-ajdovscina
         # command: ['solr', 'create_core', '-c', 'parlasearch']
         # create parlasearch core with a convenience script
         command: ['sh', '-c', '/opt/docker-solr/scripts/precreate-core parlasearch']
         volumeMounts:
-        - name: parlasolr-persistent-storage
+        - name: parlasolr-ajdovscina-persistent-storage
           # /var/solr/data it's SOLR_HOME set in Docker file
           mountPath: /var/solr/data
         resources:
@@ -65,10 +65,10 @@ spec:
             memory: 100Mi
             cpu: 50m
       - name: link-config-1
-        image: parlasolr
+        image: parlasolr-ajdovscina
         command: ['cp', '-f', '/parlasearch-conf/schema.xml', '/var/solr/data/parlasearch/conf/']
         volumeMounts:
-        - name: parlasolr-persistent-storage
+        - name: parlasolr-ajdovscina-persistent-storage
           # /var/solr/data it's SOLR_HOME set in Docker file
           mountPath: /var/solr/data
         resources:
@@ -79,10 +79,10 @@ spec:
             memory: 100Mi
             cpu: 50m
       - name: link-config-2
-        image: parlasolr
+        image: parlasolr-ajdovscina
         command: ['cp', '-f', '/parlasearch-conf/solrconfig.xml', '/var/solr/data/parlasearch/conf/']
         volumeMounts:
-        - name: parlasolr-persistent-storage
+        - name: parlasolr-ajdovscina-persistent-storage
           # /var/solr/data it's SOLR_HOME set in Docker file
           mountPath: /var/solr/data
         resources:
@@ -94,7 +94,7 @@ spec:
             cpu: 50m
   volumeClaimTemplates:
   - metadata:
-      name: parlasolr-persistent-storage
+      name: parlasolr-ajdovscina-persistent-storage
       annotations:
           pv.beta.kubernetes.io/gid: "8983"
     spec:
@@ -108,10 +108,10 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: parlasolr
+  name: parlasolr-ajdovscina
 spec:
   selector:
-    app: parlasolr
+    app: parlasolr-ajdovscina
   ports:
     - protocol: TCP
       port: 8983
