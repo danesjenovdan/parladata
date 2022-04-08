@@ -19,7 +19,7 @@ services:
       PARLAMETER_URL: https://parlameter.si/
       CARDS_URL: https://glej.parlameter.si/
       NOTIFICATIONS_URL: https://obvestila.parlameter.si/
-      PARLAMETER_SOLR_URL: http://parlasolr.lb.djnd.si/solr/parlasearch
+      PARLAMETER_SOLR_URL: http://solr:8983/solr/parlasearch
       PARLAMETER_ENABLE_S3: ""
       PARLAMETER_AWS_ACCESS_KEY_ID: ""
       PARLAMETER_AWS_SECRET_ACCESS_KEY: ""
