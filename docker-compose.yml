@@ -45,5 +45,14 @@ services:
       - memcached
       - -m 64
 
+  solr:
+    container_name: solr
+    build: ./solr
+    restart: always
+    ports:
+      - 8983:8983
+    volumes:
+      - ./solr/parlasearch-conf:/parlasearch-conf
+
 volumes:
   pgdata:
