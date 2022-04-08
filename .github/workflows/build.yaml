@@ -1,4 +1,4 @@
-name: Publish Docker image
+name: Publish Docker images
 on:
   push:
     branches:
@@ -33,6 +33,15 @@ jobs:
           tags: |
             rg.fr-par.scw.cloud/djnd/parladata-bosna:${{ github.sha }}
             rg.fr-par.scw.cloud/djnd/parladata-bosna:latest
+      -
+        name: Build and push SOLR
+        uses: docker/build-push-action@v2
+        with:
+          context: ./solr
+          push: true
+          tags: |
+            rg.fr-par.scw.cloud/djnd/parlasolr:${{ github.sha }}
+            rg.fr-par.scw.cloud/djnd/parlasolr:latest
       -
         name: Update image versions in kustomize/kustomization.yaml
         run: |
