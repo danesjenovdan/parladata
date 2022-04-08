@@ -19,7 +19,7 @@ spec:
           emptyDir: {}
       initContainers:
         - name: collectstatic
-          image: parladata
+          image: parladata-ljubljana
           volumeMounts:
             - name: parladata-shared-storage
               mountPath: /pvc
@@ -48,7 +48,7 @@ spec:
               memory: 200Mi
               cpu: 200m
         - name: migrate
-          image: parladata
+          image: parladata-ljubljana
           command:
             - python
             - manage.py
@@ -70,7 +70,7 @@ spec:
               cpu: 200m
       containers:
         - name: parladata
-          image: parladata
+          image: parladata-ljubljana
           volumeMounts:
             - name: parladata-shared-storage
               mountPath: /pvc
