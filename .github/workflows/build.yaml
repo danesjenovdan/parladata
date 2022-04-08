@@ -40,8 +40,8 @@ jobs:
           context: ./solr
           push: true
           tags: |
-            rg.fr-par.scw.cloud/djnd/parlasolr:${{ github.sha }}
-            rg.fr-par.scw.cloud/djnd/parlasolr:latest
+            rg.fr-par.scw.cloud/djnd/parlasolr-ua:${{ github.sha }}
+            rg.fr-par.scw.cloud/djnd/parlasolr-ua:latest
       -
         name: Update image versions in kustomize/kustomization.yaml
         run: |
