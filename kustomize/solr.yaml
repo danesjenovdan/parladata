@@ -30,14 +30,14 @@ spec:
         livenessProbe:
           tcpSocket:
             port: http
-          initialDelaySeconds: 120
+          initialDelaySeconds: 360
           periodSeconds: 30
           timeoutSeconds: 5
         readinessProbe:
           httpGet:
             path: /solr/parlasearch/admin/ping
             port: http
-          initialDelaySeconds: 60
+          initialDelaySeconds: 300
           periodSeconds: 30
           timeoutSeconds: 5
         resources:
