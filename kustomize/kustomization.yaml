@@ -6,8 +6,15 @@ resources:
   - deployment.yaml
   - service.yaml
   - ingress.yaml
+  - pvc.yaml
+  - solr.yaml
+
+  # uncomment cronjob to enable it
   - cronjobs/task_runner_cronjob.yaml
 images:
-  - name: parladata
-    newName: rg.fr-par.scw.cloud/djnd/parladata
+  - name: parladata-ljubljana
+    newName: rg.fr-par.scw.cloud/djnd/parladata-ljubljana
     newTag: 'd59243252b6ebf6adc96b12ef4c858d9fa37d51e'
+  - name: parlasolr-ljubljana
+    newName: rg.fr-par.scw.cloud/djnd/parlasolr-ljubljana
+    newTag: 'b8e243ad15dba3009e3537b78f41dd56a77fb35b'
