@@ -18,7 +18,9 @@ class ExportResourceView(views.APIView):
     filename = None
     resource = None
 
-    def get(self, request, format=None, mandate_id=None):
+    def get(self, request, format=None):
+        mandate_id = request.query_params.get('mandate_id')
+
         if (format == "json"):
             dataset_json = self.resource.export_as_generator_json(mandate_id=mandate_id)
             return StreamingHttpResponse(dataset_json, headers={
