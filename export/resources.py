@@ -16,7 +16,8 @@ class ExportModelResource(ModelResource):
     """
     def get_queryset(self, mandate_id=None):
         """
-        TODO: overwrite to include mandate_id
+        Queryset for ModelResource to work with.
+        Meant to be overwritten to include filtering by mandate_id.
         """
         return self._meta.model.objects.all()
 
