@@ -73,53 +73,53 @@ def force_run_analyses(timestamp=None, print_method=print):
     if not timestamp:
         timestamp = datetime.now()
 
-    playing_field = Organization.objects.first()
-    print_method('start vote analyses')
-    run_vote_analyses_on_date(playing_field, timestamp)
-    print_method('start speech analyses')
-    run_speech_analyses_on_date(playing_field, timestamp)
-    print_method('start question analyses')
-    run_question_analyses_on_date(playing_field, timestamp)
-    print_method('finish')
+
+    for playing_field in get_playing_fields():
+        print_method('start vote analyses')
+        run_vote_analyses_on_date(playing_field, timestamp)
+        print_method('start speech analyses')
+        run_speech_analyses_on_date(playing_field, timestamp)
+        print_method('start question analyses')
+        run_question_analyses_on_date(playing_field, timestamp)
+        print_method('finish')
 
 
 def force_run_group_analyses(timestamp=None, print_method=print):
     if not timestamp:
         timestamp = datetime.now()
 
-    playing_field = Organization.objects.first()
     print_method('start analyses for groups')
-    save_group_number_of_questions(playing_field, timestamp)
-    save_groups_voting_distances(playing_field, timestamp)
-    save_groups_monthly_vote_attendance(playing_field, timestamp)
-    save_groups_vote_attendance_on_sessions(playing_field, timestamp)
-    save_groups_discords(playing_field, timestamp)
-    save_groups_vote_attendance(playing_field, timestamp)
-    save_groups_vocabulary_sizes(playing_field, timestamp)
+    for playing_field in get_playing_fields():
+        save_group_number_of_questions(playing_field, timestamp)
+        save_groups_voting_distances(playing_field, timestamp)
+        save_groups_monthly_vote_attendance(playing_field, timestamp)
+        save_groups_vote_attendance_on_sessions(playing_field, timestamp)
+        save_groups_discords(playing_field, timestamp)
+        save_groups_vote_attendance(playing_field, timestamp)
+        save_groups_vocabulary_sizes(playing_field, timestamp)
 
 def force_run_person_analyses(timestamp=None, print_method=print):
     if not timestamp:
         timestamp = datetime.now()
-
-    playing_field = Organization.objects.first()
     print_method('start analyses for people')
-    print_method('start calculating ang number of speeches')
-    save_people_avg_number_of_speeches_per_session(playing_field, timestamp)
-    print_method('start calculating number of spoken words')
-    save_people_number_of_spoken_words(playing_field, timestamp)
-    print_method('start calculating vocabulary size')
-    save_people_vocabulary_sizes(playing_field, timestamp)
-    print_method('start calculating attendace')
-    save_people_vote_attendance(playing_field, timestamp)
-    print_method('start calculating deviations from group')
-    save_people_deviations_from_group(playing_field, timestamp)
-    print_method('start calculating monthly vote attendance')
-    save_people_monthly_vote_attendance(playing_field, timestamp)
-    print_method('start calculating voting distances')
-    save_voting_distances(playing_field, timestamp)
-    print_method('start calculating number of questions')
-    save_people_number_of_questions(playing_field, timestamp)
-    print_method('end analyses for people')
+    for playing_field in get_playing_fields():
+        print_method('start calculating ang number of speeches')
+        save_people_avg_number_of_speeches_per_session(playing_field, timestamp)
+        print_method('start calculating number of spoken words')
+        save_people_number_of_spoken_words(playing_field, timestamp)
+        print_method('start calculating vocabulary size')
+        save_people_vocabulary_sizes(playing_field, timestamp)
+        print_method('start calculating attendace')
+        save_people_vote_attendance(playing_field, timestamp)
+        print_method('start calculating deviations from group')
+        save_people_deviations_from_group(playing_field, timestamp)
+        print_method('start calculating monthly vote attendance')
+        save_people_monthly_vote_attendance(playing_field, timestamp)
+        print_method('start calculating voting distances')
+        save_voting_distances(playing_field, timestamp)
+        print_method('start calculating number of questions')
+        save_people_number_of_questions(playing_field, timestamp)
+        print_method('end analyses for people')
 
 def run_speech_analyses_on_date(playing_field, timestamp):
     save_people_avg_number_of_speeches_per_session(playing_field, timestamp)
@@ -142,3 +142,15 @@ def run_vote_analyses_on_date(playing_field, timestamp):
 def run_question_analyses_on_date(playing_field, timestamp):
     save_people_number_of_questions(playing_field, timestamp)
     save_group_number_of_questions(playing_field, timestamp)
+
+
+def get_playing_fields():
+    person_memberships = PersonMembership.objects.filter(
+        role='voter'
+    ).distinct('organization')
+
+    return [
+        person_membership.organization
+        for person_membership
+        in person_memberships
+    ]
