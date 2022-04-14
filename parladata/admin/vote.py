@@ -6,7 +6,7 @@ from django.utils.translation import gettext as _
 
 from import_export.admin import ExportMixin
 
-from parladata.models import Vote, Ballot
+from parladata.models import Vote
 
 from export.resources import VoteResource
 
@@ -44,6 +44,12 @@ class VoteAdmin(ExportMixin, admin.ModelAdmin):
     actions = [clone_vote]
 
     autocomplete_fields = ('motion',)
+    list_per_page = 25
+
+    def get_queryset(self, request):
+        queryset = super(VoteAdmin, self).get_queryset(request)
+        queryset = queryset.prefetch_related('ballots', 'motion', 'motion__session')
+        return queryset
 
     def the_tags(self, obj):
         return "%s" % (list(obj.tags.values_list('name', flat=True)), )
@@ -70,23 +76,23 @@ class VoteAdmin(ExportMixin, admin.ModelAdmin):
 
 
     def get_for(self, obj):
-        results = dict(Counter(Ballot.objects.filter(vote=obj).values_list("option", flat=True))).get("for", 0)
+        results = dict(Counter(obj.ballots.all().values_list("option", flat=True))).get("for", 0)
         return results
 
     def get_against(self, obj):
-        results = dict(Counter(Ballot.objects.filter(vote=obj).values_list("option", flat=True))).get("against", 0)
+        results = dict(Counter(obj.ballots.all().values_list("option", flat=True))).get("against", 0)
         return results
 
     def get_abstain(self, obj):
-        results = dict(Counter(Ballot.objects.filter(vote=obj).values_list("option", flat=True))).get("abstain", 0)
+        results = dict(Counter(obj.ballots.all().values_list("option", flat=True))).get("abstain", 0)
         return results
 
     def get_absent(self, obj):
-        results = dict(Counter(Ballot.objects.filter(vote=obj).values_list("option", flat=True))).get("absent", 0)
+        results = dict(Counter(obj.ballots.all().values_list("option", flat=True))).get("absent", 0)
         return results
     
     def get_did_not_vote(self, obj):
-        results = dict(Counter(Ballot.objects.filter(vote=obj).values_list("option", flat=True))).get("did not vote", 0)
+        results = dict(Counter(obj.ballots.all().values_list("option", flat=True))).get("did not vote", 0)
         return results
 
     def get_vote_pdf(self, obj):
