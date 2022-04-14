@@ -189,3 +189,19 @@ class SessionListFilter(admin.SimpleListFilter):
         if self.value():
             return queryset.filter(session_id=self.value())
         return queryset
+
+
+class ParsableFilter(admin.SimpleListFilter):
+    title = 'parsable'
+
+    parameter_name = 'parsable'
+
+    def lookups(self, request, model_admin):
+        list_of_members = []
+
+        return [['parsable', 'parsable'], ['parsed', 'parsed']]
+
+    def queryset(self, request, queryset):
+        if self.value():
+            return queryset.filter(tags__name=self.value())
+        return queryset

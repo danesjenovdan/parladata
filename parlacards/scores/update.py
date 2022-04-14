@@ -13,6 +13,7 @@ from parladata.models.motion import Motion
 from parladata.models.question import Question
 from parladata.models.speech import Speech
 from parladata.models.organization import Organization
+from parladata.models.memberships import PersonMembership
 
 from datetime import datetime, timedelta
 
@@ -36,6 +37,7 @@ def run_analyises_for_new_data(timestamp=None):
         if playing_field == None:
             continue
         playing_field = Organization.objects.get(id=playing_field)
+        print(f'Running votes analyses for: {playing_field.name}')
         run_vote_analyses_on_date(playing_field, timestamp)
 
     speech_playing_fields = new_speeches.distinct(
@@ -44,19 +46,28 @@ def run_analyises_for_new_data(timestamp=None):
         "session__organizations",
         flat=True
     )
-    for playing_field in speech_playing_fields:
-        playing_field = Organization.objects.get(id=playing_field)
-        run_speech_analyses_on_date(playing_field, timestamp)
 
-    question_playing_fields = new_questions.distinct(
-        "session__organizations"
-    ).values_list(
-        "session__organizations",
-        flat=True
-    )
+    for playing_field in speech_playing_fields:
+        if playing_field:
+            playing_field = Organization.objects.get(id=playing_field)
+            print(f'Running speeches analyses for: {playing_field.name}')
+            run_speech_analyses_on_date(playing_field, timestamp)
+
+    # get playing fieds of question authors
+    person_memberships_of_questions = PersonMembership.objects.filter(
+        role='voter',
+        member_id__in=new_questions.values_list("person_authors", flat=True)
+    ).distinct('organization')
+
+    question_playing_fields = [
+        person_membership.organization
+        for person_membership 
+        in person_memberships_of_questions
+    ]
     for playing_field in question_playing_fields:
-        playing_field = Organization.objects.get(id=playing_field)
-        run_question_analyses_on_date(playing_field, timestamp)
+        if playing_field:
+            print(f'Running questions analyses for: {playing_field.name}')
+            run_question_analyses_on_date(playing_field, timestamp)
 
 def force_run_analyses(timestamp=None, print_method=print):
     if not timestamp:

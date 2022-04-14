@@ -11,7 +11,7 @@ from parladata.models import *
 from parladata.models.task import Task
 from parladata.models.versionable_properties import *
 from parladata.models.common import *
-from parladata.admin.filters import SessionListFilter, PersonAuthorsListFilter, OrganizationAuthorsListFilter
+from parladata.admin.filters import SessionListFilter, PersonAuthorsListFilter, OrganizationAuthorsListFilter, ParsableFilter
 
 from collections import Counter
 
@@ -40,6 +40,7 @@ class DocumentAdmin(admin.ModelAdmin):
     list_filter = ()
 
     readonly_fields = ['created_at', 'updated_at']
+    list_filter = (ParsableFilter, )
 
     def file_url(self, obj):
         return obj.file.url
