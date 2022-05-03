@@ -5,7 +5,7 @@ from rest_framework import serializers
 from parladata.models.area import Area
 from parladata.models.organization import Organization
 from parladata.models.memberships import PersonMembership
-from parladata.models.versionable_properties import PersonPreferredPronoun
+from parladata.models.versionable_properties import PersonName, PersonPreferredPronoun
 
 from parlacards.models import (
     PersonAvgSpeechesPerSession,
@@ -220,8 +220,13 @@ class MiscMembersCardSerializer(CardSerializer):
 
         # filter by name text search
         if text := self.context.get('GET', {}).get('text', None):
-            # TODO: will this work correctly when people have multiple names?
-            people = people.filter(personname__value__icontains=text)
+            people_ids = PersonName.objects.filter(
+                owner__in=people,
+                value__icontains=text
+            ).valid_at(
+                timestamp
+            ).values_list('owner', flat=True)
+            people = people.filter(id__in=people_ids)
 
         # get order from url
         order_by = self.context.get('GET', {}).get('order_by', 'name')
