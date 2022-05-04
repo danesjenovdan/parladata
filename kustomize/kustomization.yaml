@@ -13,7 +13,7 @@ resources:
 images:
   - name: parladata-hrastnik
     newName: rg.fr-par.scw.cloud/djnd/parladata-hrastnik
-    newTag: '04cf3429cc26154d2d216761681bbec59aa82078'
+    newTag: '650b18bf398ce03fcf7599b58d10eea3eb568ac3'
   - name: parlasolr-hrastnik
     newName: rg.fr-par.scw.cloud/djnd/parlasolr-hrastnik
-    newTag: '04cf3429cc26154d2d216761681bbec59aa82078'
+    newTag: '650b18bf398ce03fcf7599b58d10eea3eb568ac3'
