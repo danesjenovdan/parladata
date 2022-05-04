@@ -6,6 +6,7 @@ metadata:
     cert-manager.io/cluster-issuer: "letsencrypt-production"
     nginx.ingress.kubernetes.io/proxy-body-size: 10m
 spec:
+  ingressClassName: nginx
   tls:
     - hosts:
         - parladata-ua.lb.djnd.si
@@ -34,6 +35,7 @@ metadata:
     nginx.ingress.kubernetes.io/cors-allow-credentials: "true"
     nginx.ingress.kubernetes.io/proxy-body-size: 10m
 spec:
+  ingressClassName: nginx
   tls:
     - hosts:
         - files.parladata-ua.lb.djnd.si
