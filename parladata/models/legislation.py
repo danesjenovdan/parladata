@@ -94,6 +94,10 @@ class Law(Timestampable, Taggable):
     def has_abstract(self):
         return bool(self.abstract)
 
+    class Meta:
+        verbose_name = 'Law'
+        verbose_name_plural = 'Legislation'
+
 
 class Procedure(Timestampable):
     type = models.TextField(
