@@ -13,7 +13,7 @@ resources:
 images:
   - name: parladata-lendava
     newName: rg.fr-par.scw.cloud/djnd/parladata-lendava
-    newTag: '94d8dfb2cc4b0e206c773c2dfbc7ae1c7c52ed8b'
+    newTag: '485ec38acc34506ad94e05ff511d4722251e09b7'
   - name: parlasolr-lendava
     newName: rg.fr-par.scw.cloud/djnd/parlasolr-lendava
-    newTag: '94d8dfb2cc4b0e206c773c2dfbc7ae1c7c52ed8b'
+    newTag: '485ec38acc34506ad94e05ff511d4722251e09b7'
