@@ -6,6 +6,8 @@ from parladata.models.organization import Organization
 
 from datetime import datetime
 
+from parladata.models.legislation import LegislationConsideration
+
 
 class MembersListFilter(admin.SimpleListFilter):
     title = 'member'
@@ -204,4 +206,12 @@ class ParsableFilter(admin.SimpleListFilter):
     def queryset(self, request, queryset):
         if self.value():
             return queryset.filter(tags__name=self.value())
+        return queryset
+
+
+class SessionLegislationListFilter(SessionListFilter):
+    def queryset(self, request, queryset):
+        # Compare the requested value to decide how to filter the queryset.
+        if self.value():
+            return queryset.filter(legislationconsideration__session_id=self.value())
         return queryset
