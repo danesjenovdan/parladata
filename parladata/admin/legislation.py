@@ -4,16 +4,33 @@ from django.conf import settings
 from django.urls import reverse
 
 from parladata.models import Law, Procedure, ProcedurePhase, LegislationConsideration, LegislationStatus, LegislationClassification
-from parladata.admin.filters import SessionListFilter
+from parladata.admin.filters import SessionLegislationListFilter
 
+
+class LegislationConsiderationInline(admin.TabularInline):
+    model = LegislationConsideration
+    fk_name = 'legislation'
+    fields = ['timestamp', 'organization', 'procedure_phase', 'session']
+    autocomplete_fields = ('organization', 'procedure_phase', 'session')
+    extra = 0
 
 class LawAdmin(admin.ModelAdmin):
-    list_display = ('text', 'session', 'status', 'epa')
-    list_filter = (SessionListFilter,)
+    list_display = ('text', 'get_sessions', 'status', 'epa')
+    list_filter = (SessionLegislationListFilter,)
     search_fields = ('text',)
+    exclude = ('session',)
     readonly_fields = ['created_at', 'updated_at']
     list_per_page = 20
-    autocomplete_fields = ('session', 'mdt_fk', 'status', 'classification', 'considerations')
+    autocomplete_fields = ('mdt_fk', 'status', 'classification', 'considerations')
+
+    inlines = [
+        LegislationConsiderationInline
+    ]
+
+    def get_sessions(self, obj):
+        return ' - '.join(obj.legislationconsideration_set.all().values_list('session__name', flat=True))
+
+    get_sessions.short_description = 'Sessions'
 
 
 class ProcedureAdmin(admin.ModelAdmin):
