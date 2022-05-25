@@ -54,7 +54,8 @@ class PersonAnalysesSerializer(CommonPersonSerializer):
 
         score_object = ScoreModel.objects.filter(
             person_id=person.id,
-            timestamp__lte=self.context['date']
+            timestamp__lte=self.context['date'],
+            playing_field=self.context['playing_field'],
         ).order_by('-timestamp').first()
 
         if score_object:
@@ -160,7 +161,10 @@ class MiscMembersCardSerializer(CardSerializer):
         scores_module = import_module('parlacards.models')
         ScoreModel = getattr(scores_module, model_name)
 
-        latest_scores = ScoreModel.objects.filter(person__in=people) \
+        latest_scores = ScoreModel.objects.filter(
+            person__in=people,
+            playing_field=self.context['playing_field'],
+            ) \
             .order_by('person', '-timestamp') \
             .distinct('person') \
             .values_list('value', flat=True)
@@ -288,6 +292,16 @@ class MiscMembersCardSerializer(CardSerializer):
         return people.order_by('id')
 
     def get_results(self, parent_organization):
+        context=self.context
+        context['playing_field'] = parent_organization
+        playing_field_membership = parent_organization.organization_memberships.first()
+        if playing_field_membership:
+            mandate = playing_field_membership.mandate
+            if mandate.ending:
+                if self.context['date'] > mandate.ending:
+                    self.context['date'] = mandate.ending
+        else:
+            raise ValueError('Playing field has not memberships')
         return {
             'groups': self._groups(parent_organization, self.context['date']),
             'working_bodies': self._working_bodies(self.context['date']),

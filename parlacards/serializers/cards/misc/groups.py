@@ -63,6 +63,14 @@ class MiscGroupsCardSerializer(CardSerializer):
     def get_results(self, parent_organization):
         context=self.context
         context['playing_field'] = parent_organization
+        playing_field_membership = parent_organization.organization_memberships.first()
+        if playing_field_membership:
+            mandate = playing_field_membership.mandate
+            if mandate.ending:
+                if self.context['date'] > mandate.ending:
+                    self.context['date'] = mandate.ending
+        else:
+            raise ValueError('Playing field has not memberships')
         serializer = GroupAnalysesSerializer(
             parent_organization.query_parliamentary_groups(self.context['date']),
             many=True,
