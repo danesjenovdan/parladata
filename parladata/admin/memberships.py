@@ -42,7 +42,7 @@ class OrganizationMembershipAdmin(admin.ModelAdmin):
 
     def member_name(self, obj):
         try:
-            return obj.member.organiaztionname.last().value
+            return obj.member.organizationname.last().value
         except:
             return obj.member.name
 
