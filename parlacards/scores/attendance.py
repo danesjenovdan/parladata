@@ -7,16 +7,19 @@ from collections import Counter
 from parladata.models.ballot import Ballot
 
 from parlacards.models import PersonVoteAttendance, GroupVoteAttendance
-from parlacards.scores.common import get_dates_between, get_fortnights_between
+from parlacards.scores.common import get_dates_between, get_fortnights_between, get_mandate_of_playing_field
 
 
-def calculate_person_vote_attendance(person, timestamp=None):
+def calculate_person_vote_attendance(person, playing_field, timestamp=None):
     if not timestamp:
         timestamp = datetime.now()
 
+    mandate = get_mandate_of_playing_field(playing_field)
+
     person_ballots = Ballot.objects.filter(
         personvoter=person,
-        vote__timestamp__lte=timestamp
+        vote__timestamp__lte=timestamp,
+        vote__motion__session__mandate=mandate
     )
     all_ballots = person_ballots.count()
     present_ballots = person_ballots.exclude(option='absent').count()
@@ -31,7 +34,7 @@ def save_person_vote_attendance(person, playing_field, timestamp=None):
 
     PersonVoteAttendance(
         person=person,
-        value=calculate_person_vote_attendance(person, timestamp),
+        value=calculate_person_vote_attendance(person, playing_field, timestamp),
         timestamp=timestamp,
         playing_field=playing_field,
     ).save()
@@ -65,9 +68,11 @@ def save_sparse_people_vote_attendance_between(playing_field, datetime_from=None
 
 
 # Group
-def calculate_group_vote_attendance(group, timestamp=None):
+def calculate_group_vote_attendance(group, playing_field, timestamp=None):
     if not timestamp:
         timestamp = datetime.now()
+
+    mandate = get_mandate_of_playing_field(playing_field)
 
     memberships = group.query_memberships_before(timestamp)
     member_ids = memberships.values_list('member_id', flat=True).distinct('member_id')
@@ -78,6 +83,7 @@ def calculate_group_vote_attendance(group, timestamp=None):
         member_ballots = Ballot.objects.filter(
             personvoter_id=member_id,
             vote__timestamp__lte=timestamp,
+            vote__motion__session__mandate=mandate
         )
 
         member_memberships = memberships.filter(
@@ -125,7 +131,7 @@ def save_group_vote_attendance(group, playing_field, timestamp=None):
 
     GroupVoteAttendance(
         group=group,
-        value=calculate_group_vote_attendance(group, timestamp),
+        value=calculate_group_vote_attendance(group, playing_field, timestamp),
         timestamp=timestamp,
         playing_field=playing_field,
     ).save()

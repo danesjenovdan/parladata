@@ -8,7 +8,7 @@ from parladata.models.vote import Vote
 
 from parlacards.models import PersonMonthlyVoteAttendance, GroupMonthlyVoteAttendance
 
-from parlacards.scores.common import get_dates_between, get_fortnights_between
+from parlacards.scores.common import get_dates_between, get_fortnights_between, get_mandate_of_playing_field
 
 def calculate_person_monthly_vote_attendance(person, playing_field, timestamp=None):
     """
@@ -17,11 +17,14 @@ def calculate_person_monthly_vote_attendance(person, playing_field, timestamp=No
     if not timestamp:
         timestamp = datetime.now()
 
+    mandate = get_mandate_of_playing_field(playing_field)
+
     data = []
 
     ballots = Ballot.objects.filter(
         personvoter=person,
-        vote__timestamp__lte=timestamp
+        vote__timestamp__lte=timestamp,
+        vote__motion__session__mandate=mandate
     ).annotate(
         month=TruncMonth('vote__timestamp')
     ).values(
@@ -35,7 +38,8 @@ def calculate_person_monthly_vote_attendance(person, playing_field, timestamp=No
 
     votes = Vote.objects.filter(
         timestamp__lte=timestamp,
-        motion__session__organizations=playing_field
+        motion__session__organizations=playing_field,
+        motion__session__mandate=mandate
     ).exclude(
         ballots__isnull=True
     ).annotate(
