@@ -13,7 +13,6 @@ from parlacards.scores.common import (
     get_fortnights_between,
     remove_punctuation,
     tokenize,
-    get_mandate_of_playing_field
 )
 
 # TODO we should lemmatize speeches at import time
@@ -52,13 +51,10 @@ def save_person_vocabulary_size(person, playing_field, timestamp=None):
     if not timestamp:
         timestamp = datetime.now()
 
-    mandate = get_mandate_of_playing_field(playing_field)
-
     # get speeches that started before the timestamp
     speeches = Speech.objects.filter_valid_speeches(timestamp).filter(
         speaker=person,
-        start_time__lte=timestamp,
-        session__mandate=mandate
+        start_time__lte=timestamp
     ).values_list('lemmatized_content', flat=True)
     # TODO what if there is no lemmatized content
 
@@ -103,8 +99,6 @@ def save_group_vocabulary_size(group, playing_field, timestamp=None):
     if not timestamp:
         timestamp = datetime.now()
 
-    mandate = get_mandate_of_playing_field(playing_field)
-
     memberships = group.query_memberships_before(timestamp)
     member_ids = memberships.values_list('member_id', flat=True).distinct('member_id')
 
@@ -116,7 +110,6 @@ def save_group_vocabulary_size(group, playing_field, timestamp=None):
         ).filter(
             speaker__id=member_id,
             start_time__lte=timestamp,
-            session__mandate=mandate
         )
 
         member_memberships = memberships.filter(
