@@ -292,8 +292,7 @@ class MiscMembersCardSerializer(CardSerializer):
         return people.order_by('id')
 
     def get_results(self, parent_organization):
-        context=self.context
-        context['playing_field'] = parent_organization
+        self.context['playing_field'] = parent_organization
 
         return {
             'groups': self._groups(parent_organization, self.context['date']),
