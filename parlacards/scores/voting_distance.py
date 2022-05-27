@@ -10,7 +10,8 @@ from parladata.models.memberships import PersonMembership
 
 from parlacards.models import VotingDistance, GroupVotingDistance
 
-from parlacards.scores.common import get_dates_between, get_fortnights_between
+from parlacards.scores.common import get_dates_between, get_fortnights_between, get_mandate_of_playing_field
+
 
 def assign_value_to_option_string(option_string):
     return {
@@ -30,18 +31,20 @@ def euclidean(v1, v2):
 #
 # PERSON
 #
-def calculate_voting_distance(from_person, to_person, timestamp=None):
+def calculate_voting_distance(from_person, to_person, mandate, timestamp=None):
     if not timestamp:
         timestamp = datetime.now()
 
     from_ballots = Ballot.objects.filter(
         personvoter=from_person,
-        vote__timestamp__lte=timestamp
+        vote__timestamp__lte=timestamp,
+        vote__motion__session__mandate=mandate
     )
 
     to_ballots = Ballot.objects.filter(
         personvoter=to_person,
-        vote__timestamp__lte=timestamp
+        vote__timestamp__lte=timestamp,
+        vote__motion__session__mandate=mandate,
     )
 
     # we will only calculate the distance for voting events
@@ -72,10 +75,12 @@ def save_voting_distance(from_person, to_person, playing_field, timestamp=None):
     if not timestamp:
         timestamp = datetime.now()
 
+    mandate = get_mandate_of_playing_field(playing_field)
+
     VotingDistance(
         person=from_person,
         target=to_person,
-        value=calculate_voting_distance(from_person, to_person, timestamp),
+        value=calculate_voting_distance(from_person, to_person, mandate, timestamp),
         timestamp=timestamp,
         playing_field=playing_field
     ).save()
@@ -84,11 +89,13 @@ def save_voting_distances(playing_field, timestamp=None):
     if not timestamp:
         timestamp = datetime.now()
 
+    mandate = get_mandate_of_playing_field(playing_field)
+
     people = playing_field.query_voters(timestamp)
     pairs = combinations(people, 2)
 
     for pair in pairs:
-        distance = calculate_voting_distance(pair[0], pair[1], timestamp)
+        distance = calculate_voting_distance(pair[0], pair[1], mandate, timestamp)
         
         VotingDistance(
             person=pair[0],
@@ -128,13 +135,14 @@ def save_sparse_voting_distances_between(playing_field, datetime_from=None, date
 # GROUP
 #
 
-def calculate_group_voting_distance(group, playing_field, timestamp=None):
+def calculate_group_voting_distance(group, playing_field, mandate, timestamp=None):
     if not timestamp:
         timestamp = datetime.now()
 
     # get all relevant votes
     votes = Vote.objects.filter(
-        timestamp__lte=timestamp
+        timestamp__lte=timestamp,
+        motion__session__mandate=mandate
     ).order_by(
         '-timestamp'
     )
@@ -225,7 +233,9 @@ def save_group_voting_distance(group, playing_field, timestamp=None):
     if not timestamp:
         timestamp = datetime.now()
 
-    distances = calculate_group_voting_distance(group, playing_field)
+    mandate = get_mandate_of_playing_field(playing_field)
+
+    distances = calculate_group_voting_distance(group, playing_field, mandate)
 
     for person_id in distances.keys():
         GroupVotingDistance(
@@ -272,13 +282,14 @@ def save_sparse_groups_voting_distances_between(playing_field, datetime_from=Non
 
 # TODO this is not used, but still interesting
 # leaving it here in case we persuade product people this is interesting
-def calculate_voting_distance_between_groups(from_group, to_group, timestamp=None):
+def calculate_voting_distance_between_groups(from_group, to_group, mandate, timestamp=None):
     if not timestamp:
         timestamp = datetime.now()
 
     # get all relevant votes
     votes = Vote.objects.filter(
-        timestamp__lte=timestamp
+        timestamp__lte=timestamp,
+        motion__session__mandate=mandate
     ).order_by(
         '-timestamp'
     )
@@ -364,11 +375,13 @@ def save_voting_distance_between_groups(playing_field, timestamp=None):
     if not timestamp:
         timestamp = datetime.now()
 
+    mandate = get_mandate_of_playing_field(playing_field)
+
     groups = playing_field.query_parliamentary_groups(timestamp)
     pairs = combinations(groups, 2)
 
     for pair in pairs:
-        distance = calculate_group_voting_distance(pair[0], pair[1], timestamp)
+        distance = calculate_group_voting_distance(pair[0], pair[1], mandate, timestamp)
 
         GroupVotingDistance(
             group=pair[0],

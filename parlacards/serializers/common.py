@@ -32,6 +32,23 @@ class VersionableSerializerField(serializers.Field):
             datetime=self.context['date'],
         )
 
+def get_playing_field(mandate, timestamp, person=None, group=None):
+    if person:
+        membership = person.person_memberships.filter(role='voter', mandate=mandate)
+        if membership:
+            return membership.first().organization
+        else:
+            raise ValueError('This person is not part of this mandate.')
+    elif group:
+        membership = OrganizationMembership.valid_at(timestamp).filter(
+            member=group
+        ).filter(organization__classification='root')
+        if membership:
+            return membership.first().organization
+        else:
+            raise ValueError('This organization is not part of this mandate.')
+    else:
+        raise ValueError('The person or group must be defined.')
 
 class ScoreSerializerField(serializers.Field):
     def __init__(self, property_model_name, **kwargs):
@@ -56,8 +73,10 @@ class ScoreSerializerField(serializers.Field):
         # here we set the score_type to use later
         if isinstance(value, Person):
             score_type = 'person'
+            playing_field = get_playing_field(self.context['mandate'], self.context['date'], person=value)
         elif isinstance(value, Organization):
             score_type = 'group'
+            playing_field = get_playing_field(self.context['mandate'], self.context['date'], group=value)
         else:
             raise Exception(f'You should supply a person or an organization. Instead you supplied {value}.')
 
@@ -73,6 +92,7 @@ class ScoreSerializerField(serializers.Field):
         # that is older than the date in the context
         score_object_kwargs = {
             'timestamp__lte': self.context['date'],
+            'playing_field': playing_field,
             score_type: value,
         }
         score_object = ScoreModel.objects.filter(
@@ -100,16 +120,17 @@ class ScoreSerializerField(serializers.Field):
         # currently in the same playing field (organization
         # which we're calculating values for)
         if score_type == 'person':
-            competition_ids = score_object.playing_field.query_voters(self.context['date']).values_list('id', flat=True)
+            competition_ids = playing_field.query_voters(self.context['date']).values_list('id', flat=True)
         else:
             # score_type == 'organization'
-            competition_ids = score_object.playing_field.query_parliamentary_groups(self.context['date']).values_list('id', flat=True)
+            competition_ids = playing_field.query_parliamentary_groups(self.context['date']).values_list('id', flat=True)
 
         # iterate through the IDs and get their "latest" score ids
         relevant_scores_querysets = []
         for competitor_id in competition_ids:
             score_queryset_kwargs = {
                 'timestamp__lte': self.context['date'],
+                'playing_field': playing_field,
                 f'{score_type}__id': competitor_id
             }
 
@@ -127,7 +148,10 @@ class ScoreSerializerField(serializers.Field):
             'id'
         )
 
-        relevant_scores = ScoreModel.objects.filter(id__in=relevant_score_ids)
+        relevant_scores = ScoreModel.objects.filter(
+            id__in=relevant_score_ids,
+            playing_field=playing_field,
+        )
 
         # aggregate max and avg
         aggregations = relevant_scores.aggregate(
@@ -223,9 +247,8 @@ class CardSerializer(serializers.Serializer):
         raise NotImplementedError('You need to extend this serializer to return the results.')
 
     def get_mandate(self, obj):
-        mandate = Mandate.objects.first()
         serializer = MandateSerializer(
-            mandate,
+            self.context['mandate'],
             context=self.context
         )
 

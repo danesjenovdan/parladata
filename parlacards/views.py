@@ -98,6 +98,7 @@ class CardView(APIView):
         serializer = self.card_serializer(
             the_thing,
             context={
+                'mandate': request.mandate,
                 'date': request.card_date,
                 'GET': request.GET
             }

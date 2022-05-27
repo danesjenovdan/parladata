@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from parladata.models import Organization, Vote, Motion, Session, Person, Speech, PersonMembership, OrganizationMembership, Ballot, Mandate
 from django.db.models import Q
+from parladata.models.agenda_item import AgendaItem
 from datetime import datetime, timedelta
 import requests
 from django.conf import settings
@@ -594,3 +595,112 @@ def make_organization_merge_statistics(real_organization_id, fake_organization_i
         })
 
     return data
+
+
+
+def move_votes(from_ai, to_ai):
+    from_ai = AgendaItem.objects.get(id=from_ai)
+    to_ai = AgendaItem.objects.get(id=to_ai)
+
+    motions = from_ai.motions.all()
+    for motion in motions:
+        motion.agenda_items.clear()
+        motion.agenda_items.add(to_ai)
+
+    from_ai.save()
+    to_ai.save()
+
+def fix_agenda_items(fake_ai, true_ai, other_ai):
+    faker = AgendaItem.objects.get(id=fake_ai)
+    true_ai = AgendaItem.objects.get(id=true_ai)
+    other_ai = AgendaItem.objects.get(id=other_ai)
+
+    print(faker)
+    print(true_ai)
+    print(other_ai)
+
+    move_votes(true_ai, other_ai)
+    move_votes(faker, true_ai)
+    faker.save()
+    true_ai.save()
+    other_ai.save()
+
+def move_links(fake_ai, true_ai):
+    faker = AgendaItem.objects.get(id=fake_ai)
+    true_ai = AgendaItem.objects.get(id=true_ai)
+    links = faker.links.all()
+    links.update(agenda_item=true_ai)
+    faker.save()
+    true_ai.save()
+
+
+# end all person memberships on specific date
+def end_all_memberships(end_time):
+    PersonMembership.objects.filter(end_time=None).update(end_time=end_time)
+    OrganizationMembership.objects.filter(end_time=None).update(end_time=end_time)
+
+
+# create new memberships in root organization from vote ballots
+# copy memberships in parlamentary groups from previous mandate for old members starts on specific date
+# create memberships for people without membership on PG to specific PG on specific date
+def set_person_memberships_in_root_organization_from_vote(new_root_org, old_root_org, new_default_org, vote, start_time, mandate):
+    orgs = []
+    for ballot in vote.ballots.all():
+        person = ballot.personvoter
+        old_org = None
+        old_role = None
+        old_membership = PersonMembership.objects.filter(
+            organization=old_root_org,
+            member=person,
+            role='voter'
+        )
+        if old_membership:
+            print(old_membership)
+            old_membership = old_membership.latest('start_time')
+            old_org=old_membership.on_behalf_of
+            try:
+                old_membership = PersonMembership.objects.filter(
+                    organization=old_membership.on_behalf_of,
+                    member=person
+                ).latest('start_time')
+                old_role = old_membership.role
+            except:
+                pass
+        else:
+            old_org = new_default_org
+            old_role='member'
+        orgs.append(old_org)
+        PersonMembership(
+            member=person,
+            organization=new_root_org,
+            start_time=start_time,
+            on_behalf_of=old_org,
+            mandate=mandate,
+            role='voter'
+        ).save()
+        if old_org: # for unaligned members
+            PersonMembership(
+                member=person,
+                organization=old_org,
+                start_time=start_time,
+                role=old_role
+            ).save()
+
+    for org in set(orgs):
+        OrganizationMembership(
+            organization=new_root_org,
+            member=org,
+            start_time=start_time
+        ).save()
+
+
+
+def start_slovenia_IX():
+    # TODO: create Organization and mandate
+    new_default_org = Organization.objects.get(id=138)
+    new_root_org = Organization.objects.get(id=137)
+    old_root_org = Organization.objects.get(id=1)
+    vote = Vote.objects.get(id=6042)
+    start_time = datetime(day=13, month=5, year=2022, hour=0, minute=0)
+    end_all_memberships(start_time)
+    set_person_memberships_in_root_organization_from_vote(new_root_org, old_root_org, new_default_org, vote, start_time+timedelta(minutes=1), Mandate.objects.last())

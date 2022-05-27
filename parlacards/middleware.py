@@ -1,6 +1,9 @@
 from datetime import datetime
 
 from django.http import JsonResponse
+from django.shortcuts import get_object_or_404
+
+from parladata.models.common import Mandate
 
 
 class ParlacardsMiddleware:
@@ -23,6 +26,7 @@ class ParlacardsMiddleware:
 
         # get params
         request_id = request.GET.get('id', None)
+        mandate_id = request.GET.get('mandate_id', None)
         date_string = request.GET.get('date', datetime.now().strftime('%Y-%m-%d'))
 
         # if no id was supplied, return
@@ -31,6 +35,15 @@ class ParlacardsMiddleware:
             return JsonResponse(content, status=400)
             # we return a JsonResponse instead of DRF's Response
             # return Response(content, status=status.HTTP_400_BAD_REQUEST)
+
+        # if no id was supplied, return
+        if not mandate_id:
+            content = {'error': '`mandate_id` is required.'}
+            return JsonResponse(content, status=400)
+
+        mandate = get_object_or_404(Mandate, pk=mandate_id)
+        request.mandate = mandate
+
 
         # if id is not an integer return
         try:
@@ -42,6 +55,8 @@ class ParlacardsMiddleware:
         # try parsing the date
         try:
             parsed_datetime = datetime.strptime(date_string, '%Y-%m-%d')
+            if mandate.ending and parsed_datetime > mandate.ending:
+                parsed_datetime = mandate.ending
             # by default parsed_datetime will be at 00:00:00 (start of day)
             # to properly compare the date with `<=` and `__lte` set the time at
             # the end of the day so that timestamps on current day are included

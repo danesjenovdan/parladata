@@ -2,10 +2,15 @@ import pytest
 
 from parladata.models.organization import Organization
 from parladata.models.person import Person
+from parladata.models.common import Mandate
 
 @pytest.fixture
 def main_organization():
     return Organization.objects.order_by('id').first()
+
+@pytest.fixture
+def mandate():
+    return Mandate.objects.first()
 
 @pytest.fixture
 def first_person(main_organization):
