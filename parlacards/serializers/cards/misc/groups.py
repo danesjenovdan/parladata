@@ -38,7 +38,8 @@ class GroupAnalysesSerializer(CommonOrganizationSerializer):
 
         score_object = ScoreModel.objects.filter(
             group_id=group.id,
-            timestamp__lte=self.context['date']
+            timestamp__lte=self.context['date'],
+            playing_field=self.context['playing_field']
         ).order_by('-timestamp').first()
 
         if score_object:
@@ -60,6 +61,9 @@ class GroupAnalysesSerializer(CommonOrganizationSerializer):
 
 class MiscGroupsCardSerializer(CardSerializer):
     def get_results(self, parent_organization):
+        print(self.context)
+        self.context['playing_field'] = parent_organization
+
         serializer = GroupAnalysesSerializer(
             parent_organization.query_parliamentary_groups(self.context['date']),
             many=True,

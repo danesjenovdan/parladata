@@ -38,6 +38,19 @@ class MembershipAdmin(admin.ModelAdmin):
 class OrganizationMembershipAdmin(admin.ModelAdmin):
     autocomplete_fields = ('member', 'organization')
     readonly_fields = ['created_at', 'updated_at']
+    list_display = ['member_name', 'organization_name', 'start_time', 'end_time']
+
+    def member_name(self, obj):
+        try:
+            return obj.member.organizationname.last().value
+        except:
+            return obj.member.name
+
+    def organization_name(self, obj):
+        try:
+            return obj.organization.organizationname.last().value
+        except:
+            return obj.organization.name
 
 
 admin.site.register(PersonMembership, MembershipAdmin)
