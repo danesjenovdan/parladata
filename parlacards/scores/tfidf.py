@@ -12,8 +12,7 @@ from parlacards.models import PersonTfidf, GroupTfidf, SessionTfidf
 from parlacards.scores.common import (
     get_lemmatize_method,
     get_dates_between,
-    get_fortnights_between,
-    get_mandate_of_playing_field
+    get_fortnights_between
 )
 
 #
@@ -59,15 +58,12 @@ def calculate_people_tfidf(playing_field, timestamp=None):
     # and sort in place
     competitor_ids.sort()
 
-    mandate = get_mandate_of_playing_field(playing_field)
-
     playing_field_speeches = Speech.objects.filter_valid_speeches(
         timestamp
     ).filter(
         Q(start_time__lte=timestamp) | Q(start_time__isnull=True),
         speaker__id__in=competitor_ids,
-        lemmatized_content__isnull=False,
-        session__mandate=mandate
+        lemmatized_content__isnull=False
     )
 
     all_speeches = [
@@ -156,8 +152,6 @@ def calculate_groups_tfidf(playing_field, timestamp=None):
     if not timestamp:
         timestamp = datetime.now()
 
-    mandate = get_mandate_of_playing_field(playing_field)
-
     # TODO this is very similar to calculate_people_tfidf
     # consider refactoring
     groups = playing_field.query_organization_members(
@@ -174,7 +168,6 @@ def calculate_groups_tfidf(playing_field, timestamp=None):
                 Q(start_time__lte=timestamp) | Q(start_time__isnull=True),
                 speaker__id__in=group.query_members(timestamp).values('id'),
                 lemmatized_content__isnull=False,
-                session__mandate=mandate
             ).values_list(
                 'lemmatized_content',
                 flat=True

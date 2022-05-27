@@ -10,8 +10,7 @@ from parlacards.scores.common import (
     get_dates_between,
     get_fortnights_between,
     remove_punctuation,
-    tokenize,
-    get_mandate_of_playing_field
+    tokenize
 )
 
 def get_styled_lemmas(style):
@@ -47,13 +46,10 @@ def save_person_style_scores(person, playing_field, timestamp=None):
     if not timestamp:
         timestamp = datetime.now()
 
-    mandate = get_mandate_of_playing_field(playing_field)
-
     # get speeches that started before the timestamp
     speeches = Speech.objects.filter_valid_speeches(timestamp).filter(
         speaker=person,
-        start_time__lte=timestamp,
-        session__mandate=mandate
+        start_time__lte=timestamp
     ).values_list('lemmatized_content', flat=True)
     # TODO what if there is no lemmatized content
 
@@ -100,13 +96,10 @@ def save_group_style_scores(group, playing_field, timestamp=None):
     if not timestamp:
         timestamp = datetime.now()
 
-    mandate = get_mandate_of_playing_field(playing_field)
-
     # get speeches that started before the timestamp
     speeches = Speech.objects.filter_valid_speeches(timestamp).filter(
         speaker__id__in=group.query_members(timestamp).values('id'),
-        start_time__lte=timestamp,
-        session__mandate=mandate
+        start_time__lte=timestamp
     ).values_list('lemmatized_content', flat=True)
     # TODO what if there is no lemmatized content
 

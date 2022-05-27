@@ -7,7 +7,6 @@ from parlacards.models import PersonNumberOfSpokenWords
 from parlacards.scores.common import (
     get_dates_between,
     get_fortnights_between,
-    get_mandate_of_playing_field,
 )
 
 def calculate_number_of_spoken_words(speeches):
@@ -20,7 +19,7 @@ def calculate_number_of_spoken_words(speeches):
 
         # count spaces and add 1
         number_of_spoken_words += (speech.count(' ') + 1)
-
+    
     return number_of_spoken_words
 
 
@@ -28,13 +27,10 @@ def save_person_number_of_spoken_words(person, playing_field, timestamp=None):
     if not timestamp:
         timestamp = datetime.now()
 
-    mandate = get_mandate_of_playing_field(playing_field)
-
     speeches = Speech.objects.filter_valid_speeches(
-        timestamp,
+        timestamp
     ).filter(
-        speaker=person,
-        session__mandate=mandate,
+        speaker=person
     ).values_list(
         'lemmatized_content',
         flat=True

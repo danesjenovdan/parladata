@@ -44,26 +44,3 @@ def get_lemmatize_method(name, language_code=None):
     mathod_path_string = f'parlacards.lemmatizers.{language_code}.lemmatizer.{name}'
     method = import_string(mathod_path_string)
     return method
-
-def get_mandate_of_playing_field(playing_field):
-    playing_field_membership = playing_field.organization_memberships.first()
-    if playing_field_membership:
-        mandate = playing_field_membership.mandate
-        if mandate:
-            return mandate
-        else:
-            raise Exception('Playing field membership has not mandate')
-    raise Exception('Playing field has not membership')
-
-def get_time_range_from_mandate(mandate, timestamp):
-    if mandate.beginning:
-        from_timestamp = mandate.beginning
-    else:
-        from_timestamp = datetime.min
-
-    if mandate.ending and mandate.ending < timestamp:
-        to_timestamp = mandate.ending
-    else:
-        to_timestamp = timestamp
-
-    return from_timestamp, to_timestamp
