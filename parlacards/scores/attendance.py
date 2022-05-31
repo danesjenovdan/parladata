@@ -5,6 +5,7 @@ from django.db.models import Q
 from collections import Counter
 
 from parladata.models.ballot import Ballot
+from parladata.models.common import Mandate
 
 from parlacards.models import PersonVoteAttendance, GroupVoteAttendance
 from parlacards.scores.common import get_dates_between, get_fortnights_between
@@ -14,9 +15,12 @@ def calculate_person_vote_attendance(person, timestamp=None):
     if not timestamp:
         timestamp = datetime.now()
 
+    mandate = Mandate.get_active_mandate_at(timestamp)
+
     person_ballots = Ballot.objects.filter(
         personvoter=person,
-        vote__timestamp__lte=timestamp
+        vote__timestamp__lte=timestamp,
+        vote__motion__session__mandate=mandate
     )
     all_ballots = person_ballots.count()
     present_ballots = person_ballots.exclude(option='absent').count()

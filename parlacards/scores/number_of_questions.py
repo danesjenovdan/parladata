@@ -3,10 +3,11 @@ from datetime import datetime
 from django.db.models import Q
 
 from parladata.models.question import Question
+from parladata.models.common import Mandate
 
 from parlacards.models import PersonNumberOfQuestions, GroupNumberOfQuestions
 
-from parlacards.scores.common import get_dates_between, get_fortnights_between
+from parlacards.scores.common import get_dates_between, get_fortnights_between, get_time_range_from_mandate
 
 
 # People
@@ -14,9 +15,13 @@ def calculate_number_of_questions_from_person(person, timestamp=None):
     if not timestamp:
         timestamp = datetime.now()
 
+    mandate = Mandate.get_active_mandate_at(timestamp)
+
+    from_timestamp, to_timestamp = get_time_range_from_mandate(mandate, timestamp)
+
     return Question.objects.filter(
         person_authors=person,
-        timestamp__lte=timestamp
+        timestamp__range=(from_timestamp, to_timestamp)
     ).count()
 
 def save_number_of_questions_from_person(person, playing_field, timestamp=None):
@@ -66,6 +71,10 @@ def calculate_group_number_of_question(group, playing_field, timestamp=None):
     if not timestamp:
         timestamp = datetime.now()
 
+    mandate = Mandate.get_active_mandate_at(timestamp)
+
+    from_timestamp, to_timestamp = get_time_range_from_mandate(mandate, timestamp)
+
     memberships = group.query_memberships_before(timestamp)
     member_ids = memberships.values_list('member_id', flat=True).distinct('member_id')
 
@@ -73,7 +82,7 @@ def calculate_group_number_of_question(group, playing_field, timestamp=None):
 
     for member_id in member_ids:
         member_questions = Question.objects.filter(
-            timestamp__lte=timestamp,
+            timestamp__range=(from_timestamp, to_timestamp),
             person_authors__id=member_id,
         )
 

@@ -4,6 +4,7 @@ from django.db.models import Count, Max
 
 from parladata.models.vote import Vote
 from parladata.models.ballot import Ballot
+from parladata.models.common import Mandate
 from parladata.models.memberships import PersonMembership
 
 from parlacards.models import GroupDiscord
@@ -13,9 +14,12 @@ def calculate_group_discord(group, timestamp=None):
     if not timestamp:
         timestamp = datetime.now()
 
+    mandate = Mandate.get_active_mandate_at(timestamp)
+
     # get all relevant votes
     votes = Vote.objects.filter(
-        timestamp__lte=timestamp
+        timestamp__lte=timestamp,
+        motion__session__mandate=mandate
     ).order_by(
         '-timestamp'
     )
