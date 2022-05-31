@@ -1,17 +1,29 @@
 from datetime import datetime
 from django.db import models
+from django.db.models import Q
+
 from parladata.behaviors.models import Timestampable
 from parladata.models.memberships import OrganizationMembership
 
-# TODO razmisli kako bomo to uredili
-# želimo imeti možnost, da je v eni bazi
-# več sklicev
+
+class ActiveAtQuerySet(models.QuerySet):
+    def active_at(self, timestamp):
+        return self.filter(
+            Q(beginning__lte=timestamp) | Q(beginning__isnull=True),
+            Q(ending__gte=timestamp) | Q(ending__isnull=True)
+        )
+
+
 class Mandate(models.Model):
     """Mandate"""
 
     description = models.TextField(blank=True, null=True)
 
     beginning = models.DateTimeField(blank=True, null=True)
+
+    ending = models.DateTimeField(blank=True, null=True)
+
+    objects = ActiveAtQuerySet.as_manager()
 
     def query_root_organizations(self, timestamp=None):
         if not timestamp:
@@ -31,6 +43,14 @@ class Mandate(models.Model):
 
     def __str__(self):
         return self.description
+
+    @classmethod
+    def get_active_mandate_at(cls, timestamp):
+        mandate = Mandate.objects.active_at(timestamp).first()
+        if mandate:
+            return mandate
+        else:
+            raise Exception('There\'s no mandate for the given timestamp')
 
 
 class EducationLevel(Timestampable):
