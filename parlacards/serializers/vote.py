@@ -229,7 +229,7 @@ class VoteSerializer(CommonSerializer):
         return new_context
 
     def get_government_sides(self, vote):
-        if not Organization.objects.filter(classification='coalition').exists():
+        if not Organization.objects.filter(classification='coalition').is_active_at(vote.timestamp):
             return []
 
         coalition_context = dict.copy(self.context)

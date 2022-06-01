@@ -1,14 +1,17 @@
 from datetime import datetime
 
+from requests import session
+
 from parladata.models.speech import Speech
+from parladata.models.common import Mandate
 
 from parlacards.models import PersonNumberOfSpokenWords
 
 from parlacards.scores.common import (
     get_dates_between,
     get_fortnights_between,
-    get_mandate_of_playing_field,
 )
+
 
 def calculate_number_of_spoken_words(speeches):
     number_of_spoken_words = 0
@@ -23,18 +26,17 @@ def calculate_number_of_spoken_words(speeches):
 
     return number_of_spoken_words
 
-
 def save_person_number_of_spoken_words(person, playing_field, timestamp=None):
     if not timestamp:
         timestamp = datetime.now()
 
-    mandate = get_mandate_of_playing_field(playing_field)
+    mandate = Mandate.get_active_mandate_at(timestamp)
 
     speeches = Speech.objects.filter_valid_speeches(
-        timestamp,
+        timestamp
     ).filter(
         speaker=person,
-        session__mandate=mandate,
+        session__mandate=mandate
     ).values_list(
         'lemmatized_content',
         flat=True

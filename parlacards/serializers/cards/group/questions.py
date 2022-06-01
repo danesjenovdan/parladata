@@ -2,6 +2,7 @@ from django.core.cache import cache
 from django.db.models import Q
 
 from parladata.models.question import Question
+from parladata.models.common import Mandate
 
 from parlacards.serializers.common import GroupScoreCardSerializer
 from parlacards.serializers.question import QuestionSerializer
@@ -21,12 +22,16 @@ class GroupQuestionCardSerializer(GroupScoreCardSerializer):
         # set the relevant timestamp to filter the questions
         timestamp = self.context['date']
 
+        # get active madnate from timestamp and it's begining and ending/current timestamp
+        mandate = Mandate.get_active_mandate_at(timestamp)
+        from_timestamp, to_timestamp = mandate.get_time_range_from_mandate(timestamp)
+
         # get group member ids
         member_ids = group.query_members(timestamp).values_list('id', flat=True)
 
         # query all questions ever asked by the group's members
         all_member_questions = Question.objects.filter(
-            Q(timestamp__lte=timestamp) | Q(timestamp__isnull=True),
+            Q(timestamp__range=(from_timestamp, to_timestamp)) | Q(timestamp__isnull=True),
             person_authors__id__in=member_ids
         ).prefetch_related('person_authors')
 

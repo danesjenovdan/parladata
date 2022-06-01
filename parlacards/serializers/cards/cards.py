@@ -12,17 +12,16 @@ from rest_framework import serializers
 
 from parladata.models.agenda_item import AgendaItem
 from parladata.models.ballot import Ballot
-from parladata.models.versionable_properties import PersonPreferredPronoun
 from parladata.models.media import MediaReport
 from parladata.models.vote import Vote
 from parladata.models.question import Question
-from parladata.models.memberships import OrganizationMembership, PersonMembership
-from parladata.models.legislation import Law, LegislationClassification
+from parladata.models.memberships import PersonMembership
+from parladata.models.legislation import Law
 from parladata.models.question import Question
 from parladata.models.speech import Speech
 from parladata.models.organization import Organization
 from parladata.models.person import Person
-from parladata.models.link import Link
+from parladata.models.common import Mandate
 
 from parladata.models.organization import CLASSIFICATIONS as ORGANIZATION_CLASSIFICATIONS
 from parlacards.models import (
@@ -97,9 +96,11 @@ class PersonVoteAttendanceCardSerializer(PersonScoreCardSerializer):
 
 class PersonMonthlyVoteAttendanceCardSerializer(PersonScoreCardSerializer):
     def get_results(self, obj):
+        mandate = Mandate.get_active_mandate_at(self.context['date'])
+        from_timestamp, to_timestamp = mandate.get_time_range_from_mandate(self.context['date'])
         monthly_attendance = PersonMonthlyVoteAttendance.objects.filter(
             person=obj,
-            timestamp__lte=self.context['date']
+            timestamp__range=(from_timestamp, to_timestamp),
         ).order_by('timestamp')
         return MonthlyAttendanceSerializer(monthly_attendance, many=True).data
 
@@ -120,10 +121,13 @@ class PersonBallotCardSerializer(PersonScoreCardSerializer):
     def to_representation(self, instance):
         parent_data = super().to_representation(instance)
 
+        mandate = Mandate.get_active_mandate_at(self.context['date'])
+        from_timestamp, to_timestamp = mandate.get_time_range_from_mandate(self.context['date'])
+
         # instance is the person
         ballots = Ballot.objects.filter(
             personvoter=instance,
-            vote__timestamp__lte=self.context['date']
+            vote__timestamp__range=(from_timestamp, to_timestamp)
         ).order_by(
             '-vote__timestamp',
             '-id' # fallback ordering
@@ -173,9 +177,11 @@ class PersonMembershipCardSerializer(PersonScoreCardSerializer):
 class MostVotesInCommonCardSerializer(PersonScoreCardSerializer):
     def get_results(self, obj):
         # obj is the person
+        mandate = Mandate.get_active_mandate_at(self.context['date'])
+        from_timestamp, to_timestamp = mandate.get_time_range_from_mandate(self.context['date'])
         lowest_distances = VotingDistance.objects.filter(
             person=obj,
-            timestamp__lte=self.context['date']
+            timestamp__range=(from_timestamp, to_timestamp)
         ).exclude(
             target=obj
         ).order_by(
@@ -204,9 +210,12 @@ class MostVotesInCommonCardSerializer(PersonScoreCardSerializer):
 class LeastVotesInCommonCardSerializer(PersonScoreCardSerializer):
     def get_results(self, obj):
         # obj is the person
+        mandate = Mandate.get_active_mandate_at(self.context['date'])
+        from_timestamp, to_timestamp = mandate.get_time_range_from_mandate(self.context['date'])
+
         highest_distances = VotingDistance.objects.filter(
             person=obj,
-            timestamp__lte=self.context['date']
+            timestamp__range=(from_timestamp, to_timestamp)
         ).exclude(
             target=obj
         ).order_by(
@@ -242,16 +251,13 @@ class GroupDeviationFromGroupCardSerializer(GroupScoreCardSerializer):
         # ScoreSerializerField - consider refactoring
         # obj id the group
         people = obj.query_members(self.context['date'])
-        deviation_scores = DeviationFromGroup.objects.filter(
-            timestamp__lte=self.context['date'],
-            person__in=people
-        ).order_by(
-            '-value'
-        )
+
+        mandate = Mandate.get_active_mandate_at(self.context['date'])
+        from_timestamp, to_timestamp = mandate.get_time_range_from_mandate(self.context['date'])
 
         relevant_deviation_querysets = [
             DeviationFromGroup.objects.filter(
-                timestamp__lte=self.context['date'],
+                timestamp__range=(from_timestamp, to_timestamp),
                 person=person
             ).order_by(
                 '-timestamp'
@@ -328,7 +334,15 @@ class PersonSpeechesCardSerializer(PersonScoreCardSerializer):
     def to_representation(self, person):
         parent_data = super().to_representation(person)
 
-        solr_params = parse_search_query_params(self.context.get('GET', {}), people_ids=[person.id], group_ids=None, highlight=True)
+        mandate = Mandate.get_active_mandate_at(self.context['date'])
+
+        solr_params = parse_search_query_params(
+            self.context.get('GET', {}),
+            people_ids=[person.id],
+            group_ids=None,
+            highlight=True,
+            mandate=mandate.id
+        )
         paged_object_list, pagination_metadata = create_solr_paginator(self.context.get('GET', {}), solr_params)
 
         # TODO this might be better done by Solr directly
@@ -359,7 +373,14 @@ class GroupSpeechesCardSerializer(GroupScoreCardSerializer):
     def to_representation(self, group):
         parent_data = super().to_representation(group)
 
-        solr_params = parse_search_query_params(self.context.get('GET', {}), group_ids=[group.id], highlight=True)
+        mandate = Mandate.get_active_mandate_at(self.context['date'])
+
+        solr_params = parse_search_query_params(
+            self.context.get('GET', {}),
+            group_ids=[group.id],
+            highlight=True,
+            mandate=mandate.id
+        )
         paged_object_list, pagination_metadata = create_solr_paginator(self.context.get('GET', {}), solr_params)
 
         # serialize speeches
@@ -492,9 +513,11 @@ class GroupMembersCardSerializer(GroupScoreCardSerializer):
 class GroupMonthlyVoteAttendanceCardSerializer(GroupScoreCardSerializer):
     def get_results(self, obj):
         # obj is the group
+        mandate = Mandate.get_active_mandate_at(self.context['date'])
+        from_timestamp, to_timestamp = mandate.get_time_range_from_mandate(self.context['date'])
         monthly_attendance = GroupMonthlyVoteAttendance.objects.filter(
             group=obj,
-            timestamp__lte=self.context['date']
+            timestamp__range=(from_timestamp, to_timestamp)
         ).order_by('timestamp')
         return MonthlyAttendanceSerializer(monthly_attendance, many=True).data
 
@@ -510,9 +533,11 @@ class GroupVoteAttendanceCardSerializer(GroupScoreCardSerializer):
 class GroupMostVotesInCommonCardSerializer(GroupScoreCardSerializer):
     def get_results(self, obj):
         # obj is the group
+        mandate = Mandate.get_active_mandate_at(self.context['date'])
+        from_timestamp, to_timestamp = mandate.get_time_range_from_mandate(self.context['date'])
         highest_distances = GroupVotingDistance.objects.filter(
             group=obj,
-            timestamp__lte=self.context['date']
+            timestamp__range=(from_timestamp, to_timestamp)
         ).order_by(
             'target',
             '-timestamp',
@@ -537,9 +562,11 @@ class GroupMostVotesInCommonCardSerializer(GroupScoreCardSerializer):
 class GroupLeastVotesInCommonCardSerializer(GroupScoreCardSerializer):
     def get_results(self, obj):
         # obj is the group
+        mandate = Mandate.get_active_mandate_at(self.context['date'])
+        from_timestamp, to_timestamp = mandate.get_time_range_from_mandate(self.context['date'])
         highest_distances = GroupVotingDistance.objects.filter(
             group=obj,
-            timestamp__lte=self.context['date']
+            timestamp__range=(from_timestamp, to_timestamp)
         ).order_by(
             'target',
             '-timestamp',
@@ -786,8 +813,7 @@ class MandateSpeechCardSerializer(CardSerializer):
 class MandateUsageByGroupCardSerializer(CardSerializer):
     def get_results(self, obj):
         # obj is the mandate
-        solr_params = parse_search_query_params(self.context.get('GET', {}), facet=True)
-        solr_params['mandate'] = obj.id
+        solr_params = parse_search_query_params(self.context.get('GET', {}), mandate=obj.id, facet=True)
         solr_response = solr_select(**solr_params, per_page=0)
 
         if not solr_response.get('facet_counts', {}).get('facet_fields', {}).get('party_id', []):
@@ -813,8 +839,7 @@ class MandateMostUsedByPeopleCardSerializer(CardSerializer):
     def get_results(self, obj):
         # obj is the mandate
         people_ids = obj.personmemberships.filter(role='voter').values_list('member_id', flat=True)
-        solr_params = parse_search_query_params(self.context.get('GET', {}), facet=True)
-        solr_params['mandate'] = obj.id
+        solr_params = parse_search_query_params(self.context.get('GET', {}), mandate=obj.id, facet=True)
         solr_response = solr_select(**solr_params, per_page=0)
 
         if not solr_response.get('facet_counts', {}).get('facet_fields', {}).get('person_id', []):
