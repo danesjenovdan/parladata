@@ -693,14 +693,18 @@ def set_person_memberships_in_root_organization_from_vote(new_root_org, old_root
             start_time=start_time
         ).save()
 
-
-
 def start_slovenia_IX():
     # TODO: create Organization and mandate
     new_default_org = Organization.objects.get(id=138)
     new_root_org = Organization.objects.get(id=137)
     old_root_org = Organization.objects.get(id=1)
     vote = Vote.objects.get(id=6042)
-    start_time = datetime(day=13, month=5, year=2022, hour=0, minute=0)
+    start_time = datetime(day=13, month=5, year=2022, hour=0, minute=1)
     end_all_memberships(start_time)
-    set_person_memberships_in_root_organization_from_vote(new_root_org, old_root_org, new_default_org, vote, start_time+timedelta(minutes=1), Mandate.objects.last())
+    set_person_memberships_in_root_organization_from_vote(
+        new_root_org,
+        old_root_org,
+        new_default_org,
+        vote, start_time+timedelta(minutes=1),
+        Mandate.objects.last()
+    )

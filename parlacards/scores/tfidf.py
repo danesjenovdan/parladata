@@ -1,6 +1,7 @@
 from django.db.models import Q
 from datetime import datetime
 from parladata.models.session import Session
+from parladata.models.common import Mandate
 
 from sklearn.feature_extraction.text import TfidfVectorizer
 
@@ -12,8 +13,7 @@ from parlacards.models import PersonTfidf, GroupTfidf, SessionTfidf
 from parlacards.scores.common import (
     get_lemmatize_method,
     get_dates_between,
-    get_fortnights_between,
-    get_mandate_of_playing_field
+    get_fortnights_between
 )
 
 #
@@ -27,6 +27,8 @@ def calculate_people_tfidf(playing_field, timestamp=None):
     '''
     if not timestamp:
         timestamp = datetime.now()
+
+    mandate = Mandate.get_active_mandate_at(timestamp)
 
     # TODO we should probably avoid casting
     # competitor_ids and leader_ids into list
@@ -59,15 +61,13 @@ def calculate_people_tfidf(playing_field, timestamp=None):
     # and sort in place
     competitor_ids.sort()
 
-    mandate = get_mandate_of_playing_field(playing_field)
-
     playing_field_speeches = Speech.objects.filter_valid_speeches(
         timestamp
     ).filter(
         Q(start_time__lte=timestamp) | Q(start_time__isnull=True),
         speaker__id__in=competitor_ids,
-        lemmatized_content__isnull=False,
-        session__mandate=mandate
+        session__mandate=mandate,
+        lemmatized_content__isnull=False
     )
 
     all_speeches = [
@@ -156,7 +156,7 @@ def calculate_groups_tfidf(playing_field, timestamp=None):
     if not timestamp:
         timestamp = datetime.now()
 
-    mandate = get_mandate_of_playing_field(playing_field)
+    mandate = Mandate.get_active_mandate_at(timestamp)
 
     # TODO this is very similar to calculate_people_tfidf
     # consider refactoring
@@ -173,8 +173,8 @@ def calculate_groups_tfidf(playing_field, timestamp=None):
             ).filter(
                 Q(start_time__lte=timestamp) | Q(start_time__isnull=True),
                 speaker__id__in=group.query_members(timestamp).values('id'),
+                session__mandate=mandate,
                 lemmatized_content__isnull=False,
-                session__mandate=mandate
             ).values_list(
                 'lemmatized_content',
                 flat=True

@@ -5,16 +5,17 @@ from django.db.models import Q
 from collections import Counter
 
 from parladata.models.ballot import Ballot
+from parladata.models.common import Mandate
 
 from parlacards.models import PersonVoteAttendance, GroupVoteAttendance
-from parlacards.scores.common import get_dates_between, get_fortnights_between, get_mandate_of_playing_field
+from parlacards.scores.common import get_dates_between, get_fortnights_between
 
 
-def calculate_person_vote_attendance(person, playing_field, timestamp=None):
+def calculate_person_vote_attendance(person, timestamp=None):
     if not timestamp:
         timestamp = datetime.now()
 
-    mandate = get_mandate_of_playing_field(playing_field)
+    mandate = Mandate.get_active_mandate_at(timestamp)
 
     person_ballots = Ballot.objects.filter(
         personvoter=person,
@@ -34,7 +35,7 @@ def save_person_vote_attendance(person, playing_field, timestamp=None):
 
     PersonVoteAttendance(
         person=person,
-        value=calculate_person_vote_attendance(person, playing_field, timestamp),
+        value=calculate_person_vote_attendance(person, timestamp),
         timestamp=timestamp,
         playing_field=playing_field,
     ).save()
@@ -68,11 +69,11 @@ def save_sparse_people_vote_attendance_between(playing_field, datetime_from=None
 
 
 # Group
-def calculate_group_vote_attendance(group, playing_field, timestamp=None):
+def calculate_group_vote_attendance(group, timestamp=None):
     if not timestamp:
         timestamp = datetime.now()
 
-    mandate = get_mandate_of_playing_field(playing_field)
+    mandate = Mandate.get_active_mandate_at(timestamp)
 
     memberships = group.query_memberships_before(timestamp)
     member_ids = memberships.values_list('member_id', flat=True).distinct('member_id')
@@ -131,7 +132,7 @@ def save_group_vote_attendance(group, playing_field, timestamp=None):
 
     GroupVoteAttendance(
         group=group,
-        value=calculate_group_vote_attendance(group, playing_field, timestamp),
+        value=calculate_group_vote_attendance(group, timestamp),
         timestamp=timestamp,
         playing_field=playing_field,
     ).save()

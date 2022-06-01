@@ -3,29 +3,30 @@ from datetime import datetime
 from parladata.models.session import Session
 from parladata.models.speech import Speech
 from parladata.models.ballot import Ballot
+from parladata.models.common import Mandate
 
 from parlacards.models import PersonAvgSpeechesPerSession
 
-from parlacards.scores.common import get_dates_between, get_fortnights_between, get_mandate_of_playing_field
+from parlacards.scores.common import get_dates_between, get_fortnights_between
 
 
-def calculate_person_avg_number_of_speeches(person, playing_field, timestamp=None):
+def calculate_person_avg_number_of_speeches(person, timestamp=None):
     if not timestamp:
         timestamp = datetime.now()
 
-    mandate = get_mandate_of_playing_field(playing_field)
+    mandate = Mandate.get_active_mandate_at(timestamp)
 
     person_speeches = Speech.objects.filter_valid_speeches(timestamp).filter(
         speaker=person,
-        session__mandate=mandate,
-        start_time__lte=timestamp
+        start_time__lte=timestamp,
+        session__mandate=mandate
     )
     num_of_speeches = person_speeches.count()
 
     ballot_session_ids = Ballot.objects.filter(
         personvoter=person,
-        vote__motion__session__mandate=mandate,
-        vote__timestamp__lte=timestamp
+        vote__timestamp__lte=timestamp,
+        vote__motion__session__mandate=mandate
     ).distinct(
         'vote__motion__session__id'
     ).values_list(
@@ -57,7 +58,7 @@ def save_person_avg_number_of_speeches_per_session(person, playing_field, timest
 
     PersonAvgSpeechesPerSession(
         person=person,
-        value=calculate_person_avg_number_of_speeches(person, playing_field, timestamp),
+        value=calculate_person_avg_number_of_speeches(person, timestamp),
         timestamp=timestamp,
         playing_field=playing_field,
     ).save()
