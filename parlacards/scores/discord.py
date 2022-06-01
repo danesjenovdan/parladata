@@ -4,22 +4,22 @@ from django.db.models import Count, Max
 
 from parladata.models.vote import Vote
 from parladata.models.ballot import Ballot
+from parladata.models.common import Mandate
 from parladata.models.memberships import PersonMembership
 
 from parlacards.models import GroupDiscord
-from parlacards.scores.common import get_dates_between, get_fortnights_between, get_mandate_of_playing_field
+from parlacards.scores.common import get_dates_between, get_fortnights_between
 
-def calculate_group_discord(group, playing_field, timestamp=None):
+def calculate_group_discord(group, timestamp=None):
     if not timestamp:
         timestamp = datetime.now()
 
-    mandate = get_mandate_of_playing_field(playing_field)
+    mandate = Mandate.get_active_mandate_at(timestamp)
 
     # get all relevant votes
     votes = Vote.objects.filter(
         timestamp__lte=timestamp,
-        motion__session__organizations=playing_field, # TODO check if this is necessary
-        motion__session__mandate=mandate,
+        motion__session__mandate=mandate
     ).order_by(
         '-timestamp'
     )
@@ -65,7 +65,7 @@ def save_group_discord(group, playing_field, timestamp=None):
     if not timestamp:
         timestamp = datetime.now()
 
-    discord = calculate_group_discord(group, playing_field)
+    discord = calculate_group_discord(group)
 
     GroupDiscord(
         group=group,

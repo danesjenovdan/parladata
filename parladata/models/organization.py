@@ -1,6 +1,7 @@
 from datetime import datetime
 
 from django.db import models
+from django.db.models import Q
 from django.utils.translation import gettext_lazy as _
 
 from parladata.models.link import Link
@@ -29,6 +30,12 @@ CLASSIFICATIONS = [
     ('coalition', 'coalition'),
 ]
 
+class ActiveAtQuerySet(models.QuerySet):
+    def is_active_at(self, timestamp):
+        return bool(self.filter(
+            Q(founding_date__lte=timestamp) | Q(founding_date__isnull=True),
+            Q(dissolution_date__gte=timestamp) | Q(dissolution_date__isnull=True)
+        ))
 
 class Organization(Timestampable, Taggable, Parsable, Sluggable, VersionableFieldsOwner):
     """A group with a common purpose or reason
@@ -60,6 +67,8 @@ class Organization(Timestampable, Taggable, Parsable, Sluggable, VersionableFiel
                                    help_text='Organization description')
 
     color = ColorField(default='#09a2cc')
+
+    objects = ActiveAtQuerySet.as_manager()
 
     @property
     def name(self):

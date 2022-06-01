@@ -3,6 +3,7 @@ from datetime import datetime
 from collections import Counter
 
 from parladata.models.speech import Speech
+from parladata.models.common import Mandate
 
 from parlacards.models import PersonStyleScore, GroupStyleScore
 
@@ -10,8 +11,7 @@ from parlacards.scores.common import (
     get_dates_between,
     get_fortnights_between,
     remove_punctuation,
-    tokenize,
-    get_mandate_of_playing_field
+    tokenize
 )
 
 def get_styled_lemmas(style):
@@ -47,7 +47,7 @@ def save_person_style_scores(person, playing_field, timestamp=None):
     if not timestamp:
         timestamp = datetime.now()
 
-    mandate = get_mandate_of_playing_field(playing_field)
+    mandate = Mandate.get_active_mandate_at(timestamp)
 
     # get speeches that started before the timestamp
     speeches = Speech.objects.filter_valid_speeches(timestamp).filter(
@@ -100,7 +100,7 @@ def save_group_style_scores(group, playing_field, timestamp=None):
     if not timestamp:
         timestamp = datetime.now()
 
-    mandate = get_mandate_of_playing_field(playing_field)
+    mandate = Mandate.get_active_mandate_at(timestamp)
 
     # get speeches that started before the timestamp
     speeches = Speech.objects.filter_valid_speeches(timestamp).filter(

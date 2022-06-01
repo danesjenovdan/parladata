@@ -4,6 +4,7 @@ from parlacards.pagination import create_paginator
 from parlacards.serializers.common import PersonScoreCardSerializer
 from parlacards.serializers.question import QuestionSerializer
 from parladata.models.question import Question
+from parladata.models.common import Mandate
 
 
 class PersonQuestionCardSerializer(PersonScoreCardSerializer):
@@ -14,8 +15,12 @@ class PersonQuestionCardSerializer(PersonScoreCardSerializer):
     def to_representation(self, person):
         parent_data = super().to_representation(person)
 
+        mandate = Mandate.get_active_mandate_at(self.context['date'])
+        from_timestamp, to_timestamp = mandate.get_time_range_from_mandate(self.context['date'])
+
+        # TODO make timestamp required field for question
         questions = Question.objects.filter(
-            Q(timestamp__lte=self.context["date"]) | Q(timestamp__isnull=True),
+            Q(timestamp__range=(from_timestamp, to_timestamp)) | Q(timestamp__isnull=True),
             person_authors=person,
         ).order_by("-timestamp")
 

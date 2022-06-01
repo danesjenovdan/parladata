@@ -3,12 +3,14 @@ from django.db.models import Max
 from parladata.models.vote import Vote
 from parladata.models.ballot import Ballot
 from parladata.models.memberships import PersonMembership
+from parladata.models.common import Mandate
 
 from parlacards.serializers.common import GroupScoreCardSerializer
 from parlacards.serializers.vote import VoteSerializer
 from parlacards.serializers.ballot import BallotSerializer
 
 from parlacards.pagination import create_paginator
+
 
 class GroupVoteCardSerializer(GroupScoreCardSerializer):
     def get_results(self, obj):
@@ -18,13 +20,17 @@ class GroupVoteCardSerializer(GroupScoreCardSerializer):
     def to_representation(self, instance):
         parent_data = super().to_representation(instance)
 
+        # get active madnate from timestamp and it's begining and ending/current timestamp
+        mandate = Mandate.get_active_mandate_at(self.context['date'])
+        from_timestamp, to_timestamp = mandate.get_time_range_from_mandate(self.context['date'])
+
         root_organization_membership = instance.organization_memberships.filter(organization__classification='root').first()
 
         if root_organization_membership:
             root_organization = root_organization_membership.organization
             # instance is the group
             votes = Vote.objects.filter(
-                timestamp__lte=self.context['date'],
+                timestamp__range=(from_timestamp, to_timestamp),
                 motion__session__organizations=root_organization
             ).order_by(
                 '-timestamp',

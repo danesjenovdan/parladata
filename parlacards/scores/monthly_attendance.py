@@ -5,10 +5,11 @@ from django.db.models import Count, Q
 
 from parladata.models.ballot import Ballot
 from parladata.models.vote import Vote
+from parladata.models.common import Mandate
 
 from parlacards.models import PersonMonthlyVoteAttendance, GroupMonthlyVoteAttendance
 
-from parlacards.scores.common import get_dates_between, get_fortnights_between, get_mandate_of_playing_field
+from parlacards.scores.common import get_dates_between, get_fortnights_between
 
 def calculate_person_monthly_vote_attendance(person, playing_field, timestamp=None):
     """
@@ -17,7 +18,7 @@ def calculate_person_monthly_vote_attendance(person, playing_field, timestamp=No
     if not timestamp:
         timestamp = datetime.now()
 
-    mandate = get_mandate_of_playing_field(playing_field)
+    mandate = Mandate.get_active_mandate_at(timestamp)
 
     data = []
 
@@ -139,6 +140,8 @@ def calculate_group_monthly_vote_attendance(group, playing_field, timestamp=None
     if not timestamp:
         timestamp = datetime.now()
 
+    mandate = Mandate.get_active_mandate_at(timestamp)
+
     memberships = group.query_memberships_before(timestamp)
     member_ids = memberships.values_list('member_id', flat=True).distinct('member_id')
 
@@ -149,6 +152,7 @@ def calculate_group_monthly_vote_attendance(group, playing_field, timestamp=None
         member_ballots = Ballot.objects.filter(
             vote__timestamp__lte=timestamp,
             personvoter__id=member_id,
+            vote__motion__session__mandate=mandate
         )
 
         member_memberships = memberships.filter(

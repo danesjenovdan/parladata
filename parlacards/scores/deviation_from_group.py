@@ -2,14 +2,13 @@ from datetime import datetime
 
 from django.db.models import Count, Max, Q
 
-from parladata.models.person import Person
 from parladata.models.ballot import Ballot
-from parladata.models.vote import Vote
+from parladata.models.common import Mandate
 from parladata.models.memberships import PersonMembership
 
 from parlacards.models import DeviationFromGroup
 
-from parlacards.scores.common import get_dates_between, get_fortnights_between, get_mandate_of_playing_field
+from parlacards.scores.common import get_dates_between, get_fortnights_between
 
 def deviation_percentage_between_two_lists(list1, list2):
     if len(list1) != len(list2):
@@ -25,13 +24,12 @@ def deviation_percentage_between_two_lists(list1, list2):
     
     return mismatches / len(list1) * 100
 
-def get_group_ballot(vote, people_ids, mandate, exclude_absent=False):
+def get_group_ballot(vote, people_ids, exclude_absent=False):
     # vote can be a Vote object
     # or an int representing the object id
     ballots = Ballot.objects.filter(
         vote=vote,
-        personvoter__id__in=people_ids,
-        vote__motion__session__mandate=mandate
+        personvoter__id__in=people_ids
     )
 
     if exclude_absent:
@@ -51,12 +49,12 @@ def calculate_deviation_from_group(person, playing_field, timestamp=None, exclud
     if not timestamp:
         timestamp = datetime.now()
 
-    mandate = get_mandate_of_playing_field(playing_field)
+    mandate = Mandate.get_active_mandate_at(timestamp)
 
     personal_ballots = Ballot.objects.filter(
         personvoter=person,
         vote__timestamp__lte=timestamp,
-        vote__motion__session__mandate=mandate,
+        vote__motion__session__mandate=mandate
     ).order_by(
         'vote__id'
     )
@@ -110,7 +108,7 @@ def calculate_deviation_from_group(person, playing_field, timestamp=None, exclud
         )
     ]
     group_options = [
-        get_group_ballot(vote_id, relevant_people_ids, mandate) for
+        get_group_ballot(vote_id, relevant_people_ids) for
         vote_id in relevant_vote_ids
     ]
 

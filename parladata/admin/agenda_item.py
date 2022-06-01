@@ -22,7 +22,7 @@ class AgendaItemAdmin(SortableAdminMixin, admin.ModelAdmin):
     search_fields = ['name', 'session__name']
     autocomplete_fields = ['session']
     readonly_fields = ['created_at', 'updated_at']
-    ordering = ('order', 'session_id')
+    ordering = ('order',)
     list_per_page = 25
 
     class Media:
