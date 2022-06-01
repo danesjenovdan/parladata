@@ -23,9 +23,8 @@ def calculate_number_of_spoken_words(speeches):
 
         # count spaces and add 1
         number_of_spoken_words += (speech.count(' ') + 1)
-    
-    return number_of_spoken_words
 
+    return number_of_spoken_words
 
 def save_person_number_of_spoken_words(person, playing_field, timestamp=None):
     if not timestamp:

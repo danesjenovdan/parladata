@@ -285,9 +285,12 @@ def calculate_voting_distance_between_groups(from_group, to_group, timestamp=Non
     if not timestamp:
         timestamp = datetime.now()
 
+    mandate = Mandate.get_active_mandate_at(timestamp)
+
     # get all relevant votes
     votes = Vote.objects.filter(
-        timestamp__lte=timestamp
+        timestamp__lte=timestamp,
+        motion__session__mandate=mandate
     ).order_by(
         '-timestamp'
     )
