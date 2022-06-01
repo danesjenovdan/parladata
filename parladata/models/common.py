@@ -44,6 +44,19 @@ class Mandate(models.Model):
     def __str__(self):
         return self.description
 
+    def get_time_range_from_mandate(self, to_timestamp):
+        if self.beginning:
+            from_timestamp = self.beginning
+        else:
+            from_timestamp = datetime.min
+
+        if self.ending and self.ending < to_timestamp:
+            to_timestamp = self.ending
+        else:
+            to_timestamp = to_timestamp
+
+        return from_timestamp, to_timestamp
+
     @classmethod
     def get_active_mandate_at(cls, timestamp):
         mandate = Mandate.objects.active_at(timestamp).first()

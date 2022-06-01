@@ -54,7 +54,7 @@ def calculate_deviation_from_group(person, playing_field, timestamp=None, exclud
     personal_ballots = Ballot.objects.filter(
         personvoter=person,
         vote__timestamp__lte=timestamp,
-        vote__motion__session__madnate=mandate
+        vote__motion__session__mandate=mandate
     ).order_by(
         'vote__id'
     )

@@ -7,7 +7,7 @@ from parladata.models.common import Mandate
 
 from parlacards.models import PersonNumberOfQuestions, GroupNumberOfQuestions
 
-from parlacards.scores.common import get_dates_between, get_fortnights_between, get_time_range_from_mandate
+from parlacards.scores.common import get_dates_between, get_fortnights_between
 
 
 # People
@@ -17,7 +17,7 @@ def calculate_number_of_questions_from_person(person, timestamp=None):
 
     mandate = Mandate.get_active_mandate_at(timestamp)
 
-    from_timestamp, to_timestamp = get_time_range_from_mandate(mandate, timestamp)
+    from_timestamp, to_timestamp = mandate.get_time_range_from_mandate(timestamp)
 
     return Question.objects.filter(
         person_authors=person,
@@ -73,7 +73,7 @@ def calculate_group_number_of_question(group, playing_field, timestamp=None):
 
     mandate = Mandate.get_active_mandate_at(timestamp)
 
-    from_timestamp, to_timestamp = get_time_range_from_mandate(mandate, timestamp)
+    from_timestamp, to_timestamp = mandate.get_time_range_from_mandate(timestamp)
 
     memberships = group.query_memberships_before(timestamp)
     member_ids = memberships.values_list('member_id', flat=True).distinct('member_id')
