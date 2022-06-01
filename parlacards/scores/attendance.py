@@ -73,6 +73,8 @@ def calculate_group_vote_attendance(group, timestamp=None):
     if not timestamp:
         timestamp = datetime.now()
 
+    mandate = Mandate.get_active_mandate_at(timestamp)
+
     memberships = group.query_memberships_before(timestamp)
     member_ids = memberships.values_list('member_id', flat=True).distinct('member_id')
 
@@ -82,6 +84,7 @@ def calculate_group_vote_attendance(group, timestamp=None):
         member_ballots = Ballot.objects.filter(
             personvoter_id=member_id,
             vote__timestamp__lte=timestamp,
+            vote__motion__session__mandate=mandate
         )
 
         member_memberships = memberships.filter(
