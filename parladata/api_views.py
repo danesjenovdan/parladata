@@ -135,7 +135,7 @@ class SessionView(viewsets.ModelViewSet):
     queryset = Session.objects.all().order_by('id')
     serializer_class = SessionSerializer
     filter_backends = (DjangoFilterBackend, filters.OrderingFilter)
-    filter_fields = ('organizations',)
+    filter_fields = ('organizations', 'mandate')
     ordering_fields = ('-start_time',)
 
     @action(detail=True, methods=['post'])
@@ -192,7 +192,7 @@ class SpeechView(CountViewSet):
     queryset = Speech.objects.all().order_by('id')
     serializer_class = SpeechSerializer
     filter_backends = (DjangoFilterBackend, filters.SearchFilter, ValidSpeechesFilter)
-    filter_fields = ('speaker', 'session')
+    filter_fields = ('speaker', 'session', 'session__mandate')
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data, many=isinstance(request.data,list))
@@ -208,7 +208,7 @@ class MotionView(viewsets.ModelViewSet):
     serializer_class = MotionSerializer
     fields = '__all__'
     filter_backends = (DjangoFilterBackend, filters.SearchFilter, UneditedMotionsFilter)
-    filter_fields = ('session',)
+    filter_fields = ('session', 'session__mandate')
     search_fields = ('text',)
 
 
