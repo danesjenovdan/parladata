@@ -113,10 +113,10 @@ def save_group_vocabulary_size(group, playing_field, timestamp=None):
     for member_id in member_ids:
         member_speeches = Speech.objects.filter_valid_speeches(
             timestamp,
-            session__mandate=mandate
         ).filter(
             speaker__id=member_id,
             start_time__lte=timestamp,
+            session__mandate=mandate
         )
 
         member_memberships = memberships.filter(
