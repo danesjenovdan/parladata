@@ -13,7 +13,7 @@ from datetime import datetime
 from django_filters.rest_framework import DjangoFilterBackend, Filter, FilterSet
 from django.shortcuts import get_object_or_404
 from rest_framework.response import Response
-from rest_framework import status
+from rest_framework import status, parsers
 from rest_framework.authentication import SessionAuthentication, BasicAuthentication
 from oauth2_provider.contrib.rest_framework import OAuth2Authentication
 
@@ -118,6 +118,15 @@ class PersonView(viewsets.ModelViewSet):
         person = get_object_or_404(Person, pk=pk)
         parser_name = request.data.get('parser_name')
         person.add_parser_name(parser_name)
+        person.save()
+
+        data = self.get_serializer(person).data
+        return Response(data, status=status.HTTP_200_OK)
+
+    @action(detail=True, methods=['patch'], parser_classes=[parsers.MultiPartParser, parsers.FormParser])
+    def upload_image(self, request, pk=None):
+        person = get_object_or_404(Person, pk=pk)
+        person.image = request.data.get('image')
         person.save()
 
         data = self.get_serializer(person).data
