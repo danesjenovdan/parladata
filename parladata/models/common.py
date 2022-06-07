@@ -49,7 +49,8 @@ class Mandate(models.Model):
             from_timestamp = self.beginning
         else:
             from_timestamp = datetime.min
-
+        if not to_timestamp:
+            to_timestamp = datetime.now()
         if self.ending and self.ending < to_timestamp:
             to_timestamp = self.ending
         else:
