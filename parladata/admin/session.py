@@ -20,16 +20,26 @@ class SessionAdmin(admin.ModelAdmin):
         # MotionSessionInline,
     ]
     search_fields = ['name']
-    list_display = ['id', 'name', 'tfidf', 'agenda_items', 'start_time', 'in_review']
+    list_display = ['id', 'name', 'tfidf', 'agenda_items', 'start_time', 'in_review', 'get_mandate', 'get_organizations']
     readonly_fields = ['created_at', 'updated_at']
+
+    list_per_page = 25
 
     def tfidf(self, obj):
         partial_url = reverse('admin:parlacards_sessiontfidf_changelist')
         url = f'{settings.BASE_URL}{partial_url}?session__id__exact={obj.id}'
         return mark_safe(f'<a href="{url}"><input type="button" value="Tfidf" /></a>')
 
+    def get_mandate(self, obj):
+        return obj.mandate.description
+
+    def get_organizations(self, obj):
+        return ' - '.join([org.organizationname.last().value for org in obj.organizations.all()])
+
     tfidf.allow_tags = True
     tfidf.short_description = 'TFIDF'
+    get_mandate.short_description = 'mandate'
+    get_organizations.short_description = 'Organizations'
 
     def agenda_items(self, obj):
         partial_url = reverse('admin:parladata_agendaitem_changelist')
