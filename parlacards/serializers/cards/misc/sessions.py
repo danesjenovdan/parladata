@@ -33,6 +33,12 @@ class SessionsCardSerializer(CardSerializer):
             Q(classification__isnull=True) | Q(classification__in=('pg', 'friendship_group', 'delegation', 'coalition')),
         )
 
+        mandate_start, mandate_end = mandate.get_time_range_from_mandate(mandate.ending)
+
+        relevant_organizations = relevant_organizations.filter(
+            Q(founding_date__range=(mandate_start, mandate_end)) | Q(dissolution_date__range=(mandate_start, mandate_end))
+        )
+
         # cache whole list of organizations
         timestamp = relevant_organizations.order_by('-updated_at').first().updated_at
         sessions = Session.objects.filter(organizations__in=relevant_organizations)

@@ -182,9 +182,12 @@ class SessionListFilter(admin.SimpleListFilter):
 
     def lookups(self, request, model_admin):
         list_of_sessions = []
-        list_of_sessions = [(str(session['id']), session['name']) for session in Session.objects.all().order_by('start_time').values('id', 'name')]
+        list_of_sessions = [(str(session['id']), self.get_name(session)) for session in Session.objects.all().order_by('start_time').values('id', 'name', 'mandate__description')]
 
         return list_of_sessions
+
+    def get_name(self, session):
+        return f"{session['name']} {session['mandate__description']}"
 
     def queryset(self, request, queryset):
         # Compare the requested value to decide how to filter the queryset.
