@@ -1,7 +1,7 @@
 from datetime import datetime
 
 from django.db import models
-from django.db.models import Q
+from django.db.models import Q, OuterRef, Subquery
 from django.utils.translation import gettext_lazy as _
 
 from parladata.models.link import Link
@@ -15,6 +15,7 @@ from parladata.behaviors.models import (
     Sluggable,
     VersionableFieldsOwner
 )
+from parladata.models.versionable_properties import OrganizationName
 from colorfield.fields import ColorField
 
 CLASSIFICATIONS = [
@@ -36,6 +37,16 @@ class ActiveAtQuerySet(models.QuerySet):
             Q(founding_date__lte=timestamp) | Q(founding_date__isnull=True),
             Q(dissolution_date__gte=timestamp) | Q(dissolution_date__isnull=True)
         ))
+
+class ExtendedManager(models.Manager):
+    def get_queryset(self):
+        latest_name = Subquery(OrganizationName.objects.filter(
+            owner_id=OuterRef("id"),
+        ).valid_at(datetime.now()).order_by('-valid_from').values('value')[:1])
+        return super().get_queryset().annotate(
+            latest_name=latest_name,
+        )
+
 
 class Organization(Timestampable, Taggable, Parsable, Sluggable, VersionableFieldsOwner):
     """A group with a common purpose or reason
@@ -68,15 +79,13 @@ class Organization(Timestampable, Taggable, Parsable, Sluggable, VersionableFiel
 
     color = ColorField(default='#09a2cc')
 
-    objects = ActiveAtQuerySet.as_manager()
+    objects = ExtendedManager.from_queryset(ActiveAtQuerySet)()
+
 
     @property
     def name(self):
-        return self.versionable_property_value_on_date(
-            owner=self,
-            property_model_name='OrganizationName',
-            datetime=datetime.now()
-        )
+        return self.latest_name
+
 
     @property
     def acronym(self):
