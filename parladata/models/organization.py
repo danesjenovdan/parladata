@@ -84,7 +84,15 @@ class Organization(Timestampable, Taggable, Parsable, Sluggable, VersionableFiel
 
     @property
     def name(self):
-        return self.latest_name
+        # just objects in queryset has latest_name attribute
+        if hasattr(self, 'latest_name'):
+            return self.latest_name
+        else:
+            return self.versionable_property_value_on_date(
+                owner=self,
+                property_model_name='OrganizationName',
+                datetime=datetime.now()
+            )
 
 
     @property
