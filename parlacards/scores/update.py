@@ -8,6 +8,7 @@ from parlacards.scores.number_of_spoken_words import save_people_number_of_spoke
 from parlacards.scores.session_attendance import save_groups_vote_attendance_on_sessions
 from parlacards.scores.vocabulary_size import save_people_vocabulary_sizes, save_groups_vocabulary_sizes
 from parlacards.scores.voting_distance import save_voting_distances, save_groups_voting_distances
+from parlacards.utils import get_playing_fields
 
 from parladata.models.motion import Motion
 from parladata.models.question import Question
@@ -143,15 +144,3 @@ def run_vote_analyses_on_date(playing_field, timestamp):
 def run_question_analyses_on_date(playing_field, timestamp):
     save_people_number_of_questions(playing_field, timestamp)
     save_group_number_of_questions(playing_field, timestamp)
-
-
-def get_playing_fields(timestamp):
-    person_memberships = PersonMembership.valid_at(timestamp).filter(
-        role='voter'
-    ).distinct('organization')
-
-    return [
-        person_membership.organization
-        for person_membership
-        in person_memberships
-    ]
