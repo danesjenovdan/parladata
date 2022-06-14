@@ -39,6 +39,9 @@ class ActiveAtQuerySet(models.QuerySet):
         ))
 
 class ExtendedManager(models.Manager):
+    """
+    this manager adds latest_name attribute to objects of queryset
+    """
     def get_queryset(self):
         latest_name = Subquery(OrganizationName.objects.filter(
             owner_id=OuterRef("id"),
