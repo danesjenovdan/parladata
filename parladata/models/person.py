@@ -10,6 +10,9 @@ from parladata.models.memberships import PersonMembership
 from parladata.models.versionable_properties import PersonName
 
 class ExtendedManager(models.Manager):
+    """
+    this manager adds latest_name attribute to objects of queryset
+    """
     def get_queryset(self):
         latest_name = Subquery(PersonName.objects.filter(
             owner_id=OuterRef("id"),
