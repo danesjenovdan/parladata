@@ -52,7 +52,15 @@ class Person(Timestampable, Parsable, Sluggable, VersionableFieldsOwner):
 
     @property
     def name(self):
-        return self.latest_name
+        # just objects in queryset has latest_name attribute
+        if hasattr(self, 'latest_name'):
+            return self.latest_name
+        else:
+            return self.versionable_property_value_on_date(
+                owner=self,
+                property_model_name='PersonName',
+                datetime=datetime.now()
+            )
 
     @property
     def honorific_prefix(self):
@@ -61,7 +69,7 @@ class Person(Timestampable, Parsable, Sluggable, VersionableFieldsOwner):
             property_model_name='PersonHonorificPrefix',
             datetime=datetime.now()
         )
-    
+
     @property
     def honorific_suffix(self):
         return self.versionable_property_value_on_date(
