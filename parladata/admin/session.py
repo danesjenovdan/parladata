@@ -4,6 +4,7 @@ from django.conf import settings
 from django.urls import reverse
 
 from parladata.models import Session, Link
+from parladata.admin.filters import SessionOrganizationsListFilter
 
 
 class SessionLinkInline(admin.TabularInline):
@@ -22,6 +23,7 @@ class SessionAdmin(admin.ModelAdmin):
     search_fields = ['name']
     list_display = ['id', 'name', 'tfidf', 'agenda_items', 'start_time', 'in_review', 'get_mandate', 'get_organizations']
     readonly_fields = ['created_at', 'updated_at']
+    list_filter = ('mandate', SessionOrganizationsListFilter)
 
     list_per_page = 25
 
@@ -34,7 +36,7 @@ class SessionAdmin(admin.ModelAdmin):
         return obj.mandate.description
 
     def get_organizations(self, obj):
-        return ' - '.join([org.organizationname.last().value for org in obj.organizations.all()])
+        return ' - '.join([org.name for org in obj.organizations.all()])
 
     tfidf.allow_tags = True
     tfidf.short_description = 'TFIDF'
