@@ -11,5 +11,6 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         self.stdout.write('Start setting TFIDF')
-        playing_field = get_playing_fields(datetime.now())
-        save_sessions_tfidf_for_fresh_sessions(playing_field,)
+        playing_fields = get_playing_fields(datetime.now())
+        for playing_field in playing_fields:
+            save_sessions_tfidf_for_fresh_sessions(playing_field)
