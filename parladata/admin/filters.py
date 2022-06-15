@@ -99,6 +99,35 @@ class OrganizationsListFilter(admin.SimpleListFilter):
         return queryset
 
 
+class SessionOrganizationsListFilter(admin.SimpleListFilter):
+    title = 'organization'
+
+    parameter_name = 'organization'
+
+    def lookups(self, request, model_admin):
+        list_of_groups = []
+        mandate_id = request.GET.get('mandate__id__exact', None)
+        if mandate_id:
+            sessions = Session.objects.filter(mandate_id=mandate_id)
+        else:
+            sessions = Session.objects.all()
+        org_ids = list(set(sessions.distinct('organizations').values_list('organizations', flat=True)))
+        queryset = Organization.objects.filter(id__in=org_ids).values('id', 'latest_name')
+
+        for group in queryset:
+            list_of_groups.append(
+                (str(group['id']), group['latest_name'])
+            )
+        return sorted(list_of_groups, key=lambda tp: tp[1])
+
+    def queryset(self, request, queryset):
+        # Compare the requested value to decide how to filter the queryset.
+
+        if self.value():
+            return queryset.filter(orgs=self.value())
+        return queryset
+
+
 class OrganizationAuthorsListFilter(OrganizationsListFilter):
     title = 'organization_authors'
 
