@@ -393,9 +393,11 @@ def save_sessions_tfidf_on_last_speech_date(playing_field, sessions):
                 ).save()
 
 def save_sessions_tfidf_for_fresh_sessions(playing_field):
+    mandate = playing_field.organization_memberships.first().mandate
     sessions = Session.objects.filter(
         speeches__isnull=False,
-        sessiontfidf_related__isnull=True
+        sessiontfidf_related__isnull=True,
+        mandate=mandate
     ).distinct('id')
 
     save_sessions_tfidf_on_last_speech_date(playing_field, sessions)
