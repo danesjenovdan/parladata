@@ -11,9 +11,14 @@ from parladata.models.versionable_properties import PersonName
 
 class ExtendedManager(models.Manager):
     """
-    this manager adds latest_name attribute to objects of queryset
+    It's manager that adds values to queryset objects
     """
     def get_queryset(self):
+        """
+        Subquery create nested select query. In this case query currently valid name of person.
+        Query for name is sliced to one obect because you can subquery just a queryset and not a single object.
+        Annotation adds inquired name to the person objects.
+        """
         latest_name = Subquery(PersonName.objects.filter(
             owner_id=OuterRef("id"),
         ).valid_at(datetime.now()).order_by('-valid_from').values('value')[:1])
