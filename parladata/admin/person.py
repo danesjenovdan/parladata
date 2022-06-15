@@ -75,8 +75,15 @@ class PersonAdmin(admin.ModelAdmin):
     ]
     autocomplete_fields = ['districts']
     search_fields = ('id', 'personname__value', 'parser_names')
-    list_display = ('id', 'name')
+    list_display = ('id', 'get_name')
     readonly_fields = ['created_at', 'updated_at']
+
+    # workaround made field name orderable because the name @property and is annotated
+    def get_name(self, obj):
+        return obj.name
+
+    get_name.admin_order_field = "latest_name"
+    get_name.short_description = "Name"
 
 class ParliamentMember(Person):
     class Meta:
@@ -84,7 +91,7 @@ class ParliamentMember(Person):
 
 class MPAdmin(ExportMixin, PersonAdmin):
     resource_class = MPResource
-    list_display = ['id', 'name', 'tfidf', 'join_people']
+    list_display = ['id', 'get_name', 'tfidf', 'join_people']
     def get_queryset(self, request):
         MPs_ids = PersonMembership.objects.filter(role='voter').values_list('member', flat=True)
         qs = Person.objects.filter(id__in=MPs_ids)
@@ -99,6 +106,13 @@ class MPAdmin(ExportMixin, PersonAdmin):
         partial_url = '/admin/parladata/parliamentmember/mergepeople/'
         url = f'{settings.BASE_URL}{partial_url}?real_person={obj.id}'
         return mark_safe(f'<a href="{url}"><input type="button" value="Join people" /></a>')
+
+    # workaround made field name orderable because the name @property and is annotated
+    def get_name(self, obj):
+        return obj.name
+
+    get_name.admin_order_field = "latest_name"
+    get_name.short_description = "Name"
 
     tfidf.allow_tags = True
     tfidf.short_description = 'TFIDF'
