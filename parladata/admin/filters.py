@@ -1,8 +1,9 @@
 from django.contrib import admin
 
-from parladata.models.memberships import PersonMembership
+from parladata.models.memberships import OrganizationMembership, PersonMembership
 from parladata.models.session import Session
 from parladata.models.organization import Organization
+from parladata.models.common import Mandate
 
 from datetime import datetime
 
@@ -100,6 +101,9 @@ class OrganizationsListFilter(admin.SimpleListFilter):
 
 
 class SessionOrganizationsListFilter(admin.SimpleListFilter):
+    """
+    It's used for filter sessions by organization. Organizations may be filtered by mandate.
+    """
     title = 'organization'
 
     parameter_name = 'organization'
@@ -177,7 +181,15 @@ class AllOrganizationsListFilter(admin.SimpleListFilter):
 
     def lookups(self, request, model_admin):
         list_of_groups = []
-        queryset = Organization.objects.all().values('id', 'organizationname__value')
+        mandate_id = request.GET.get('mandate__id__exact', None)
+        if mandate_id:
+            mandate = Mandate.objects.filter(id=mandate_id).first()
+            organization_ids = PersonMembership.objects.filter(mandate=mandate).values_list('organization', flat=True)
+            queryset = Organization.objects.filter(id__in=organization_ids)
+
+        else:
+            queryset = Organization.objects.all()
+        queryset = queryset.values('id', 'organizationname__value')
 
         for group in queryset:
             if group['organizationname__value']:
