@@ -5,9 +5,7 @@ from django.db.models import Count
 
 from rest_framework import serializers
 
-from parladata.models.person import Person
 from parladata.models.ballot import Ballot
-from parladata.models.organization import Organization
 
 from parlacards.serializers.session import SessionSerializer
 from parlacards.serializers.link import LinkSerializer
@@ -130,7 +128,7 @@ class VoteSumsSerializer(CommonCachableSerializer):
         # latest_voter_timestamp to previously calculated vote_timestamp
         if vote.ballots.count() == 0:
             return f'VoteSumsSerializer_{vote.id}_{vote_timestamp.strftime("%Y-%m-%dT%H:%M:%S")}'
-        
+
         # the other special case is when all the ballots are anonymous
         elif vote.ballots.filter(personvoter__isnull=False).count() == 0:
             latest_voter_timestamp = vote_timestamp
@@ -229,7 +227,15 @@ class VoteSerializer(CommonSerializer):
         return new_context
 
     def get_government_sides(self, vote):
-        if not Organization.objects.filter(classification='coalition').is_active_at(vote.timestamp):
+        org = vote.motion.session.organizations.first()
+
+        coalition_organization_membership = org.organizationmemberships_children.active_at(
+                vote.timestamp
+            ).filter(
+                member__classification='coalition'
+            ).first()
+
+        if not coalition_organization_membership:
             return []
 
         coalition_context = dict.copy(self.context)
