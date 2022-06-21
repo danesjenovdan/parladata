@@ -13,7 +13,7 @@ from datetime import datetime
 from django_filters.rest_framework import DjangoFilterBackend, Filter, FilterSet
 from django.shortcuts import get_object_or_404
 from rest_framework.response import Response
-from rest_framework import status
+from rest_framework import status, parsers
 from rest_framework.authentication import SessionAuthentication, BasicAuthentication
 from oauth2_provider.contrib.rest_framework import OAuth2Authentication
 
@@ -123,6 +123,15 @@ class PersonView(viewsets.ModelViewSet):
         data = self.get_serializer(person).data
         return Response(data, status=status.HTTP_200_OK)
 
+    @action(detail=True, methods=['patch'], parser_classes=[parsers.MultiPartParser, parsers.FormParser])
+    def upload_image(self, request, pk=None):
+        person = get_object_or_404(Person, pk=pk)
+        person.image = request.data.get('image')
+        person.save()
+
+        data = self.get_serializer(person).data
+        return Response(data, status=status.HTTP_200_OK)
+
 
 class AgendaItemView(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
@@ -135,7 +144,7 @@ class SessionView(viewsets.ModelViewSet):
     queryset = Session.objects.all().order_by('id')
     serializer_class = SessionSerializer
     filter_backends = (DjangoFilterBackend, filters.OrderingFilter)
-    filter_fields = ('organizations',)
+    filter_fields = ('organizations', 'mandate')
     ordering_fields = ('-start_time',)
 
     @action(detail=True, methods=['post'])
@@ -192,7 +201,7 @@ class SpeechView(CountViewSet):
     queryset = Speech.objects.all().order_by('id')
     serializer_class = SpeechSerializer
     filter_backends = (DjangoFilterBackend, filters.SearchFilter, ValidSpeechesFilter)
-    filter_fields = ('speaker', 'session')
+    filter_fields = ('speaker', 'session', 'session__mandate')
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data, many=isinstance(request.data,list))
@@ -208,7 +217,7 @@ class MotionView(viewsets.ModelViewSet):
     serializer_class = MotionSerializer
     fields = '__all__'
     filter_backends = (DjangoFilterBackend, filters.SearchFilter, UneditedMotionsFilter)
-    filter_fields = ('session',)
+    filter_fields = ('session', 'session__mandate')
     search_fields = ('text',)
 
 

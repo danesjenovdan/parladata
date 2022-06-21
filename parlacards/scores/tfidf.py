@@ -1,6 +1,7 @@
 from django.db.models import Q
 from datetime import datetime
 from parladata.models.session import Session
+from parladata.models.common import Mandate
 
 from sklearn.feature_extraction.text import TfidfVectorizer
 
@@ -26,6 +27,8 @@ def calculate_people_tfidf(playing_field, timestamp=None):
     '''
     if not timestamp:
         timestamp = datetime.now()
+
+    mandate = Mandate.get_active_mandate_at(timestamp)
 
     # TODO we should probably avoid casting
     # competitor_ids and leader_ids into list
@@ -63,6 +66,7 @@ def calculate_people_tfidf(playing_field, timestamp=None):
     ).filter(
         Q(start_time__lte=timestamp) | Q(start_time__isnull=True),
         speaker__id__in=competitor_ids,
+        session__mandate=mandate,
         lemmatized_content__isnull=False
     )
 
@@ -152,6 +156,8 @@ def calculate_groups_tfidf(playing_field, timestamp=None):
     if not timestamp:
         timestamp = datetime.now()
 
+    mandate = Mandate.get_active_mandate_at(timestamp)
+
     # TODO this is very similar to calculate_people_tfidf
     # consider refactoring
     groups = playing_field.query_organization_members(
@@ -167,6 +173,7 @@ def calculate_groups_tfidf(playing_field, timestamp=None):
             ).filter(
                 Q(start_time__lte=timestamp) | Q(start_time__isnull=True),
                 speaker__id__in=group.query_members(timestamp).values('id'),
+                session__mandate=mandate,
                 lemmatized_content__isnull=False,
             ).values_list(
                 'lemmatized_content',
@@ -388,7 +395,8 @@ def save_sessions_tfidf_on_last_speech_date(playing_field, sessions):
 def save_sessions_tfidf_for_fresh_sessions(playing_field):
     sessions = Session.objects.filter(
         speeches__isnull=False,
-        sessiontfidf_related__isnull=True
+        sessiontfidf_related__isnull=True,
+        organizations=playing_field
     ).distinct('id')
 
     save_sessions_tfidf_on_last_speech_date(playing_field, sessions)

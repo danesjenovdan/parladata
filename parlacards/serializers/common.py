@@ -223,7 +223,7 @@ class CardSerializer(serializers.Serializer):
         raise NotImplementedError('You need to extend this serializer to return the results.')
 
     def get_mandate(self, obj):
-        mandate = Mandate.objects.first()
+        mandate = Mandate.get_active_mandate_at(self.context['date'])
         serializer = MandateSerializer(
             mandate,
             context=self.context
