@@ -9,6 +9,7 @@ from parladata.models.speech import Speech
 from parladata.models.memberships import PersonMembership
 
 from parlacards.models import PersonTfidf, GroupTfidf, SessionTfidf
+from parlacards.utils import truncate_score
 
 from parlacards.scores.common import (
     get_lemmatize_method,
@@ -99,7 +100,7 @@ def calculate_people_tfidf(playing_field, timestamp=None):
         competitor_tfidf = [
             (
                 feature_names[feature_index],
-                float(value)
+                truncate_score(float(value))
             ) for feature_index, value in enumerate(
                 tfidf[competitor_index].T.todense()
             )
@@ -200,7 +201,7 @@ def calculate_groups_tfidf(playing_field, timestamp=None):
         group_tfidf = [
             (
                 feature_names[feature_index],
-                float(value)
+                truncate_score(float(value))
             ) for feature_index, value in enumerate(
                 tfidf[group_index].T.todense()
             )
@@ -309,7 +310,7 @@ def calculate_sessions_tfidf(playing_field, timestamp=None):
         session_tfidf = [
             (
                 feature_names[feature_index],
-                float(value)
+                truncate_score(float(value))
             ) for feature_index, value in enumerate(
                 tfidf[session_index].T.todense()
             )
