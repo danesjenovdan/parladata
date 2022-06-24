@@ -2,6 +2,8 @@ from django.conf import settings
 
 from parladata.models.memberships import OrganizationMembership, PersonMembership
 
+import math
+
 from icu import Collator, Locale
 
 
@@ -17,3 +19,8 @@ def get_playing_fields(timestamp):
         for person_membership
         in person_memberships
     ]
+
+
+def truncate_score(score):
+    trunc_factor = 10 ** 5
+    return math.trunc(score * trunc_factor) / trunc_factor
