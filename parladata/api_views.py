@@ -144,7 +144,7 @@ class SessionView(viewsets.ModelViewSet):
     queryset = Session.objects.all().order_by('id')
     serializer_class = SessionSerializer
     filter_backends = (DjangoFilterBackend, filters.OrderingFilter)
-    filter_fields = ('organizations', 'mandate')
+    filterset_fields = ('organizations', 'mandate')
     ordering_fields = ('-start_time',)
 
     @action(detail=True, methods=['post'])
@@ -159,7 +159,7 @@ class SessionView(viewsets.ModelViewSet):
 #     serializer_class = OrganizationNameSerializer
 #     queryset = OrganizationName.objects.all().order_by('id')
 #     filter_backends = (DjangoFilterBackend,)
-#     filter_fields = ('organization',)
+#     filterset_fields = ('organization',)
 
 
 class OrganizationView(viewsets.ModelViewSet):
@@ -167,7 +167,7 @@ class OrganizationView(viewsets.ModelViewSet):
     serializer_class = OrganizationSerializer
     queryset = Organization.objects.all().order_by('id')
     filter_backends = (DjangoFilterBackend, filters.SearchFilter)
-    filter_class = OrganizationsFilterSet
+    filterset_class = OrganizationsFilterSet
     search_fields = ('name_parser', '_name')
 
     def create(self, request, *args, **kwargs):
@@ -201,7 +201,7 @@ class SpeechView(CountViewSet):
     queryset = Speech.objects.all().order_by('id')
     serializer_class = SpeechSerializer
     filter_backends = (DjangoFilterBackend, filters.SearchFilter, ValidSpeechesFilter)
-    filter_fields = ('speaker', 'session', 'session__mandate')
+    filterset_fields = ('speaker', 'session', 'session__mandate')
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data, many=isinstance(request.data,list))
@@ -217,7 +217,7 @@ class MotionView(viewsets.ModelViewSet):
     serializer_class = MotionSerializer
     fields = '__all__'
     filter_backends = (DjangoFilterBackend, filters.SearchFilter, UneditedMotionsFilter)
-    filter_fields = ('session', 'session__mandate')
+    filterset_fields = ('session', 'session__mandate')
     search_fields = ('text',)
 
 
@@ -226,7 +226,7 @@ class VoteView(viewsets.ModelViewSet):
     queryset = Vote.objects.all().order_by("id")
     serializer_class = VoteSerializer
     filter_backends = (DjangoFilterBackend, filters.SearchFilter, UntaggedVotesFilter)
-    filter_fields = ('tags__name',)
+    filterset_fields = ('tags__name',)
     ordering_fields = ('start_time',)
     search_fields = ('name', 'tags__name',)
 
@@ -236,7 +236,7 @@ class BallotView(viewsets.ModelViewSet):
     queryset = Ballot.objects.all().order_by('id')
     serializer_class = BallotSerializer
     filter_backends = (DjangoFilterBackend, filters.SearchFilter,)
-    filter_fields = ('vote', 'personvoter')
+    filterset_fields = ('vote', 'personvoter')
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data, many=isinstance(request.data,list))
@@ -251,7 +251,7 @@ class LinkView(viewsets.ModelViewSet):
     queryset = Link.objects.all().order_by('id')
     serializer_class = LinkSerializer
     filter_backends = (DjangoFilterBackend,)
-    filter_fields = ('person', 'tags__name', 'organization', 'question')
+    filterset_fields = ('person', 'tags__name', 'organization', 'question')
 
 
 class DocumentView(viewsets.ModelViewSet):
@@ -259,7 +259,7 @@ class DocumentView(viewsets.ModelViewSet):
     queryset = Document.objects.all().order_by('id')
     serializer_class = DocumentSerializer
     filter_backends = (DjangoFilterBackend,)
-    filter_fields = ('tags__name',)
+    filterset_fields = ('tags__name',)
 
 
 class PersonMembershipView(viewsets.ModelViewSet):
@@ -267,7 +267,7 @@ class PersonMembershipView(viewsets.ModelViewSet):
     queryset = PersonMembership.objects.all().order_by('id')
     serializer_class = PersonMembershipSerializer
     filter_backends = (DjangoFilterBackend,)
-    filter_fields = ('member', 'organization', 'role', 'on_behalf_of')
+    filterset_fields = ('member', 'organization', 'role', 'on_behalf_of')
 
 
 class AreaView(viewsets.ModelViewSet):
@@ -275,7 +275,7 @@ class AreaView(viewsets.ModelViewSet):
     queryset = Area.objects.all().order_by('id')
     serializer_class = AreaSerializer
     filter_backends = (DjangoFilterBackend,)
-    filter_fields = ('classification',)
+    filterset_fields = ('classification',)
 
 
 class LegislationView(viewsets.ModelViewSet):
@@ -284,7 +284,7 @@ class LegislationView(viewsets.ModelViewSet):
     serializer_class = LawSerializer
     fields = '__all__'
     filter_backends = (DjangoFilterBackend,)
-    filter_fields = ('session', 'epa',)
+    filterset_fields = ('session', 'epa',)
 
 
 # TODO rewrite this so it works
@@ -296,7 +296,7 @@ class LegislationView(viewsets.ModelViewSet):
 #     pagination.PageNumberPagination.page_size = 100
 #     fields = 'epa'
 #     filter_backends = (DjangoFilterBackend,)
-#     filter_fields = ('session',)
+#     filterset_fields = ('session',)
 
 
 class TagsView(viewsets.ModelViewSet):
@@ -311,7 +311,7 @@ class QuestionView(viewsets.ModelViewSet):
     serializer_class = QuestionSerializer
     fields = '__all__'
     filter_backends = (DjangoFilterBackend, filters.OrderingFilter)
-    filter_fields = ('person_authors',)
+    filterset_fields = ('person_authors',)
     ordering_fields = ('date',)
 
 
@@ -327,7 +327,7 @@ class MandateView(viewsets.ModelViewSet):
     serializer_class = MandateSerializer
     fields = '__all__'
     filter_backends = (DjangoFilterBackend,)
-    filter_fields = ('description',)
+    filterset_fields = ('description',)
 
 
 class ProcedureViewSet(viewsets.ModelViewSet):
@@ -366,7 +366,7 @@ class MediumView(viewsets.ModelViewSet):
     serializer_class = MediumSerializer
     fields = '__all__'
     filter_backends = (DjangoFilterBackend,)
-    filter_fields = ('name', 'url', 'active')
+    filterset_fields = ('name', 'url', 'active')
 
 
 class MediaReportView(viewsets.ModelViewSet):
@@ -375,5 +375,5 @@ class MediaReportView(viewsets.ModelViewSet):
     serializer_class = MediaReportSerializer
     fields = '__all__'
     filter_backends = (DjangoFilterBackend, filters.OrderingFilter)
-    filter_fields = ('medium', 'mentioned_people', 'mentioned_organizations', 'mentioned_legislation', 'mentioned_motions', 'mentioned_votes')
+    filterset_fields = ('medium', 'mentioned_people', 'mentioned_organizations', 'mentioned_legislation', 'mentioned_motions', 'mentioned_votes')
     ordering_fields = ('report_date', 'retrieval_date')
