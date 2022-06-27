@@ -92,7 +92,7 @@ def save_person_monthly_vote_attendance(person, playing_field, timestamp=None):
 
             if score:
                 score.no_mandate=no_mandate
-                score.present=present
+                score.value=present
                 score.save()
             else:
                 PersonMonthlyVoteAttendance(
@@ -222,7 +222,7 @@ def save_group_monthly_vote_attendance(group, playing_field, timestamp=None):
 
         if score:
             score.no_mandate=no_mandate
-            score.present=present
+            score.value=present
             score.save()
         else:
             GroupMonthlyVoteAttendance(
