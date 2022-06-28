@@ -70,7 +70,7 @@ class Command(BaseCommand):
         delete_invalid_speeches(self, ids_in_solr)
 
         speeches = Speech.objects.filter_valid_speeches().exclude(id__in=ids_in_solr)
-        updated_speeches = Speech.objects.filter(updated_at__gte=yesterday).filter_valid_speeches().prefetch_related('session', 'session__mandate')
+        updated_speeches = Speech.objects.filter_valid_speeches().filter(updated_at__gte=yesterday).prefetch_related('session', 'session__mandate')
         speeches = set(list(speeches) + list(updated_speeches))
         self.stdout.write(f'Uploading {len(speeches)} speeches to solr ...')
         output = []
