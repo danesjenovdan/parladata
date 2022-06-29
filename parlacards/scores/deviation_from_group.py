@@ -2,9 +2,8 @@ from datetime import datetime
 
 from django.db.models import Count, Max, Q
 
-from parladata.models.person import Person
 from parladata.models.ballot import Ballot
-from parladata.models.vote import Vote
+from parladata.models.common import Mandate
 from parladata.models.memberships import PersonMembership
 
 from parlacards.models import DeviationFromGroup
@@ -50,9 +49,12 @@ def calculate_deviation_from_group(person, playing_field, timestamp=None, exclud
     if not timestamp:
         timestamp = datetime.now()
 
+    mandate = Mandate.get_active_mandate_at(timestamp)
+
     personal_ballots = Ballot.objects.filter(
         personvoter=person,
-        vote__timestamp__lte=timestamp
+        vote__timestamp__lte=timestamp,
+        vote__motion__session__mandate=mandate
     ).order_by(
         'vote__id'
     )

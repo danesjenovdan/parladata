@@ -30,13 +30,20 @@ class OrganizationAdmin(admin.ModelAdmin):
     ]
     search_fields = ('id', 'organizationname__value') # 'name' maybe?
 
-    list_display = ('id', 'name')
+    list_display = ('id', 'get_name')
     autocomplete_fields = ('parent', )
 
     # set order of fields in the dashboard
     # fields = ['name', 'acronym', 'email', 'classification', 'parser_names', 'gov_id', 'parent', 'founding_date', 'dissolution_date', 'description', 'color', 'tags']
     fields = ['classification', 'parser_names', 'gov_id', 'parent', 'founding_date', 'dissolution_date', 'description', 'color', 'tags']
     readonly_fields = ['created_at', 'updated_at']
+
+     # workaround made field name orderable because the name @property and is annotated
+    def get_name(self, obj):
+        return obj.name
+
+    get_name.admin_order_field = "latest_name"
+    get_name.short_description = "Name"
 
 
 class ParliamentaryGroup(Organization):

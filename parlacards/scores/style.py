@@ -3,6 +3,7 @@ from datetime import datetime
 from collections import Counter
 
 from parladata.models.speech import Speech
+from parladata.models.common import Mandate
 
 from parlacards.models import PersonStyleScore, GroupStyleScore
 
@@ -46,10 +47,13 @@ def save_person_style_scores(person, playing_field, timestamp=None):
     if not timestamp:
         timestamp = datetime.now()
 
+    mandate = Mandate.get_active_mandate_at(timestamp)
+
     # get speeches that started before the timestamp
     speeches = Speech.objects.filter_valid_speeches(timestamp).filter(
         speaker=person,
-        start_time__lte=timestamp
+        start_time__lte=timestamp,
+        session__mandate=mandate
     ).values_list('lemmatized_content', flat=True)
     # TODO what if there is no lemmatized content
 
@@ -96,10 +100,13 @@ def save_group_style_scores(group, playing_field, timestamp=None):
     if not timestamp:
         timestamp = datetime.now()
 
+    mandate = Mandate.get_active_mandate_at(timestamp)
+
     # get speeches that started before the timestamp
     speeches = Speech.objects.filter_valid_speeches(timestamp).filter(
         speaker__id__in=group.query_members(timestamp).values('id'),
-        start_time__lte=timestamp
+        start_time__lte=timestamp,
+        session__mandate=mandate
     ).values_list('lemmatized_content', flat=True)
     # TODO what if there is no lemmatized content
 
