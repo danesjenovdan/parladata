@@ -8,6 +8,7 @@ from parlacards.scores.number_of_spoken_words import save_people_number_of_spoke
 from parlacards.scores.session_attendance import save_groups_vote_attendance_on_sessions
 from parlacards.scores.vocabulary_size import save_people_vocabulary_sizes, save_groups_vocabulary_sizes
 from parlacards.scores.voting_distance import save_voting_distances, save_groups_voting_distances
+from parlacards.utils import get_playing_fields
 
 from parladata.models.motion import Motion
 from parladata.models.question import Question
@@ -74,7 +75,8 @@ def force_run_analyses(timestamp=None, print_method=print):
         timestamp = datetime.now()
 
 
-    for playing_field in get_playing_fields():
+    for playing_field in get_playing_fields(timestamp):
+        print(f'Runing analyses for: {playing_field.name}')
         print_method('start vote analyses')
         run_vote_analyses_on_date(playing_field, timestamp)
         print_method('start speech analyses')
@@ -89,7 +91,7 @@ def force_run_group_analyses(timestamp=None, print_method=print):
         timestamp = datetime.now()
 
     print_method('start analyses for groups')
-    for playing_field in get_playing_fields():
+    for playing_field in get_playing_fields(timestamp):
         save_group_number_of_questions(playing_field, timestamp)
         save_groups_voting_distances(playing_field, timestamp)
         save_groups_monthly_vote_attendance(playing_field, timestamp)
@@ -102,7 +104,7 @@ def force_run_person_analyses(timestamp=None, print_method=print):
     if not timestamp:
         timestamp = datetime.now()
     print_method('start analyses for people')
-    for playing_field in get_playing_fields():
+    for playing_field in get_playing_fields(timestamp):
         print_method('start calculating ang number of speeches')
         save_people_avg_number_of_speeches_per_session(playing_field, timestamp)
         print_method('start calculating number of spoken words')
@@ -142,15 +144,3 @@ def run_vote_analyses_on_date(playing_field, timestamp):
 def run_question_analyses_on_date(playing_field, timestamp):
     save_people_number_of_questions(playing_field, timestamp)
     save_group_number_of_questions(playing_field, timestamp)
-
-
-def get_playing_fields():
-    person_memberships = PersonMembership.objects.filter(
-        role='voter'
-    ).distinct('organization')
-
-    return [
-        person_membership.organization
-        for person_membership
-        in person_memberships
-    ]
