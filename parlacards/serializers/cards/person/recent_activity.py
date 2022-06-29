@@ -5,6 +5,7 @@ from parlacards.serializers.recent_activity import EventSerializer
 from parladata.models.ballot import Ballot
 from parladata.models.question import Question
 from parladata.models.speech import Speech
+from parladata.models.common import Mandate
 
 
 class RecentActivityCardSerializer(PersonScoreCardSerializer):
@@ -15,22 +16,25 @@ class RecentActivityCardSerializer(PersonScoreCardSerializer):
     def to_representation(self, person):
         parent_data = super().to_representation(person)
 
+        mandate = Mandate.get_active_mandate_at(self.context['date'])
+        from_timestamp, to_timestamp = mandate.get_time_range_from_mandate(self.context['date'])
+
         # get all events (questions, ballots, speeches) for person
         # Important: bacause we join all of them in a union, they all need to
         # have the same number and types of values {id, timestamp, type}
         questions = Question.objects.filter(
             person_authors=person,
-            timestamp__lte=self.context['date'],
+            timestamp__range=(from_timestamp, to_timestamp),
         ).values('id', 'timestamp').annotate(type=Value('question'))
         ballots = Ballot.objects.filter(
             personvoter=person,
-            vote__timestamp__lte=self.context['date'],
+            vote__timestamp__range=(from_timestamp, to_timestamp),
         ).values('id', 'vote__timestamp').annotate(type=Value('ballot'))
         speeches = Speech.objects.filter_valid_speeches(
             self.context['date']
         ).filter(
             speaker=person,
-            start_time__lte=self.context['date'],
+            start_time__range=(from_timestamp, to_timestamp),
         ).values('id', 'start_time').annotate(type=Value('speech'))
 
         # create a union of all events and sort them by timestamp (unions get
