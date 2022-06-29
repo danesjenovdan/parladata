@@ -1,8 +1,9 @@
 from django.contrib import admin
 
-from parladata.models.memberships import PersonMembership
+from parladata.models.memberships import OrganizationMembership, PersonMembership
 from parladata.models.session import Session
 from parladata.models.organization import Organization
+from parladata.models.common import Mandate
 
 from datetime import datetime
 
@@ -99,6 +100,38 @@ class OrganizationsListFilter(admin.SimpleListFilter):
         return queryset
 
 
+class SessionOrganizationsListFilter(admin.SimpleListFilter):
+    """
+    It's used for filter sessions by organization. Organizations may be filtered by mandate.
+    """
+    title = 'organization'
+
+    parameter_name = 'organization'
+
+    def lookups(self, request, model_admin):
+        list_of_groups = []
+        mandate_id = request.GET.get('mandate__id__exact', None)
+        if mandate_id:
+            sessions = Session.objects.filter(mandate_id=mandate_id)
+        else:
+            sessions = Session.objects.all()
+        org_ids = list(set(sessions.distinct('organizations').values_list('organizations', flat=True)))
+        queryset = Organization.objects.filter(id__in=org_ids).values('id', 'latest_name')
+
+        for group in queryset:
+            list_of_groups.append(
+                (str(group['id']), group['latest_name'])
+            )
+        return sorted(list_of_groups, key=lambda tp: tp[1])
+
+    def queryset(self, request, queryset):
+        # Compare the requested value to decide how to filter the queryset.
+
+        if self.value():
+            return queryset.filter(orgs=self.value())
+        return queryset
+
+
 class OrganizationAuthorsListFilter(OrganizationsListFilter):
     title = 'organization_authors'
 
@@ -148,7 +181,15 @@ class AllOrganizationsListFilter(admin.SimpleListFilter):
 
     def lookups(self, request, model_admin):
         list_of_groups = []
-        queryset = Organization.objects.all().values('id', 'organizationname__value')
+        mandate_id = request.GET.get('mandate__id__exact', None)
+        if mandate_id:
+            mandate = Mandate.objects.filter(id=mandate_id).first()
+            organization_ids = PersonMembership.objects.filter(mandate=mandate).values_list('organization', flat=True)
+            queryset = Organization.objects.filter(id__in=organization_ids)
+
+        else:
+            queryset = Organization.objects.all()
+        queryset = queryset.values('id', 'organizationname__value')
 
         for group in queryset:
             if group['organizationname__value']:
@@ -182,9 +223,12 @@ class SessionListFilter(admin.SimpleListFilter):
 
     def lookups(self, request, model_admin):
         list_of_sessions = []
-        list_of_sessions = [(str(session['id']), session['name']) for session in Session.objects.all().order_by('start_time').values('id', 'name')]
+        list_of_sessions = [(str(session['id']), self.get_name(session)) for session in Session.objects.all().order_by('start_time').values('id', 'name', 'mandate__description')]
 
         return list_of_sessions
+
+    def get_name(self, session):
+        return f"{session['name']} {session['mandate__description']}"
 
     def queryset(self, request, queryset):
         # Compare the requested value to decide how to filter the queryset.

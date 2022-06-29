@@ -7,10 +7,12 @@ from django.db.models import Count, Max
 from parladata.models.ballot import Ballot
 from parladata.models.vote import Vote
 from parladata.models.memberships import PersonMembership
+from parladata.models.common import Mandate
 
 from parlacards.models import VotingDistance, GroupVotingDistance
 
 from parlacards.scores.common import get_dates_between, get_fortnights_between
+
 
 def assign_value_to_option_string(option_string):
     return {
@@ -34,14 +36,18 @@ def calculate_voting_distance(from_person, to_person, timestamp=None):
     if not timestamp:
         timestamp = datetime.now()
 
+    mandate = Mandate.get_active_mandate_at(timestamp)
+
     from_ballots = Ballot.objects.filter(
         personvoter=from_person,
-        vote__timestamp__lte=timestamp
+        vote__timestamp__lte=timestamp,
+        vote__motion__session__mandate=mandate
     )
 
     to_ballots = Ballot.objects.filter(
         personvoter=to_person,
-        vote__timestamp__lte=timestamp
+        vote__timestamp__lte=timestamp,
+        vote__motion__session__mandate=mandate
     )
 
     # we will only calculate the distance for voting events
@@ -132,9 +138,12 @@ def calculate_group_voting_distance(group, playing_field, timestamp=None):
     if not timestamp:
         timestamp = datetime.now()
 
+    mandate = Mandate.get_active_mandate_at(timestamp)
+
     # get all relevant votes
     votes = Vote.objects.filter(
-        timestamp__lte=timestamp
+        timestamp__lte=timestamp,
+        motion__session__mandate=mandate
     ).order_by(
         '-timestamp'
     )
@@ -276,9 +285,12 @@ def calculate_voting_distance_between_groups(from_group, to_group, timestamp=Non
     if not timestamp:
         timestamp = datetime.now()
 
+    mandate = Mandate.get_active_mandate_at(timestamp)
+
     # get all relevant votes
     votes = Vote.objects.filter(
-        timestamp__lte=timestamp
+        timestamp__lte=timestamp,
+        motion__session__mandate=mandate
     ).order_by(
         '-timestamp'
     )

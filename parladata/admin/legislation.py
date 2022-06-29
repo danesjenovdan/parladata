@@ -28,7 +28,7 @@ class LawAdmin(admin.ModelAdmin):
     ]
 
     def get_sessions(self, obj):
-        return ' - '.join(obj.legislationconsideration_set.all().values_list('session__name', flat=True))
+        return list(obj.legislationconsideration_set.all().values_list('session__name', flat=True))
 
     get_sessions.short_description = 'Sessions'
 

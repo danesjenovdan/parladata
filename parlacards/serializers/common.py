@@ -12,6 +12,8 @@ from parladata.models.organization import Organization
 from parladata.models.common import Mandate
 from parladata.models.memberships import PersonMembership, OrganizationMembership
 
+from parlacards.utils import truncate_score
+
 from datetime import datetime
 
 class VersionableSerializerField(serializers.Field):
@@ -39,11 +41,6 @@ class ScoreSerializerField(serializers.Field):
         kwargs['source'] = '*'
         kwargs['read_only'] = True
         super().__init__(**kwargs)
-
-    @staticmethod
-    def truncate_score(score):
-        trunc_factor = 10 ** 5
-        return math.trunc(score * trunc_factor) / trunc_factor
 
     def calculate_cache_key(self, property_model_name, value_id, timestamp):
         # something like NumberOfSpokenWords_12_2021-11-13-21
@@ -140,7 +137,7 @@ class ScoreSerializerField(serializers.Field):
 
         # find out who the people or organizations with maximum scores are
         winner_ids = relevant_scores.filter(
-            value__gte=self.truncate_score(maximum_score)
+            value__gte=truncate_score(maximum_score)
         ).values_list(f'{score_type}__id', flat=True)
 
         if score_type == 'person':
@@ -223,7 +220,7 @@ class CardSerializer(serializers.Serializer):
         raise NotImplementedError('You need to extend this serializer to return the results.')
 
     def get_mandate(self, obj):
-        mandate = Mandate.objects.first()
+        mandate = Mandate.get_active_mandate_at(self.context['date'])
         serializer = MandateSerializer(
             mandate,
             context=self.context

@@ -9,7 +9,7 @@ class MembershipAdmin(admin.ModelAdmin):
     inlines = [
         LinkMembershipInline,
     ]
-    list_filter = ['role', MembershipMembersListFilter, AllOrganizationsListFilter, AllOnBehalfOfListFilter]
+    list_filter = ['role', 'mandate', MembershipMembersListFilter, AllOrganizationsListFilter, AllOnBehalfOfListFilter]
     search_fields = ['member__personname__value', 'role', 'on_behalf_of__organizationname__value', 'organization__organizationname__value']
     autocomplete_fields = ('member', 'organization', 'on_behalf_of')
     list_display = ['member_name', 'organization_name', 'role', 'start_time', 'end_time']
@@ -17,7 +17,7 @@ class MembershipAdmin(admin.ModelAdmin):
     # set order of fields in the dashboard
     fields = ['member', 'role', 'organization', 'on_behalf_of', 'start_time', 'end_time', 'mandate']
     readonly_fields = ['created_at', 'updated_at']
-    list_per_page = 40
+    list_per_page = 15
 
     def member_name(self, obj):
         try:
