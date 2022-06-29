@@ -1,11 +1,30 @@
 from datetime import datetime
 
 from django.db import models
+from django.db.models import OuterRef, Subquery
 from django.utils.translation import gettext_lazy as _
 
 from parladata.behaviors.models import Timestampable, Parsable, Sluggable, VersionableFieldsOwner
 
 from parladata.models.memberships import PersonMembership
+from parladata.models.versionable_properties import PersonName
+
+class ExtendedManager(models.Manager):
+    """
+    It's manager that adds values to queryset objects
+    """
+    def get_queryset(self):
+        """
+        Subquery create nested select query. In this case query currently valid name of person.
+        Query for name is sliced to one obect because you can subquery just a queryset and not a single object.
+        Annotation adds inquired name to the person objects.
+        """
+        latest_name = Subquery(PersonName.objects.filter(
+            owner_id=OuterRef("id"),
+        ).valid_at(datetime.now()).order_by('-valid_from').values('value')[:1])
+        return super().get_queryset().annotate(
+            latest_name=latest_name,
+        )
 
 
 class Person(Timestampable, Parsable, Sluggable, VersionableFieldsOwner):
@@ -36,14 +55,20 @@ class Person(Timestampable, Parsable, Sluggable, VersionableFieldsOwner):
                                  default=True,
                                  help_text='a generic active or not toggle')
 
+    objects = ExtendedManager()
+
 
     @property
     def name(self):
-        return self.versionable_property_value_on_date(
-            owner=self,
-            property_model_name='PersonName',
-            datetime=datetime.now()
-        )
+        # just objects in queryset has latest_name attribute
+        if hasattr(self, 'latest_name'):
+            return self.latest_name
+        else:
+            return self.versionable_property_value_on_date(
+                owner=self,
+                property_model_name='PersonName',
+                datetime=datetime.now()
+            )
 
     @property
     def honorific_prefix(self):
@@ -52,7 +77,7 @@ class Person(Timestampable, Parsable, Sluggable, VersionableFieldsOwner):
             property_model_name='PersonHonorificPrefix',
             datetime=datetime.now()
         )
-    
+
     @property
     def honorific_suffix(self):
         return self.versionable_property_value_on_date(

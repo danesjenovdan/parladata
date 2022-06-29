@@ -38,6 +38,10 @@ class QuoteSerializer(serializers.ModelSerializer):
     class Meta:
         model = Quote
         fields = '__all__'
+        # `quote_content` can contain leading/trailing spaces depending on the user selection.
+        # Default DRF behavior is to trim whitespace, but that breaks our comparisons with speech
+        # content later.
+        extra_kwargs = {'quote_content': {'trim_whitespace': False}}
 
     def validate(self, data):
         data = super().validate(data)

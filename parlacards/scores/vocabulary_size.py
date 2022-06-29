@@ -3,8 +3,8 @@ from datetime import datetime
 
 from django.db.models import Q
 
-from parladata.models.person import Person
 from parladata.models.speech import Speech
+from parladata.models.common import Mandate
 
 from parlacards.models import PersonVocabularySize, GroupVocabularySize
 
@@ -14,6 +14,7 @@ from parlacards.scores.common import (
     remove_punctuation,
     tokenize,
 )
+
 
 # TODO we should lemmatize speeches at import time
 def calculate_vocabulary_size(speeches):
@@ -51,10 +52,13 @@ def save_person_vocabulary_size(person, playing_field, timestamp=None):
     if not timestamp:
         timestamp = datetime.now()
 
+    mandate = Mandate.get_active_mandate_at(timestamp)
+
     # get speeches that started before the timestamp
     speeches = Speech.objects.filter_valid_speeches(timestamp).filter(
         speaker=person,
-        start_time__lte=timestamp
+        start_time__lte=timestamp,
+        session__mandate=mandate
     ).values_list('lemmatized_content', flat=True)
     # TODO what if there is no lemmatized content
 
@@ -102,14 +106,17 @@ def save_group_vocabulary_size(group, playing_field, timestamp=None):
     memberships = group.query_memberships_before(timestamp)
     member_ids = memberships.values_list('member_id', flat=True).distinct('member_id')
 
+    mandate = Mandate.get_active_mandate_at(timestamp)
+
     speeches = Speech.objects.none()
 
     for member_id in member_ids:
         member_speeches = Speech.objects.filter_valid_speeches(
-            timestamp
+            timestamp,
         ).filter(
             speaker__id=member_id,
             start_time__lte=timestamp,
+            session__mandate=mandate
         )
 
         member_memberships = memberships.filter(

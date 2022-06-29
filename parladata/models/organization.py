@@ -1,6 +1,7 @@
 from datetime import datetime
 
 from django.db import models
+from django.db.models import Q, OuterRef, Subquery
 from django.utils.translation import gettext_lazy as _
 
 from parladata.models.link import Link
@@ -14,6 +15,7 @@ from parladata.behaviors.models import (
     Sluggable,
     VersionableFieldsOwner
 )
+from parladata.models.versionable_properties import OrganizationName
 from colorfield.fields import ColorField
 
 CLASSIFICATIONS = [
@@ -28,6 +30,30 @@ CLASSIFICATIONS = [
     ('other', 'other'),
     ('coalition', 'coalition'),
 ]
+
+class ActiveAtQuerySet(models.QuerySet):
+    def is_active_at(self, timestamp):
+        return bool(self.filter(
+            Q(founding_date__lte=timestamp) | Q(founding_date__isnull=True),
+            Q(dissolution_date__gte=timestamp) | Q(dissolution_date__isnull=True)
+        ))
+
+class ExtendedManager(models.Manager):
+    """
+    It's manager that adds values to queryset objects
+    """
+    def get_queryset(self):
+        """
+        Subquery create nested select query. In this case query currently valid name of organization
+        Query for name is sliced to one obect because you can subquery just a queryset and not a single object.
+        Annotation adds inquired name to the organization objects.
+        """
+        latest_name = Subquery(OrganizationName.objects.filter(
+            owner_id=OuterRef("id"),
+        ).valid_at(datetime.now()).order_by('-valid_from').values('value')[:1])
+        return super().get_queryset().annotate(
+            latest_name=latest_name,
+        )
 
 
 class Organization(Timestampable, Taggable, Parsable, Sluggable, VersionableFieldsOwner):
@@ -61,13 +87,21 @@ class Organization(Timestampable, Taggable, Parsable, Sluggable, VersionableFiel
 
     color = ColorField(default='#09a2cc')
 
+    objects = ExtendedManager.from_queryset(ActiveAtQuerySet)()
+
+
     @property
     def name(self):
-        return self.versionable_property_value_on_date(
-            owner=self,
-            property_model_name='OrganizationName',
-            datetime=datetime.now()
-        )
+        # just objects in queryset has latest_name attribute
+        if hasattr(self, 'latest_name'):
+            return self.latest_name
+        else:
+            return self.versionable_property_value_on_date(
+                owner=self,
+                property_model_name='OrganizationName',
+                datetime=datetime.now()
+            )
+
 
     @property
     def acronym(self):
