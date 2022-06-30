@@ -14,7 +14,7 @@ resources:
 images:
   - name: parladata-slovenija
     newName: rg.fr-par.scw.cloud/djnd/parladata-slovenija
-    newTag: '1962bbe108225b3c36a711d2763616de059559ec'
+    newTag: 'e235ca423370b76a5e10188bc9cf44a89c6b8800'
   - name: parlasolr-slovenija
     newName: rg.fr-par.scw.cloud/djnd/parlasolr-slovenija
-    newTag: '1962bbe108225b3c36a711d2763616de059559ec'
+    newTag: 'e235ca423370b76a5e10188bc9cf44a89c6b8800'
