@@ -19,7 +19,7 @@ class SessionTfidfAdmin(admin.ModelAdmin):
     list_filter = (SessionListFilter,)
     search_fields = ['session__name']
     list_per_page = 20
-    ordering = ['-timestamp__date', '-value']
+    ordering = ['-timestamp', '-value']
     list_editable = ('token',)
     autocomplete_fields = ['session']
     deleted_session_fk = None
@@ -57,7 +57,7 @@ class PersonTfidfAdmin(admin.ModelAdmin):
     list_display = ( 'person', 'token', 'value', 'created_at', 'delete')
     list_filter = (MembersAndLeaderListFilter, )
     list_per_page = 20
-    ordering = ['-timestamp__date', '-value']
+    ordering = ['-timestamp', '-value']
     list_editable = ('token',)
     autocomplete_fields = ['person']
     deleted_member_fk = None
@@ -90,7 +90,7 @@ class GroupTfidfAdmin(admin.ModelAdmin):
     list_display = ('group', 'token', 'value', 'created_at', 'delete')
     list_filter = (OrganizationsListFilter, )
     list_per_page = 20
-    ordering = ['-timestamp__date', '-value']
+    ordering = ['-timestamp', '-value']
     list_editable = ('token',)
     autocomplete_fields = ['group']
     deleted_group_fk = None
