@@ -178,9 +178,12 @@ class MostVotesInCommonCardSerializer(PersonScoreCardSerializer):
     def get_results(self, obj):
         # obj is the person
         mandate = Mandate.get_active_mandate_at(self.context['date'])
+        root_organization = mandate.query_root_organizations(self.context['date'])[1]
+        voters = root_organization.query_voters(self.context['date'])
         from_timestamp, to_timestamp = mandate.get_time_range_from_mandate(self.context['date'])
         lowest_distances = VotingDistance.objects.filter(
             person=obj,
+            target__in=voters,
             timestamp__range=(from_timestamp, to_timestamp)
         ).exclude(
             target=obj
@@ -211,10 +214,13 @@ class LeastVotesInCommonCardSerializer(PersonScoreCardSerializer):
     def get_results(self, obj):
         # obj is the person
         mandate = Mandate.get_active_mandate_at(self.context['date'])
+        root_organization = mandate.query_root_organizations(self.context['date'])[1]
+        voters = root_organization.query_voters(self.context['date'])
         from_timestamp, to_timestamp = mandate.get_time_range_from_mandate(self.context['date'])
 
         highest_distances = VotingDistance.objects.filter(
             person=obj,
+            target__in=voters,
             timestamp__range=(from_timestamp, to_timestamp)
         ).exclude(
             target=obj
