@@ -71,7 +71,7 @@ class Motion(Timestampable, Taggable, Parsable):
         'Law',
         blank=True,
         null=True,
-        on_delete=models.CASCADE,
+        on_delete=models.SET_NULL,
         related_name='motions',
         help_text='Piece of legislation this motion is about'
     )
