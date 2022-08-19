@@ -1,7 +1,7 @@
 from django.core.paginator import Paginator
 from django.utils.functional import cached_property
 
-from parlacards.solr import get_speeches_from_solr, get_votes_from_solr, get_legislation_from_solr
+from parlacards.solr import get_speeches_from_solr, get_votes_from_solr, get_legislation_from_solr, get_agenda_items_from_solr
 
 
 def valid_positive_int(number, default):
@@ -63,6 +63,8 @@ class SolrPaginator(Paginator):
             self.search_method = get_votes_from_solr
         elif self.document_type == 'law':
             self.search_method = get_legislation_from_solr
+        elif self.document_type == 'agenda_item':
+            self.search_method = get_agenda_items_from_solr
         else:
             self.search_method = get_speeches_from_solr
 
