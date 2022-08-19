@@ -27,7 +27,7 @@ python-memcached
 django-debug-toolbar
 boto3
 django-storages
-pylibmc
+pylibmc==1.6.1
 martor
 django-colorfield
 django-admin-sortable2

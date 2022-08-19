@@ -18,6 +18,7 @@
   <field name="type"          type="string"       indexed="true"  stored="true" multiValued="false" required="true" />
   <!-- specific ids -->
   <field name="speech_id"     type="pint"         indexed="true"  stored="true" multiValued="false" />
+  <field name="agenda_item_id"     type="pint"         indexed="true"  stored="true" multiValued="false" />
   <field name="vote_id"       type="pint"         indexed="true"  stored="true" multiValued="false" />
   <field name="law_id"        type="pint"         indexed="true"  stored="true" multiValued="false" />
   <field name="session_id"    type="pint"         indexed="true"  stored="true" multiValued="false" />
