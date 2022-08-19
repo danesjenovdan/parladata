@@ -11,12 +11,16 @@ from parlacards.serializers.tag import TagSerializer
 from parlacards.serializers.link import LinkSerializer
 from parlacards.serializers.session import SessionSerializer
 
-class AgendaItemSerializer(CommonSerializer):
+
+class CommonAgendaItemSerializer(CommonSerializer):
     id = serializers.IntegerField()
-    tags = TagSerializer(many=True)
     name = serializers.CharField()
     order = serializers.IntegerField()
     text = serializers.CharField()
+
+
+class AgendaItemSerializer(CommonAgendaItemSerializer):
+    tags = TagSerializer(many=True)
     documents = serializers.SerializerMethodField()
 
     def get_documents(self, obj):
@@ -29,11 +33,7 @@ class AgendaItemSerializer(CommonSerializer):
         ).data
 
 
-class BaseMinutesAgendaItemSerializer(CommonSerializer):
-    id = serializers.IntegerField()
-    name = serializers.CharField()
-    order = serializers.IntegerField()
-    text = serializers.CharField()
+class BaseMinutesAgendaItemSerializer(CommonAgendaItemSerializer):
     votes = serializers.SerializerMethodField()
 
     def get_votes(self, agenda_item):
@@ -69,6 +69,17 @@ class MinutesAgendaItemWithSessionSerializer(BaseMinutesAgendaItemSerializer, Co
 
         timestamp = max(timestamps)
         return f'MinutesAgendaItemWithSessionSerializer_{agenda_item.id}_{timestamp.strftime("%Y-%m-%dT%H:%M:%S")}'
+
+
+class MinutesAgendaItemWithSessionWithoutVotesSerializer(CommonAgendaItemSerializer):
+    session = serializers.SerializerMethodField()
+
+    def get_session(self, agenda_item):
+        serializer = SessionSerializer(
+            agenda_item.session,
+            context=self.context
+        )
+        return serializer.data
 
 
 class AgendaItemsSerializer(CommonCachableSerializer):

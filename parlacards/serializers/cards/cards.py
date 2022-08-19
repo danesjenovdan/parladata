@@ -54,7 +54,7 @@ from parlacards.serializers.vote import VoteSerializer, SessionVoteSerializer, B
 from parlacards.serializers.tfidf import TfidfSerializer
 from parlacards.serializers.facets import GroupFacetSerializer, PersonFacetSerializer
 from parlacards.serializers.question import QuestionSerializer
-from parlacards.serializers.agenda_item import AgendaItemsSerializer, MinutesAgendaItemSerializer, MinutesAgendaItemWithSessionSerializer
+from parlacards.serializers.agenda_item import AgendaItemsSerializer, MinutesAgendaItemSerializer, MinutesAgendaItemWithSessionSerializer, MinutesAgendaItemWithSessionWithoutVotesSerializer
 from parlacards.serializers.common import (
     CardSerializer,
     PersonScoreCardSerializer,
@@ -972,6 +972,34 @@ class SearchDropdownSerializer(CardSerializer):
         return {
             'people': people_data,
             'groups': groups_data,
+        }
+
+
+#
+# MINUTES
+#
+class MandateMinutesCardSerializer(CardSerializer):
+    def get_results(self, mandate):
+        # this is implemented in to_representation for pagination
+        return None
+
+    def to_representation(self, mandate):
+        parent_data = super().to_representation(mandate)
+
+        solr_params = parse_search_query_params(self.context.get('GET', {}), mandate=mandate.id, highlight=True)
+        paged_object_list, pagination_metadata = create_solr_paginator(self.context.get('GET', {}), solr_params, document_type='agenda_item')
+
+        # serialize agenda items
+        speeches_serializer = MinutesAgendaItemWithSessionWithoutVotesSerializer(
+            paged_object_list,
+            many=True,
+            context=self.context
+        )
+
+        return {
+            **parent_data,
+            **pagination_metadata,
+            'results': speeches_serializer.data,
         }
 
 
