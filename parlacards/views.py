@@ -74,6 +74,7 @@ from parlacards.serializers.cards import (
     RootGroupBasicInfoCardSerializer,
     SessionMinutesCardSerializer,
     SingleMinutesCardSerializer,
+    MandateMinutesCardSerializer,
 )
 from parlacards.serializers.speech import SpeechSerializer
 from parlacards.serializers.quote import QuoteSerializer
@@ -520,6 +521,14 @@ class MandateLegislation(CardView):
     '''
     thing = Mandate
     card_serializer = MandateLegislationCardSerializer
+
+
+class MandateMinutes(CardView):
+    '''
+    Search minutes for a mandate.
+    '''
+    thing = Mandate
+    card_serializer = MandateMinutesCardSerializer
 
 
 class MandateSpeeches(CardView):
