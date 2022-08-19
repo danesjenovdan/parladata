@@ -10,6 +10,7 @@ from sentry_sdk import capture_message
 from parladata.models.speech import Speech
 from parladata.models.vote import Vote
 from parladata.models.legislation import Law
+from parladata.models.agenda_item import AgendaItem
 
 
 def one_month_later(date, shorten_for=0):
@@ -291,6 +292,47 @@ def get_speeches_from_solr(
         speech.content = shorten_highlighted_content(speech.content)
 
     return (speeches, solr_response['response']['numFound'])
+
+def get_agenda_items_from_solr(
+    text_query='*',
+    highlight=False,
+    facet=False,
+    page=1,
+    per_page=20,
+    document_type='agenda_item',
+    mandate=None
+):
+    solr_response = solr_select(
+        text_query=text_query,
+        highlight=highlight,
+        facet=facet,
+        page=page,
+        per_page=per_page,
+        document_type=document_type,
+        mandate=mandate,
+        fl='agenda_item_id'
+    )
+
+    agenda_item_ids = [solr_doc['agenda_item_id'] for solr_doc in solr_response['response']['docs']]
+
+    print(agenda_item_ids)
+
+    # get agenda items into memory from the db
+    agenda_items = list(AgendaItem.objects.filter(id__in=agenda_item_ids))
+
+    # db can return randomly ordered agenda_item, sort to match solr order
+    agenda_item_order_dict = {agenda_item_id: i for i, agenda_item_id in enumerate(agenda_item_ids)}
+    agenda_items = list(sorted(agenda_items, key=lambda agenda_item: agenda_item_order_dict[agenda_item.id]))
+
+    for agenda_item in agenda_items:
+        if solr_response['highlighting'].get(f'agenda_item_{agenda_item.id}', {}).get('content', False):
+            agenda_item.text = '[...]'.join(
+                solr_response['highlighting'][f'agenda_item_{agenda_item.id}']['content']
+            )
+
+        agenda_item.text = shorten_highlighted_content(agenda_item.text)
+
+    return (agenda_items, solr_response['response']['numFound'])
 
 
 def parse_search_query_params(params, **overrides):
