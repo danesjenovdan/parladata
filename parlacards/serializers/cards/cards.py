@@ -436,7 +436,7 @@ class GroupCardSerializer(GroupScoreCardSerializer):
             role='member',
             timestamp=self.context['date']
         ).order_by(
-            'personname__value', # TODO: will this work correctly when people have multiple names?
+            'latest_name',
             'id' # fallback ordering
         )
 
@@ -945,8 +945,8 @@ class SearchDropdownSerializer(CardSerializer):
             voters = playing_field.query_voters(self.context['date']).order_by('personname__value', 'id')
 
             # TODO: will this work correctly when people have multiple names?
-            leader = leader.filter(personname__value__icontains=text)
-            voters = voters.filter(personname__value__icontains=text)
+            leader = leader.filter(latest_name__icontains=text)
+            voters = voters.filter(latest_name__icontains=text)
 
             people = leader.union(voters)
 
