@@ -497,7 +497,7 @@ class GroupMembersCardSerializer(GroupScoreCardSerializer):
         members = instance.query_members(
             timestamp=self.context['date']
         ).order_by(
-            'personname__value', # TODO: will this work correctly when people have multiple names?
+            'latest_name',
             'id' # fallback ordering
         )
 
