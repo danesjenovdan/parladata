@@ -15,8 +15,9 @@ env = dict(
     STATIC_URL=os.getenv('DJANGO_STATIC_URL_BASE', '/static/'),
     MEDIA_ROOT=os.getenv('DJANGO_MEDIA_ROOT', os.path.join(BASE_DIR, '../media')),
     MEDIA_URL=os.getenv('DJANGO_MEDIA_URL_BASE', '/media/'),
-    SOLR_URL=os.getenv('PARLAMETER_SOLR_URL', ''),
-    ER_API_KEY=os.getenv('EVENTREGISTRY_API_KEY', '')
+    SOLR_URL=os.getenv('PARLAMETER_SOLR_URL', 'http://solr:8983/solr/parlasearch'),
+    ER_API_KEY=os.getenv('EVENTREGISTRY_API_KEY', ''),
+    INSTALATION_NAME=os.getenv('INSTALATION_NAME', '')
 )
 
 
@@ -134,3 +135,5 @@ if sentry_url := os.getenv('DJANGO_SENTRY_URL', False):
     )
 
 ER_API_KEY = env['ER_API_KEY']
+
+INSTALATION_NAME = env['INSTALATION_NAME']
