@@ -86,7 +86,7 @@ def notify_editors_for_new_data():
     if new_motions or new_speeches or new_people:
         for editor in editor_permission_group.user_set.all():
             send_email(
-                _('New data for edit in parlameter'),
+                _('New data for edit in parlameter ') + settings.INSTALATION_NAME,
                 editor.email,
                 'daily_notification.html',
                 {
@@ -96,7 +96,8 @@ def notify_editors_for_new_data():
                     'sessions': sessions,
                     'new_voters': new_voters,
                     'new_people': new_people,
-                    'new_votes_need_editing': new_votes_need_editing
+                    'new_votes_need_editing': new_votes_need_editing,
+                    'instalation_name': settings.INSTALATION_NAME
                 }
             )
 
