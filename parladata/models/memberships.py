@@ -56,6 +56,7 @@ class PersonMembership(Membership):
     """A relationship between a person and an organization."""
     ROLES = [
         ('member', 'member'),
+        ('deputy member', 'deputy member'),
         ('voter', 'voter'),
         ('president', 'president'),
         ('deputy', 'deputy'),
