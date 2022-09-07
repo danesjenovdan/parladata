@@ -104,7 +104,7 @@ spec:
             - name: DJANGO_STATIC_URL_BASE
               value: "https://files.parladata.lb.djnd.si/static/"
             - name: INSTALATION_NAME
-              value: default
+              value: MOL
           resources:
             requests:
               memory: 400Mi
