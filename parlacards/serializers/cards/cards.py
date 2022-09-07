@@ -308,9 +308,11 @@ class NumberOfSpokenWordsCardSerializer(PersonScoreCardSerializer):
 class PersonTfidfCardSerializer(PersonScoreCardSerializer):
     def get_results(self, obj):
         # obj is person
+        mandate = Mandate.get_active_mandate_at(self.context['date'])
+        from_timestamp, to_timestamp = mandate.get_time_range_from_mandate(self.context['date'])
         latest_score = PersonTfidf.objects.filter(
             person=obj,
-            timestamp__lte=self.context['date'],
+            timestamp__range=(from_timestamp, to_timestamp),
         ).order_by(
             '-timestamp'
         ).first()
@@ -723,9 +725,11 @@ class VoteCardSerializer(CardSerializer):
 class GroupTfidfCardSerializer(GroupScoreCardSerializer):
     def get_results(self, obj):
         # obj is group
+        mandate = Mandate.get_active_mandate_at(self.context['date'])
+        from_timestamp, to_timestamp = mandate.get_time_range_from_mandate(self.context['date'])
         latest_score = GroupTfidf.objects.filter(
             group=obj,
-            timestamp__lte=self.context['date'],
+            timestamp__range=(from_timestamp, to_timestamp),
         ).order_by(
             '-timestamp'
         ).first()
