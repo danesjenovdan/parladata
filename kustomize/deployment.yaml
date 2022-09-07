@@ -103,6 +103,8 @@ spec:
               value: "/pvc/static"
             - name: DJANGO_STATIC_URL_BASE
               value: "https://files.parladata-ajdovscina.lb.djnd.si/static/"
+            - name: INSTALATION_NAME
+              value: "Ajdovščina"
           resources:
             requests:
               memory: 400Mi
