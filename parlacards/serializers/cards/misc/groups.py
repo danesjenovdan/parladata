@@ -1,4 +1,5 @@
 from importlib import import_module
+from django.db.models import Q
 
 from rest_framework import serializers
 
@@ -13,6 +14,7 @@ from parlacards.models import (
     GroupNumberOfQuestions,
     GroupVoteAttendance,
 )
+from parladata.models.memberships import PersonMembership
 
 class GroupAnalysesSerializer(CommonOrganizationSerializer):
     def calculate_cache_key(self, group):
@@ -28,7 +30,9 @@ class GroupAnalysesSerializer(CommonOrganizationSerializer):
             if analysis_object := analysis.objects.filter(group=group).order_by('-timestamp').first():
                 analysis_timestamps.append(analysis_object.timestamp)
 
-        timestamp = max([group.updated_at, *analysis_timestamps])
+        last_membership = PersonMembership.objects.filter(Q(organization=group)|Q(on_behalf_of=group)).latest('updated_at')
+
+        timestamp = max([group.updated_at, last_membership.updated_at, *analysis_timestamps])
 
         return f'GroupAnalysesSerializer_{group.id}_{timestamp.isoformat()}'
 
