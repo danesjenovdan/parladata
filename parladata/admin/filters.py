@@ -128,7 +128,7 @@ class SessionOrganizationsListFilter(admin.SimpleListFilter):
         # Compare the requested value to decide how to filter the queryset.
 
         if self.value():
-            return queryset.filter(orgs=self.value())
+            return queryset.filter(organizations=self.value())
         return queryset
 
 
