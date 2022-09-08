@@ -44,7 +44,9 @@ class PersonAnalysesSerializer(CommonPersonSerializer):
             if analysis_object := analysis.objects.filter(person=person).order_by('-timestamp').first():
                 analysis_timestamps.append(analysis_object.timestamp)
 
-        timestamp = max([person.updated_at, *analysis_timestamps])
+        last_membership = PersonMembership.objects.filter(member=person).latest('updated_at')
+
+        timestamp = max([person.updated_at, last_membership.updated_at, *analysis_timestamps])
 
         return f'PersonAnalysesSerializer_{person.id}_{timestamp.isoformat()}'
 
