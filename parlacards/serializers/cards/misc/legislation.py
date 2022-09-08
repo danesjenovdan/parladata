@@ -17,9 +17,7 @@ class LegislationMixin:
         )
 
         if mandate:
-            # TODO add mandate to legislation
-            #legislation = legislation.filter(legislationconsideration__session__mandate=mandate)
-            legislation = legislation.filter(motions__session__mandate=mandate)
+            legislation = legislation.filter(mandate=mandate)
         if session:
             legislation = legislation.filter(legislationconsideration__session=session)
 

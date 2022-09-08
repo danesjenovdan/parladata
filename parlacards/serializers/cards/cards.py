@@ -308,9 +308,11 @@ class NumberOfSpokenWordsCardSerializer(PersonScoreCardSerializer):
 class PersonTfidfCardSerializer(PersonScoreCardSerializer):
     def get_results(self, obj):
         # obj is person
+        mandate = Mandate.get_active_mandate_at(self.context['date'])
+        from_timestamp, to_timestamp = mandate.get_time_range_from_mandate(self.context['date'])
         latest_score = PersonTfidf.objects.filter(
             person=obj,
-            timestamp__lte=self.context['date'],
+            timestamp__range=(from_timestamp, to_timestamp),
         ).order_by(
             '-timestamp'
         ).first()
@@ -436,7 +438,7 @@ class GroupCardSerializer(GroupScoreCardSerializer):
             role='member',
             timestamp=self.context['date']
         ).order_by(
-            'personname__value', # TODO: will this work correctly when people have multiple names?
+            'latest_name',
             'id' # fallback ordering
         )
 
@@ -497,7 +499,7 @@ class GroupMembersCardSerializer(GroupScoreCardSerializer):
         members = instance.query_members(
             timestamp=self.context['date']
         ).order_by(
-            'personname__value', # TODO: will this work correctly when people have multiple names?
+            'latest_name',
             'id' # fallback ordering
         )
 
@@ -723,9 +725,11 @@ class VoteCardSerializer(CardSerializer):
 class GroupTfidfCardSerializer(GroupScoreCardSerializer):
     def get_results(self, obj):
         # obj is group
+        mandate = Mandate.get_active_mandate_at(self.context['date'])
+        from_timestamp, to_timestamp = mandate.get_time_range_from_mandate(self.context['date'])
         latest_score = GroupTfidf.objects.filter(
             group=obj,
-            timestamp__lte=self.context['date'],
+            timestamp__range=(from_timestamp, to_timestamp),
         ).order_by(
             '-timestamp'
         ).first()
@@ -945,8 +949,8 @@ class SearchDropdownSerializer(CardSerializer):
             voters = playing_field.query_voters(self.context['date']).order_by('personname__value', 'id')
 
             # TODO: will this work correctly when people have multiple names?
-            leader = leader.filter(personname__value__icontains=text)
-            voters = voters.filter(personname__value__icontains=text)
+            leader = leader.filter(latest_name__icontains=text)
+            voters = voters.filter(latest_name__icontains=text)
 
             people = leader.union(voters)
 

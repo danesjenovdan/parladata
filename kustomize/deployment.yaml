@@ -103,6 +103,8 @@ spec:
               value: "/pvc/static"
             - name: DJANGO_STATIC_URL_BASE
               value: "https://files.parladata-ua.lb.djnd.si/static/"
+            - name: INSTALATION_NAME
+              value: Ukraina
           resources:
             requests:
               memory: 400Mi
