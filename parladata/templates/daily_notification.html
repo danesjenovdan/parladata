@@ -15,7 +15,7 @@
         {% if new_speeches %}
             There are new speeches in Parlameter: </br>
             {% for session in sessions %}
-                for this sessions: {{ session.name }}</br>
+                for this sessions: {{ session.name }}: {% for org in session.organizations.all %} {{ org.name }} {% endfor %}</br>
                 <a href="{{ base_url }}{% url 'admin:parlacards_sessiontfidf_changelist' %}?session__id__exact={{ session.id }}">Check new session TFIDF</a></br>
             {% endfor %}
             </br></br>
