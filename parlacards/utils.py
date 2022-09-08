@@ -23,4 +23,8 @@ def get_playing_fields(timestamp):
 
 def truncate_score(score):
     trunc_factor = 10 ** 5
-    return math.trunc(score * trunc_factor) / trunc_factor
+    try:
+        score = math.trunc(score * trunc_factor) / trunc_factor
+    except:
+        score = 0
+    return score
