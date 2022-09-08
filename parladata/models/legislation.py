@@ -27,6 +27,13 @@ class Law(Timestampable, Taggable):
                                 help_text='The legislative session in which the law was proposed')
 
 
+    mandate = models.ForeignKey('Mandate',
+                                blank=True, null=True,
+                                related_name='legislation',
+                                on_delete=models.SET_NULL,
+                                help_text='The mandate of this law.')
+
+
     text = models.TextField(blank=True, null=True,
                             help_text='The text of the law')
 
