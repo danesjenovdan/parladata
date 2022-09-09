@@ -20,27 +20,24 @@ class EventSerializer(CommonSerializer):
     def to_representation(self, obj):
         # figure out which event type we're dealing with
         if isinstance(obj, Speech):
-            event_type = 'speech'
             serializer = RecentActivitySpeechSerializer(
                 obj,
                 context=self.context
             )
-        elif isinstance(obj, Ballot):
-            event_type = 'ballot'
+            return { 'type': 'speech', **serializer.data }
+
+        if isinstance(obj, Ballot):
             serializer = BallotSerializer(
                 obj,
                 context=self.context
             )
-        elif isinstance(obj, Question):
-            event_type = 'question'
+            return { 'type': 'ballot', **serializer.data }
+
+        if isinstance(obj, Question):
             serializer = QuestionSerializer(
                 obj,
                 context=self.context
             )
-        else:
-            raise ValueError(f'Cannot serialize {obj} as activity.')
+            return serializer.data # type is included in QuestionSerializer
 
-        return {
-            **serializer.data,
-            'type': event_type
-        }
+        raise ValueError(f'Cannot serialize {obj} as activity.')
