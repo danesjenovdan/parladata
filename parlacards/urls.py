@@ -70,5 +70,6 @@ urlpatterns = [
     path('search/speeches/', MandateSpeeches.as_view()),
     path('search/usage-by-group/', MandateUsageByGroup.as_view()),
     path('search/most-used-by-people/', MandateMostUsedByPeople.as_view()),
-    path('search/usage-through-time/', MandateUsageThroughTime.as_view()),
+    path('search/usage-through-time-in-speeches/', MandateUsageThroughTimeInSpeeches.as_view()),
+    path('search/usage-through-time-in-agenda-items/', MandateUsageThroughTimeInAgendaItems.as_view()),
 ]
