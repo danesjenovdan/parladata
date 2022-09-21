@@ -1,11 +1,12 @@
 from importlib import import_module
 
+from django.db.models import Q, OuterRef, Subquery
 from rest_framework import serializers
 
 from parladata.models.area import Area
 from parladata.models.organization import Organization
 from parladata.models.memberships import PersonMembership
-from parladata.models.versionable_properties import PersonName, PersonPreferredPronoun
+from parladata.models.versionable_properties import OrganizationName, PersonName, PersonPreferredPronoun
 
 from parlacards.models import (
     PersonAvgSpeechesPerSession,
@@ -239,6 +240,31 @@ class MiscMembersCardSerializer(CardSerializer):
             order_by = order_by[1:]
             order_reverse = True
 
+        # order by active membership organization name
+        if order_by == 'group':
+            latest_org_name = Subquery(
+                OrganizationName.objects \
+                    .filter(owner_id=OuterRef('organization_id')) \
+                    .valid_at(timestamp) \
+                    .order_by('-valid_from') \
+                    .values('value')[:1]
+            )
+            active_membership_org_name = Subquery(
+                PersonMembership.objects \
+                    .filter(
+                        Q(member_id=OuterRef('pk')),
+                        Q(start_time__lte=timestamp) | Q(start_time__isnull=True),
+                        Q(end_time__gte=timestamp) | Q(end_time__isnull=True),
+                        Q(organization__classification='pg'), # TODO change to parliamentary_group
+                    ) \
+                    .order_by('-start_time') \
+                    .annotate(organization_name=latest_org_name) \
+                    .values('organization_name')[:1]
+            )
+
+            order_string = f'-active_group_name' if order_reverse else 'active_group_name'
+            return people.annotate(active_group_name=active_membership_org_name).order_by(order_string, 'id')
+
         # order by model field
         field_name_to_order_by = self.model_fields_mapping.get(order_by, None)
         if field_name_to_order_by:
@@ -273,7 +299,6 @@ class MiscMembersCardSerializer(CardSerializer):
 
         # order by score model
         score_model_name = self.score_models_mapping.get(order_by, None)
-
         if score_model_name:
             scores_module = import_module('parlacards.models')
             ScoreModel = getattr(scores_module, score_model_name)
