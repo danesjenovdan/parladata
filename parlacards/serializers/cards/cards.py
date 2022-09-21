@@ -883,26 +883,6 @@ class MandateMostUsedByPeopleCardSerializer(CardSerializer):
         return facet_serializer.data
 
 
-class MandateUsageThroughTimeCardSerializer(CardSerializer):
-    def get_results(self, obj):
-        # obj is the mandate
-        solr_params = parse_search_query_params(self.context.get('GET', {}), facet=True)
-        solr_params['mandate'] = obj.id
-        solr_response = solr_select(**solr_params, per_page=0)
-
-        if not solr_response.get('facet_counts', {}).get('facet_ranges', {}).get('start_time', {}).get('counts', []):
-            return None
-
-        facet_counts = solr_response['facet_counts']['facet_ranges']['start_time']['counts']
-        facet_counts_tuples = zip(facet_counts[::2], facet_counts[1::2])
-        objects = [
-            {'timestamp': timestamp, 'value': value}
-            for (timestamp, value) in facet_counts_tuples
-        ]
-
-        return objects
-
-
 class MandateLegislationCardSerializer(CardSerializer):
     def get_results(self, mandate):
         # this is implemented in to_representation for pagination

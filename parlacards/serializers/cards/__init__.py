@@ -15,5 +15,6 @@ from parlacards.serializers.cards.session.tfidf import SessionTfidfCardSerialize
 from parlacards.serializers.cards.session.legislation import SessionLegislationCardSerializer
 
 from parlacards.serializers.cards.search.votes import MandateVotesCardSerializer
+from parlacards.serializers.cards.search.usage_through_time import MandateUsageThroughTimeInSpeechesCardSerializer, MandateUsageThroughTimeInAgendaItemsCardSerializer
 
 from parlacards.serializers.cards.cards import *
