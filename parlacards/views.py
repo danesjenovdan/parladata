@@ -65,7 +65,8 @@ from parlacards.serializers.cards import (
     MandateSpeechCardSerializer,
     MandateUsageByGroupCardSerializer,
     MandateMostUsedByPeopleCardSerializer,
-    MandateUsageThroughTimeCardSerializer,
+    MandateUsageThroughTimeInSpeechesCardSerializer,
+    MandateUsageThroughTimeInAgendaItemsCardSerializer,
     MandateVotesCardSerializer,
     MandateLegislationCardSerializer,
     LegislationDetailCardSerializer,
@@ -555,12 +556,20 @@ class MandateMostUsedByPeople(CardView):
     card_serializer = MandateMostUsedByPeopleCardSerializer
 
 
-class MandateUsageThroughTime(CardView):
+class MandateUsageThroughTimeInSpeeches(CardView):
     '''
-    Search speeches for a mandate and return word usage by group.
+    Search speeches for a mandate and return word usage through time.
     '''
     thing = Mandate
-    card_serializer = MandateUsageThroughTimeCardSerializer
+    card_serializer = MandateUsageThroughTimeInSpeechesCardSerializer
+
+
+class MandateUsageThroughTimeInAgendaItems(CardView):
+    '''
+    Search agenda items for a mandate and return word usage through time.
+    '''
+    thing = Mandate
+    card_serializer = MandateUsageThroughTimeInAgendaItemsCardSerializer
 
 
 class LastSession(CardView):
