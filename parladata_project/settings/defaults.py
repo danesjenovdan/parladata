@@ -120,7 +120,7 @@ MANDATE_START_TIME = datetime(day=31, month=7, year=2014)
 CORS_ORIGIN_ALLOW_ALL = True
 
 CORS_ALLOW_HEADERS = list(default_headers) + [
-    'sentry-trace', # client side sentry can send this header
+    'sentry-trace', 'baggage', # client side sentry can send this header
 ]
 
 REST_FRAMEWORK = {
