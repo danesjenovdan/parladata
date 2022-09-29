@@ -15,7 +15,7 @@ resources:
 images:
   - name: parladata-hrvaska
     newName: rg.fr-par.scw.cloud/djnd/parladata-hrvaska
-    newTag: '8f62e5ff455e08d6e90a3c3f14a222ab491eab5e'
+    newTag: '02a2c2771e9805fb6b9c3e2304a14a1820301adb'
   - name: parlasolr-hrvaska
     newName: rg.fr-par.scw.cloud/djnd/parlasolr-hrvaska
-    newTag: '8f62e5ff455e08d6e90a3c3f14a222ab491eab5e'
+    newTag: '02a2c2771e9805fb6b9c3e2304a14a1820301adb'
