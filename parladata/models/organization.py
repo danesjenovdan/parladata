@@ -124,7 +124,7 @@ class Organization(Timestampable, Taggable, Parsable, Sluggable, VersionableFiel
         if not timestamp:
             timestamp = datetime.now()
 
-        return PersonMembership.valid_at(timestamp).filter(organization=self).distinct('member').count()
+        return PersonMembership.valid_at(timestamp).filter(organization=self, role__in=['member', 'president', 'deputy']).distinct('member').count()
 
     def number_of_organization_members_at(self, timestamp=None):
         if not timestamp:
