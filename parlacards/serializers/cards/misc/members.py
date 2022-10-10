@@ -57,13 +57,14 @@ class PersonAnalysesSerializer(CommonPersonSerializer):
 
         score_object = ScoreModel.objects.filter(
             person_id=person.id,
-            timestamp__lte=self.context['date']
+            playing_field=self.context['playing_field'],
+            timestamp__lte=self.context['date'],
         ).order_by('-timestamp').first()
 
         if score_object:
             return score_object.value
 
-        return None
+        return 0.0
 
     def _get_working_bodies(self, person):
         memberships = PersonMembership.valid_at(self.context['date']).filter(member=person)
@@ -159,25 +160,28 @@ class MiscMembersCardSerializer(CardSerializer):
         )
         return district_serializer.data
 
-    def _maximum_score(self, model_name, people):
+    def _maximum_score(self, playing_field, model_name, people):
         scores_module = import_module('parlacards.models')
         ScoreModel = getattr(scores_module, model_name)
 
-        latest_scores = ScoreModel.objects.filter(person__in=people) \
+        latest_scores = ScoreModel.objects.filter(
+                person__in=people,
+                playing_field=playing_field,
+            ) \
             .order_by('person', '-timestamp') \
             .distinct('person') \
             .values_list('value', flat=True)
 
         if latest_scores.count() > 0:
             return max(latest_scores)
-        else:
-            return 0
+
+        return 0.0
 
     def _maximum_scores(self, playing_field, timestamp):
         people = playing_field.query_voters(timestamp)
 
         score_maximum_values = {
-            key: self._maximum_score(model_name, people)
+            key: self._maximum_score(playing_field, model_name, people)
             for key, model_name in self.score_models_mapping.items()
         }
 
@@ -303,7 +307,10 @@ class MiscMembersCardSerializer(CardSerializer):
             scores_module = import_module('parlacards.models')
             ScoreModel = getattr(scores_module, score_model_name)
 
-            latest_scores = ScoreModel.objects.filter(person__in=people) \
+            latest_scores = ScoreModel.objects.filter(
+                    person__in=people,
+                    playing_field=playing_field,
+                ) \
                 .order_by('person', '-timestamp') \
                 .distinct('person') \
                 .values('person', 'value')
@@ -329,11 +336,14 @@ class MiscMembersCardSerializer(CardSerializer):
 
         paged_object_list, pagination_metadata = create_paginator(self.context.get('GET', {}), ordered_people, prefix='members:')
 
+        new_context = dict.copy(self.context)
+        new_context['playing_field'] = parent_organization
+
         # serialize people
         people_serializer = PersonAnalysesSerializer(
             paged_object_list,
             many=True,
-            context=self.context
+            context=new_context
         )
 
         return {
