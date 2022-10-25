@@ -17,7 +17,8 @@ env = dict(
     MEDIA_URL=os.getenv('DJANGO_MEDIA_URL_BASE', '/media/'),
     SOLR_URL=os.getenv('PARLAMETER_SOLR_URL', 'http://solr:8983/solr/parlasearch'),
     ER_API_KEY=os.getenv('EVENTREGISTRY_API_KEY', ''),
-    INSTALATION_NAME=os.getenv('INSTALATION_NAME', '')
+    INSTALATION_NAME=os.getenv('INSTALATION_NAME', ''),
+    PARSER_INTERVAL_HOURS=os.getenv('PARSER_INTERVAL_HOURS', 24),
 )
 
 
@@ -108,6 +109,7 @@ if os.getenv('PARLAMETER_ENABLE_S3', False):
     AWS_S3_REGION_NAME = os.getenv('PARLAMETER_AWS_REGION_NAME', 'fr-par')
     AWS_S3_ENDPOINT_URL = os.getenv('PARLAMETER_AWS_S3_ENDPOINT_URL', 'https://s3.fr-par.scw.cloud')
     AWS_S3_SIGNATURE_VERSION = os.getenv('PARLAMETER_AWS_S3_SIGNATURE_VERSION', 's3v4')
+    AWS_S3_FILE_OVERWRITE = False # don't overwrite files if uploaded with same file name
 
 DEBUG_TOOLBAR_CONFIG = {
     "SHOW_TOOLBAR_CALLBACK": lambda request: DEBUG,
@@ -137,3 +139,4 @@ if sentry_url := os.getenv('DJANGO_SENTRY_URL', False):
 ER_API_KEY = env['ER_API_KEY']
 
 INSTALATION_NAME = env['INSTALATION_NAME']
+PARSER_INTERVAL_HOURS = env['PARSER_INTERVAL_HOURS']

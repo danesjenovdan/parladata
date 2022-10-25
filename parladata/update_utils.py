@@ -70,16 +70,16 @@ def pair_motions_with_speeches():
 
 def notify_editors_for_new_data():
     now = datetime.now()
-    yeterday = now - timedelta(days=1)
+    previous_parse = now - timedelta(hours=settings.PARSER_INTERVAL_HOURS)
 
-    new_motions = Motion.objects.filter(created_at__gte=yeterday)
-    new_speeches = Speech.objects.filter(created_at__gte=yeterday)
+    new_motions = Motion.objects.filter(created_at__gte=previous_parse)
+    new_speeches = Speech.objects.filter(created_at__gte=previous_parse)
     editor_permission_group = Group.objects.filter(name__icontains="editor").first()
     sessions = [speech.session for  speech in new_speeches.distinct('session')]
-    new_people = Person.objects.filter(created_at__gte=yeterday)
+    new_people = Person.objects.filter(created_at__gte=previous_parse)
     new_voters = Person.objects.filter(ballots__isnull=False, person_memberships__isnull=True).distinct('id')
 
-    new_votes_need_editing = Vote.objects.filter(created_at__gte=yeterday, needs_editing=True)
+    new_votes_need_editing = Vote.objects.filter(created_at__gte=previous_parse, needs_editing=True)
 
     assert bool(editor_permission_group), 'There\'s no editor permission group'
 
