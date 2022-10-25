@@ -137,6 +137,7 @@ class AgendaItemView(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     queryset = AgendaItem.objects.all().order_by('id')
     serializer_class = AgendaItemSerializer
+    filterset_fields = ('session',)
 
 
 class SessionView(viewsets.ModelViewSet):
