@@ -8,7 +8,7 @@ resources:
   - ingress.yaml
   - pvc.yaml
   # TODO  Dont deploy solr bacause in tzhe same namespace is solr from previous instalation Fix this when goes to testing phase
-  # - solr.yaml 
+  - solr.yaml 
 
   # uncomment cronjob to enable it
   - cronjobs/task_runner_cronjob.yaml
