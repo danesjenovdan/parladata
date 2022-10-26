@@ -5,6 +5,7 @@ from django.utils.html import strip_tags
 from django.conf import settings
 from django.utils.translation import gettext as _
 from django.contrib.auth.models import Group
+from django.db import transaction
 
 from parladata.models.vote import Vote
 from parladata.models.session import Session
@@ -128,3 +129,19 @@ def set_vote_session(print_method=print):
         )
         print_method(f'{motions.count()} motions updated with session.')
         motions.update(session=session)
+
+def reset_order_on_speech():
+    now = datetime.now()
+    previous_parse = now - timedelta(hours=settings.PARSER_INTERVAL_HOURS)
+    with transaction.atomic():
+        new_speeches = Speech.objects.filter(created_at__gte=previous_parse)
+        sessions = [s.session for s in new_speeches.distinct('session')]
+        for session in sessions:
+            print('update session: ', session)
+            speeches = Speech.objects.filter(session=session).order_by(
+                'agenda_items__order',
+                'order',
+                'id'
+            )
+            for i, speech in enumerate(speeches):
+                Speech.objects.filter(pk=speech.pk).update(order=i+1)
