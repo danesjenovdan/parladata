@@ -133,8 +133,8 @@ def set_vote_session(print_method=print):
 def reset_order_on_speech():
     now = datetime.now()
     previous_parse = now - timedelta(hours=settings.PARSER_INTERVAL_HOURS)
-    new_speeches = Speech.objects.filter(created_at__gte=previous_parse)
     with transaction.atomic():
+        new_speeches = Speech.objects.filter(created_at__gte=previous_parse)
         sessions = [s.session for s in new_speeches.distinct('session')]
         for session in sessions:
             print('update session: ', session)
@@ -145,4 +145,3 @@ def reset_order_on_speech():
             )
             for i, speech in enumerate(speeches):
                 Speech.objects.filter(pk=speech.pk).update(order=i+1)
-
