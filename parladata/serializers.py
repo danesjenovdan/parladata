@@ -74,7 +74,6 @@ class SpeechSerializer(TaggitSerializer, serializers.ModelSerializer):
             "end_time",
             "speaker",
             "session",
-            "agenda_item",
             "agenda_items",
             "agenda_item_order",
             "tags"

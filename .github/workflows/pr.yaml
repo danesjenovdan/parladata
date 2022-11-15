@@ -57,3 +57,10 @@ jobs:
         destination_branch: "bih"
         github_token: ${{ secrets.GITHUB_TOKEN }}
         pr_title: "Pulling ${{ github.ref }} into bih"
+
+    - name: pull-request-hrvaska
+      uses: repo-sync/pull-request@v2
+      with:
+        destination_branch: "hrvaska"
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        pr_title: "Pulling ${{ github.ref }} into hrvaska"
