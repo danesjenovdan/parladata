@@ -24,9 +24,14 @@ class AgendaItemSerializer(CommonAgendaItemSerializer):
     documents = serializers.SerializerMethodField()
 
     def get_documents(self, obj):
-        links = Link.objects.filter(
+        link_ids = Link.objects.filter(
             Q(agenda_item=obj)|Q(motion__in=obj.motions.all())
-        ).exclude(tags__name='vote-pdf').distinct('url', 'id').order_by('id')
+        ).distinct(
+            'url'
+        ).exclude(
+            tags__name='vote-pdf'
+        ).values_list('id')
+        links = Link.objects.filter(id__in=link_ids).order_by('id')
         return LinkSerializer(
             links,
             many=True
