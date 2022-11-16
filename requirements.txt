@@ -39,7 +39,7 @@ django-import-export
 djangorestframework-csv
 
 # tagger/lemmatizer
-sklearn
+scikit-learn==1.1.3
 python-crfsuite
 marisa-trie
 git+https://github.com/Desklop/Uk_Stemmer
