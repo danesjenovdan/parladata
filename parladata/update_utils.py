@@ -71,7 +71,7 @@ def pair_motions_with_speeches():
 
 def notify_editors_for_new_data():
     now = datetime.now()
-    previous_parse = now - timedelta(hours=settings.PARSER_INTERVAL_HOURS)
+    previous_parse = now - timedelta(hours=int(settings.PARSER_INTERVAL_HOURS))
 
     new_motions = Motion.objects.filter(created_at__gte=previous_parse)
     new_speeches = Speech.objects.filter(created_at__gte=previous_parse)
