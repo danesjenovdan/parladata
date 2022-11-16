@@ -277,7 +277,7 @@ def updateMotins():
         against = dict(Counter(Ballot.objects.filter(vote__motion=motion).values_list("option", flat=True))).get("against", 0)
         kvorum = dict(Counter(Ballot.objects.filter(vote__motion=motion).values_list("option", flat=True))).get("abstain", 0)
         no = dict(Counter(Ballot.objects.filter(vote__motion=motion).values_list("option", flat=True))).get("absent", 0)
-        if motion.text == "Dnevni red v celoti" or motion.text == "Širitev dnevnega reda".decode('utf8'):
+        if motion.title == "Dnevni red v celoti" or motion.title == "Širitev dnevnega reda".decode('utf8'):
             if yes > (yes + against + kvorum + no) / 2:
                 motion.result = 1
                 motion.save()
@@ -297,9 +297,9 @@ def exportTagsOfVotes():
         votes = Vote.objects.all()
         for vote in votes:
             if vote.tags.all():
-                print(vote.session.name, vote.motion.text, vote.tags.all().values_list("name", flat=True))
+                print(vote.session.name, vote.motion.title, vote.tags.all().values_list("name", flat=True))
                 csvwriter.writerow([str(vote.session.name),
-                                    str(vote.motion.text),
+                                    str(vote.motion.title),
                                     str(";".join(vote.tags.all().values_list("name", flat=True)))])
     return 1
 
