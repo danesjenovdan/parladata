@@ -212,7 +212,10 @@ def save_group_monthly_vote_attendance(group, playing_field, timestamp=None):
         group_votes_count = present_count + result['absent']
 
         no_mandate = 0
-        present = present_count * 100 / group_votes_count
+        if group_votes_count == 0:
+            present = 0
+        else:
+            present = present_count * 100 / group_votes_count
 
         score = GroupMonthlyVoteAttendance.objects.filter(
             group=group,
