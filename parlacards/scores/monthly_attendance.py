@@ -11,6 +11,7 @@ from parlacards.models import PersonMonthlyVoteAttendance, GroupMonthlyVoteAtten
 
 from parlacards.scores.common import get_dates_between, get_fortnights_between
 
+
 def calculate_person_monthly_vote_attendance(person, playing_field, timestamp=None):
     """
     Returns monthly ballots count of voter
@@ -40,11 +41,13 @@ def calculate_person_monthly_vote_attendance(person, playing_field, timestamp=No
     votes = Vote.objects.filter(
         timestamp__lte=timestamp,
         motion__session__organizations=playing_field,
-        motion__session__mandate=mandate
+        motion__session__mandate=mandate,
     ).exclude(
         ballots__isnull=True
+    ).exclude(
+        ballots__personvoter__isnull=True
     ).annotate(
-        month=TruncMonth('timestamp')
+        month=TruncMonth('timestamp'),
     ).values(
         'month'
     ).annotate(
