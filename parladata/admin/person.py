@@ -91,6 +91,7 @@ class ParliamentMember(Person):
 
 class MPAdmin(ExportMixin, PersonAdmin):
     resource_class = MPResource
+    import_export_change_list_template = 'admin/parladata/parliamentmember/change_list.html'
     list_display = ['id', 'get_name', 'tfidf', 'join_people']
     def get_queryset(self, request):
         MPs_ids = PersonMembership.objects.filter(role='voter').values_list('member', flat=True)

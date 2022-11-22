@@ -1,5 +1,5 @@
 from django.conf.urls import include
-from django.urls import path
+from django.urls import path, re_path
 from django.conf.urls.static import static
 from django.contrib import admin
 from django.conf import settings
@@ -8,6 +8,7 @@ import debug_toolbar
 from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, SpectacularSwaggerView
 
 from parladata.views import merge_people, add_ballots, add_anonymous_ballots, merge_organizations
+from parlacards.admin_views import RunMembersTFIDFView, RunOrganizationTFIDFView, RunSessionTFIDFView
 
 urlpatterns = [
     # authentication
@@ -18,6 +19,11 @@ urlpatterns = [
     path('admin/parladata/parliamentarygroup/mergeorganizations/', merge_organizations),
     path('admin/parladata/vote/addballots/', add_ballots),
     path('admin/parladata/vote/addanonymousballots/', add_anonymous_ballots),
+
+    path('run-members-tfidf/', RunMembersTFIDFView.as_view(), name='members_tfidf_task'),
+    path('run-organizations-tfidf/', RunOrganizationTFIDFView.as_view(), name='orgranization_tfidf_task'),
+    path('run-session-tfidf/<int:session>/', RunSessionTFIDFView.as_view(), name='session_tfidf_task'),
+
     path('admin/', admin.site.urls),
 
     # REST api
