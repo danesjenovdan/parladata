@@ -13,10 +13,21 @@
         {% endif %}
 
         {% if new_speeches %}
-            There are new speeches in Parlameter: </br>
-            {% for session in sessions %}
+            There are new TFIDF for sessions in Parlameter: </br>
+            {% for session in new_tfidf_sessions %}
                 for this sessions: {{ session.name }}: {% for org in session.organizations.all %} {{ org.name }} {% endfor %}</br>
                 <a href="{{ base_url }}{% url 'admin:parlacards_sessiontfidf_changelist' %}?session__id__exact={{ session.id }}">Check new session TFIDF</a></br>
+            {% endfor %}
+            </br></br>
+        {% endif %}
+
+        {% if new_speeches %}
+            There are new speeches in Parlameter. You can generate TFIDF in list of sessions: </br>
+            <a href="{{ base_url }}{% url 'admin:parladata_session_changelist' %}">List of sessions</a></br>
+            {% for session in sessions %}
+                <ul>
+                    <li>{{ session.name }}: {% for org in session.organizations.all %} {{ org.name }} {% endfor %}</li>
+                </ul>
             {% endfor %}
             </br></br>
         {% endif %}
