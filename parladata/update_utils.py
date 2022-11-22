@@ -13,6 +13,8 @@ from parladata.models.motion import Motion
 from parladata.models.speech import Speech
 from parladata.models.person import Person
 
+from parlacards.models import SessionTfidf
+
 from datetime import datetime, timedelta
 
 import operator
@@ -73,10 +75,16 @@ def notify_editors_for_new_data():
     now = datetime.now()
     previous_parse = now - timedelta(hours=int(settings.PARSER_INTERVAL_HOURS))
 
+    new_tfidf_sessions = [
+        tfidf.session
+        for tfidf in SessionTfidf.objects.filter(created_at__gte=previous_parse).distinct('session')
+    ]
+
     new_motions = Motion.objects.filter(created_at__gte=previous_parse)
-    new_speeches = Speech.objects.filter(created_at__gte=previous_parse)
+    fresh_speeches = Speech.objects.filter(created_at__gte=previous_parse) # first speeches batch of session
+    new_speeches = Speech.objects.filter(created_at__gte=previous_parse) # new speeches on session
     editor_permission_group = Group.objects.filter(name__icontains="editor").first()
-    sessions = [speech.session for  speech in new_speeches.distinct('session')]
+    sessions = [speech.session for  speech in new_speeches.distinct('session') if speech.session not in new_tfidf_sessions]
     new_people = Person.objects.filter(created_at__gte=previous_parse)
     new_voters = Person.objects.filter(ballots__isnull=False, person_memberships__isnull=True).distinct('id')
 
@@ -84,7 +92,7 @@ def notify_editors_for_new_data():
 
     assert bool(editor_permission_group), 'There\'s no editor permission group'
 
-    if new_motions or new_speeches or new_people:
+    if new_motions or new_speeches or new_people or fresh_speeches:
         for editor in editor_permission_group.user_set.all():
             send_email(
                 _('New data for edit in parlameter ') + settings.INSTALATION_NAME,
@@ -95,6 +103,7 @@ def notify_editors_for_new_data():
                     'new_motions': new_motions,
                     'new_speeches': new_speeches,
                     'sessions': sessions,
+                    'new_tfidf_sessions': new_tfidf_sessions,
                     'new_voters': new_voters,
                     'new_people': new_people,
                     'new_votes_need_editing': new_votes_need_editing,
