@@ -24,7 +24,7 @@ class GroupVoteCardSerializer(GroupScoreCardSerializer):
         mandate = Mandate.get_active_mandate_at(self.context['date'])
         from_timestamp, to_timestamp = mandate.get_time_range_from_mandate(self.context['date'])
 
-        root_organization_membership = instance.organization_memberships.filter(organization__classification='root').first()
+        root_organization_membership = instance.query_root_organiaztion_on_date(self.context['date'])
 
         if root_organization_membership:
             root_organization = root_organization_membership.organization

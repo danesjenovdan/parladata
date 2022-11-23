@@ -21,7 +21,7 @@ class SessionAdmin(admin.ModelAdmin):
         # MotionSessionInline,
     ]
     search_fields = ['name']
-    list_display = ['id', 'name', 'tfidf', 'agenda_items', 'start_time', 'in_review', 'get_mandate', 'get_organizations']
+    list_display = ['id', 'name', 'tfidf', 'run_tfidf', 'agenda_items', 'start_time', 'in_review', 'get_mandate', 'get_organizations']
     readonly_fields = ['created_at', 'updated_at']
     list_filter = ('mandate', SessionOrganizationsListFilter)
 
@@ -32,6 +32,10 @@ class SessionAdmin(admin.ModelAdmin):
         url = f'{settings.BASE_URL}{partial_url}?session__id__exact={obj.id}'
         return mark_safe(f'<a href="{url}"><input type="button" value="Tfidf" /></a>')
 
+    def run_tfidf(self, obj):
+        url = reverse('session_tfidf_task', kwargs={'session': obj.id})
+        return mark_safe(f'<a href="{url}"><input type="button" value="Run TFIDF task" /></a>')
+
     def get_mandate(self, obj):
         return obj.mandate.description
 
@@ -40,6 +44,8 @@ class SessionAdmin(admin.ModelAdmin):
 
     tfidf.allow_tags = True
     tfidf.short_description = 'TFIDF'
+    run_tfidf.allow_tags = True
+    run_tfidf.short_description = 'TFIDF TASK'
     get_mandate.short_description = 'mandate'
     get_organizations.short_description = 'Organizations'
 
