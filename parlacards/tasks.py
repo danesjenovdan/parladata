@@ -1,6 +1,6 @@
 
 
-from parlacards.scores.tfidf import save_groups_tfidf, save_people_tfidf, save_sessions_tfidf
+from parlacards.scores.tfidf import save_groups_tfidf, save_people_tfidf, save_session_tfidf_on_last_speech_date
 from parlacards.utils import get_playing_fields
 
 from parladata.models import Session
@@ -22,8 +22,9 @@ def delay_organization_tfidf_task():
 
 
 def delay_sessions_tfidf_task(**kwargs):
-    session = Session.objects.filter(id=kwargs['id']).first()
+    session = Session.objects.filter(id=kwargs['pk']).first()
+    playing_field = session.organizations.first()
     if session:
-        save_sessions_tfidf(session)
+        save_session_tfidf_on_last_speech_date(playing_field, session)
 
 
