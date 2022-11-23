@@ -10,7 +10,7 @@ resources:
   - solr.yaml
 
   # uncomment cronjob to enable it
-  #- cronjobs/task_runner_cronjob.yaml
+  - cronjobs/task_runner_cronjob.yaml
 images:
   - name: parladata-slovenija
     newName: rg.fr-par.scw.cloud/djnd/parladata-slovenija
