@@ -17,6 +17,8 @@ spec:
             env:
               - name: DJANGO_SETTINGS_MODULE
                 value: parladata_project.settings.k8s
+              - name: INSTALATION_NAME
+                value: Slovenija
             envFrom:
               - secretRef:
                   name: parladata-slovenija-credentials
