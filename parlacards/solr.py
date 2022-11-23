@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 from math import ceil, floor
 
-import requests
+import requests, json
 
 from django.conf import settings
 
@@ -12,6 +12,31 @@ from parladata.models.vote import Vote
 from parladata.models.legislation import Law
 from parladata.models.agenda_item import AgendaItem
 
+
+
+def commit_to_solr(commander, output):
+    url = settings.SOLR_URL + '/update?commit=true'
+    if commander:
+        commander.stdout.write('About to commit %s speeches to %s' % (str(len(output)), url))
+    data = json.dumps(output)
+    requests.post(url,
+        data=data,
+        headers={
+            'Content-Type': 'application/json'
+        }
+    )
+
+def delete_from_solr(solr_ids):
+    data = {
+        'delete': solr_ids
+    }
+
+    solr_response = requests.post(settings.SOLR_URL + '/update?commit=true',
+        data=json.dumps(data),
+        headers={
+            'Content-Type': 'application/json'
+        }
+    )
 
 def one_month_later(date, shorten_for=0):
     '''Takes a date and returns the date on the same calendar day of the next month.'''
