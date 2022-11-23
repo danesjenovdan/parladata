@@ -2,6 +2,7 @@
 from django.core.management.base import BaseCommand, CommandError
 from django.contrib.auth.models import Group
 from django.conf import settings
+from django.utils.translation import gettext as _
 
 from importlib import import_module
 
