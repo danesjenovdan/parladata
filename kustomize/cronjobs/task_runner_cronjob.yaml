@@ -3,7 +3,7 @@ kind: CronJob
 metadata:
   name: parlameter-task-runner
 spec:
-  schedule: "15 * * * *"
+  schedule: "15,45 * * * *"
   successfulJobsHistoryLimit: 1
   failedJobsHistoryLimit: 1
   jobTemplate:
