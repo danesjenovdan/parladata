@@ -48,6 +48,7 @@ from parlacards.serializers.speech import (
     SpeechSerializer,
     HighlightSerializer,
     SpeechWithSessionSerializer,
+    ShortenedSpeechWithSessionSerializer,
 )
 from parlacards.serializers.quote import QuoteWithSessionSerializer
 from parlacards.serializers.vote import VoteSerializer, SessionVoteSerializer, BareVoteSerializer
@@ -360,7 +361,7 @@ class PersonSpeechesCardSerializer(PersonScoreCardSerializer):
         paged_object_list.sort(key=lambda speech: speech.start_time, reverse=True)
 
         # serialize speeches
-        speeches_serializer = SpeechWithSessionSerializer(
+        speeches_serializer = ShortenedSpeechWithSessionSerializer(
             paged_object_list,
             many=True,
             context=self.context
@@ -392,7 +393,7 @@ class GroupSpeechesCardSerializer(GroupScoreCardSerializer):
         paged_object_list, pagination_metadata = create_solr_paginator(self.context.get('GET', {}), solr_params)
 
         # serialize speeches
-        speeches_serializer = SpeechWithSessionSerializer(
+        speeches_serializer = ShortenedSpeechWithSessionSerializer(
             paged_object_list,
             many=True,
             context=self.context
