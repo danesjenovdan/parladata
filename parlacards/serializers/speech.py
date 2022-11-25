@@ -99,7 +99,7 @@ class SpeechWithSessionSerializer(BaseSpeechWithSessionSerializer, CommonCachabl
         return f'SpeechWithSessionSerializer_{speech.id}_{timestamp.isoformat()}'
 
 
-class ShortenedSpeechWithSessionSerializer(BaseSpeechWithSessionSerializer, CommonCachableSerializer):
+class ShortenedSpeechWithSessionSerializer(SpeechWithSessionSerializer):
     '''
     Use only when speeches ARE shortened (when speeched are from solr) to get a
     unique cache key and prevent wrongly cached speeches.
