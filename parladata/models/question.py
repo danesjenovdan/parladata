@@ -19,6 +19,15 @@ class Question(Timestampable):
         help_text='The session this question belongs to.'
         )
 
+    mandate = models.ForeignKey(
+        'Mandate',
+        blank=True,
+        null=True,
+        related_name='questions',
+        on_delete=models.SET_NULL,
+        help_text='The mandate of this question.'
+    )
+
     timestamp = models.DateTimeField(
         blank=True,
         null=True,
