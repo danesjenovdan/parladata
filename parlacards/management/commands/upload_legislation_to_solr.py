@@ -9,20 +9,9 @@ from parladata.models.legislation import Law
 
 from datetime import datetime, timedelta
 
+from parlacards.solr import delete_from_solr, commit_to_solr
 
-# TODO move this out of here
-def commit_to_solr(commander, output):
-    url = settings.SOLR_URL + '/update?commit=true'
-    commander.stdout.write('About to commit %s legislation to %s' % (str(len(output)), url))
-    data = json.dumps(output)
-    print (requests.post(url,
-        data=data,
-        headers={
-            'Content-Type': 'application/json'
-        }
-    ).content)
 
-# TODO move this out of here
 def delete_invalid_legislation(law_ids_in_solr):
     law_ids = list(Law.objects.all().values_list(
         'id',
@@ -33,16 +22,7 @@ def delete_invalid_legislation(law_ids_in_solr):
     if bool(ids_to_delete):
         solr_ids_to_delete = ['law_' + str(i) for i in ids_to_delete]
 
-        data = {
-            'delete': solr_ids_to_delete
-        }
-
-        solr_response = requests.post(settings.SOLR_URL + '/update?commit=true',
-            data=json.dumps(data),
-            headers={
-                'Content-Type': 'application/json'
-            }
-        )
+        delete_from_solr(solr_ids_to_delete)
 
 class Command(BaseCommand):
     help = 'Uploads all legislation to solr'

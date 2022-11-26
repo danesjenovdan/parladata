@@ -18,7 +18,7 @@ class MotionAdmin(admin.ModelAdmin):
     #form = MotionForm
     list_display = (
         'id',
-        'text',
+        'title',
         'session_name',
         'result',
         'requirement',

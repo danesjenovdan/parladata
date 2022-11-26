@@ -1,5 +1,3 @@
-import json
-
 import requests
 
 from django.core.management.base import BaseCommand, CommandError
@@ -9,17 +7,9 @@ from parladata.models.speech import Speech
 
 from datetime import datetime, timedelta
 
-# TODO move this out of here
-def commit_to_solr(commander, output):
-    url = settings.SOLR_URL + '/update?commit=true'
-    commander.stdout.write('About to commit %s speeches to %s' % (str(len(output)), url))
-    data = json.dumps(output)
-    requests.post(url,
-        data=data,
-        headers={
-            'Content-Type': 'application/json'
-        }
-    )
+from parlacards.solr import delete_from_solr, commit_to_solr
+
+
 
 # TODO move this out of here
 def delete_invalid_speeches(commander, speech_ids_in_solr):
@@ -33,16 +23,7 @@ def delete_invalid_speeches(commander, speech_ids_in_solr):
     solr_ids_to_delete = ['speech_' + str(i) for i in ids_to_delete]
     commander.stdout.write(f'About to delete {len(solr_ids_to_delete)} speeches from solr')
 
-    data = {
-        'delete': solr_ids_to_delete
-    }
-
-    solr_response = requests.post(settings.SOLR_URL + '/update?commit=true',
-        data=json.dumps(data),
-        headers={
-            'Content-Type': 'application/json'
-        }
-    )
+    delete_from_solr(solr_ids_to_delete)
 
 class Command(BaseCommand):
     help = 'Uploads all speeches to solr'

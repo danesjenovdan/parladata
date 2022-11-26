@@ -31,10 +31,8 @@ class Command(BaseCommand):
                     ])
                 else:
                     # add anonymous ballots
+
                     Ballot.objects.bulk_create([
                         Ballot(vote=false_vote, option='absent')
-                        for i in range(ballots.count())
+                        for i in range(voters.count() - ballots.count())
                     ])
-
-
-
