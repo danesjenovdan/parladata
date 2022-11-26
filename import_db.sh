@@ -1,12 +1,13 @@
 #!/bin/bash
 
 # EDIT DATABASE NAME TO CHOOSE WHICH ONE YOU WANT
-DATABASE_NAME="parladata_ajdovscina"
-K8S_NAMESPACE="parlameter-ajdovscina"
+DATABASE_NAME="parladata_slovenija_8"
+K8S_NAMESPACE="parlameter-slovenija"
+SECRETS_NAME="parladata-slovenija-credentials"
 
 # DATABASE PASSWORD IS DYNAMICALLY RETRIEVED FROM THE CLUSTER
-DATABASE_USER=$(kubectl get secret parladata-credentials -n $K8S_NAMESPACE -o jsonpath="{.data.DJANGO_DATABASE_USERNAME}" | base64 --decode)
-DATABASE_PASSWORD=$(kubectl get secret parladata-credentials -n $K8S_NAMESPACE -o jsonpath="{.data.DJANGO_DATABASE_PASSWORD}" | base64 --decode)
+DATABASE_USER=$(kubectl get secret $SECRETS_NAME -n $K8S_NAMESPACE -o jsonpath="{.data.DJANGO_DATABASE_USERNAME}" | base64 --decode)
+DATABASE_PASSWORD=$(kubectl get secret $SECRETS_NAME -n $K8S_NAMESPACE -o jsonpath="{.data.DJANGO_DATABASE_PASSWORD}" | base64 --decode)
 
 echo
 echo "PORT FORWARDING"

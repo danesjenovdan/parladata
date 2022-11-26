@@ -17,18 +17,18 @@ def test_calculate_person_monthly_vote_attendance(
     assert sum([attendance['abstain'] for attendance in monthly_attendance]) == 5
     assert sum([attendance['for'] for attendance in monthly_attendance]) == 19
     assert sum([attendance['against'] for attendance in monthly_attendance]) == 7
-    assert sum([attendance['total'] for attendance in monthly_attendance]) == 36
+    assert sum([attendance['total'] for attendance in monthly_attendance]) == 34
 
     monthly_attendance = calculate_person_monthly_vote_attendance(second_person, main_organization)
     assert sum([attendance['absent'] for attendance in monthly_attendance]) == 0
     assert sum([attendance['abstain'] for attendance in monthly_attendance]) == 0
     assert sum([attendance['for'] for attendance in monthly_attendance]) == 0
     assert sum([attendance['against'] for attendance in monthly_attendance]) == 0
-    assert sum([attendance['total'] for attendance in monthly_attendance]) == 36
+    assert sum([attendance['total'] for attendance in monthly_attendance]) == 34
 
     monthly_attendance = calculate_person_monthly_vote_attendance(last_person, main_organization)
     assert sum([attendance['absent'] for attendance in monthly_attendance]) == 4
     assert sum([attendance['abstain'] for attendance in monthly_attendance]) == 0
     assert sum([attendance['for'] for attendance in monthly_attendance]) == 23
     assert sum([attendance['against'] for attendance in monthly_attendance]) == 8
-    assert sum([attendance['total'] for attendance in monthly_attendance]) == 36
+    assert sum([attendance['total'] for attendance in monthly_attendance]) == 34
