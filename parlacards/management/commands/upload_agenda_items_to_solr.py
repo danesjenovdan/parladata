@@ -9,21 +9,9 @@ from parladata.models.agenda_item import AgendaItem
 
 from datetime import datetime, timedelta
 
-# TODO move this out of here
-def commit_to_solr(commander, output):
-    url = settings.SOLR_URL + '/update?commit=true'
-    commander.stdout.write('About to commit %s agenda items to %s' % (str(len(output)), url))
-    data = json.dumps(output)
-    response = requests.post(url,
-        data=data,
-        headers={
-            'Content-Type': 'application/json'
-        }
-    )
-    print(response)
-    print(response.content)
+from parlacards.solr import delete_from_solr, commit_to_solr
 
-# TODO move this out of here
+
 def delete_invalid_agenda_items(commander, agenda_item_ids_in_solr):
     valid_agenda_item_ids = list(AgendaItem.objects.all().values_list(
         'id',
@@ -35,16 +23,8 @@ def delete_invalid_agenda_items(commander, agenda_item_ids_in_solr):
     solr_ids_to_delete = ['agenda_item_' + str(i) for i in ids_to_delete]
     commander.stdout.write(f'About to delete {len(solr_ids_to_delete)} agenda items from solr')
 
-    data = {
-        'delete': solr_ids_to_delete
-    }
+    delete_from_solr(solr_ids_to_delete)
 
-    solr_response = requests.post(settings.SOLR_URL + '/update?commit=true',
-        data=json.dumps(data),
-        headers={
-            'Content-Type': 'application/json'
-        }
-    )
 
 class Command(BaseCommand):
     help = 'Uploads all agenda_items to solr'
