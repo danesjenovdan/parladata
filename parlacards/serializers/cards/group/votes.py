@@ -13,22 +13,21 @@ from parlacards.pagination import create_paginator
 
 
 class GroupVoteCardSerializer(GroupScoreCardSerializer):
-    def get_results(self, obj):
+    def get_results(self, group):
         # this is implemented in to_representation for pagination
         return None
 
-    def to_representation(self, instance):
-        parent_data = super().to_representation(instance)
+    def to_representation(self, group):
+        parent_data = super().to_representation(group)
 
         # get active madnate from timestamp and it's begining and ending/current timestamp
         mandate = Mandate.get_active_mandate_at(self.context['date'])
         from_timestamp, to_timestamp = mandate.get_time_range_from_mandate(self.context['date'])
 
-        root_organization_membership = instance.query_root_organiaztion_on_date(self.context['date'])
+        root_organization_membership = group.query_root_organiaztion_on_date(self.context['date'])
 
         if root_organization_membership:
             root_organization = root_organization_membership.organization
-            # instance is the group
             votes = Vote.objects.filter(
                 timestamp__range=(from_timestamp, to_timestamp),
                 motion__session__organizations=root_organization
@@ -43,13 +42,12 @@ class GroupVoteCardSerializer(GroupScoreCardSerializer):
         if text := self.context.get('GET', {}).get('text', None):
             votes = votes.filter(motion__text__icontains=text)
 
-        paged_object_list, pagination_metadata = create_paginator(self.context.get('GET', {}), votes)
+        paged_object_list, pagination_metadata = create_paginator(self.context.get('GET', {}), votes, prefix='ballots:')
 
         party_ballots = []
         for vote in paged_object_list:
             voter_ids = PersonMembership.valid_at(vote.timestamp).filter(
-                # instance is the group
-                on_behalf_of=instance,
+                on_behalf_of=group,
                 role='voter'
             ).values_list('member_id', flat=True)
 
@@ -86,5 +84,7 @@ class GroupVoteCardSerializer(GroupScoreCardSerializer):
         return {
             **parent_data,
             **pagination_metadata,
-            'results': ballot_serializer.data,
+            'results': {
+                'ballots': ballot_serializer.data,
+            },
         }
