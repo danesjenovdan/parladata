@@ -1,19 +1,15 @@
-from django.forms import formset_factory
 from django.shortcuts import render, redirect
-from django import forms
 from django.contrib import admin
 from django.urls import reverse
+from django.utils.translation import gettext as _
 
 from parladata.forms import MergePeopleForm, AddBallotsForm, AddAnonymousBallotsForm, MergeOrganizationsForm
 from parladata.utils import make_person_merge_statistics, make_organization_merge_statistics
 from parladata.models.person import Person
 from parladata.models.ballot import Ballot
-from parladata.models.speech import Speech
 from parladata.models.vote import Vote
-from parladata.models.question import Question
 from parladata.models.task import Task
 from parladata.models.common import Mandate
-from parladata.models.organization import Organization
 
 import collections
 
@@ -30,12 +26,15 @@ def merge_people(request):
         confirmed = dict(form.data)['confirmed'][0]
         if people:
             if confirmed:
+                message = _('Merge people to person with ID: ') + str(real_person)
                 Task(
                     name='merge_people',
                     payload={
                         'real_person_id': real_person,
                         'fake_person_ids': people
-                    }
+                    },
+                    module_name='parladata.tasks',
+                    email_msg=message
                 ).save()
                 return render(
                     request,
@@ -102,12 +101,15 @@ def merge_organizations(request):
         confirmed = dict(form.data)['confirmed'][0]
         if organizations:
             if confirmed:
+                message = _('Merge organizations')
                 Task(
                     name='merge_organizations',
                     payload={
                         'real_org_id': real_organization,
                         'fake_orgs_ids': organizations
-                    }
+                    },
+                    module_name='parladata.tasks',
+                    email_msg=message,
                 ).save()
                 return render(
                     request,
