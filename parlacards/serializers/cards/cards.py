@@ -115,24 +115,26 @@ class GroupVocabularySizeCardSerializer(GroupScoreCardSerializer):
 
 
 class PersonBallotCardSerializer(PersonScoreCardSerializer):
-    def get_results(self, obj):
+    def get_results(self, person):
         # this is implemented in to_representation for pagination
         return None
 
-    def to_representation(self, instance):
-        parent_data = super().to_representation(instance)
+    def to_representation(self, person):
+        parent_data = super().to_representation(person)
 
         mandate = Mandate.get_active_mandate_at(self.context['date'])
         from_timestamp, to_timestamp = mandate.get_time_range_from_mandate(self.context['date'])
 
-        # instance is the person
         ballots = Ballot.objects.filter(
-            personvoter=instance,
+            personvoter=person,
             vote__timestamp__range=(from_timestamp, to_timestamp)
         ).order_by(
             '-vote__timestamp',
             '-id' # fallback ordering
         )
+
+        option_counts = ballots.values('option').order_by('option').annotate(count=Count('option'))
+        all_options = {o['option']: o['count'] for o in option_counts}
 
         # TODO: maybe lemmatize?, maybe search by each word separately?
         if text := self.context.get('GET', {}).get('text', None):
@@ -143,7 +145,7 @@ class PersonBallotCardSerializer(PersonScoreCardSerializer):
             options = text.split(',')
             ballots = ballots.filter(option__in=options)
 
-        paged_object_list, pagination_metadata = create_paginator(self.context.get('GET', {}), ballots)
+        paged_object_list, pagination_metadata = create_paginator(self.context.get('GET', {}), ballots, prefix='ballots:')
 
         # serialize ballots
         ballot_serializer = BallotSerializer(
@@ -155,7 +157,10 @@ class PersonBallotCardSerializer(PersonScoreCardSerializer):
         return {
             **parent_data,
             **pagination_metadata,
-            'results': ballot_serializer.data,
+            'results': {
+                'ballots': ballot_serializer.data,
+                'all_options': all_options,
+            },
         }
 
 
