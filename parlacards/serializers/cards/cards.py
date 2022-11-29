@@ -187,7 +187,7 @@ class MostVotesInCommonCardSerializer(PersonScoreCardSerializer):
         root_organization = mandate.query_root_organizations(self.context['date'])[1]
         voters = root_organization.query_voters(self.context['date'])
         from_timestamp, to_timestamp = mandate.get_time_range_from_mandate(self.context['date'])
-        lowest_distances = VotingDistance.objects.filter(
+        most_in_common = VotingDistance.objects.filter(
             person=obj,
             target__in=voters,
             timestamp__range=(from_timestamp, to_timestamp)
@@ -202,8 +202,8 @@ class MostVotesInCommonCardSerializer(PersonScoreCardSerializer):
         )
 
         # sorting in place is slightly more efficient
-        sorted_distances = list(lowest_distances)
-        sorted_distances.sort(key=lambda distance: distance.value, reverse=False)
+        sorted_distances = list(most_in_common)
+        sorted_distances.sort(key=lambda distance: distance.value, reverse=True)
 
         distances_serializer = VotingDistanceSerializer(
             sorted_distances[:5],
@@ -223,8 +223,7 @@ class LeastVotesInCommonCardSerializer(PersonScoreCardSerializer):
         root_organization = mandate.query_root_organizations(self.context['date'])[1]
         voters = root_organization.query_voters(self.context['date'])
         from_timestamp, to_timestamp = mandate.get_time_range_from_mandate(self.context['date'])
-
-        highest_distances = VotingDistance.objects.filter(
+        least_in_common = VotingDistance.objects.filter(
             person=obj,
             target__in=voters,
             timestamp__range=(from_timestamp, to_timestamp)
@@ -233,14 +232,14 @@ class LeastVotesInCommonCardSerializer(PersonScoreCardSerializer):
         ).order_by(
             'target',
             '-timestamp',
-            '-value',
+            'value',
         ).distinct(
             'target'
         )
 
         # sorting in place is slightly more efficient
-        sorted_distances = list(highest_distances)
-        sorted_distances.sort(key=lambda distance: distance.value, reverse=True)
+        sorted_distances = list(least_in_common)
+        sorted_distances.sort(key=lambda distance: distance.value, reverse=False)
 
         distances_serializer = VotingDistanceSerializer(
             sorted_distances[:5],
@@ -548,9 +547,12 @@ class GroupMostVotesInCommonCardSerializer(GroupScoreCardSerializer):
     def get_results(self, obj):
         # obj is the group
         mandate = Mandate.get_active_mandate_at(self.context['date'])
+        root_organization = mandate.query_root_organizations(self.context['date'])[1]
+        voters = root_organization.query_voters(self.context['date'])
         from_timestamp, to_timestamp = mandate.get_time_range_from_mandate(self.context['date'])
-        highest_distances = GroupVotingDistance.objects.filter(
+        most_in_common = GroupVotingDistance.objects.filter(
             group=obj,
+            target__in=voters,
             timestamp__range=(from_timestamp, to_timestamp)
         ).order_by(
             'target',
@@ -561,7 +563,7 @@ class GroupMostVotesInCommonCardSerializer(GroupScoreCardSerializer):
         )
 
         # sorting in place is slightly more efficient
-        sorted_distances = list(highest_distances)
+        sorted_distances = list(most_in_common)
         sorted_distances.sort(key=lambda distance: distance.value, reverse=True)
 
         distances_serializer = GroupVotingDistanceSerializer(
@@ -577,9 +579,12 @@ class GroupLeastVotesInCommonCardSerializer(GroupScoreCardSerializer):
     def get_results(self, obj):
         # obj is the group
         mandate = Mandate.get_active_mandate_at(self.context['date'])
+        root_organization = mandate.query_root_organizations(self.context['date'])[1]
+        voters = root_organization.query_voters(self.context['date'])
         from_timestamp, to_timestamp = mandate.get_time_range_from_mandate(self.context['date'])
-        highest_distances = GroupVotingDistance.objects.filter(
+        least_in_common = GroupVotingDistance.objects.filter(
             group=obj,
+            target__in=voters,
             timestamp__range=(from_timestamp, to_timestamp)
         ).order_by(
             'target',
@@ -590,8 +595,8 @@ class GroupLeastVotesInCommonCardSerializer(GroupScoreCardSerializer):
         )
 
         # sorting in place is slightly more efficient
-        sorted_distances = list(highest_distances)
-        sorted_distances.sort(key=lambda distance: distance.value, reverse=True)
+        sorted_distances = list(least_in_common)
+        sorted_distances.sort(key=lambda distance: distance.value, reverse=False)
 
         distances_serializer = GroupVotingDistanceSerializer(
             sorted_distances[:5],
