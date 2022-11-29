@@ -1,4 +1,5 @@
-from parladata.models import Person, Question, Speech, Ballot, Organization
+from parladata.models import Person, Organization
+from parlacards.solr import delete_from_solr
 
 def merge_people(real_person_id, fake_person_ids, print_method=print):
     print_method('Real person id: %s' % real_person_id)
@@ -29,6 +30,8 @@ def merge_people(real_person_id, fake_person_ids, print_method=print):
 
     print_method('\n')
 
+    edited_speech_ids = []
+
     print_method('Real person has %d speeches.' % real_person.speeches.all().count())
     for fake_person in fake_people:
         print_method('Fake person %d has %d speeches.' % (fake_person.id, fake_person.speeches.all().count()))
@@ -36,7 +39,10 @@ def merge_people(real_person_id, fake_person_ids, print_method=print):
         for speech in fake_person.speeches.all():
             speech.speaker = real_person
             speech.save()
+            edited_speech_ids.append('speech_' + str(speech.id))
         print_method('Done with moving.')
+    if edited_speech_ids:
+        delete_from_solr(edited_speech_ids)
 
     print_method(f'Real person is author of {real_person.authored_questions.all().count()} questions.')
     for fake_person in fake_people:
