@@ -37,6 +37,7 @@ def calculate_person_monthly_vote_attendance(person, playing_field, timestamp=No
     ).order_by(
         'month'
     )
+    ballots = list(ballots) # force db lookup here to prevent lookups later and speed up code in loop
 
     votes = Vote.objects.filter(
         timestamp__lte=timestamp,
@@ -55,6 +56,7 @@ def calculate_person_monthly_vote_attendance(person, playing_field, timestamp=No
     ).order_by(
         'month'
     )
+    votes = list(votes) # force db lookup here to prevent lookups later and speed up code in loop
 
     voter_memberships = person.person_memberships.filter(
         role='voter',
@@ -94,6 +96,7 @@ def calculate_person_monthly_vote_attendance(person, playing_field, timestamp=No
     ).order_by(
         'month',
     )
+    anonymous_votes = list(anonymous_votes) # force db lookup here to prevent lookups later and speed up code in loop
 
     months = sorted(set([
         *map(lambda v: v['month'], votes),
@@ -101,8 +104,8 @@ def calculate_person_monthly_vote_attendance(person, playing_field, timestamp=No
     ]))
 
     for month in months:
-        monthly_anon_votes = anonymous_votes.filter(month=month).first()
-        monthly_votes = votes.filter(month=month).first()
+        monthly_anon_votes = next(filter(lambda v: v['month'] == month, anonymous_votes), None)
+        monthly_votes = next(filter(lambda v: v['month'] == month, votes), None)
 
         total_votes = 0
         num_anon_votes = 0
@@ -122,7 +125,7 @@ def calculate_person_monthly_vote_attendance(person, playing_field, timestamp=No
             'total': total_votes,
         }
 
-        monthly_sums = ballots.filter(month=month)
+        monthly_sums = filter(lambda v: v['month'] == month, ballots)
         for sums in monthly_sums:
             temp_data[sums['option']] = sums['ballot_count']
 
