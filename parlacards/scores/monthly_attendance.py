@@ -56,17 +56,73 @@ def calculate_person_monthly_vote_attendance(person, playing_field, timestamp=No
         'month'
     )
 
-    for month in votes:
+    voter_memberships = person.person_memberships.filter(
+        role='voter',
+        organization=playing_field,
+    )
+
+    anonymous_votes = Vote.objects.none()
+
+    for membership in voter_memberships:
+        end_time = timestamp
+        if membership.end_time:
+            end_time = min([membership.end_time, timestamp])
+
+        membership_anonymous_votes = Vote.objects.filter(
+            timestamp__lte=end_time,
+            motion__session__organizations=playing_field,
+            motion__session__mandate=mandate,
+            ballots__personvoter__isnull=True,
+        ).exclude(
+            ballots__isnull=True
+        ).distinct('id')
+
+        if membership.start_time:
+            membership_anonymous_votes = membership_anonymous_votes.filter(timestamp__gte=membership.start_time)
+
+        anonymous_votes = anonymous_votes.union(membership_anonymous_votes)
+
+    # new query because union and annotate don't work together
+    anonymous_votes = Vote.objects.filter(
+        id__in=anonymous_votes.values('id'),
+    ).annotate(
+        month=TruncMonth('timestamp'),
+    ).values(
+        'month',
+    ).annotate(
+        total_votes=Count('id'),
+    ).order_by(
+        'month',
+    )
+
+    months = sorted(set([
+        *map(lambda v: v['month'], votes),
+        *map(lambda v: v['month'], anonymous_votes),
+    ]))
+
+    for month in months:
+        monthly_anon_votes = anonymous_votes.filter(month=month).first()
+        monthly_votes = votes.filter(month=month).first()
+
+        total_votes = 0
+        num_anon_votes = 0
+        if monthly_votes:
+            total_votes += monthly_votes['total_votes']
+        if monthly_anon_votes:
+            num_anon_votes = monthly_anon_votes['total_votes']
+            total_votes += num_anon_votes
+
         temp_data = {
-            'timestamp': month['month'].isoformat(),
+            'timestamp': month.isoformat(),
             'absent': 0,
             'abstain': 0,
             'for': 0,
             'against': 0,
-            'total': month['total_votes']
+            'no_data': num_anon_votes,
+            'total': total_votes,
         }
 
-        monthly_sums = ballots.filter(month=month['month'])
+        monthly_sums = ballots.filter(month=month)
         for sums in monthly_sums:
             temp_data[sums['option']] = sums['ballot_count']
 
