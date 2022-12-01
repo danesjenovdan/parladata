@@ -141,29 +141,24 @@ def save_person_monthly_vote_attendance(person, playing_field, timestamp=None):
     for result in monthly_results:
         if result['total'] > 0:
             present_count = result['for'] + result['abstain'] + result['against']
-            person_votes_count = present_count + result['absent']
+            absent_count = result['absent']
+            anonymous_count = result['no_data']
+            person_votes_count = present_count + absent_count + anonymous_count
 
-            no_mandate = (result['total'] - person_votes_count) * 100 / result['total']
-            present = present_count * 100 / result['total']
+            no_mandate = (result['total'] - person_votes_count) / result['total'] * 100
+            no_data = anonymous_count / result['total'] * 100
+            present = present_count / result['total'] * 100
 
-            score = PersonMonthlyVoteAttendance.objects.filter(
+            score, created = PersonMonthlyVoteAttendance.objects.update_or_create(
                 person=person,
                 timestamp=result['timestamp'],
-                playing_field=playing_field
-            ).first()
-
-            if score:
-                score.no_mandate=no_mandate
-                score.value=present
-                score.save()
-            else:
-                PersonMonthlyVoteAttendance(
-                    person=person,
-                    value=present,
-                    no_mandate=no_mandate,
-                    timestamp=result['timestamp'],
-                    playing_field=playing_field,
-                ).save()
+                playing_field=playing_field,
+                defaults={
+                    'no_mandate': no_mandate,
+                    'no_data': no_data,
+                    'value': present,
+                },
+            )
 
 def save_people_monthly_vote_attendance(playing_field, timestamp=None):
     if not timestamp:
