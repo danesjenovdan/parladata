@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from django.db.models.functions import TruncMonth
 from django.db.models import Count, Q
@@ -199,63 +199,120 @@ def calculate_group_monthly_vote_attendance(group, playing_field, timestamp=None
 
     mandate = Mandate.get_active_mandate_at(timestamp)
 
+    data = []
+
     memberships = group.query_memberships_before(timestamp)
     member_ids = memberships.values_list('member_id', flat=True).distinct('member_id')
 
-    ballots = Ballot.objects.none()
     all_valid_ballots = Ballot.objects.none()
+    all_anonymous_votes = Vote.objects.none()
 
     for member_id in member_ids:
-        member_ballots = Ballot.objects.filter(
-            vote__timestamp__lte=timestamp,
-            personvoter__id=member_id,
-            vote__motion__session__mandate=mandate
-        )
-
         member_memberships = memberships.filter(
-            member__id=member_id
+            member__id=member_id,
         ).values(
             'start_time',
-            'end_time'
+            'end_time',
         )
-        q_objects = Q()
+
+        ballot_q_object = Q()
+        vote_q_object = Q()
         for membership in member_memberships:
-            q_params = {}
+            ballot_q_params = {}
+            vote_q_params = {}
             if membership['start_time']:
-                q_params['vote__timestamp__gte'] = membership['start_time']
+                ballot_q_params['vote__timestamp__gte'] = membership['start_time']
+                vote_q_params['timestamp__gte'] = membership['start_time']
             if membership['end_time']:
-                q_params['vote__timestamp__lte'] = membership['end_time']
-            q_objects.add(
-                Q(**q_params),
-                Q.OR
-            )
+                ballot_q_params['vote__timestamp__lte'] = membership['end_time']
+                vote_q_params['timestamp__lte'] = membership['end_time']
 
-        all_valid_ballots = all_valid_ballots.union(member_ballots.filter(q_objects))
+            ballot_q_object.add(Q(**ballot_q_params), Q.OR)
+            vote_q_object.add(Q(**vote_q_params), Q.OR)
 
-    all_valid_ballots_ids = all_valid_ballots.values('id')
+        member_ballots = Ballot.objects.filter(
+            vote__timestamp__lte=timestamp,
+            # vote__motion__session__organizations=playing_field,
+            vote__motion__session__mandate=mandate,
+            personvoter__id=member_id,
+        ).filter(ballot_q_object)
+
+        member_anonymous_votes = Vote.objects.filter(
+            timestamp__lte=timestamp,
+            # motion__session__organizations=playing_field,
+            motion__session__mandate=mandate,
+            ballots__personvoter__isnull=True,
+        ).exclude(
+            ballots__isnull=True
+        ).filter(vote_q_object).distinct('id')
+
+        all_valid_ballots = all_valid_ballots.union(member_ballots)
+        all_anonymous_votes = all_anonymous_votes.union(member_anonymous_votes)
 
     annotated_ballots = Ballot.objects.filter(
-        id__in=all_valid_ballots_ids
+        id__in=all_valid_ballots.values('id')
     ).annotate(
         month=TruncMonth('vote__timestamp')
     ).values(
         'month',
         'option'
     ).annotate(
-        ballot_count=Count('option')
+        ballot_count=Count('option'),
     ).order_by(
         'month'
     )
-    data = {}
-    for annotated_ballot in annotated_ballots:
-        if not annotated_ballot['month'].isoformat() in data.keys():
-            data[annotated_ballot['month'].isoformat()] = {
-                'absent': 0,
-                'abstain': 0,
-                'for': 0,
-                'against': 0,
-            }
-        data[annotated_ballot['month'].isoformat()][annotated_ballot['option']] = annotated_ballot['ballot_count']
+    annotated_ballots = list(annotated_ballots) # force db lookup here to prevent lookups later and speed up code in loop
+
+    annotated_anonymous_votes = Vote.objects.filter(
+        id__in= all_anonymous_votes.values('id')
+    ).annotate(
+        month=TruncMonth('timestamp'),
+    ).values(
+        'month',
+    ).annotate(
+        total_votes=Count('id'),
+    ).order_by(
+        'month',
+    )
+    annotated_anonymous_votes = list(annotated_anonymous_votes) # force db lookup here to prevent lookups later and speed up code in loop
+
+    months = sorted(set([
+        *map(lambda v: v['month'], annotated_ballots),
+        *map(lambda v: v['month'], annotated_anonymous_votes),
+    ]))
+
+    for month in months:
+        monthly_anon_votes = next(filter(lambda v: v['month'] == month, annotated_anonymous_votes), None)
+        monthly_ballots = list(filter(lambda v: v['month'] == month, annotated_ballots))
+
+        total_ballots = 0
+        num_anon_ballots = 0
+        if monthly_ballots:
+            total_ballots += sum(map(lambda v: v['ballot_count'], monthly_ballots))
+        if monthly_anon_votes:
+            end_of_month = datetime(month.year, (month.month + 1) if month.month < 12 else 1, 1) - timedelta(seconds=1)
+            start_of_month = datetime(month.year, month.month, 1)
+            num_memberships = memberships.filter(
+                Q(start_time__date__lte=end_of_month) | Q(start_time__isnull=True),
+                Q(end_time__date__gte=start_of_month) | Q(end_time__isnull=True),
+            ).count()
+            num_anon_ballots = monthly_anon_votes['total_votes'] * num_memberships
+            total_ballots += num_anon_ballots
+
+        temp_data = {
+            'timestamp': month.isoformat(),
+            'absent': 0,
+            'abstain': 0,
+            'for': 0,
+            'against': 0,
+            'no_data': num_anon_ballots,
+            'total': total_ballots,
+        }
+
+        for sums in monthly_ballots:
+            temp_data[sums['option']] = sums['ballot_count']
+
+        data.append(temp_data)
 
     return data
 
@@ -264,34 +321,27 @@ def save_group_monthly_vote_attendance(group, playing_field, timestamp=None):
         timestamp = datetime.now()
 
     monthly_results = calculate_group_monthly_vote_attendance(group, playing_field, timestamp)
-    for month, result in monthly_results.items():
-        present_count = result['for'] + result['abstain'] + result['against']
-        group_votes_count = present_count + result['absent']
+    for result in monthly_results:
+        if result['total'] > 0:
+            present_count = result['for'] + result['abstain'] + result['against']
+            absent_count = result['absent']
+            anonymous_count = result['no_data']
+            group_votes_count = present_count + absent_count + anonymous_count
 
-        no_mandate = 0
-        if group_votes_count == 0:
-            present = 0
-        else:
-            present = present_count * 100 / group_votes_count
+            no_mandate = (result['total'] - group_votes_count) / result['total'] * 100
+            no_data = anonymous_count / result['total'] * 100
+            present = present_count / result['total'] * 100
 
-        score = GroupMonthlyVoteAttendance.objects.filter(
-            group=group,
-            timestamp=month,
-            playing_field=playing_field
-        ).first()
-
-        if score:
-            score.no_mandate=no_mandate
-            score.value=present
-            score.save()
-        else:
-            GroupMonthlyVoteAttendance(
+            score, created = GroupMonthlyVoteAttendance.objects.update_or_create(
                 group=group,
-                value=present,
-                no_mandate=no_mandate,
-                timestamp=month,
+                timestamp=result['timestamp'],
                 playing_field=playing_field,
-            ).save()
+                defaults={
+                    'no_mandate': no_mandate,
+                    'no_data': no_data,
+                    'value': present,
+                },
+            )
 
 def save_groups_monthly_vote_attendance(playing_field, timestamp=None):
     if not timestamp:
