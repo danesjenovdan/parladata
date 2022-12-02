@@ -96,10 +96,12 @@ class PersonNumberOfQuestions(PersonScore):
 
 class PersonMonthlyVoteAttendance(PersonScore):
     no_mandate = models.FloatField(blank=False, null=False)
+    no_data = models.FloatField(blank=False, null=False)
 
 
 class GroupMonthlyVoteAttendance(GroupScore):
     no_mandate = models.FloatField(blank=False, null=False)
+    no_data = models.FloatField(blank=False, null=False)
 
 
 class GroupNumberOfQuestions(GroupScore):
