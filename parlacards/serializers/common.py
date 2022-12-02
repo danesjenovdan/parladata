@@ -341,11 +341,8 @@ class CommonSessionSerializer(CommonCachableSerializer):
 class MonthlyAttendanceSerializer(serializers.Serializer):
     present = serializers.FloatField(source='value')
     no_mandate = serializers.FloatField()
-    absent = serializers.SerializerMethodField()
+    no_data = serializers.FloatField()
     timestamp = serializers.SerializerMethodField()
-
-    def get_absent(self, obj):
-        return 100 - obj.value - obj.no_mandate
 
     def get_timestamp(self, obj):
         return obj.timestamp.date().isoformat()
