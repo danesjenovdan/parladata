@@ -175,6 +175,8 @@ class PersonMembershipCardSerializer(PersonScoreCardSerializer):
         memberships = PersonMembership.valid_at(self.context['date']).filter(
             member=person,
             organization__classification__in=filtered_classifications
+        ).exclude(
+            role='voter'
         )
         membership_serializer = MembershipSerializer(memberships, context=self.context, many=True)
         return membership_serializer.data
