@@ -3,16 +3,27 @@ kind: Ingress
 metadata:
   name: parladata
   annotations:
-    cert-manager.io/cluster-issuer: "letsencrypt-production"
+    cert-manager.io/cluster-issuer: "letsencrypt-sandbox"
     nginx.ingress.kubernetes.io/proxy-body-size: 10m
 spec:
   ingressClassName: nginx
   tls:
     - hosts:
         - parladata-hrvaska.lb.djnd.si
+        - data.10.parlametar.hr
       secretName: parladata-tls
   rules:
     - host: parladata-hrvaska.lb.djnd.si
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: parladata
+                port:
+                  number: 8000
+    - host: data.10.parlametar.hr
       http:
         paths:
           - path: /
@@ -28,7 +39,7 @@ kind: Ingress
 metadata:
   name: parladata-nginx
   annotations:
-    cert-manager.io/cluster-issuer: "letsencrypt-production"
+    cert-manager.io/cluster-issuer: "letsencrypt-sandbox"
     nginx.ingress.kubernetes.io/enable-cors: "true"
     nginx.ingress.kubernetes.io/cors-allow-methods: "PUT, GET, POST, OPTIONS"
     nginx.ingress.kubernetes.io/cors-allow-origin: "*" # TODO
@@ -39,9 +50,20 @@ spec:
   tls:
     - hosts:
         - files.parladata-hrvaska.lb.djnd.si
+        - files.10.data.parlametar.hr
       secretName: parladata-nginx-tls
   rules:
     - host: files.parladata-hrvaska.lb.djnd.si
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: parladata-nginx
+                port:
+                  number: 80
+    - host: files.10.data.parlametar.hr
       http:
         paths:
           - path: /
