@@ -50,7 +50,7 @@ spec:
   tls:
     - hosts:
         - files.parladata-hrvaska.lb.djnd.si
-        - files.10.data.parlametar.hr
+        - files.data.10.parlametar.hr
       secretName: parladata-nginx-tls
   rules:
     - host: files.parladata-hrvaska.lb.djnd.si
@@ -63,7 +63,7 @@ spec:
                 name: parladata-nginx
                 port:
                   number: 80
-    - host: files.10.data.parlametar.hr
+    - host: files.data.10.parlametar.hr
       http:
         paths:
           - path: /
