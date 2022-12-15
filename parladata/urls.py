@@ -31,6 +31,7 @@ router.register(r'legislation-status', LegislationStatusViewSet)
 router.register(r'legislation-classifications', LegislationClassificationViewSet)
 router.register(r'media', MediumView)
 router.register(r'media-reports', MediaReportView)
+router.register(r'person-questions', PersonQuestionViewSet)
 
 urlpatterns = [
     re_path(r'^', include(router.urls)),
