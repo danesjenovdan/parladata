@@ -1,6 +1,6 @@
 from django.db import models
 
-from parladata.behaviors.models import Timestampable
+from parladata.behaviors.models import Timestampable, Approvable
 
 QUESTION_TYPES = [
         ('question', 'question'),
@@ -97,3 +97,34 @@ class Question(Timestampable):
         organization_author_names = " ".join([author.name for author in self.organization_authors.all()])
         author = person_author_names if person_author_names else organization_author_names
         return f'{self.type_of_question}: {self.title} - {author}'
+
+
+class PersonQuestion(Timestampable, Approvable):
+    recipient_person = models.ForeignKey(
+        'Person',
+        help_text='Recipient person.',
+        related_name='received_person_questions',
+        on_delete=models.CASCADE
+    )
+    author_email = models.EmailField(max_length=256, blank=True, null=True)
+    text = models.TextField(
+        help_text='Text of question'
+    )
+    sent_at = models.DateTimeField(null=True, blank=True, db_index=True)
+
+    def __str__(self):
+        return f'{self.recipient_person.name} - {self.text[:50]}'
+
+
+class PersonAnswer(Timestampable, Approvable):
+    question = models.ForeignKey(
+        'PersonQuestion',
+        on_delete=models.CASCADE,
+        related_name='answer')
+    text = models.TextField(
+        help_text='Text of answer'
+    )
+    sent_at = models.DateTimeField(null=True, blank=True, db_index=True)
+
+    def __str__(self):
+        return f'{self.question.recipient_person.name} - {self.text[:50]}'

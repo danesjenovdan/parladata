@@ -232,3 +232,16 @@ class MediaReportSerializer(serializers.ModelSerializer):
     class Meta:
         model = MediaReport
         fields = '__all__'
+
+
+class PersonQuestionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PersonQuestion
+        fields = ('__all__')
+        read_only_fields = ('is_active', 'is_staff')
+        extra_kwargs = {
+            'author_email': {'write_only': True},
+            'approved_at': {'read_only': True},
+            'rejected_at': {'read_only': True},
+            'sent_at': {'read_only': True},
+        }

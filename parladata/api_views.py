@@ -378,3 +378,13 @@ class MediaReportView(viewsets.ModelViewSet):
     filter_backends = (DjangoFilterBackend, filters.OrderingFilter)
     filterset_fields = ('medium', 'mentioned_people', 'mentioned_organizations', 'mentioned_legislation', 'mentioned_motions', 'mentioned_votes')
     ordering_fields = ('report_date', 'retrieval_date')
+
+
+class PersonQuestionViewSet(
+        mixins.CreateModelMixin,
+        mixins.ListModelMixin,
+        mixins.RetrieveModelMixin,
+        viewsets.GenericViewSet):
+    queryset = PersonQuestion.objects.all().order_by('id')
+    serializer_class = PersonQuestionSerializer
+    fields = '__all__'
