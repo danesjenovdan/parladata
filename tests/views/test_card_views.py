@@ -349,6 +349,24 @@ def test_create_and_get_quote():
 
 
 @pytest.mark.django_db()
+def test_public_person_question():
+    response = client.post(
+        '/v3/cards/person/public-questions/?id=1',
+        {
+            'recaptcha': 'token',
+            'author_email': 'ivan@email.com',
+            'text': 'what what what',
+            'recipient_person': 240
+        }
+    )
+    assert response.status_code == 201
+
+    response = client.get('/v3/cards/person/public-questions/?id=1')
+    assert response.status_code == 200
+    assert len(response.json()['results']) == 1
+
+
+@pytest.mark.django_db()
 def test_validation_error_on_create_quote():
     response = client.post(
         '/v3/cards/speech/quote/',
