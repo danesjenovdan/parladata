@@ -386,5 +386,5 @@ class PublicPersonQuestionViewSet(
         mixins.RetrieveModelMixin,
         viewsets.GenericViewSet):
     queryset = PublicPersonQuestion.objects.all().order_by('id')
-    serializer_class = PersonQuestionSerializer
+    serializer_class = PubilcPersonQuestionSerializer
     fields = '__all__'

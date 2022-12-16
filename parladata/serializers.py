@@ -240,8 +240,8 @@ class MediaReportSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class PersonQuestionSerializer(serializers.ModelSerializer):
-    recaptcha = ReCaptchaV3Field(action="example")
+class PubilcPersonQuestionSerializer(serializers.ModelSerializer):
+    recaptcha = ReCaptchaV3Field(action="PublicPersonQuestion")
     class Meta:
         model = PublicPersonQuestion
         fields = ('__all__')
