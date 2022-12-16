@@ -385,6 +385,11 @@ class PublicPersonQuestionViewSet(
         mixins.ListModelMixin,
         mixins.RetrieveModelMixin,
         viewsets.GenericViewSet):
+    """
+    This endpoint uses reCAPTCHA. Read about google recaptcha: https://developers.google.com/recaptcha/docs/v3
+    Set recaptcha secret key in secrets.yaml for using recaptcha or keep it empty for test mode.
+    """
+    permission_classes = [permissions.AllowAny]
     queryset = PublicPersonQuestion.objects.all().order_by('id')
     serializer_class = PubilcPersonQuestionSerializer
     fields = '__all__'
