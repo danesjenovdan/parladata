@@ -37,6 +37,7 @@ eventregistry
 tablib
 django-import-export
 djangorestframework-csv
+drf-recaptcha
 
 # tagger/lemmatizer
 scikit-learn==1.1.3

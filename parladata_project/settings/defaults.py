@@ -34,6 +34,7 @@ INSTALLED_APPS = (
     'colorfield',
     'adminsortable2',
     'import_export',
+    'drf_recaptcha',
 )
 
 """MIDDLEWARE = (

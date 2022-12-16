@@ -3,6 +3,8 @@ from taggit_serializer.serializers import (TagListSerializerField,
                                            TaggitSerializer)
 from taggit.models import Tag
 
+from drf_recaptcha.fields import ReCaptchaV3Field
+
 from parladata.models import *
 import json
 
@@ -239,6 +241,7 @@ class MediaReportSerializer(serializers.ModelSerializer):
 
 
 class PersonQuestionSerializer(serializers.ModelSerializer):
+    recaptcha = ReCaptchaV3Field(action="example")
     class Meta:
         model = PublicPersonQuestion
         fields = ('__all__')
@@ -249,3 +252,7 @@ class PersonQuestionSerializer(serializers.ModelSerializer):
             'rejected_at': {'read_only': True},
             'notification_set_at': {'read_only': True},
         }
+
+    def validate(self, attrs):
+        attrs.pop("recaptcha")
+        return attrs
