@@ -129,9 +129,13 @@ class MotionSerializer(serializers.ModelSerializer):
     vote = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
     links = LinkSerializer(many=True, read_only=True)
     tags = TagListSerializerField(required=False)
+    is_anonymous_vote = serializers.SerializerMethodField()
     class Meta:
         model = Motion
         fields = '__all__'
+
+    def get_is_anonymous_vote(self, obj):
+        return not any (Ballot.objects.filter(vote=obj.vote.first()).values_list('personvoter', flat=True))
 
 
 class AreaSerializer(serializers.ModelSerializer):
@@ -236,12 +240,12 @@ class MediaReportSerializer(serializers.ModelSerializer):
 
 class PersonQuestionSerializer(serializers.ModelSerializer):
     class Meta:
-        model = PersonQuestion
+        model = PublicPersonQuestion
         fields = ('__all__')
         read_only_fields = ('is_active', 'is_staff')
         extra_kwargs = {
             'author_email': {'write_only': True},
             'approved_at': {'read_only': True},
             'rejected_at': {'read_only': True},
-            'sent_at': {'read_only': True},
+            'notification_set_at': {'read_only': True},
         }

@@ -32,10 +32,10 @@ def test_calculate_number_of_spoken_words(
     ).values_list('lemmatized_content', flat=True)
 
     number_of_spoken_words = calculate_number_of_spoken_words(first_person_speeches)
-    assert number_of_spoken_words == 891
+    assert number_of_spoken_words == 1480
 
     number_of_spoken_words = calculate_number_of_spoken_words(second_person_speeches)
-    assert number_of_spoken_words == 0
+    assert number_of_spoken_words == 981
 
     number_of_spoken_words = calculate_number_of_spoken_words(last_person_speeches)
-    assert number_of_spoken_words == 554
+    assert number_of_spoken_words == 0

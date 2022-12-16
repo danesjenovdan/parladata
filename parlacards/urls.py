@@ -1,9 +1,14 @@
-from django.urls import path
+from django.urls import path, include
 from rest_framework import routers
 
 from parlacards.views import *
+from parladata.api_views import PublicPersonQuestionViewSet
+
+router = routers.DefaultRouter()
+router.register('person/public-questions', PublicPersonQuestionViewSet)
 
 urlpatterns = [
+    path('', include(router.urls)),
     path('misc/members/', Voters.as_view()),
     path('misc/groups/', ParliamentaryGroups.as_view()),
     path('misc/sessions/', Sessions.as_view()),
@@ -73,3 +78,4 @@ urlpatterns = [
     path('search/usage-through-time-in-speeches/', MandateUsageThroughTimeInSpeeches.as_view()),
     path('search/usage-through-time-in-agenda-items/', MandateUsageThroughTimeInAgendaItems.as_view()),
 ]
+
