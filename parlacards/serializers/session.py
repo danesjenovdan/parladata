@@ -3,6 +3,7 @@ from django.db.models import Q
 
 from parlacards.serializers.common import CommonCachableSerializer, CommonOrganizationSerializer
 from parladata.models.agenda_item import AgendaItem
+from parladata.models.vote import Vote
 
 class SessionSerializer(CommonCachableSerializer):
     def calculate_cache_key(self, session):
@@ -31,6 +32,9 @@ class SessionSerializer(CommonCachableSerializer):
             Q(timestamp__lte=self.context['date']) | Q(timestamp__isnull=True)
         ).exists()
 
+    def get_has_votes(self, session):
+        return Vote.objects.filter(motion__session=session).exists()
+
     name = serializers.CharField()
     id = serializers.IntegerField()
     start_time = serializers.DateTimeField()
@@ -41,3 +45,4 @@ class SessionSerializer(CommonCachableSerializer):
     has_transcript = serializers.SerializerMethodField()
     has_minutes = serializers.SerializerMethodField()
     has_legislation = serializers.SerializerMethodField()
+    has_votes = serializers.SerializerMethodField()
