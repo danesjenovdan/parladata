@@ -144,3 +144,8 @@ LANGUAGE_CODE = 'en-us'
 LANGUAGES = (
     ('en', 'English'),
 )
+
+DRF_RECAPTCHA_DOMAIN = os.getenv('DRF_RECAPTCHA_DOMAIN', 'www.google.com')
+DRF_RECAPTCHA_SECRET_KEY = os.getenv('DRF_RECAPTCHA_SECRET_KEY', '')
+if not DRF_RECAPTCHA_SECRET_KEY:
+    DRF_RECAPTCHA_TESTING=True

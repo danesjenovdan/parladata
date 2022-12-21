@@ -1,7 +1,7 @@
 from django.urls import path
-from rest_framework import routers
 
 from parlacards.views import *
+
 
 urlpatterns = [
     path('misc/members/', Voters.as_view()),
@@ -31,6 +31,7 @@ urlpatterns = [
     path('person/tfidf/', PersonTfidfView.as_view()),
     path('person/speeches/', PersonSpeechesView.as_view()),
     path('person/media-reports/', PersonMediaReportsView.as_view()),
+    path('person/public-questions/', PersonPublicQuestionView.as_view()),
 
     path('group/basic-information/', GroupInfo.as_view()),
     path('group/members/', GroupMembers.as_view()),
@@ -73,3 +74,4 @@ urlpatterns = [
     path('search/usage-through-time-in-speeches/', MandateUsageThroughTimeInSpeeches.as_view()),
     path('search/usage-through-time-in-agenda-items/', MandateUsageThroughTimeInAgendaItems.as_view()),
 ]
+

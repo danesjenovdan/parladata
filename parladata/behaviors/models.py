@@ -172,3 +172,15 @@ class Sluggable(models.Model):
 
     class Meta:
         abstract = True
+
+
+class Approvable(models.Model):
+    """
+    An abstract base class model that provides
+    ``approved_at`` and ``rejecated_at`` fields.
+    """
+    approved_at = models.DateTimeField(null=True, blank=True, db_index=True)
+    rejected_at = models.DateTimeField(null=True, blank=True, db_index=True)
+
+    class Meta:
+        abstract = True
