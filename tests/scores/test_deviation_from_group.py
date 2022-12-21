@@ -12,10 +12,10 @@ def test_calculate_deviation_from_group(
     main_organization
 ):
     deviation = calculate_deviation_from_group(first_person, main_organization)
-    assert deviation == 0
+    assert deviation == 5
 
     deviation = calculate_deviation_from_group(second_person, main_organization)
-    assert deviation == 0
+    assert deviation == 12.5
 
     deviation = calculate_deviation_from_group(last_person, main_organization)
-    assert deviation == 34.285714285714285
+    assert deviation == 0

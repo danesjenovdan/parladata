@@ -13,7 +13,7 @@ def test_export_as_generator_json():
     chunks_joined = ''.join(chunks)
     res = json.loads(chunks_joined)
     # check num of results
-    assert len(res) == 14
+    assert len(res) == 7
     # check keys
     json_keys = res[0].keys()
     assert 'name' in json_keys
@@ -29,7 +29,7 @@ def test_export_as_generator_csv():
     lines = chunks_joined.splitlines()
     headers = lines[0].split(',')
     # check num of results
-    assert len(lines) == 16 # len(results) + headers + empty line
+    assert len(lines) == 9 # len(results) + headers + empty line
     # check headers
     assert 'name' in headers
     assert 'value' in headers

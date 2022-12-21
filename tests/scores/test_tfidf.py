@@ -62,23 +62,23 @@ def test_calculate_people_tfidf(
     #     tfidfs[-1]['tfidf'][0][1]
     # )
 
-    assert len(tfidfs) == 44
+    assert len(tfidfs) == 46
     assert len(tfidfs[0]['tfidf']) == 30
 
     assert tfidfs[6]['tfidf'][0][0] == ''
     assert tfidfs[6]['tfidf'][0][1] == 1.0
 
-    assert tfidfs[6]['tfidf'][1][0] == '0'
+    assert tfidfs[6]['tfidf'][1][0] == '\n30'
     assert tfidfs[6]['tfidf'][1][1] == 0.0
 
-    assert tfidfs[12]['tfidf'][0][0] == 'Toška'
-    assert tfidfs[12]['tfidf'][0][1] == 0.19983
+    assert tfidfs[12]['tfidf'][0][0] == 'bistvo'
+    assert tfidfs[12]['tfidf'][0][1] == 0.31821
 
-    assert tfidfs[12]['tfidf'][-1][0] == 'hitr'
-    assert tfidfs[12]['tfidf'][-1][1] == 0.0929
+    assert tfidfs[12]['tfidf'][-1][0] == 'trener'
+    assert tfidfs[12]['tfidf'][-1][1] == 0.1153
 
-    assert tfidfs[-1]['tfidf'][0][0] == 'navzočnost'
-    assert tfidfs[-1]['tfidf'][0][1] == 0.05934
+    assert tfidfs[-1]['tfidf'][0][0] == ''
+    assert tfidfs[-1]['tfidf'][0][1] == 1.0
 
 @pytest.mark.django_db()
 def test_calculate_groups_tfidf(
@@ -104,19 +104,19 @@ def test_calculate_groups_tfidf(
     assert len(tfidfs[0]['tfidf']) == 30
 
     assert tfidfs[6]['tfidf'][0][0] == 'komisija'
-    assert tfidfs[6]['tfidf'][0][1] == 0.1001
+    assert tfidfs[6]['tfidf'][0][1] == 0.09895
 
     assert tfidfs[6]['tfidf'][1][0] == 'statutarno'
-    assert tfidfs[6]['tfidf'][1][1] == 0.09649
+    assert tfidfs[6]['tfidf'][1][1] == 0.09538
 
-    assert tfidfs[0]['tfidf'][0][0] == 'stanovanje'
-    assert tfidfs[0]['tfidf'][0][1] == 0.13122
+    assert tfidfs[0]['tfidf'][0][0] == 'najem'
+    assert tfidfs[0]['tfidf'][0][1] == 0.10376
 
-    assert tfidfs[0]['tfidf'][-1][0] == 'prostorski'
-    assert tfidfs[0]['tfidf'][-1][1] == 0.07537
+    assert tfidfs[0]['tfidf'][-1][0] == 'igra'
+    assert tfidfs[0]['tfidf'][-1][1] == 0.06136
 
     assert tfidfs[1]['tfidf'][0][0] == 'prehod'
-    assert tfidfs[1]['tfidf'][0][1] == 0.29117
+    assert tfidfs[1]['tfidf'][0][1] == 0.29075
 
 @pytest.mark.django_db()
 def test_calculate_sessions_tfidf(
@@ -142,16 +142,16 @@ def test_calculate_sessions_tfidf(
     assert len(tfidfs[0]['tfidf']) == 30
 
     assert tfidfs[0]['tfidf'][0][0] == 'nadzoren'
-    assert tfidfs[0]['tfidf'][0][1] == 0.05251
+    assert tfidfs[0]['tfidf'][0][1] == 0.05211
 
     assert tfidfs[0]['tfidf'][1][0] == 'proračunski'
-    assert tfidfs[0]['tfidf'][1][1] == 0.05086
+    assert tfidfs[0]['tfidf'][1][1] == 0.05047
 
     assert tfidfs[1]['tfidf'][0][0] == 'dom'
-    assert tfidfs[1]['tfidf'][0][1] == 0.06647
+    assert tfidfs[1]['tfidf'][0][1] == 0.0655
 
     assert tfidfs[1]['tfidf'][1][0] == 'predlog'
-    assert tfidfs[1]['tfidf'][1][1] == 0.06253
+    assert tfidfs[1]['tfidf'][1][1] == 0.0618
 
     assert tfidfs[1]['tfidf'][-2][0] == 'besedilo'
-    assert tfidfs[1]['tfidf'][-2][1] == 0.0477
+    assert tfidfs[1]['tfidf'][-2][1] == 0.047
