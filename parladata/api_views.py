@@ -378,18 +378,3 @@ class MediaReportView(viewsets.ModelViewSet):
     filter_backends = (DjangoFilterBackend, filters.OrderingFilter)
     filterset_fields = ('medium', 'mentioned_people', 'mentioned_organizations', 'mentioned_legislation', 'mentioned_motions', 'mentioned_votes')
     ordering_fields = ('report_date', 'retrieval_date')
-
-
-class PublicPersonQuestionViewSet(
-        mixins.CreateModelMixin,
-        mixins.ListModelMixin,
-        mixins.RetrieveModelMixin,
-        viewsets.GenericViewSet):
-    """
-    This endpoint uses reCAPTCHA. Read about google recaptcha: https://developers.google.com/recaptcha/docs/v3
-    Set recaptcha secret key in secrets.yaml for using recaptcha or keep it empty for test mode.
-    """
-    permission_classes = [permissions.AllowAny]
-    queryset = PublicPersonQuestion.objects.all().order_by('id')
-    serializer_class = PubilcPersonQuestionSerializer
-    fields = '__all__'

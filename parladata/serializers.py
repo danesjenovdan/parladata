@@ -3,8 +3,6 @@ from taggit_serializer.serializers import (TagListSerializerField,
                                            TaggitSerializer)
 from taggit.models import Tag
 
-from drf_recaptcha.fields import ReCaptchaV3Field
-
 from parladata.models import *
 import json
 
@@ -131,13 +129,9 @@ class MotionSerializer(serializers.ModelSerializer):
     vote = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
     links = LinkSerializer(many=True, read_only=True)
     tags = TagListSerializerField(required=False)
-    is_anonymous_vote = serializers.SerializerMethodField()
     class Meta:
         model = Motion
         fields = '__all__'
-
-    def get_is_anonymous_vote(self, obj):
-        return not any (Ballot.objects.filter(vote=obj.vote.first()).values_list('personvoter', flat=True))
 
 
 class AreaSerializer(serializers.ModelSerializer):
