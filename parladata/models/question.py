@@ -97,4 +97,3 @@ class Question(Timestampable):
         organization_author_names = " ".join([author.name for author in self.organization_authors.all()])
         author = person_author_names if person_author_names else organization_author_names
         return f'{self.type_of_question}: {self.title} - {author}'
-
