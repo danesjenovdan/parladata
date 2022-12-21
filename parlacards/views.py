@@ -76,12 +76,14 @@ from parlacards.serializers.cards import (
     SessionMinutesCardSerializer,
     SingleMinutesCardSerializer,
     MandateMinutesCardSerializer,
+    PublicPersonQuestionCardSerializer,
 )
 from parlacards.serializers.speech import SpeechSerializer
 from parlacards.serializers.quote import QuoteSerializer
 from parlacards.serializers.group_attendance import SessionGroupAttendanceSerializer
 from parlacards.serializers.cards.person.recent_activity import RecentActivityCardSerializer
 from parlacards.serializers.cards.misc.sessions import SessionsCardSerializer
+from parlacards.serializers.public_question import PublicPersonQuestionSerializer
 
 from django.core.cache import cache
 
@@ -330,6 +332,20 @@ class RecentActivity(CardView):
     '''
     thing = Person
     card_serializer = RecentActivityCardSerializer
+
+
+class PersonPublicQuestionView(CardView):
+    thing = Person
+    card_serializer = PublicPersonQuestionCardSerializer
+
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        serializer = PublicPersonQuestionSerializer(data=request.data, context={"request": request})
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=201)
+        return Response(serializer.errors, status=400)
 
 
 class GroupMonthlyVoteAttendance(CardView):

@@ -22,6 +22,7 @@ from parladata.models.speech import Speech
 from parladata.models.organization import Organization
 from parladata.models.person import Person
 from parladata.models.common import Mandate
+from parladata.models.public_question import PublicPersonQuestion
 
 from parladata.models.organization import CLASSIFICATIONS as ORGANIZATION_CLASSIFICATIONS
 from parlacards.models import (
@@ -66,6 +67,7 @@ from parlacards.serializers.common import (
     MonthlyAttendanceSerializer,
     SessionScoreCardSerializer
 )
+from parlacards.serializers.public_question import PublicPersonQuestionSerializer
 
 from parlacards.solr import parse_search_query_params, solr_select
 from parlacards.pagination import calculate_cache_key_for_page, create_paginator, create_solr_paginator
@@ -175,6 +177,8 @@ class PersonMembershipCardSerializer(PersonScoreCardSerializer):
         memberships = PersonMembership.valid_at(self.context['date']).filter(
             member=person,
             organization__classification__in=filtered_classifications
+        ).exclude(
+            role='voter'
         )
         membership_serializer = MembershipSerializer(memberships, context=self.context, many=True)
         return membership_serializer.data
@@ -375,6 +379,41 @@ class PersonSpeechesCardSerializer(PersonScoreCardSerializer):
             **parent_data,
             **pagination_metadata,
             'results': speeches_serializer.data,
+        }
+
+
+class PublicPersonQuestionCardSerializer(PersonScoreCardSerializer):
+    def get_results(self, person):
+        # this is implemented in to_representation for pagination
+        return None
+
+    def to_representation(self, person):
+        parent_data = super().to_representation(person)
+
+        mandate = Mandate.get_active_mandate_at(self.context['date'])
+        from_timestamp, to_timestamp = mandate.get_time_range_from_mandate(self.context['date'])
+
+        public_person_questions = PublicPersonQuestion.objects.filter(
+            recipient_person=person,
+            created_at__range=(from_timestamp, to_timestamp),
+            approved_at__isnull=False
+        ).order_by(
+            '-created_at',
+        )
+
+        paged_object_list, pagination_metadata = create_paginator(self.context.get('GET', {}), public_person_questions)
+
+        # serialize questions
+        person_public_questions_serializer = PublicPersonQuestionSerializer(
+            paged_object_list,
+            many=True,
+            context=self.context
+        )
+
+        return {
+            **parent_data,
+            **pagination_metadata,
+            'results': person_public_questions_serializer.data,
         }
 
 

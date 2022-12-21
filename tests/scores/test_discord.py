@@ -14,10 +14,10 @@ def test_calculate_voting_distance(
 ):
     # group
     discord = calculate_group_discord(first_group)
-    assert discord == 2.9411764705882355
+    assert discord == 8.75
 
     discord = calculate_group_discord(second_group)
-    assert discord == 27.619047619047617
+    assert discord == 30.000000000000007
 
     discord = calculate_group_discord(last_group)
-    assert discord == 26.753246753246753
+    assert discord == 8.804347826086955
