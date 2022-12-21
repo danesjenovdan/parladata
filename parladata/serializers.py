@@ -238,21 +238,3 @@ class MediaReportSerializer(serializers.ModelSerializer):
     class Meta:
         model = MediaReport
         fields = '__all__'
-
-
-class PubilcPersonQuestionSerializer(serializers.ModelSerializer):
-    recaptcha = ReCaptchaV3Field(action="PublicPersonQuestion")
-    class Meta:
-        model = PublicPersonQuestion
-        fields = ('__all__')
-        read_only_fields = ('is_active', 'is_staff')
-        extra_kwargs = {
-            'author_email': {'write_only': True},
-            'approved_at': {'read_only': True},
-            'rejected_at': {'read_only': True},
-            'notification_set_at': {'read_only': True},
-        }
-
-    def validate(self, attrs):
-        attrs.pop("recaptcha")
-        return attrs
