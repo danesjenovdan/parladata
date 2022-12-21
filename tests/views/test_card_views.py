@@ -351,7 +351,7 @@ def test_create_and_get_quote():
 @pytest.mark.django_db()
 def test_public_person_question():
     response = client.post(
-        '/v3/cards/person/public-questions/?id=1',
+        '/v3/cards/person/public-questions/?id=240',
         {
             'recaptcha': 'token',
             'author_email': 'ivan@email.com',
@@ -361,9 +361,10 @@ def test_public_person_question():
     )
     assert response.status_code == 201
 
-    response = client.get('/v3/cards/person/public-questions/?id=1')
+    response = client.get('/v3/cards/person/public-questions/?id=240')
     assert response.status_code == 200
-    assert len(response.json()['results']) == 1
+    # new question is not approved
+    assert len(response.json()['results']) == 0
 
 
 @pytest.mark.django_db()

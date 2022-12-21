@@ -14,7 +14,7 @@ class PublicPersonQuestion(Timestampable, Approvable):
     text = models.TextField(
         help_text='Text of question'
     )
-    notification_set_at = models.DateTimeField(null=True, blank=True, db_index=True)
+    notification_sent_at = models.DateTimeField(null=True, blank=True, db_index=True)
 
     def __str__(self):
         return f'{self.recipient_person.name} - {self.text[:50]}'
@@ -28,7 +28,7 @@ class PublicPersonAnswer(Timestampable, Approvable):
     text = models.TextField(
         help_text='Text of answer'
     )
-    notification_set_at = models.DateTimeField(null=True, blank=True, db_index=True)
+    notification_sent_at = models.DateTimeField(null=True, blank=True, db_index=True)
 
     def __str__(self):
         return f'{self.question.recipient_person.name} - {self.text[:50]}'
