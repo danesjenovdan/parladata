@@ -6,6 +6,7 @@ from parladata.admin.link import LinkQuestionInline
 
 
 class QuestionAdmin(admin.ModelAdmin):
+    list_display = ['title', 'timestamp']
     autocomplete_fields = ['person_authors', 'organization_authors', 'recipient_people', 'recipient_organizations', 'session']
     search_fields = ["title"]
     inlines = [
