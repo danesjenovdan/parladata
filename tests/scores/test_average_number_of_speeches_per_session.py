@@ -11,10 +11,10 @@ def test_calculate_person_avg_number_of_speeches(
     last_person
 ):
     avg_number_of_speeches = calculate_person_avg_number_of_speeches(first_person)
-    assert avg_number_of_speeches == 3.0
+    assert avg_number_of_speeches == 6.0
 
     avg_number_of_speeches = calculate_person_avg_number_of_speeches(second_person)
-    assert avg_number_of_speeches == 0
+    assert avg_number_of_speeches == 5.5
 
     avg_number_of_speeches = calculate_person_avg_number_of_speeches(last_person)
-    assert avg_number_of_speeches == 12.5
+    assert avg_number_of_speeches == 0

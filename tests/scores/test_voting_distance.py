@@ -20,33 +20,33 @@ def test_calculate_voting_distance(
 ): 
     # person
     voting_distance = calculate_voting_distance(first_person, second_person)
-    assert voting_distance == 0.0
+    assert voting_distance == 100.0
 
     voting_distance = calculate_voting_distance(second_person, first_person)
-    assert voting_distance == 0.0
+    assert voting_distance == 100.0
 
     voting_distance = calculate_voting_distance(first_person, last_person)
-    assert voting_distance == 29.629629629629626
+    assert voting_distance == 0.0
 
     voting_distance = calculate_voting_distance(second_person, last_person)
     assert voting_distance == 0.0
 
     # group
     group_voting_distances = calculate_group_voting_distance(first_group, main_organization)
-    assert len(group_voting_distances) == 39
-    assert group_voting_distances[29] == 37.93103448275862
-    assert group_voting_distances[12] == 72.0
-    assert group_voting_distances[41] == 33.33333333333333
+    assert len(group_voting_distances) == 41
+    assert group_voting_distances[217] == 100.0
+    assert group_voting_distances[256] == 74.07407407407408
+    assert group_voting_distances[244] == 69.23076923076923
 
     # THIS IS NOT USED BUT POSSIBLY INTERESTING
     voting_distance = calculate_voting_distance_between_groups(first_group, last_group)
-    assert voting_distance == 5.744562646538029
+    assert voting_distance == 5.0
 
     voting_distance = calculate_voting_distance_between_groups(last_group, first_group)
-    assert voting_distance == 5.744562646538029
+    assert voting_distance == 5.0
 
     voting_distance = calculate_voting_distance_between_groups(first_group, second_group)
-    assert voting_distance == 3.7416573867739413
+    assert voting_distance == 2.449489742783178
 
     voting_distance = calculate_voting_distance_between_groups(second_group, last_group)
-    assert voting_distance == 2.23606797749979
+    assert voting_distance == 3.3166247903554
