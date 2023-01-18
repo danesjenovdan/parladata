@@ -52,6 +52,7 @@ MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'debug_toolbar.middleware.DebugToolbarMiddleware', # Django debug toolbar
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.locale.LocaleMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -100,12 +101,6 @@ WSGI_APPLICATION = 'parladata_project.wsgi.application'
 
 # Internationalization
 # https://docs.djangoproject.com/en/1.8/topics/i18n/
-
-LANGUAGES = [('sl', 'Slovenian')]
-
-LANGUAGE_CODE = 'sl'
-
-TIME_ZONE = 'Europe/Ljubljana'
 
 USE_I18N = True
 
