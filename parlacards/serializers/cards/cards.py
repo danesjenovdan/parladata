@@ -398,6 +398,8 @@ class PublicPersonQuestionCardSerializer(PersonScoreCardSerializer):
             recipient_person=person,
             created_at__range=(from_timestamp, to_timestamp),
             approved_at__isnull=False
+        ).exclude(
+            rejected_at__isnull=False
         ).order_by(
             '-created_at',
         )
