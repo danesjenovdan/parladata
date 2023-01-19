@@ -26,7 +26,15 @@ class PublicPersonQuestionSerializer(serializers.ModelSerializer):
 
 
     def get_answer(self, obj):
-        return PublicPersonAnswerSerializer(obj.answer.filter(approved_at__isnull=False).first()).data
+        answer = obj.answer.filter(
+                approved_at__isnull=False
+            ).exclude(
+                rejected_at__isnull=False
+            ).first()
+        if answer:
+            return PublicPersonAnswerSerializer(answer).data
+        else:
+            return None
 
     def validate(self, data):
         data.pop("recaptcha")
