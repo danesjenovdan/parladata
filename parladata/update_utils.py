@@ -6,6 +6,7 @@ from django.conf import settings
 from django.utils.translation import gettext as _
 from django.contrib.auth.models import Group
 from django.db import transaction
+from django.utils import translation
 
 from parladata.models.vote import Vote
 from parladata.models.session import Session
@@ -111,17 +112,25 @@ def notify_editors_for_new_data():
                 }
             )
 
-def send_email(subject, to_email, template, data, from_email=settings.FROM_EMAIL):
+def send_email(subject, to_email, template, data, from_email=settings.FROM_EMAIL, reply_to=None):
+    cur_language = translation.get_language()
+    if settings.EMAIL_LANGUAGE_CODE:
+        translation.activate(settings.EMAIL_LANGUAGE_CODE)
     html_body = render_to_string(template, data)
     text_body = strip_tags(html_body)
+
+    if not reply_to:
+        reply_to = settings.FROM_EMAIL
 
     msg = EmailMultiAlternatives(
         subject=subject,
         from_email=from_email,
         to=[to_email],
-        body=text_body)
+        body=text_body,
+        reply_to=[reply_to])
     msg.attach_alternative(html_body, "text/html")
     msg.send()
+    translation.activate(cur_language)
 
 def set_vote_session(print_method=print):
     sessions = Session.objects.all().order_by('start_time')

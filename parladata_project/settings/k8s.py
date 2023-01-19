@@ -95,7 +95,8 @@ EMAIL_HOST = os.getenv('PARLAMETER_EMAIL_HOST', 'dummy')
 EMAIL_PORT = int(os.getenv('PARLAMETER_EMAIL_PORT', 587))
 EMAIL_HOST_USER = os.getenv('PARLAMETER_SMTP_USER', 'dummy')
 EMAIL_HOST_PASSWORD = os.getenv('PARLAMETER_SMTP_PASSWORD', 'dummy')
-FROM_EMAIL = os.getenv('PARLAMETER_FROM_EMAIL', 'test@test.si')
+FROM_EMAIL = os.getenv('PARLAMETER_FROM_EMAIL', 'info@parlameter.si')
+REPLY_TO_EMAIL = os.getenv('PARLAMETER_REPLY_TO_EMAIL', 'info@parlameter.si')
 
 # DJANGO STORAGE SETTINGS
 if os.getenv('PARLAMETER_ENABLE_S3', False):
@@ -119,6 +120,7 @@ LEMMATIZER_LANGUAGE_CODE = os.getenv('LEMMATIZER_LANGUAGE_CODE', 'sl')
 
 # TODO make separated env variable for LEGISLATION_RESOLVER_LANGUAGE_CODE or use generic env variable
 LEGISLATION_RESOLVER_LANGUAGE_CODE = os.getenv('LEMMATIZER_LANGUAGE_CODE', 'sl')
+EMAIL_LANGUAGE_CODE = os.getenv('EMAIL_LANGUAGE_CODE', 'sl')
 
 if sentry_url := os.getenv('DJANGO_SENTRY_URL', False):
     # imports should only happen if necessary
@@ -146,6 +148,19 @@ LANGUAGES = (
 )
 
 DRF_RECAPTCHA_DOMAIN = os.getenv('DRF_RECAPTCHA_DOMAIN', 'www.google.com')
+DRF_RECAPTCHA_SITE_KEY = os.getenv('DRF_RECAPTCHA_SITE_KEY', '')
 DRF_RECAPTCHA_SECRET_KEY = os.getenv('DRF_RECAPTCHA_SECRET_KEY', '')
-if not DRF_RECAPTCHA_SECRET_KEY:
+
+DRF_RECAPTCHA_TESTING = False
+if not DRF_RECAPTCHA_SECRET_KEY or not DRF_RECAPTCHA_SITE_KEY:
     DRF_RECAPTCHA_TESTING=True
+
+LANGUAGES = [('ba', 'Bosnian'), ('hr', 'Croatian'), ('sl', 'Slovenščina'), ('en', 'English')]
+
+LANGUAGE_CODE = os.getenv('PARLAMETER_LANGUAGE_CODE', 'sl')
+
+TIME_ZONE = 'Europe/Ljubljana'
+
+LOCALE_PATHS = [
+    os.path.join(os.path.dirname(BASE_DIR), 'locale/')
+]
