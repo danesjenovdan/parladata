@@ -16,7 +16,7 @@ class PublicPersonQuestionSerializer(serializers.ModelSerializer):
     answer = serializers.SerializerMethodField()
     class Meta:
         model = PublicPersonQuestion
-        fields = ('answer', 'recaptcha', 'id', 'created_at', 'approved_at', 'text')
+        fields = ('answer', 'recaptcha', 'id', 'created_at', 'approved_at', 'text', 'recipient_person', 'author_email')
         extra_kwargs = {
             'author_email': {'write_only': True},
             'recipient_person': {'write_only': True},
