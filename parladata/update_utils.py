@@ -112,12 +112,15 @@ def notify_editors_for_new_data():
                 }
             )
 
-def send_email(subject, to_email, template, data, from_email=settings.FROM_EMAIL, reply_to=settings.FROM_EMAIL):
+def send_email(subject, to_email, template, data, from_email=settings.FROM_EMAIL, reply_to=None):
     cur_language = translation.get_language()
     if settings.EMAIL_LANGUAGE_CODE:
         translation.activate(settings.EMAIL_LANGUAGE_CODE)
     html_body = render_to_string(template, data)
     text_body = strip_tags(html_body)
+
+    if not reply_to:
+        reply_to = settings.FROM_EMAIL
 
     msg = EmailMultiAlternatives(
         subject=subject,
