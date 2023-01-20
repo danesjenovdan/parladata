@@ -101,9 +101,11 @@ class PersonVoteAttendanceCardSerializer(PersonScoreCardSerializer):
 class PersonMonthlyVoteAttendanceCardSerializer(PersonScoreCardSerializer):
     def get_results(self, obj):
         mandate = Mandate.get_active_mandate_at(self.context['date'])
+        root_organization, playing_field = mandate.query_root_organizations(self.context['date'])
         from_timestamp, to_timestamp = mandate.get_time_range_from_mandate(self.context['date'])
         monthly_attendance = PersonMonthlyVoteAttendance.objects.filter(
             person=obj,
+            playing_field=playing_field,
             timestamp__range=(from_timestamp, to_timestamp),
         ).order_by('timestamp')
         return MonthlyAttendanceSerializer(monthly_attendance, many=True).data
@@ -570,9 +572,11 @@ class GroupMonthlyVoteAttendanceCardSerializer(GroupScoreCardSerializer):
     def get_results(self, obj):
         # obj is the group
         mandate = Mandate.get_active_mandate_at(self.context['date'])
+        root_organization, playing_field = mandate.query_root_organizations(self.context['date'])
         from_timestamp, to_timestamp = mandate.get_time_range_from_mandate(self.context['date'])
         monthly_attendance = GroupMonthlyVoteAttendance.objects.filter(
             group=obj,
+            playing_field=playing_field,
             timestamp__range=(from_timestamp, to_timestamp)
         ).order_by('timestamp')
         return MonthlyAttendanceSerializer(monthly_attendance, many=True).data
