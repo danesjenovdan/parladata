@@ -151,7 +151,7 @@ DRF_RECAPTCHA_TESTING = False
 if not DRF_RECAPTCHA_SECRET_KEY or not DRF_RECAPTCHA_SITE_KEY:
     DRF_RECAPTCHA_TESTING=True
 
-LANGUAGES = [('ba', 'Bosnian'), ('hr', 'Croatian'), ('sl', 'Slovenščina'), ('en', 'English')]
+LANGUAGES = [('bs', 'Bosnian'), ('hr', 'Croatian'), ('sl', 'Slovenščina'), ('en', 'English')]
 
 LANGUAGE_CODE = os.getenv('PARLAMETER_LANGUAGE_CODE', 'sl')
 
