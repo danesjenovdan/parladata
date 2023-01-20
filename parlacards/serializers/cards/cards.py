@@ -71,6 +71,7 @@ from parlacards.serializers.public_question import PublicPersonQuestionSerialize
 
 from parlacards.solr import parse_search_query_params, solr_select
 from parlacards.pagination import calculate_cache_key_for_page, create_paginator, create_solr_paginator
+from parlacards.recaptcha import recaptcha_data
 
 #
 # PERSON
@@ -397,6 +398,8 @@ class PublicPersonQuestionCardSerializer(PersonScoreCardSerializer):
             recipient_person=person,
             created_at__range=(from_timestamp, to_timestamp),
             approved_at__isnull=False
+        ).exclude(
+            rejected_at__isnull=False
         ).order_by(
             '-created_at',
         )
@@ -413,6 +416,7 @@ class PublicPersonQuestionCardSerializer(PersonScoreCardSerializer):
         return {
             **parent_data,
             **pagination_metadata,
+            **recaptcha_data,
             'results': person_public_questions_serializer.data,
         }
 
