@@ -32,6 +32,8 @@ urlpatterns = [
     path('person/speeches/', PersonSpeechesView.as_view()),
     path('person/media-reports/', PersonMediaReportsView.as_view()),
     path('person/public-questions/', PersonPublicQuestionView.as_view()),
+    # ditry hack TODO find better solution
+    path('person/public-answers/', PersonPublicQuestionView.as_view()),
 
     path('group/basic-information/', GroupInfo.as_view()),
     path('group/members/', GroupMembers.as_view()),
