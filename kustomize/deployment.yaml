@@ -34,7 +34,7 @@ spec:
             - name: DJANGO_STATIC_ROOT
               value: "/pvc/static"
             - name: DJANGO_STATIC_URL_BASE
-              value: "https://files.parladata.lb.djnd.si/static/"
+              value: "https://files.parladata-medvode.lb.djnd.si/static/"
           envFrom:
             - secretRef:
                 name: parladata-credentials
