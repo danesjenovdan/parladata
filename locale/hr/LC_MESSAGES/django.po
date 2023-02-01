@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-01-18 12:20+0100\n"
+"POT-Creation-Date: 2023-02-01 14:36+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -43,7 +43,7 @@ msgstr ""
 msgid "Completed tasks at the Parlameter "
 msgstr ""
 
-#: parladata/management/commands/send_approved_public_questions.py:31
+#: parladata/management/commands/send_approved_public_questions.py:26
 msgid "Question from Parlameter"
 msgstr "Pitanje Parlametra"
 
@@ -202,22 +202,29 @@ msgstr ""
 msgid "Completed tasks at the Parlameter"
 msgstr ""
 
-#: parladata/templates/public_question_email.html:6
-msgid ""
-"The following question was asked to you on the Parlameter platform. Please "
-"reply to this email and we will publish your reply."
-msgstr "Na platformi Parlametar postavljeno vam je sljedeće pitanje. molim te"
-"odgovorite na ovu e-poruku i mi ćemo objaviti vaš odgovor."
+#: parladata/templates/public_question_email.html:5
+msgid "Question for: "
+msgstr "Pitanje za: "
 
-#: parladata/templates/public_question_email.html:12
-msgid "Thank you in advance"
-msgstr "Hvala unaprijed"
+#: parladata/templates/public_question_email.html:6
+msgid "The following question was asked to you on the Parlameter platform."
+msgstr ""
+"Poštovana zastupnice/ poštovani zastupniče Hrvatskog sabora, prosljeđujemo Vam pitanje koje nam je stiglo od građana ili građanke preko opcije \"Pitaj zastupnika\" na našu platformu Parlametar.hr."
+
+#: parladata/templates/public_question_email.html:7
+msgid "Please reply to this email and we will publish your reply."
+msgstr ""
+"Molimo Vas da odgovor na pitanje pošaljete na ovaj e-mail s kojega Vam se obraćamo kako bismo ga mogli objaviti na našoj platformi."
 
 #: parladata/templates/public_question_email.html:13
-msgid "Team Parlameter"
-msgstr ""
+msgid "Thank you in advance"
+msgstr "Srdačno hvala,"
 
-#: parladata/update_utils.py:99
+#: parladata/templates/public_question_email.html:14
+msgid "Team Parlameter"
+msgstr "Tim Parlametra"
+
+#: parladata/update_utils.py:101
 msgid "New data for edit in parlameter "
 msgstr ""
 

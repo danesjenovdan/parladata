@@ -2,13 +2,15 @@
 <html lang="hr">
 <body>
     <div>
-        <h3>{% translate 'The following question was asked to you on the Parlameter platform. Please reply to this email and we will publish your reply.' %}</h3>
+        {% translate 'Question for: ' %}{{ person_name }}</br>
+        {% translate 'The following question was asked to you on the Parlameter platform.' %}</br>
+        {% translate 'Please reply to this email and we will publish your reply.' %}</br>
     </div>
     <div>
         {{ text }}
     </div>
     <div>
-        {% translate 'Thank you in advance' %}
+        {% translate 'Thank you in advance' %}</br>
         {% translate 'Team Parlameter' %}
     </div>
 </body>

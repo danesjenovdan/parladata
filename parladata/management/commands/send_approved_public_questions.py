@@ -28,6 +28,7 @@ class Command(BaseCommand):
                     'public_question_email.html',
                     {
                         'text': question.text,
+                        'person_name': question.recipient_person.name
                     },
                     reply_to=settings.REPLY_TO_EMAIL
                 )
