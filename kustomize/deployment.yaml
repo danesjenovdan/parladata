@@ -31,6 +31,10 @@ spec:
           env:
             - name: DJANGO_SETTINGS_MODULE
               value: parladata_project.settings.k8s
+            - name: DJANGO_STATIC_ROOT
+              value: "/pvc/static"
+            - name: DJANGO_STATIC_URL_BASE
+              value: "https://files.parladata.lb.djnd.si/static/"
           envFrom:
             - secretRef:
                 name: parladata-credentials
