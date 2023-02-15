@@ -54,11 +54,11 @@ class Session(Timestampable):
     def organization(self):
         if self.organizations.all().count() > 1:
             raise Exception('This session belongs to multiple organizations. Use the plural form "organizations".')
-        
+
         return self.organizations.first()
 
     def __str__(self):
         if self and self.organization:
-          return str(self.name) + ",  " + str(self.organization.name)
+          return f'{self.name},  {self.organization.name}, {self.mandate}'
         else:
-          return "Session"
+          return f'{self.name}, {self.mandate}'
