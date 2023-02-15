@@ -71,6 +71,7 @@ from parlacards.serializers.public_question import PublicPersonQuestionSerialize
 
 from parlacards.solr import parse_search_query_params, solr_select
 from parlacards.pagination import calculate_cache_key_for_page, create_paginator, create_solr_paginator
+from parlacards.recaptcha import recaptcha_data
 
 #
 # PERSON
@@ -100,9 +101,11 @@ class PersonVoteAttendanceCardSerializer(PersonScoreCardSerializer):
 class PersonMonthlyVoteAttendanceCardSerializer(PersonScoreCardSerializer):
     def get_results(self, obj):
         mandate = Mandate.get_active_mandate_at(self.context['date'])
+        root_organization, playing_field = mandate.query_root_organizations(self.context['date'])
         from_timestamp, to_timestamp = mandate.get_time_range_from_mandate(self.context['date'])
         monthly_attendance = PersonMonthlyVoteAttendance.objects.filter(
             person=obj,
+            playing_field=playing_field,
             timestamp__range=(from_timestamp, to_timestamp),
         ).order_by('timestamp')
         return MonthlyAttendanceSerializer(monthly_attendance, many=True).data
@@ -397,6 +400,8 @@ class PublicPersonQuestionCardSerializer(PersonScoreCardSerializer):
             recipient_person=person,
             created_at__range=(from_timestamp, to_timestamp),
             approved_at__isnull=False
+        ).exclude(
+            rejected_at__isnull=False
         ).order_by(
             '-created_at',
         )
@@ -413,6 +418,7 @@ class PublicPersonQuestionCardSerializer(PersonScoreCardSerializer):
         return {
             **parent_data,
             **pagination_metadata,
+            **recaptcha_data,
             'results': person_public_questions_serializer.data,
         }
 
@@ -566,9 +572,11 @@ class GroupMonthlyVoteAttendanceCardSerializer(GroupScoreCardSerializer):
     def get_results(self, obj):
         # obj is the group
         mandate = Mandate.get_active_mandate_at(self.context['date'])
+        root_organization, playing_field = mandate.query_root_organizations(self.context['date'])
         from_timestamp, to_timestamp = mandate.get_time_range_from_mandate(self.context['date'])
         monthly_attendance = GroupMonthlyVoteAttendance.objects.filter(
             group=obj,
+            playing_field=playing_field,
             timestamp__range=(from_timestamp, to_timestamp)
         ).order_by('timestamp')
         return MonthlyAttendanceSerializer(monthly_attendance, many=True).data

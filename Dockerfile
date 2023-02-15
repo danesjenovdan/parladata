@@ -5,7 +5,8 @@ RUN apt-get update && \
     apt-get upgrade -y && \
     apt-get install -y \
     libmemcached-dev \
-    libsasl2-modules
+    libsasl2-modules \
+    gettext
 
 RUN /usr/local/bin/python -m pip install --upgrade pip
 
@@ -16,6 +17,8 @@ COPY requirements.txt /app/
 RUN pip install -r requirements.txt
 
 COPY . /app
+
+RUN python3 manage.py compilemessages
 
 EXPOSE 8000
 
