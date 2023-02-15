@@ -25,6 +25,8 @@ services:
       PARLAMETER_AWS_SECRET_ACCESS_KEY: ""
       PARLAMETER_AWS_STORAGE_BUCKET_NAME: "parlameter"
       PARLAMETER_AWS_LOCATION: "dev"
+      DRF_RECAPTCHA_SITE_KEY: ""
+      DRF_RECAPTCHA_SECRET_KEY: ""
     volumes:
       - ./:/app
 
