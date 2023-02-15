@@ -341,6 +341,10 @@ class PersonPublicQuestionView(CardView):
     permission_classes = [AllowAny]
 
     def post(self, request):
+        """
+        This endpoint uses reCAPTCHA. Read about google recaptcha: https://developers.google.com/recaptcha/docs/v3
+        Set recaptcha secret key in secrets.yaml for using recaptcha or keep it empty for test mode.
+        """
         serializer = PublicPersonQuestionSerializer(data=request.data, context={"request": request})
         if serializer.is_valid():
             serializer.save()
