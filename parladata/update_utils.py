@@ -13,6 +13,7 @@ from parladata.models.session import Session
 from parladata.models.motion import Motion
 from parladata.models.speech import Speech
 from parladata.models.person import Person
+from parladata.models.public_question import PublicPersonQuestion
 
 from parlacards.models import SessionTfidf
 

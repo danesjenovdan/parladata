@@ -23,5 +23,5 @@ spec:
             command:
               - python
               - manage.py
-              - send_approved_public_questions
+              - public_questions_notifications
           restartPolicy: Never
