@@ -31,7 +31,9 @@ urlpatterns = [
     path('person/tfidf/', PersonTfidfView.as_view()),
     path('person/speeches/', PersonSpeechesView.as_view()),
     path('person/media-reports/', PersonMediaReportsView.as_view()),
+    # next two endpoints are duplicated because we need the same data on both cards
     path('person/public-questions/', PersonPublicQuestionView.as_view()),
+    path('person/public-answers/', PersonPublicQuestionView.as_view()),
 
     path('group/basic-information/', GroupInfo.as_view()),
     path('group/members/', GroupMembers.as_view()),
