@@ -62,6 +62,18 @@
         </br></br>
         {% endif %}
 
+        {% if new_public_questions %}
+        There are public questions for parliament members:
+        {% for person in new_public_questions %}
+            <p>
+                <a href="{{ base_url }}{% url 'admin:parladata_publicpersonquestion_changelist' %}">List of public questions</a>
+            </p>
+        {% endfor %}
+        </br></br>
+        {% endif %}
+
+
+
 
         
     </div>
