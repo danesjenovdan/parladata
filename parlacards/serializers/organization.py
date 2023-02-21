@@ -12,8 +12,12 @@ from parlacards.serializers.common import (
 
 class OrganizationBasicInfoSerializer(CommonCachableSerializer):
     def calculate_cache_key(self, instance):
-        last_membership_updated_at = instance.personmemberships_children.latest("updated_at").updated_at
-        cache_date = max([last_membership_updated_at, instance.updated_at])
+        try:
+            last_membership_updated_at = instance.personmemberships_children.latest("updated_at").updated_at
+            cache_date = max([last_membership_updated_at, instance.updated_at])
+        except:
+            # if there is organization without memberships
+            cache_date = instance.updated_at
         return f'OrganizationBasicInfoSerializer_{instance.id}_{cache_date.strftime("%Y-%m-%dT%H:%M:%S")}'
 
     # TODO this will return all links they
