@@ -11,6 +11,7 @@ from parladata.models.versionable_properties import (
     PersonPreferredPronoun, PersonNumberOfVoters, PersonNumberOfPoints, OrganizationName, OrganizationEmail,
     OrganizationAcronym, PersonEducationLevel
 )
+from parladata.models.common import EducationLevel
 from parlacards.models import PersonTfidf, GroupTfidf, SessionTfidf
 from taggit.models import Tag
 
@@ -29,7 +30,7 @@ class Command(BaseCommand):
             PersonName, PersonEducation, PersonNumberOfMandates, PersonEmail, PersonPreferredPronoun,
             PersonNumberOfVoters, PersonNumberOfPoints, OrganizationName, OrganizationEmail, OrganizationAcronym,
             PersonTfidf, GroupTfidf, SessionTfidf, Area, Law, Link, Mandate, PersonEducationLevel,
-            PersonMembership, Speech, Tag, AgendaItem, Ballot, Question, Document
+            PersonMembership, Speech, Tag, AgendaItem, Ballot, Question, Document, EducationLevel
         ]
 
         editor, created = Group.objects.get_or_create(name='editor')
