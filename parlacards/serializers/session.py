@@ -7,17 +7,22 @@ from parladata.models.vote import Vote
 
 class SessionSerializer(CommonCachableSerializer):
     def calculate_cache_key(self, session):
-        session_timestamp = session.updated_at
-        organization_timestamps = session.organizations.all().values_list('updated_at', flat=True)
-        timestamp = max([session_timestamp] + list(organization_timestamps))
+        dates = list(session.organizations.all().values_list('updated_at', flat=True))
+        dates.append(session.updated_at)
 
         last_speech = session.speeches.all().order_by("updated_at").last()
         if last_speech:
-            timestamp = max([timestamp, last_speech.updated_at])
+            dates.append(last_speech.updated_at)
+
+        last_motion = session.motions.all().order_by("updated_at").last()
+        if last_motion:
+            dates.append(last_motion.updated_at)
 
         last_agenda_item = AgendaItem.objects.filter(session=session).order_by("updated_at").last()
         if last_agenda_item:
-            timestamp = max([timestamp, last_agenda_item.updated_at])
+            dates.append(last_agenda_item.updated_at)
+
+        timestamp = max(dates)
 
         return f'SessionSerializer_{session.id}_{timestamp.strftime("%Y-%m-%dT%H:%M:%S")}'
 
