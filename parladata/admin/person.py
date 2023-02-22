@@ -10,45 +10,56 @@ from export.resources import MPResource
 from parladata.models import Person, PersonMembership
 from parladata.models.versionable_properties import *
 from parladata.admin.link import LinkPersonSocialInline
+from parladata.forms import VersionableValidatorInlineFormset
 
 
 class PersonNameInline(admin.TabularInline):
+    formset = VersionableValidatorInlineFormset
     model = PersonName
     extra = 0
 
 class PersonHonorificPrefixInline(admin.TabularInline):
+    formset = VersionableValidatorInlineFormset
     model = PersonHonorificPrefix
     extra = 0
 
 class PersonHonorificSuffixInline(admin.TabularInline):
+    formset = VersionableValidatorInlineFormset
     model = PersonHonorificSuffix
     extra = 0
 
 class PersonPreferredPronounInline(admin.TabularInline):
+    formset = VersionableValidatorInlineFormset
     model = PersonPreferredPronoun
     extra = 0
 
 class PersonEducationInline(admin.TabularInline):
+    formset = VersionableValidatorInlineFormset
     model = PersonEducation
     extra = 0
 
 class PersonEducationLevelInline(admin.TabularInline):
+    formset = VersionableValidatorInlineFormset
     model = PersonEducationLevel
     extra = 0
 
 class PersonPreviousOccupationInline(admin.TabularInline):
+    formset = VersionableValidatorInlineFormset
     model = PersonPreviousOccupation
     extra = 0
 
 class PersonNumberOfMandatesInline(admin.TabularInline):
+    formset = VersionableValidatorInlineFormset
     model = PersonNumberOfMandates
     extra = 0
 
 class PersonNumberOfVotersInline(admin.TabularInline):
+    formset = VersionableValidatorInlineFormset
     model = PersonNumberOfVoters
     extra = 0
 
 class PersonEmailInline(admin.TabularInline):
+    formset = VersionableValidatorInlineFormset
     model = PersonEmail
     extra = 0
 
