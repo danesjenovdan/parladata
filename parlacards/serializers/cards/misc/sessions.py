@@ -1,5 +1,5 @@
 from django.core.cache import cache
-from django.db.models import Q
+from django.db.models import Q, OuterRef, Subquery
 from rest_framework import serializers
 
 from parlacards.pagination import create_paginator
@@ -7,6 +7,7 @@ from parlacards.serializers.common import CardSerializer, CommonOrganizationSeri
 from parlacards.serializers.session import SessionSerializer
 from parladata.models.organization import Organization
 from parladata.models.session import Session
+from parladata.models.versionable_properties import OrganizationName
 
 
 class SessionListOrganizationSerializer(CommonOrganizationSerializer):
@@ -65,7 +66,14 @@ class SessionsCardSerializer(CardSerializer):
     def to_representation(self, mandate):
         parent_data = super().to_representation(mandate)
 
-        order = self.context.get('GET', {}).get('order_by', None) or '-start_time'
+        # get order from url
+        order_by = self.context.get('GET', {}).get('order_by', '-start_time')
+        order_reverse = False
+
+        # determine if order should be reversed
+        if order_by.startswith('-'):
+            order_by = order_by[1:]
+            order_reverse = True
 
         # filter by organization classifications (show root by default)
         classification_filter = self.context.get('GET', {}).get('classification', None) or 'root'
@@ -78,10 +86,26 @@ class SessionsCardSerializer(CardSerializer):
         sessions = mandate.sessions.filter(
             Q(start_time__lte=self.context['date']) | Q(start_time__isnull=True),
             organizations__classification__in=classifications,
-        ).order_by(order)
+        )
 
         if len(organization_ids):
             sessions = sessions.filter(organizations__id__in=organization_ids)
+
+        if order_by in ('name', 'start_time'):
+            order_string = f'-{order_by}' if order_reverse else order_by
+            sessions = sessions.order_by(order_string, 'id')
+        elif order_by in ('workingBody', 'organization'):
+            latest_org_name = Subquery(
+                OrganizationName.objects \
+                    .filter(owner_id=OuterRef('organizations')) \
+                    .valid_at(self.context['date']) \
+                    .order_by('-valid_from') \
+                    .values('value')[:1]
+            )
+            order_string = f'-organization_latest_name' if order_reverse else 'organization_latest_name'
+            sessions = sessions.annotate(organization_latest_name=latest_org_name).order_by(order_string, '-start_time', 'id')
+        else:
+            sessions = sessions.order_by('-start_time', 'id')
 
         paged_object_list, pagination_metadata = create_paginator(self.context.get('GET', {}), sessions, prefix='sessions:')
 
