@@ -13,8 +13,8 @@ PERSON_SOCIAL_NETWORK_CHOICES =(
 
 ORGANIZATION_LINK_CHOICES =(
     ("", ""),
-    ("facebook", "facebook"),
-    ("twitter", "twitter"),
+    ("budget", "budget"),
+    ("website", "website"),
 )
 
 class SocialForm(ModelForm):
