@@ -1,27 +1,27 @@
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: parlasolr-temp
+  name: parlasolr
   labels:
-    app: parlasolr-temp
+    app: parlasolr
 spec:
-  serviceName: parlasolr-temp
+  serviceName: parlasolr
   replicas: 1
   selector:
     matchLabels:
-      app: parlasolr-temp
+      app: parlasolr
   template:
     metadata:
       labels:
-        app: parlasolr-temp
+        app: parlasolr
     spec:
       securityContext:
         fsGroup: 8983
       containers:
-      - name: parlasolr-temp
+      - name: parlasolr
         image: parlasolr-hrvaska # kustomize thing
         volumeMounts:
-        - name: parlasolr-persistent-storage-temp
+        - name: parlasolr-persistent-storage
           mountPath: /var/solr/data
         ports:
         - name: http
@@ -54,7 +54,7 @@ spec:
         # create parlasearch core with a convenience script
         command: ['sh', '-c', '/opt/docker-solr/scripts/precreate-core parlasearch']
         volumeMounts:
-        - name: parlasolr-persistent-storage-temp
+        - name: parlasolr-persistent-storage
           # /var/solr/data it's SOLR_HOME set in Docker file
           mountPath: /var/solr/data
         resources:
@@ -68,7 +68,7 @@ spec:
         image: parlasolr-hrvaska
         command: ['cp', '-f', '/parlasearch-conf/schema.xml', '/var/solr/data/parlasearch/conf/']
         volumeMounts:
-        - name: parlasolr-persistent-storage-temp
+        - name: parlasolr-persistent-storage
           # /var/solr/data it's SOLR_HOME set in Docker file
           mountPath: /var/solr/data
         resources:
@@ -82,7 +82,7 @@ spec:
         image: parlasolr-hrvaska
         command: ['cp', '-f', '/parlasearch-conf/solrconfig.xml', '/var/solr/data/parlasearch/conf/']
         volumeMounts:
-        - name: parlasolr-persistent-storage-temp
+        - name: parlasolr-persistent-storage
           # /var/solr/data it's SOLR_HOME set in Docker file
           mountPath: /var/solr/data
         resources:
@@ -94,7 +94,7 @@ spec:
             cpu: 50m
   volumeClaimTemplates:
   - metadata:
-      name: parlasolr-persistent-storage-temp
+      name: parlasolr-persistent-storage
       annotations:
           pv.beta.kubernetes.io/gid: "8983"
     spec:
@@ -108,10 +108,10 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: parlasolr-temp
+  name: parlasolr
 spec:
   selector:
-    app: parlasolr-temp
+    app: parlasolr
   ports:
     - protocol: TCP
       port: 8983
