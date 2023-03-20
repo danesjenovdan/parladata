@@ -6,17 +6,21 @@ from django.conf import settings
 from parladata.models import Organization, Link, PersonMembership
 from parladata.models.versionable_properties import *
 from parladata.admin.link import LinkOrganizationInline
+from parladata.forms import VersionableValidatorInlineFormset
 
 
 class OrganizationNameInline(admin.TabularInline):
+    formset = VersionableValidatorInlineFormset
     model = OrganizationName
     extra = 0
 
 class OrganizationAcronymInline(admin.TabularInline):
+    formset = VersionableValidatorInlineFormset
     model = OrganizationAcronym
     extra = 0
 
 class OrganizationEmailInline(admin.TabularInline):
+    formset = VersionableValidatorInlineFormset
     model = OrganizationEmail
     extra = 0
 
