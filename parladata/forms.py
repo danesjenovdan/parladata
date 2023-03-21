@@ -4,8 +4,11 @@ from django.contrib import admin
 from django.urls import reverse
 from django.core.exceptions import ValidationError
 from django.forms.widgets import HiddenInput
+from django.utils.translation import gettext_lazy as _
 
 from parladata.models import Person, Question, Organization
+
+from datetime import datetime
 
 class QuestionAutocompleteSelectMultiple(AutocompleteSelectMultiple):
     def get_url(self):
@@ -83,6 +86,7 @@ class AddBallotsForm(forms.Form):
     people_absent = UsersChoiceField(required=False)
     people_did_not_vote = UsersChoiceField(required=False)
 
+
 class AddAnonymousBallotsForm(forms.Form):
     edit = forms.BooleanField(widget=HiddenInput())
     people_for = forms.IntegerField(required=True, initial=0)
@@ -90,3 +94,23 @@ class AddAnonymousBallotsForm(forms.Form):
     people_abstain = forms.IntegerField(required=True, initial=0)
     people_absent = forms.IntegerField(required=True, initial=0)
     people_did_not_vote = forms.IntegerField(required=True, initial=0)
+
+
+class VersionableValidatorInlineFormset(forms.models.BaseInlineFormSet):
+    def clean(self):
+        # get forms that actually have valid data
+        dates = []
+        for form in self.forms:
+            valid_from = form.cleaned_data.get('valid_from', datetime.min)
+            valid_to = form.cleaned_data.get('valid_to', datetime.min)
+            if not valid_from:
+                valid_from = datetime.min
+
+            if not valid_to:
+                valid_to = datetime.max
+
+            for date in dates:
+                print((date[1] - valid_from).total_seconds(), (date[0] - valid_to).total_seconds())
+                if (date[1] - valid_from).total_seconds() * (date[0] - valid_to).total_seconds() <= 0:
+                    raise forms.ValidationError(_('Time intervals are in intersection'))
+            dates.append((valid_from, valid_to))

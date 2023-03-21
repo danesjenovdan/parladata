@@ -35,9 +35,14 @@ class VoteBallotSerializer(CommonCachableSerializer):
 class VoteGroupSerializer(CommonCachableSerializer):
     def calculate_cache_key(self, group):
         group_timestamp = group.updated_at
-        vote_timestamp = self.context['vote'].updated_at
-        # TODO get latest membership timestamp
-        timestamp = max([group_timestamp, vote_timestamp])
+        vote = self.context['vote']
+        vote_timestamp = vote.updated_at
+
+        memberships_updated_at = list(vote.motion.session.organizations.first().personmemberships_children.filter(
+            role='voter'
+        ).active_at(vote.timestamp).values_list('updated_at', flat=True))
+
+        timestamp = max([group_timestamp, vote_timestamp] + memberships_updated_at)
         return f'VoteGroupSerializer_{group.id}_{self.context["vote"].id}_{timestamp.strftime("%Y-%m-%dT%H:%M:%S")}'
 
     def get_group_ballots(self, group):
@@ -121,7 +126,7 @@ class VoteSumsSerializer(CommonCachableSerializer):
         # instance is the vote
         # get the latest timestamp to calculate the cache key
         # it's either the vote or the latest update to the person
-        vote_timestamp = vote.timestamp
+        vote_timestamp = vote.updated_at
 
         # there is a special case where the vote has no ballots
         # we handle it by checking the ballot count and assigning
@@ -294,6 +299,10 @@ class VoteSerializer(CommonSerializer):
             'personvoter__updated_at'
         ).first()['personvoter__updated_at']
 
+        memberships_updated_at = list(vote.motion.session.organizations.first().personmemberships_children.filter(
+            role='voter'
+        ).active_at(vote.timestamp).values_list('updated_at', flat=True))
+
 
         # latest ballot update
         latest_ballot_timestamp = vote.ballots.all().order_by(
@@ -302,7 +311,7 @@ class VoteSerializer(CommonSerializer):
             'updated_at'
         ).first()['updated_at']
 
-        timestamp = max([vote_timestamp, latest_voter_timestamp, latest_ballot_timestamp])
+        timestamp = max([vote_timestamp, latest_voter_timestamp, latest_ballot_timestamp] + memberships_updated_at)
         cache_key = f'SingleVoteMembers__{vote.id}__{timestamp.strftime("%Y-%m-%dT%H:%M:%S")}'
 
         # if there's something in the cache, return
