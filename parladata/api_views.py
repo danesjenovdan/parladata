@@ -268,7 +268,7 @@ class PersonMembershipView(viewsets.ModelViewSet):
     queryset = PersonMembership.objects.all().order_by('id')
     serializer_class = PersonMembershipSerializer
     filter_backends = (DjangoFilterBackend,)
-    filterset_fields = ('member', 'organization', 'role', 'on_behalf_of')
+    filterset_fields = ('member', 'organization', 'role', 'on_behalf_of', 'mandate')
 
 
 class AreaView(viewsets.ModelViewSet):
