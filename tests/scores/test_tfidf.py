@@ -44,9 +44,10 @@ def test_stopwords():
 
 @pytest.mark.django_db()
 def test_calculate_people_tfidf(
-    main_organization
+    main_organization,
+    ending_date_of_first_mandate
 ):
-    tfidfs = calculate_people_tfidf(main_organization)
+    tfidfs = calculate_people_tfidf(main_organization, ending_date_of_first_mandate)
 
     # print statement for easier test updates
     # print(
@@ -62,7 +63,7 @@ def test_calculate_people_tfidf(
     #     tfidfs[-1]['tfidf'][0][1]
     # )
 
-    assert len(tfidfs) == 46
+    assert len(tfidfs) == 47
     assert len(tfidfs[0]['tfidf']) == 30
 
     assert tfidfs[6]['tfidf'][0][0] == ''
@@ -71,20 +72,21 @@ def test_calculate_people_tfidf(
     assert tfidfs[6]['tfidf'][1][0] == '\n30'
     assert tfidfs[6]['tfidf'][1][1] == 0.0
 
-    assert tfidfs[12]['tfidf'][0][0] == 'bistvo'
-    assert tfidfs[12]['tfidf'][0][1] == 0.31821
+    assert tfidfs[12]['tfidf'][0][0] == 'naslavljati'
+    assert tfidfs[12]['tfidf'][0][1] == 0.31895
 
     assert tfidfs[12]['tfidf'][-1][0] == 'trener'
-    assert tfidfs[12]['tfidf'][-1][1] == 0.1153
+    assert tfidfs[12]['tfidf'][-1][1] == 0.11202
 
     assert tfidfs[-1]['tfidf'][0][0] == ''
     assert tfidfs[-1]['tfidf'][0][1] == 1.0
 
 @pytest.mark.django_db()
 def test_calculate_groups_tfidf(
-    main_organization
+    main_organization,
+    ending_date_of_first_mandate
 ):
-    tfidfs = calculate_groups_tfidf(main_organization)
+    tfidfs = calculate_groups_tfidf(main_organization, ending_date_of_first_mandate)
 
     # print statement for easier test updates
     # print(
@@ -120,9 +122,10 @@ def test_calculate_groups_tfidf(
 
 @pytest.mark.django_db()
 def test_calculate_sessions_tfidf(
-    main_organization
+    main_organization,
+    ending_date_of_first_mandate
 ):
-    tfidfs = calculate_sessions_tfidf(main_organization)
+    tfidfs = calculate_sessions_tfidf(main_organization, ending_date_of_first_mandate)
 
     # print statement for easier test updates
     # print(

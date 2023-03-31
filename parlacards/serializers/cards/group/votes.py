@@ -21,22 +21,25 @@ class GroupVoteCardSerializer(GroupScoreCardSerializer):
         parent_data = super().to_representation(group)
 
         # get active madnate from timestamp and it's begining and ending/current timestamp
-        mandate = Mandate.get_active_mandate_at(self.context['date'])
-        from_timestamp, to_timestamp = mandate.get_time_range_from_mandate(self.context['date'])
-
-        root_organization_membership = group.query_root_organiaztion_on_date(self.context['date'])
+        root_organization_membership = group.query_root_organization_on_date(self.context['date'])
 
         if root_organization_membership:
+            mandate = Mandate.get_active_mandate_at(self.context['date'])
             root_organization = root_organization_membership.organization
-            votes = Vote.objects.filter(
-                timestamp__range=(from_timestamp, to_timestamp),
-                motion__session__organizations=root_organization
-            ).order_by(
-                '-timestamp',
-                '-id' # fallback ordering
-            )
         else:
-            raise ValueError(f'This organization does not have a membership in root organization.')
+            organization_membership = group.organization_memberships.latest('end_time')
+            mandate = Mandate.get_active_mandate_at(organization_membership.end_time)
+            root_organization = organization_membership.organization
+
+        from_timestamp, to_timestamp = mandate.get_time_range_from_mandate(self.context['date'])
+
+        votes = Vote.objects.filter(
+            timestamp__range=(from_timestamp, to_timestamp),
+            motion__session__organizations=root_organization
+        ).order_by(
+            '-timestamp',
+            '-id' # fallback ordering
+        )
 
         # TODO: maybe lemmatize?, maybe search by each word separately?
         if text := self.context.get('GET', {}).get('text', None):
