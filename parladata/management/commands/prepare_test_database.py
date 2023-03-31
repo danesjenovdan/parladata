@@ -3,12 +3,10 @@ from django.core.management.base import BaseCommand
 from parladata.models.session import Session
 from parladata.models.organization import Organization
 from parladata.models.common import Mandate
-from parladata.models.question import Question
-from parladata.models.legislation import Law
+from parladata.models.vote import Vote
 from parladata.models.speech import Speech
 from parladata.models.memberships import PersonMembership, OrganizationMembership
 
-from datetime import datetime, timedelta
 
 class Command(BaseCommand):
     help = 'Prepare database for tests (delete data)'
@@ -43,3 +41,12 @@ class Command(BaseCommand):
         OrganizationMembership.objects.filter(organization=mol2, member=sd).delete()
 
         Speech.objects.filter(session_id__in=[4280, 4283]).delete()
+
+        # vote id 11094 contains only anonymous ballots
+        Vote.objects.get(id=11094).ballots.all().update(personvoter=None)
+        # vote id 11093 contains some anonymous ballots
+        for ballot in Vote.objects.get(id=11093).ballots.all()[:15]:
+            ballot.personvoter=None
+            ballot.save()
+        # vote id 11092 contains no ballots at all
+        Vote.objects.get(id=11092).ballots.all().delete()
