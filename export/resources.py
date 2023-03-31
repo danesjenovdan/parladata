@@ -100,7 +100,7 @@ class CardExport(ExportModelResource):
             try:
                 mandate = Mandate.objects.get(id=mandate_id)
                 from_timestamp, to_timestamp = mandate.get_time_range_from_mandate(datetime.now())
-                root_organization, playing_field = mandate.query_root_organizations(to_timestamp-timedelta(seconds=1))
+                root_organization, playing_field = mandate.query_root_organizations(to_timestamp-timedelta(minutes=1))
                 return self._meta.model.objects.filter(playing_field=playing_field)
             # if mandate does not exist return empty queryset
             except:
@@ -119,7 +119,7 @@ class MPResource(ExportModelResource):
             try:
                 mandate = Mandate.objects.get(id=mandate_id)
                 from_timestamp, to_timestamp = mandate.get_time_range_from_mandate(datetime.now())
-                before_end = to_timestamp-timedelta(seconds=1)
+                before_end = to_timestamp-timedelta(minutes=1)
                 root_organization, playing_field = mandate.query_root_organizations(before_end)
                 members = playing_field.query_members(before_end)
                 return members
