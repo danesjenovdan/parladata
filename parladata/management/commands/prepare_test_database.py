@@ -9,9 +9,9 @@ from parladata.models.memberships import PersonMembership, OrganizationMembershi
 
 
 class Command(BaseCommand):
-    help = 'Prepare database for tests (delete data)'
+    help = """
+    Prepare database for tests (delete data)'
 
-    """
     * import_db.sh (import mol databse)
         * copy database
         * load database
@@ -25,9 +25,6 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         # delete sessions
         Session.objects.all().exclude(id__in=[3783, 3782, 4280, 4283]).delete()
-
-        mandate1 = Mandate.objects.get(id=1)
-        mandate1.save()
 
         mandate2 = Mandate.objects.get(id=2)
 

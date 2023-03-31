@@ -12,7 +12,7 @@ def main_organization():
 
 @pytest.fixture
 def first_mandate():
-    return Mandate.objects.first()
+    return Mandate.objects.order_by('id').first()
 
 @pytest.fixture
 def ending_date_of_first_mandate(first_mandate):
