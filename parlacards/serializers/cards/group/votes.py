@@ -24,10 +24,13 @@ class GroupVoteCardSerializer(GroupScoreCardSerializer):
         root_organization_membership = group.query_root_organization_on_date(self.context['date'])
 
         if root_organization_membership:
+            # group is active in mandate on current date.
             mandate = Mandate.get_active_mandate_at(self.context['date'])
             root_organization = root_organization_membership.organization
         else:
+            # get last active mandate for organization which has not active membership on current mandate
             organization_membership = group.organization_memberships.latest('end_time')
+            # organization membership has end time for last mandate
             mandate = Mandate.get_active_mandate_at(organization_membership.end_time)
             root_organization = organization_membership.organization
 
