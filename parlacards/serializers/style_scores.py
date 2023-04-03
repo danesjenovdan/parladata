@@ -26,17 +26,17 @@ class StyleScoresSerializer(CommonSerializer):
 
         if not score:
             return None
-        
+
         return score.value
-    
+
     def get_problematic(self, obj):
         # obj is person or group
         return self.get_style_score(obj, 'problematic')
-    
+
     def get_simple(self, obj):
         # obj is person or group
         return self.get_style_score(obj, 'simple')
-    
+
     def get_sophisticated(self, obj):
         # obj is person or group
         return self.get_style_score(obj, 'sophisticated')
