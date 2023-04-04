@@ -11,7 +11,7 @@ from parladata.models.speech import Speech
 from parladata.models.vote import Vote
 from parladata.models.legislation import Law
 from parladata.models.agenda_item import AgendaItem
-
+from parladata.models.common import Mandate
 
 
 def commit_to_solr(commander, output):
@@ -75,6 +75,23 @@ def process_month_string(month_string):
     return f'[{start_date.isoformat()}Z TO {end_date.isoformat()}Z]'
 
 
+def get_facet_range(mandate_id):
+    fallback_range = ('2018-12-01T00:00:00.000Z', 'NOW')
+
+    if not mandate_id:
+        return fallback_range
+
+    mandate = Mandate.objects.filter(id=mandate_id).first()
+    if not mandate:
+        return fallback_range
+
+    from_timestamp, to_timestamp = mandate.get_time_range_from_mandate(None)
+    # always start facet range from first day of month so +1MONTHS works correctly
+    from_timestamp = datetime(year=from_timestamp.year, month=from_timestamp.month, day=1)
+
+    return f'{from_timestamp.isoformat()}Z', f'{to_timestamp.isoformat()}Z'
+
+
 def solr_select(
     text_query='*',
     people_ids=[],
@@ -126,11 +143,9 @@ def solr_select(
         params['facet.field'] = ['person_id', 'party_id']
         params['facet.range'] = 'start_time'
         params['facet.range.gap'] = '+1MONTHS'
-        # TODO proper facet start
-        # params['facet.range.start'] = f'{config.facetRangeStart}T00:00:00.000Z',
-        # params['facet.range.end'] = config.facetRangeEnd ? `${config.facetRangeEnd}T00:00:00.000Z` : 'NOW',
-        params['facet.range.start'] = f'2018-12-15T00:00:00.000Z'
-        params['facet.range.end'] = 'NOW'
+        facet_range_start, facet_range_end = get_facet_range(mandate)
+        params['facet.range.start'] = facet_range_start
+        params['facet.range.end'] = facet_range_end
 
     url = f'{settings.SOLR_URL}/select'
 
