@@ -35,7 +35,7 @@ class Command(BaseCommand):
                 if task.email_msg:
                     msgs.append(task.email_msg)
             except Exception as e:
-                self.stdout.write(e)
+                self.stdout.write(str(e))
                 task.errored_at = datetime.now()
                 task.save()
 

@@ -76,8 +76,8 @@ def merge_people(real_person_id, fake_person_ids, print_method=print):
 
 
 def merge_organizations(real_org_id, fake_orgs_ids, print_method=print):
-    print_method('Real organization id: %s' % real_org_id)
-    print_method('Fake organization ids: %s' % ', '.join(fake_orgs_ids))
+    print_method(f'Real organization id: {real_org_id}')
+    print_method(f'Fake organization ids: {fake_orgs_ids}')
     print_method('\n')
 
     # check if real organization exists
@@ -109,6 +109,77 @@ def merge_organizations(real_org_id, fake_orgs_ids, print_method=print):
             question.recipient_organizations.remove(fake_org)
             question.recipient_organizations.add(real_org)
             question.save()
+        print_method('Done with moving.')
+
+    print_method(f'Real organization is owner of {real_org.personmemberships_children.all().count()} memberships.')
+    for fake_org in fake_organizations:
+        print_method(f'Fake organization {fake_org.id} is owner of {fake_org.personmemberships_children.all().count()} memberships.')
+        print_method('Moving membership to real organization...')
+        for membership in fake_org.personmemberships_children.all():
+            membership.organization = real_org
+            membership.save()
+        print_method('Done with moving.')
+
+    print_method(f'Real organization is child of {real_org.organization_memberships.all().count()} organization memberships.')
+    for fake_org in fake_organizations:
+        print_method(f'Fake organization {fake_org.id} is owner of {fake_org.organization_memberships.all().count()} memberships.')
+        print_method('Moving membership to real organization...')
+        for membership in fake_org.organization_memberships.all():
+            membership.member = real_org
+            membership.save()
+        print_method('Done with moving.')
+
+    print_method(f'Real organization is owner of {real_org.representatives.all().count()} representatives.')
+    for fake_org in fake_organizations:
+        print_method(f'Fake organization {fake_org.id} is owner of {fake_org.representatives.all().count()} representatives.')
+        print_method('Moving membership to real organization...')
+        for membership in fake_org.representatives.all():
+            membership.on_behalf_of = real_org
+            membership.save()
+        print_method('Done with moving.')
+
+    print_method(f'Real organization is owner of {real_org.sessions.all().count()} sessions.')
+    for fake_org in fake_organizations:
+        print_method(f'Fake organization {fake_org.id} is owner of {fake_org.sessions.all().count()} sessions.')
+        print_method('Moving sessions to real organization...')
+        for session in fake_org.sessions.all():
+            session.organizations.remove(fake_org)
+            session.organizations.add(real_org)
+            session.save()
+        print_method('Done with moving.')
+
+    print_method(f'Real organization is owner of {real_org.laws.all().count()} legislation.')
+    for fake_org in fake_organizations:
+        print_method(f'Fake organization {fake_org.id} is owner of {fake_org.laws.all().count()} legislation.')
+        print_method('Moving membership to real organization...')
+        for law in fake_org.laws.all():
+            law.organization = real_org
+            law.save()
+        print_method('Done with moving.')
+
+    print_method(f'Real organization is owner of {real_org.legislationconsideration_set.all().count()} legislation consideration.')
+    for fake_org in fake_organizations:
+        print_method(f'Fake organization {fake_org.id} is owner of {fake_org.legislationconsideration_set.all().count()} legislation consideration.')
+        print_method('Moving membership to real organization...')
+        for legislationconsideration in fake_org.legislationconsideration_set.all():
+            legislationconsideration.organization = real_org
+            legislationconsideration.save()
+        print_method('Done with moving.')
+
+    print_method(f'Real organization is owner of {real_org.links.all().count()} links.')
+    for fake_org in fake_organizations:
+        print_method(f'Fake organization {fake_org.id} is owner of {fake_org.links.all().count()} links.')
+        print_method('Moving membership to real organization...')
+        for link in fake_org.links.all():
+            link.organization = real_org
+            link.save()
+        print_method('Done with moving.')
+
+    print_method(f'Real organization is owner of {real_org.ballot_set.all().count()} ballots.')
+    for fake_org in fake_organizations:
+        print_method(f'Fake organization {fake_org.id} is owner of {fake_org.ballot_set.all().count()} ballots.')
+        print_method('Moving membership to real organization...')
+        fake_org.ballot_set.all().update(orgvoter=real_org)
         print_method('Done with moving.')
 
     for fake_org in fake_organizations:
