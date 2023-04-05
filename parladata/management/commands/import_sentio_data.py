@@ -139,7 +139,7 @@ class Command(BaseCommand):
     def download_file(self, file):
         if settings.PARLAMETER_ENABLE_S3:
             response = requests.get(file.url)
-            file_path = f'data/{file.name}'
+            file_path = f'parladata//data/{file.name}'
             with open(file_path, 'wb') as f:
                 f.write(response.content)
             return file_path
