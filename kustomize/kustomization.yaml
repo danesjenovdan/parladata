@@ -8,9 +8,9 @@ resources:
   - ingress.yaml
   - pvc.yaml
   - solr.yaml
+  - cronjobs/sentio_import_cronjob.yaml
+  - cronjobs/task_runner_cronjob.yaml
 
-  # uncomment cronjob to enable it
-  #- cronjobs/task_runner_cronjob.yaml
 images:
   - name: parladata-medvode
     newName: rg.fr-par.scw.cloud/djnd/parladata-medvode
