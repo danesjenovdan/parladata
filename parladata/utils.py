@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from parladata.models import Organization, Vote, Motion, Session, Person, Speech, PersonMembership, OrganizationMembership, Ballot, Mandate
+from parladata.models.task import Task
 from django.db.models import Q
 from parladata.models.agenda_item import AgendaItem
 from datetime import datetime, timedelta
@@ -708,3 +709,53 @@ def start_slovenia_IX():
         vote, start_time+timedelta(minutes=1),
         Mandate.objects.last()
     )
+
+def merge_orgs():
+    visited_ids = []
+    orgs = Organization.objects.all().order_by('id')
+    for org in orgs:
+        if org.name == 'Državni zbor':
+            continue
+        fakes = orgs.filter(parser_names__icontains=org.name).exclude(id=org.id)
+        if visited_ids:
+            fakes = fakes.exclude(id__in=visited_ids)
+        visited_ids.append(org.id)
+        if fakes:
+            print(org.name)
+            for fake in fakes:
+                print(fake.name)
+                visited_ids.append(fake.id)
+
+            Task(
+                name='merge_organizations',
+                payload={
+                    'real_org_id': org.id,
+                    'fake_orgs_ids': list(fakes.values_list('id', flat=True))
+                },
+                module_name='parladata.tasks',
+                email_msg='test',
+            ).save()
+            print()
+
+def delete_overlayed_memberships():
+    m_member = PersonMembership.objects.all().distinct('member')
+    for member in m_member:
+        print(member.member)
+        for o_member in PersonMembership.objects.filter(member=member.member).distinct('organization'):
+            memberships = PersonMembership.objects.filter(member=o_member.member, organization=o_member.organization).exclude(role='voter')
+            visited = []
+            for membership in memberships.order_by('start_time'):
+                visited.append(membership.id)
+                if membership.end_time:
+                    united_memberships = memberships.filter(start_time__lte=membership.end_time).exclude(id__in=visited).exclude(role='voter')
+                    if united_memberships:
+                        print(membership.organization)
+                        united_memberships.delete()
+
+                else:
+                    next_memberships = memberships.filter().exclude(id__in=visited).exclude(role='voter')
+                    if next_memberships:
+                        next_memberships
+                        print(membership.organization)
+                        next_memberships.delete()
+        print()
