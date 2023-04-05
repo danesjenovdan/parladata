@@ -246,7 +246,7 @@ class Organization(Timestampable, Taggable, Parsable, Sluggable, VersionableFiel
         voter_ids = self.query_voters(vote.timestamp)
         return Ballot.objects.filter(vote=vote, personvoter__in=voter_ids)
 
-    def query_root_organiaztion_on_date(self, timestamp):
+    def query_root_organization_on_date(self, timestamp):
         return OrganizationMembership.valid_at(timestamp).filter(
             organization__classification='root',
             member=self,
