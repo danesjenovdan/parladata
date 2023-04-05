@@ -53,8 +53,6 @@ class Mandate(models.Model):
             to_timestamp = datetime.now()
         if self.ending and self.ending < to_timestamp:
             to_timestamp = self.ending
-        else:
-            to_timestamp = to_timestamp
 
         return from_timestamp, to_timestamp
 

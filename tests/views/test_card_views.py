@@ -2,137 +2,124 @@ from datetime import datetime
 
 import pytest
 
+from tests.fixtures.common import *
+
 from rest_framework.test import APIClient
 
 from parlacards.views import *
 
 client = APIClient()
 
+def single_test_url(url, params, status_code=200):
+    response = client.get(url, params)
+    assert response.status_code == status_code
+
+def run_test_urls(url, fixtures):
+    for fixture in fixtures:
+        single_test_url(url, fixture)
+
+# tests
 @pytest.mark.django_db()
 def test_misc_members():
     response = client.get('/v3/cards/misc/members/?id=1&members:per_page=10&members:page=1&text=&order_by=name&preferred_pronoun=she')
     assert response.status_code == 200
 
 @pytest.mark.django_db()
-def test_misc_groups():
-    response = client.get('/v3/cards/misc/groups/?id=1')
-    assert response.status_code == 200
+def test_misc_groups(current_root_org, first_root_org):
+    run_test_urls('/v3/cards/misc/groups/', [first_root_org, current_root_org])
 
 @pytest.mark.django_db()
-def test_misc_sessions():
-    response = client.get('/v3/cards/misc/sessions/?id=1')
-    assert response.status_code == 200
+def test_misc_sessions(first_mandate_params, current_mandate_params):
+    run_test_urls('/v3/cards/misc/sessions/', [first_mandate_params, current_mandate_params])
 
 @pytest.mark.django_db()
-def test_misc_legislation():
-    response = client.get('/v3/cards/misc/legislation/?id=1')
-    assert response.status_code == 200
+def test_misc_legislation(first_mandate_params, current_mandate_params):
+    run_test_urls('/v3/cards/misc/legislation/', [first_mandate_params, current_mandate_params])
 
 @pytest.mark.django_db()
-def test_misc_last_session():
-    response = client.get('/v3/cards/misc/last-session/?id=1')
-    assert response.status_code == 200
+def test_misc_last_session(first_root_org, current_root_org):
+    run_test_urls('/v3/cards/misc/last-session/', [first_root_org, current_root_org])
 
 @pytest.mark.django_db()
-def test_misc_search():
-    response = client.get('/v3/cards/misc/search/?id=1')
-    assert response.status_code == 200
+def test_misc_search(first_mandate_params, current_mandate_params):
+    run_test_urls('/v3/cards/misc/search/', [first_mandate_params, current_mandate_params])
 
 @pytest.mark.django_db()
-def test_misc_menu_search():
-    response = client.get('/v3/cards/misc/menu-search/?id=1')
-    assert response.status_code == 200
+def test_misc_menu_search(first_mandate_params, current_mandate_params):
+    run_test_urls('/v3/cards/misc/menu-search/', [first_mandate_params, current_mandate_params])
 
 @pytest.mark.django_db()
-def test_misc_basic_information():
-    response = client.get('/v3/cards/misc/basic-information/?id=1')
-    assert response.status_code == 200
+def test_misc_basic_information(first_mandate_params, current_mandate_params):
+    run_test_urls('/v3/cards/misc/basic-information/', [first_mandate_params, current_mandate_params])
 
 @pytest.mark.django_db()
-def test_person_basic_information():
-    response = client.get('/v3/cards/person/basic-information/?id=240')
-    assert response.status_code == 200
+def test_person_basic_information(first_mandate_member, all_mandate_member):
+    run_test_urls('/v3/cards/person/basic-information/', [first_mandate_member, all_mandate_member])
 
 @pytest.mark.django_db()
-def test_person_vocabulary_size():
-    response = client.get('/v3/cards/person/vocabulary-size/?id=240')
-    assert response.status_code == 200
+def test_person_vocabulary_size(first_mandate_member, all_mandate_member):
+    run_test_urls('/v3/cards/person/vocabulary-size/', [first_mandate_member, all_mandate_member])
 
 @pytest.mark.django_db()
-def test_person_votes():
-    response = client.get('/v3/cards/person/votes/?id=240')
-    assert response.status_code == 200
+def test_person_votes(first_mandate_member, all_mandate_member):
+    run_test_urls('/v3/cards/person/votes/', [first_mandate_member, all_mandate_member])
 
 @pytest.mark.django_db()
-def test_person_questions():
+def test_person_questions(first_mandate_member, all_mandate_member):
+    run_test_urls('/v3/cards/person/questions/', [first_mandate_member, all_mandate_member])
     # TODO we should also test the questions aren't all the same
-    response = client.get('/v3/cards/person/questions/?id=240')
-    assert response.status_code == 200
 
 @pytest.mark.django_db()
-def test_person_memberships():
-    response = client.get('/v3/cards/person/memberships/?id=240')
-    assert response.status_code == 200
+def test_person_memberships(first_mandate_member, all_mandate_member):
+    run_test_urls('/v3/cards/person/memberships/', [first_mandate_member, all_mandate_member])
 
 @pytest.mark.django_db()
-def test_person_most_votes_in_common():
-    response = client.get('/v3/cards/person/most-votes-in-common/?id=240')
-    assert response.status_code == 200
+def test_person_most_votes_in_common(first_mandate_member, all_mandate_member):
+    run_test_urls('/v3/cards/person/most-votes-in-common/', [first_mandate_member, all_mandate_member])
 
 @pytest.mark.django_db()
-def test_person_least_votes_in_common():
-    response = client.get('/v3/cards/person/least-votes-in-common/?id=240')
-    assert response.status_code == 200
+def test_person_least_votes_in_common(first_mandate_member, all_mandate_member):
+    run_test_urls('/v3/cards/person/least-votes-in-common/', [first_mandate_member, all_mandate_member])
 
 @pytest.mark.django_db()
-def test_person_deviation_from_group():
-    response = client.get('/v3/cards/person/deviation-from-group/?id=240')
-    assert response.status_code == 200
+def test_person_deviation_from_group(first_mandate_member, all_mandate_member):
+    run_test_urls('/v3/cards/person/deviation-from-group/', [first_mandate_member, all_mandate_member])
 
 @pytest.mark.django_db()
-def test_person_average_number_of_speeches_per_session():
-    response = client.get('/v3/cards/person/average-number-of-speeches-per-session/?id=240')
-    assert response.status_code == 200
+def test_person_average_number_of_speeches_per_session(first_mandate_member, all_mandate_member):
+    run_test_urls('/v3/cards/person/average-number-of-speeches-per-session/', [first_mandate_member, all_mandate_member])
 
 @pytest.mark.django_db()
-def test_person_questions():
-    response = client.get('/v3/cards/person/number-of-questions/?id=240')
-    assert response.status_code == 200
+def test_person_questions(first_mandate_member, all_mandate_member):
+    run_test_urls('/v3/cards/person/number-of-questions/', [first_mandate_member, all_mandate_member])
 
 @pytest.mark.django_db()
-def test_person_vote_attendance():
-    response = client.get('/v3/cards/person/vote-attendance/?id=240')
-    assert response.status_code == 200
+def test_person_vote_attendance(first_mandate_member, all_mandate_member):
+    run_test_urls('/v3/cards/person/vote-attendance/', [first_mandate_member, all_mandate_member])
 
 @pytest.mark.django_db()
-def test_person_recent_activity():
-    response = client.get('/v3/cards/person/recent-activity/?id=240')
-    assert response.status_code == 200
+def test_person_recent_activity(first_mandate_member, all_mandate_member):
+    run_test_urls('/v3/cards/person/recent-activity/', [first_mandate_member, all_mandate_member])
 
 @pytest.mark.django_db()
-def test_person_monthly_vote_attendance():
-    response = client.get('/v3/cards/person/monthly-vote-attendance/?id=240')
-    assert response.status_code == 200
+def test_person_monthly_vote_attendance(first_mandate_member, all_mandate_member):
+    run_test_urls('/v3/cards/person/monthly-vote-attendance/', [first_mandate_member, all_mandate_member])
 
 @pytest.mark.django_db()
-def test_person_style_scores():
-    response = client.get('/v3/cards/person/style-scores/?id=240')
-    assert response.status_code == 200
+def test_person_style_scores(first_mandate_member, all_mandate_member):
+    run_test_urls('/v3/cards/person/style-scores/', [first_mandate_member, all_mandate_member])
 
 @pytest.mark.django_db()
-def test_person_number_of_spoken_words():
-    response = client.get('/v3/cards/person/number-of-spoken-words/?id=240')
-    assert response.status_code == 200
+def test_person_number_of_spoken_words(first_mandate_member, all_mandate_member):
+    run_test_urls('/v3/cards/person/number-of-spoken-words/', [first_mandate_member, all_mandate_member])
 
 @pytest.mark.django_db()
-def test_person_tfidf():
-    response = client.get('/v3/cards/person/tfidf/?id=240')
-    assert response.status_code == 200
+def test_person_tfidf(first_mandate_member, all_mandate_member):
+    run_test_urls('/v3/cards/person/tfidf/', [first_mandate_member, all_mandate_member])
 
 @pytest.mark.django_db()
-def test_person_media_reports():
-    response = client.get('/v3/cards/person/media-reports/?id=240')
-    assert response.status_code == 200
+def test_person_media_reports(first_mandate_member, all_mandate_member):
+    run_test_urls('/v3/cards/person/media-reports/', [first_mandate_member, all_mandate_member])
 
 # TODO: needs settings.SOLR_URL
 # @pytest.mark.django_db()
@@ -141,75 +128,61 @@ def test_person_media_reports():
 #     assert response.status_code == 200
 
 @pytest.mark.django_db()
-def test_group_basic_information():
-    response = client.get('/v3/cards/group/basic-information/?id=19')
-    assert response.status_code == 200
+def test_group_basic_information(first_mandate_party, all_mandate_party):
+    run_test_urls('/v3/cards/group/basic-information/', [first_mandate_party, all_mandate_party])
 
 @pytest.mark.django_db()
-def test_group_members():
-    response = client.get('/v3/cards/group/members/?id=19')
-    assert response.status_code == 200
+def test_group_members(first_mandate_party, all_mandate_party):
+    run_test_urls('/v3/cards/group/members/', [first_mandate_party, all_mandate_party])
 
 @pytest.mark.django_db()
-def test_group_vocabulary_size():
-    response = client.get('/v3/cards/group/vocabulary-size/?id=19')
-    assert response.status_code == 200
+def test_group_vocabulary_size(first_mandate_party, all_mandate_party):
+    run_test_urls('/v3/cards/group/vocabulary-size/', [first_mandate_party, all_mandate_party])
 
 @pytest.mark.django_db()
-def test_group_number_of_questions():
-    response = client.get('/v3/cards/group/number-of-questions/?id=19')
-    assert response.status_code == 200
+def test_group_number_of_questions(first_mandate_party, all_mandate_party):
+    run_test_urls('/v3/cards/group/number-of-questions/', [first_mandate_party, all_mandate_party])
 
 @pytest.mark.django_db()
-def test_group_monthly_vote_attendance():
-    response = client.get('/v3/cards/group/monthly-vote-attendance/?id=19')
-    assert response.status_code == 200
+def test_group_monthly_vote_attendance(first_mandate_party, all_mandate_party):
+    run_test_urls('/v3/cards/group/monthly-vote-attendance/', [first_mandate_party, all_mandate_party])
 
 @pytest.mark.django_db()
-def test_group_questions():
+def test_group_questions(first_mandate_party, all_mandate_party):
+    run_test_urls('/v3/cards/group/questions/', [first_mandate_party, all_mandate_party])
     # TODO we should also test the questions aren't all the same
-    response = client.get('/v3/cards/group/questions/?id=19')
-    assert response.status_code == 200
 
 @pytest.mark.django_db()
-def test_group_vote_attendance():
-    response = client.get('/v3/cards/group/vote-attendance/?id=19')
-    assert response.status_code == 200
+def test_group_vote_attendance(first_mandate_party, all_mandate_party):
+    run_test_urls('/v3/cards/group/vote-attendance/', [first_mandate_party, all_mandate_party])
 
 @pytest.mark.django_db()
-def test_group_votes():
-    response = client.get('/v3/cards/group/votes/?id=19')
-    assert response.status_code == 200
+def test_group_votes(first_mandate_party, all_mandate_party):
+    run_test_urls('/v3/cards/group/votes/', [first_mandate_party, all_mandate_party])
 
 @pytest.mark.django_db()
-def test_group_most_votes_in_common():
-    response = client.get('/v3/cards/group/most-votes-in-common/?id=19')
-    assert response.status_code == 200
+def test_group_most_votes_in_common(first_mandate_party, all_mandate_party):
+    run_test_urls('/v3/cards/group/most-votes-in-common/', [first_mandate_party, all_mandate_party])
 
 @pytest.mark.django_db()
-def test_group_least_votes_in_common():
-    response = client.get('/v3/cards/group/least-votes-in-common/?id=19')
-    assert response.status_code == 200
+def test_group_least_votes_in_common(first_mandate_party, all_mandate_party):
+    run_test_urls('/v3/cards/group/least-votes-in-common/', [first_mandate_party, all_mandate_party])
 
 @pytest.mark.django_db()
-def test_group_deviation_from_group():
-    response = client.get('/v3/cards/group/deviation-from-group/?id=19')
-    assert response.status_code == 200
+def test_group_deviation_from_group(first_mandate_party, all_mandate_party):
+    run_test_urls('/v3/cards/group/deviation-from-group/', [first_mandate_party, all_mandate_party])
 
 @pytest.mark.django_db()
-def test_group_tfidf():
-    response = client.get('/v3/cards/group/tfidf/?id=19')
-    assert response.status_code == 200
+def test_group_tfidf(first_mandate_party, all_mandate_party):
+    run_test_urls('/v3/cards/group/tfidf/', [first_mandate_party, all_mandate_party])
 
 @pytest.mark.django_db()
-def test_group_style_scores():
-    response = client.get('/v3/cards/group/style-scores/?id=19')
-    assert response.status_code == 200
+def test_group_style_scores(first_mandate_party, all_mandate_party):
+    run_test_urls('/v3/cards/group/style-scores/', [first_mandate_party, all_mandate_party])
 
 @pytest.mark.django_db()
-def test_group_discord():
-    response = client.get('/v3/cards/group/discord/?id=19')
-    assert response.status_code == 200
+def test_group_discord(first_mandate_party, all_mandate_party):
+    run_test_urls('/v3/cards/group/discord/', [first_mandate_party, all_mandate_party])
 
 @pytest.mark.django_db()
 def test_group_discord_with_nonexistent_id():
