@@ -12,6 +12,8 @@ from datetime import datetime, timedelta
 
 import json
 import requests
+import zipfile
+import os
 
 
 class Command(BaseCommand):
@@ -27,7 +29,12 @@ class Command(BaseCommand):
 
 
     def parse(self, file_path):
-        f = open(file_path)
+        # workaround add zip extension
+        os.rename(file_path, file_path + '.zip')
+        # unzip file
+        with zipfile.ZipFile(file_path + '.zip', 'r') as zip_ref:
+            zip_ref.extractall('data')
+        f = open('data/package.json')
         data = json.load(f)
         people = {}
         for participant in data['participant']:
