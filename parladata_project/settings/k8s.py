@@ -98,8 +98,9 @@ EMAIL_HOST_PASSWORD = os.getenv('PARLAMETER_SMTP_PASSWORD', 'dummy')
 FROM_EMAIL = os.getenv('PARLAMETER_FROM_EMAIL', 'info@parlameter.si')
 REPLY_TO_EMAIL = os.getenv('PARLAMETER_REPLY_TO_EMAIL', 'info@parlameter.si')
 
+PARLAMETER_ENABLE_S3 = os.getenv('PARLAMETER_ENABLE_S3', False)
 # DJANGO STORAGE SETTINGS
-if os.getenv('PARLAMETER_ENABLE_S3', False):
+if PARLAMETER_ENABLE_S3:
     DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
     AWS_ACCESS_KEY_ID = os.getenv('PARLAMETER_AWS_ACCESS_KEY_ID', '')
     AWS_SECRET_ACCESS_KEY = os.getenv('PARLAMETER_AWS_SECRET_ACCESS_KEY', '')
