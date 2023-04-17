@@ -45,11 +45,10 @@ class Command(BaseCommand):
 
 
         session_type = data['export']['session']['type']
-        session_date = data['export']['date']
-        session_name = data['export']['session']['name']
+        session_date = data['export']['session']['participantList']['dateOfLastChange']
         session_id = data['export']['session']['id']
 
-        start_time = datetime.fromisoformat(session_date)
+        start_time = datetime.fromisoformat(session_date.split("T")[0])
 
 
         mandate = Mandate.get_active_mandate_at(start_time)
@@ -58,15 +57,6 @@ class Command(BaseCommand):
         if Session.objects.filter(gov_id=session_id).exists():
             print(f'skip parsing {session_name}')
             return
-        session = Session(
-            name=session_name,
-            classification=session_type.lower(),
-            start_time=start_time,
-            gov_id=session_id,
-            mandate=mandate
-        )
-        session.save()
-        session.organizations.add(organization)
 
         try:
             ai_order = AgendaItem.objects.latest('order').order
@@ -77,9 +67,18 @@ class Command(BaseCommand):
         votes = {}
 
         for item in data['element']:
-            start_time = start_time + timedelta(minutes=1)
+            start_time = item['startDate']
             if item['type'] == 'Session':
-                pass
+                session_name = item['name']
+                session = Session(
+                    name=session_name,
+                    classification=session_type.lower(),
+                    start_time=start_time,
+                    gov_id=session_id,
+                    mandate=mandate
+                )
+                session.save()
+                session.organizations.add(organization)
             if item['type'] == 'Group':
                 ai_order += 1
                 agenda_item = AgendaItem(
