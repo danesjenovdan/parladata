@@ -29,8 +29,13 @@ class SessionSerializer(CommonCachableSerializer):
     def get_has_transcript(self, session):
         return session.speeches.exists()
 
-    def get_has_minutes(self, session):
+    def get_has_agenda_items(self, session):
+        # do any agenda items exist for this session?
         return AgendaItem.objects.filter(session=session).exists()
+
+    def get_has_minutes(self, session):
+        # do any agenda items that have actual text content exist?
+        return AgendaItem.objects.filter(session=session).exclude(Q(text__isnull=True) | Q(text__exact='')).exists()
 
     def get_has_legislation(self, session):
         return session.legislation_considerations.filter(
@@ -48,6 +53,7 @@ class SessionSerializer(CommonCachableSerializer):
     classification = serializers.CharField() # TODO regular, irregular, urgent, correspondent
     in_review = serializers.BooleanField()
     has_transcript = serializers.SerializerMethodField()
+    has_agenda_items = serializers.SerializerMethodField()
     has_minutes = serializers.SerializerMethodField()
     has_legislation = serializers.SerializerMethodField()
     has_votes = serializers.SerializerMethodField()
