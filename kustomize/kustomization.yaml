@@ -14,7 +14,7 @@ resources:
 images:
   - name: parladata-medvode
     newName: rg.fr-par.scw.cloud/djnd/parladata-medvode
-    newTag: '87aa16bab05a06bd73c7636bc0445ede5aff32d2'
+    newTag: 'fac99406568ef4f6b3eb52c792bd6e0cf68a3d60'
   - name: parlasolr-medvode
     newName: rg.fr-par.scw.cloud/djnd/parlasolr-medvode
-    newTag: '87aa16bab05a06bd73c7636bc0445ede5aff32d2'
+    newTag: 'fac99406568ef4f6b3eb52c792bd6e0cf68a3d60'
