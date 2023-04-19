@@ -6,9 +6,9 @@ from export.resources import *
 from tests.fixtures.common import *
 
 @pytest.mark.django_db()
-def test_export_as_generator_json():
+def test_export_as_generator_json(first_mandate):
     resource = GroupDiscordResource()
-    generator = resource.export_as_generator_json()
+    generator = resource.export_as_generator_json(mandate_id=first_mandate.id)
     chunks = list(generator)
     chunks_joined = ''.join(chunks)
     res = json.loads(chunks_joined)
@@ -21,9 +21,9 @@ def test_export_as_generator_json():
     assert 'timestamp' in json_keys
 
 @pytest.mark.django_db()
-def test_export_as_generator_csv():
+def test_export_as_generator_csv(first_mandate):
     resource = GroupDiscordResource()
-    generator = resource.export_as_generator_csv()
+    generator = resource.export_as_generator_csv(mandate_id=first_mandate.id)
     chunks = list(generator)
     chunks_joined = ''.join(chunks)
     lines = chunks_joined.splitlines()
