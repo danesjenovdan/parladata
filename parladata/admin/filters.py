@@ -260,7 +260,7 @@ class ParsableFilter(admin.SimpleListFilter):
     def lookups(self, request, model_admin):
         list_of_members = []
 
-        return [['parsable', 'parsable'], ['parsed', 'parsed']]
+        return [['parsable', 'parsable'], ['parsed', 'parsed'], ['sentio', 'sentio']]
 
     def queryset(self, request, queryset):
         if self.value():
