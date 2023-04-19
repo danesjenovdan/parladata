@@ -14,7 +14,7 @@ resources:
 images:
   - name: parladata-ua
     newName: rg.fr-par.scw.cloud/djnd/parladata-ua
-    newTag: 'ed6a0fb891e3ded320dbee11adacb7bdb30ca987'
+    newTag: 'baee6d80d3a1d7269ffce915dc7320626b1e1431'
   - name: parlasolr-ua
     newName: rg.fr-par.scw.cloud/djnd/parlasolr-ua
-    newTag: 'ed6a0fb891e3ded320dbee11adacb7bdb30ca987'
+    newTag: 'baee6d80d3a1d7269ffce915dc7320626b1e1431'
