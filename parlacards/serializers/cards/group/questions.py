@@ -71,7 +71,7 @@ class GroupQuestionCardSerializer(GroupScoreCardSerializer):
                 continue
 
             # get the person's membership start and end times
-            member_memberships = memberships.filter(member_id=member_id).values('start_time', 'end_time')
+            member_memberships = memberships.filter(member_id=member_id, mandate=mandate).values('start_time', 'end_time')
 
             # iterate through the memberships and construct a Q object
             # with the appropriate start and end times
@@ -92,7 +92,7 @@ class GroupQuestionCardSerializer(GroupScoreCardSerializer):
 
         # get all questions that were asked by the organization, not by individual members
         organization_questions = Question.objects.filter(
-            Q(timestamp__lte=timestamp) | Q(timestamp__isnull=True),
+            Q(timestamp__range=(from_timestamp, to_timestamp)) | Q(timestamp__isnull=True),
             organization_authors=group
         )
 
