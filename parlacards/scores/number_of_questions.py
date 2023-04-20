@@ -87,7 +87,8 @@ def calculate_group_number_of_question(group, playing_field, timestamp=None):
         )
 
         member_memberships = memberships.filter(
-            member__id=member_id
+            member__id=member_id,
+            mandate=mandate
         ).values(
             'start_time',
             'end_time'
@@ -105,7 +106,7 @@ def calculate_group_number_of_question(group, playing_field, timestamp=None):
             )
 
         organization_questions = Question.objects.filter(
-            timestamp__lte=timestamp,
+            timestamp__range=(from_timestamp, to_timestamp),
             organization_authors=group
         )
 
