@@ -13,6 +13,7 @@ class AgendaItem(Timestampable, Taggable):
                                help_text='Date of the item.')
 
     session = models.ForeignKey('Session', blank=True, null=True,
+                                related_name='agenda_items',
                                 on_delete=models.CASCADE,)
 
     order = models.IntegerField(blank=True, null=True,
