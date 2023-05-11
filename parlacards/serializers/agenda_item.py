@@ -104,7 +104,7 @@ class AgendaItemsSerializer(CommonCachableSerializer):
         if agenda_items:
             times.append(agenda_items.last().updated_at)
 
-        timestamp = max([times])
+        timestamp = max(times)
         return f'AgendaItemSerializer{instance.id}_{timestamp.strftime("%Y-%m-%dT%H:%M:%S")}'
 
     def get_agenda_items(self, obj):
