@@ -143,7 +143,6 @@ class LegislationConsideration(Timestampable):
     )
     legislation = models.ForeignKey(
         'Law',
-        related_name='legislationconsiderations',
         on_delete=models.CASCADE
     )
     procedure_phase = models.ForeignKey(
@@ -153,7 +152,6 @@ class LegislationConsideration(Timestampable):
     session = models.ForeignKey('Session',
         blank=True, null=True,
         on_delete=models.CASCADE,
-        related_name='legislationconsiderations',
         help_text='Session at which the legislation was discussed'
     )
 
