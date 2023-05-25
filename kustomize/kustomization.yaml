@@ -14,7 +14,7 @@ resources:
 images:
   - name: parladata-bosna
     newName: rg.fr-par.scw.cloud/djnd/parladata-bosna
-    newTag: 'f6a82babeb94c1a17d43633c65afe0a54a012d3e'
+    newTag: '35afd04a32ae628760869d82c5d0e42b2432d780'
   - name: parlasolr-bosna
     newName: rg.fr-par.scw.cloud/djnd/parlasolr-bosna
-    newTag: 'f6a82babeb94c1a17d43633c65afe0a54a012d3e'
+    newTag: '35afd04a32ae628760869d82c5d0e42b2432d780'
