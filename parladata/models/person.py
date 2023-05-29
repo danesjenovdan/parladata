@@ -162,13 +162,38 @@ class Person(Timestampable, Parsable, Sluggable, VersionableFieldsOwner):
                     f'Membership ids: {list(active_memberships.values_list("id", flat=True))}'
                 ]
             ))
-        
+
         active_membership = active_memberships.first()
 
         if not active_membership:
             return None
 
         return active_membership.organization
+
+    def get_last_playing_field_with_mandate(self, timestamp=None):
+        if not timestamp:
+            timestamp = datetime.now()
+
+        membership_at = PersonMembership.objects.active_at(
+            timestamp
+        ).filter(
+            member=self,
+            role='voter',
+            organization__classification='root'
+        ).order_by('end_time').last()
+
+        if membership_at:
+            return membership_at.organization, membership_at.mandate
+        else:
+            membership_at = PersonMembership.objects.filter(
+                member=self,
+                role='voter',
+                organization__classification='root'
+            ).order_by('end_time').last()
+            if membership_at:
+                return membership_at.organization, membership_at.mandate
+            else:
+                raise Exception(f'Person {self.name} has no voter membership in root organization')
 
     def __str__(self):
         return f'{self.id}: {self.name}'

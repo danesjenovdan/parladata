@@ -99,12 +99,20 @@ class PersonVoteAttendanceCardSerializer(PersonScoreCardSerializer):
 
 
 class PersonMonthlyVoteAttendanceCardSerializer(PersonScoreCardSerializer):
-    def get_results(self, obj):
-        mandate = Mandate.get_active_mandate_at(self.context['date'])
-        root_organization, playing_field = mandate.query_root_organizations(self.context['date'])
+    def get_results(self, person):
+        # mandate = Mandate.get_active_mandate_at(self.context['date'])
+
+        # playing_field = mandate.query_person_root_organization(obj, self.context['date'])
+
+        playing_field, mandate = person.get_last_playing_field_with_mandate(self.context['date'])
+
+        # mandate = Mandate.get_active_mandate_at(self.context['date'])
+
+        print(playing_field, mandate)
+
         from_timestamp, to_timestamp = mandate.get_time_range_from_mandate(self.context['date'])
         monthly_attendance = PersonMonthlyVoteAttendance.objects.filter(
-            person=obj,
+            person=person,
             playing_field=playing_field,
             timestamp__range=(from_timestamp, to_timestamp),
         ).order_by('timestamp')
@@ -190,9 +198,10 @@ class PersonMembershipCardSerializer(PersonScoreCardSerializer):
 class MostVotesInCommonCardSerializer(PersonScoreCardSerializer):
     def get_results(self, obj):
         # obj is the person
-        mandate = Mandate.get_active_mandate_at(self.context['date'])
-        root_organization = mandate.query_root_organizations(self.context['date'])[1]
-        voters = root_organization.query_voters(self.context['date'])
+        #mandate = Mandate.get_active_mandate_at(self.context['date'])
+        #playing_field = mandate.query_person_root_organization(obj, self.context['date'])
+        playing_field, mandate = obj.get_last_playing_field_with_mandate(self.context['date'])
+        voters = playing_field.query_voters(self.context['date'])
         from_timestamp, to_timestamp = mandate.get_time_range_from_mandate(self.context['date'])
         most_in_common = VotingDistance.objects.filter(
             person=obj,
@@ -226,10 +235,16 @@ class MostVotesInCommonCardSerializer(PersonScoreCardSerializer):
 class LeastVotesInCommonCardSerializer(PersonScoreCardSerializer):
     def get_results(self, obj):
         # obj is the person
-        mandate = Mandate.get_active_mandate_at(self.context['date'])
-        root_organization = mandate.query_root_organizations(self.context['date'])[1]
-        voters = root_organization.query_voters(self.context['date'])
+        # mandate = Mandate.get_active_mandate_at(self.context['date'])
+        # playing_field = mandate.query_person_root_organization(obj, self.context['date'])
+        playing_field, mandate = obj.get_last_playing_field_with_mandate(self.context['date'])
         from_timestamp, to_timestamp = mandate.get_time_range_from_mandate(self.context['date'])
+
+        if self.context['date'] > to_timestamp and self.context['auto_today']:
+            self.context['date'] = to_timestamp
+
+        voters = playing_field.query_voters(self.context['date'])
+
         least_in_common = VotingDistance.objects.filter(
             person=obj,
             target__in=voters,
