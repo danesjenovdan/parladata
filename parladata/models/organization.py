@@ -251,3 +251,26 @@ class Organization(Timestampable, Taggable, Parsable, Sluggable, VersionableFiel
             organization__classification='root',
             member=self,
         ).first()
+
+    def get_last_playing_field_with_mandate(self, timestamp=None):
+        if not timestamp:
+            timestamp = datetime.now()
+
+        membership_at = OrganizationMembership.objects.active_at(
+            timestamp
+        ).filter(
+            member=self,
+            organization__classification='root'
+        ).order_by('end_time').last()
+
+        if membership_at:
+            return membership_at.organization, membership_at.mandate
+        else:
+            membership_at = OrganizationMembership.objects.filter(
+                member=self,
+                organization__classification='root'
+            ).order_by('end_time').last()
+            if membership_at:
+                return membership_at.organization, membership_at.mandate
+            else:
+                raise Exception(f'Organization {self.name} has no membership in root organization')

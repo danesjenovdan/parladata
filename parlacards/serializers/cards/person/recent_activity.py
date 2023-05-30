@@ -16,8 +16,8 @@ class RecentActivityCardSerializer(PersonScoreCardSerializer):
     def to_representation(self, person):
         parent_data = super().to_representation(person)
 
-        mandate = Mandate.get_active_mandate_at(self.context['date'])
-        from_timestamp, to_timestamp = mandate.get_time_range_from_mandate(self.context['date'])
+        mandate = Mandate.get_active_mandate_at(self.context['request_date'])
+        from_timestamp, to_timestamp = mandate.get_time_range_from_mandate(self.context['request_date'])
 
         # get all events (questions, ballots, speeches) for person
         # Important: bacause we join all of them in a union, they all need to
@@ -31,7 +31,7 @@ class RecentActivityCardSerializer(PersonScoreCardSerializer):
             vote__timestamp__range=(from_timestamp, to_timestamp),
         ).values('id', 'vote__timestamp').annotate(type=Value('ballot'))
         speeches = Speech.objects.filter_valid_speeches(
-            self.context['date']
+            self.context['request_date']
         ).filter(
             speaker=person,
             start_time__range=(from_timestamp, to_timestamp),
