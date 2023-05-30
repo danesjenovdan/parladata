@@ -24,14 +24,14 @@ class VersionableSerializerField(serializers.Field):
         super().__init__(**kwargs)
 
     def to_representation(self, value):
-        if 'date' not in self.context.keys():
+        if 'request_date' not in self.context.keys():
             raise Exception(f'You need to provide a date in the serializer context.')
 
         object_to_serialize = value
         return object_to_serialize.versionable_property_value_on_date(
             owner=object_to_serialize,
             property_model_name=self.property_model_name,
-            datetime=self.context['date'],
+            datetime=self.context['request_date'],
         )
 
 
@@ -58,7 +58,7 @@ class ScoreSerializerField(serializers.Field):
         else:
             raise Exception(f'You should supply a person or an organization. Instead you supplied {value}.')
 
-        if 'date' not in self.context.keys():
+        if 'request_date' not in self.context.keys():
             raise Exception(f'You need to provide a date in the serializer context.')
 
         # TODO move score serializers to separate file or use fully qualified name
@@ -69,7 +69,7 @@ class ScoreSerializerField(serializers.Field):
         # get most recent score from this person or organization
         # that is older than the date in the context
         score_object_kwargs = {
-            'timestamp__lte': self.context['date'],
+            'timestamp__lte': self.context['request_date'],
             score_type: value,
         }
         score_object = ScoreModel.objects.filter(
@@ -97,16 +97,16 @@ class ScoreSerializerField(serializers.Field):
         # currently in the same playing field (organization
         # which we're calculating values for)
         if score_type == 'person':
-            competition_ids = score_object.playing_field.query_voters(self.context['date']).values_list('id', flat=True)
+            competition_ids = score_object.playing_field.query_voters(self.context['request_date']).values_list('id', flat=True)
         else:
             # score_type == 'organization'
-            competition_ids = score_object.playing_field.query_parliamentary_groups(self.context['date']).values_list('id', flat=True)
+            competition_ids = score_object.playing_field.query_parliamentary_groups(self.context['request_date']).values_list('id', flat=True)
 
         # iterate through the IDs and get their "latest" score ids
         relevant_scores_querysets = []
         for competitor_id in competition_ids:
             score_queryset_kwargs = {
-                'timestamp__lte': self.context['date'],
+                'timestamp__lte': self.context['request_date'],
                 f'{score_type}__id': competitor_id
             }
 
@@ -220,13 +220,7 @@ class CardSerializer(serializers.Serializer):
         raise NotImplementedError('You need to extend this serializer to return the results.')
 
     def get_mandate(self, obj):
-        mandate = Mandate.get_active_mandate_at(self.context['date'])
-        serializer = MandateSerializer(
-            mandate,
-            context=self.context
-        )
-
-        return serializer.data
+        raise NotImplementedError('You need to extend this serializer to return the mandate.')
 
     results = serializers.SerializerMethodField()
     mandate = serializers.SerializerMethodField()
@@ -236,16 +230,61 @@ class CardSerializer(serializers.Serializer):
 
 
 class PersonScoreCardSerializer(CardSerializer):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        """
+        Get playing field and mandate for person
+        """
+
+        self.playing_field, self.mandate = args[0].get_last_playing_field_with_mandate(
+            self.context['request_date']
+        )
+        self.from_timestamp, self.to_timestamp = self.mandate.get_time_range_from_mandate(
+            self.context['request_date']
+        )
+        if self.to_timestamp > self.context['request_date']:
+            self.context['date'] = self.to_timestamp
+
     def get_person(self, obj):
         serializer = CommonPersonSerializer(obj, context=self.context)
+        return serializer.data
+
+    def get_mandate(self, obj):
+        serializer = MandateSerializer(
+            self.mandate,
+            context=self.context
+        )
+
         return serializer.data
 
     person = serializers.SerializerMethodField()
 
 
 class GroupScoreCardSerializer(CardSerializer):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        """
+        Get playing field and mandate for person
+        """
+
+        self.playing_field, self.mandate = args[0].get_last_playing_field_with_mandate(
+            self.context['request_date']
+        )
+        self.from_timestamp, self.to_timestamp = self.mandate.get_time_range_from_mandate(
+            self.context['request_date']
+        )
+        if self.to_timestamp > self.context['request_date']:
+            self.context['date'] = self.to_timestamp
+
     def get_group(self, obj):
         serializer = CommonOrganizationSerializer(obj, context=self.context)
+        return serializer.data
+
+    def get_mandate(self, obj):
+        serializer = MandateSerializer(
+            self.mandate,
+            context=self.context
+        )
         return serializer.data
 
     group = serializers.SerializerMethodField()
@@ -256,22 +295,29 @@ class SessionScoreCardSerializer(CardSerializer):
         serializer = CommonSessionSerializer(obj, context=self.context)
         return serializer.data
 
+    def get_mandate(self, obj):
+        serializer = MandateSerializer(
+            obj.mandate,
+            context=self.context
+        )
+        return serializer.data
+
     session = serializers.SerializerMethodField()
 
 
 class CommonPersonSerializer(CommonCachableSerializer):
     def calculate_cache_key(self, person):
-        organization = person.parliamentary_group_on_date(self.context['date'])
+        organization = person.parliamentary_group_on_date(self.context['request_date'])
 
         if organization:
             timestamp = max([person.updated_at, organization.updated_at])
         else:
             timestamp = person.updated_at
 
-        return f'CommonPersonSerializer_{person.id}_{self.context["date"].strftime("%Y-%m-%dT%H:%M:%S")}_{timestamp.strftime("%Y-%m-%dT%H:%M:%S")}'
+        return f'CommonPersonSerializer_{person.id}_{self.context["request_date"].strftime("%Y-%m-%dT%H:%M:%S")}_{timestamp.strftime("%Y-%m-%dT%H:%M:%S")}'
 
     def get_group(self, obj):
-        active_parliamentary_group_membership = obj.parliamentary_group_on_date(self.context['date'])
+        active_parliamentary_group_membership = obj.parliamentary_group_on_date(self.context['request_date'])
         if not active_parliamentary_group_membership:
             return None
 
@@ -284,8 +330,8 @@ class CommonPersonSerializer(CommonCachableSerializer):
     def get_slug(self, person):
         memberships_count = PersonMembership.objects.filter(
             Q(member=person),
-            Q(start_time__lte=self.context['date']) | Q(start_time__isnull=True),
-            Q(end_time__gte=self.context['date']) | Q(end_time__isnull=True),
+            Q(start_time__lte=self.context['request_date']) | Q(start_time__isnull=True),
+            Q(end_time__gte=self.context['request_date']) | Q(end_time__isnull=True),
             Q(role__in=['voter', 'leader']),
         ).count()
 
@@ -308,7 +354,7 @@ class CommonOrganizationSerializer(CommonCachableSerializer):
         return f'CommonOrganizationSerializer_{instance.id}_{instance.updated_at.strftime("%Y-%m-%dT%H:%M:%S")}'
 
     def get_is_in_coalition(self, obj):
-        return OrganizationMembership.valid_at(self.context['date']).filter(
+        return OrganizationMembership.valid_at(self.context['request_date']).filter(
             member=obj,
             organization__classification='coalition'
         ).exists()

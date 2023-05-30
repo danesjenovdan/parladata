@@ -49,7 +49,7 @@ class VoteGroupSerializer(CommonCachableSerializer):
         vote_ballots = Ballot.objects.filter(vote=self.context['vote'])
 
         group_ballots = vote_ballots.filter(
-            personvoter__in=group.query_members(self.context['date']),
+            personvoter__in=group.query_members(self.context['request_date']),
         )
 
         return group_ballots

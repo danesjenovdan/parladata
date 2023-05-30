@@ -20,7 +20,7 @@ class GroupQuestionCardSerializer(GroupScoreCardSerializer):
         parent_data = super().to_representation(group)
 
         # set the relevant timestamp to filter the questions
-        timestamp = self.context['date']
+        timestamp = self.context['request_date']
 
         # get active madnate from timestamp and it's begining and ending/current timestamp
         mandate = Mandate.get_active_mandate_at(timestamp)
