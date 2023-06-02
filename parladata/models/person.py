@@ -3,12 +3,12 @@ from datetime import datetime
 from django.db import models
 from django.db.models import OuterRef, Subquery
 from django.utils.translation import gettext_lazy as _
-from django.http import Http404
 
 from parladata.behaviors.models import Timestampable, Parsable, Sluggable, VersionableFieldsOwner
 
 from parladata.models.memberships import PersonMembership
 from parladata.models.versionable_properties import PersonName
+from parladata.exceptions import NoMembershipException
 
 class ExtendedManager(models.Manager):
     """
@@ -194,7 +194,7 @@ class Person(Timestampable, Parsable, Sluggable, VersionableFieldsOwner):
             if membership_at:
                 return membership_at.organization, membership_at.mandate
             else:
-                raise Http404(f'Person {self.name} has no voter membership in root organization')
+                raise NoMembershipException(f'Person {self.name} has no voter membership in root organization')
 
     def __str__(self):
         return f'{self.id}: {self.name}'
