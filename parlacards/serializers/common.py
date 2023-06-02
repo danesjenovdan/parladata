@@ -4,6 +4,7 @@ from importlib import import_module
 
 from django.core.cache import cache
 from django.db.models import Avg, Max, Q
+from django.http import Http404
 
 from rest_framework import serializers
 
@@ -13,6 +14,8 @@ from parladata.models.common import Mandate
 from parladata.models.memberships import PersonMembership, OrganizationMembership
 
 from parlacards.utils import truncate_score
+
+from parladata.exceptions import NoMembershipException
 
 from datetime import datetime
 
@@ -235,10 +238,13 @@ class PersonScoreCardSerializer(CardSerializer):
         """
         Get playing field and mandate for person
         """
+        try:
+            self.playing_field, self.mandate = person.get_last_playing_field_with_mandate(
+                self.context['request_date']
+            )
+        except NoMembershipException as e:
+            raise Http404(e)
 
-        self.playing_field, self.mandate = person.get_last_playing_field_with_mandate(
-            self.context['request_date']
-        )
         self.from_timestamp, self.to_timestamp = self.mandate.get_time_range_from_mandate(
             self.context['request_date']
         )
@@ -266,10 +272,13 @@ class GroupScoreCardSerializer(CardSerializer):
         """
         Get playing field and mandate for person
         """
+        try:
+            self.playing_field, self.mandate = group.get_last_playing_field_with_mandate(
+                self.context['request_date']
+            )
+        except NoMembershipException as e:
+            raise Http404(e)
 
-        self.playing_field, self.mandate = group.get_last_playing_field_with_mandate(
-            self.context['request_date']
-        )
         self.from_timestamp, self.to_timestamp = self.mandate.get_time_range_from_mandate(
             self.context['request_date']
         )

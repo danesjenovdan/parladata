@@ -3,7 +3,6 @@ from datetime import datetime
 from django.db import models
 from django.db.models import Q, OuterRef, Subquery
 from django.utils.translation import gettext_lazy as _
-from django.http import Http404
 
 from parladata.models.link import Link
 from parladata.models.person import Person
@@ -16,6 +15,7 @@ from parladata.behaviors.models import (
     Sluggable,
     VersionableFieldsOwner
 )
+from parladata.exceptions import NoMembershipException
 from parladata.models.versionable_properties import OrganizationName
 from colorfield.fields import ColorField
 
@@ -274,4 +274,4 @@ class Organization(Timestampable, Taggable, Parsable, Sluggable, VersionableFiel
             if membership_at:
                 return membership_at.organization, membership_at.mandate
             else:
-                raise Http404(f'Organization {self.name} has no membership in root organization')
+                raise NoMembershipException(f'Organization {self.name} has no membership in root organization')
