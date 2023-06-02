@@ -100,10 +100,11 @@ class PersonVoteAttendanceCardSerializer(PersonScoreCardSerializer):
 
 class PersonMonthlyVoteAttendanceCardSerializer(PersonScoreCardSerializer):
     def get_results(self, person):
+        from_timestamp = self.from_timestamp.replace(day=1)
         monthly_attendance = PersonMonthlyVoteAttendance.objects.filter(
             person=person,
             playing_field=self.playing_field,
-            timestamp__range=(self.from_timestamp, self.to_timestamp),
+            timestamp__range=(from_timestamp, self.to_timestamp),
         ).order_by('timestamp')
         return MonthlyAttendanceSerializer(monthly_attendance, many=True).data
 
@@ -550,11 +551,11 @@ class GroupMembersCardSerializer(GroupScoreCardSerializer):
 class GroupMonthlyVoteAttendanceCardSerializer(GroupScoreCardSerializer):
     def get_results(self, obj):
         # obj is the group
-
+        from_timestamp = self.from_timestamp.replace(day=1)
         monthly_attendance = GroupMonthlyVoteAttendance.objects.filter(
             group=obj,
             playing_field=self.playing_field,
-            timestamp__range=(self.from_timestamp, self.to_timestamp)
+            timestamp__range=(from_timestamp, self.to_timestamp)
         ).order_by('timestamp')
         return MonthlyAttendanceSerializer(monthly_attendance, many=True).data
 
