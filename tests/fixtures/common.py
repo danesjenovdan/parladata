@@ -99,3 +99,26 @@ def all_mandate_member():
     return {
         'id': '245',
     }
+
+@pytest.fixture
+def bicameral_org_1():
+    return {
+        'id': '18',
+    }
+@pytest.fixture
+def bicameral_org_2():
+    return {
+        'id': '55',
+    }
+
+@pytest.fixture
+def bicameral_person_1():
+    return {
+        'id': '431',
+    }
+
+@pytest.fixture
+def bicameral_person_2():
+    return {
+        'id': '424',
+    }

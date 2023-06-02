@@ -230,13 +230,13 @@ class CardSerializer(serializers.Serializer):
 
 
 class PersonScoreCardSerializer(CardSerializer):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(self, person, *args, **kwargs):
+        super().__init__(person, *args, **kwargs)
         """
         Get playing field and mandate for person
         """
 
-        self.playing_field, self.mandate = args[0].get_last_playing_field_with_mandate(
+        self.playing_field, self.mandate = person.get_last_playing_field_with_mandate(
             self.context['request_date']
         )
         self.from_timestamp, self.to_timestamp = self.mandate.get_time_range_from_mandate(
@@ -261,13 +261,13 @@ class PersonScoreCardSerializer(CardSerializer):
 
 
 class GroupScoreCardSerializer(CardSerializer):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(self, group, *args, **kwargs):
+        super().__init__(group, *args, **kwargs)
         """
         Get playing field and mandate for person
         """
 
-        self.playing_field, self.mandate = args[0].get_last_playing_field_with_mandate(
+        self.playing_field, self.mandate = group.get_last_playing_field_with_mandate(
             self.context['request_date']
         )
         self.from_timestamp, self.to_timestamp = self.mandate.get_time_range_from_mandate(
