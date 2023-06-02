@@ -274,4 +274,4 @@ class Organization(Timestampable, Taggable, Parsable, Sluggable, VersionableFiel
             if membership_at:
                 return membership_at.organization, membership_at.mandate
             else:
-                raise NoMembershipException(f'Organization {self.name} has no membership in root organization')
+                raise NoMembershipException(f'Organization {self.name} {self.id} has no membership in root organization')
