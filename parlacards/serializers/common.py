@@ -4,7 +4,6 @@ from importlib import import_module
 
 from django.core.cache import cache
 from django.db.models import Avg, Max, Q
-from django.http import Http404
 
 from rest_framework import serializers
 
@@ -16,6 +15,8 @@ from parladata.models.memberships import PersonMembership, OrganizationMembershi
 from parlacards.utils import truncate_score
 
 from parladata.exceptions import NoMembershipException
+
+from rest_framework.exceptions import NotFound
 
 from datetime import datetime
 
@@ -243,7 +244,7 @@ class PersonScoreCardSerializer(CardSerializer):
                 self.context['request_date']
             )
         except NoMembershipException as e:
-            raise Http404(e)
+            raise NotFound(detail=str(e), code=404)
 
         self.from_timestamp, self.to_timestamp = self.mandate.get_time_range_from_mandate(
             self.context['request_date']
@@ -277,7 +278,7 @@ class GroupScoreCardSerializer(CardSerializer):
                 self.context['request_date']
             )
         except NoMembershipException as e:
-            raise Http404(e)
+            raise NotFound(detail=str(e), code=404)
 
         self.from_timestamp, self.to_timestamp = self.mandate.get_time_range_from_mandate(
             self.context['request_date']

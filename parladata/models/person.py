@@ -194,7 +194,7 @@ class Person(Timestampable, Parsable, Sluggable, VersionableFieldsOwner):
             if membership_at:
                 return membership_at.organization, membership_at.mandate
             else:
-                raise NoMembershipException(f'Person {self.name} has no voter membership in root organization')
+                raise NoMembershipException(f'Person {self.name} {self.id} has no voter membership in root organization')
 
     def __str__(self):
         return f'{self.id}: {self.name}'
