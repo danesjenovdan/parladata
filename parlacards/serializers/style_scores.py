@@ -13,13 +13,13 @@ class StyleScoresSerializer(CommonSerializer):
             score = PersonStyleScore.objects.filter(
                 person=person_or_group,
                 style=style,
-                timestamp__lte=self.context['date']
+                timestamp__lte=self.context['request_date']
             ).first()
         elif isinstance(person_or_group, Organization):
             score = GroupStyleScore.objects.filter(
                 group=person_or_group,
                 style=style,
-                timestamp__lte=self.context['date']
+                timestamp__lte=self.context['request_date']
             ).first()
         else:
             raise Exception(f'You should supply a person or an organization. Instead you supplied {person_or_group}.')

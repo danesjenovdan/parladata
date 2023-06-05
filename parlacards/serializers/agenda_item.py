@@ -110,7 +110,7 @@ class AgendaItemsSerializer(CommonCachableSerializer):
     def get_agenda_items(self, obj):
         agenda_item_serializer = AgendaItemSerializer(
             AgendaItem.objects.filter(
-                Q(datetime__lte=self.context['date']) | Q(datetime__isnull=True),
+                Q(datetime__lte=self.context['request_date']) | Q(datetime__isnull=True),
                 session=obj,
             ).order_by('order'),
             context=self.context,

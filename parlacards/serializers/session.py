@@ -39,7 +39,7 @@ class SessionSerializer(CommonCachableSerializer):
 
     def get_has_legislation(self, session):
         return session.legislation_considerations.filter(
-            Q(timestamp__lte=self.context['date']) | Q(timestamp__isnull=True)
+            Q(timestamp__lte=self.context['request_date']) | Q(timestamp__isnull=True)
         ).exists()
 
     def get_has_votes(self, session):
