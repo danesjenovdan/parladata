@@ -38,6 +38,7 @@ class MembershipAdmin(admin.ModelAdmin):
 class OrganizationMembershipAdmin(admin.ModelAdmin):
     autocomplete_fields = ('member', 'organization')
     readonly_fields = ['created_at', 'updated_at']
+    list_filter = ['mandate', AllOrganizationsListFilter]
 
 
 admin.site.register(PersonMembership, MembershipAdmin)

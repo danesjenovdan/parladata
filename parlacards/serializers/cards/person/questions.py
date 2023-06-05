@@ -15,8 +15,8 @@ class PersonQuestionCardSerializer(PersonScoreCardSerializer):
     def to_representation(self, person):
         parent_data = super().to_representation(person)
 
-        mandate = Mandate.get_active_mandate_at(self.context['date'])
-        from_timestamp, to_timestamp = mandate.get_time_range_from_mandate(self.context['date'])
+        mandate = Mandate.get_active_mandate_at(self.context['request_date'])
+        from_timestamp, to_timestamp = mandate.get_time_range_from_mandate(self.context['request_date'])
 
         # TODO make timestamp required field for question
         questions = Question.objects.filter(

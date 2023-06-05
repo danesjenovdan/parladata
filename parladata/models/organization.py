@@ -15,6 +15,7 @@ from parladata.behaviors.models import (
     Sluggable,
     VersionableFieldsOwner
 )
+from parladata.exceptions import NoMembershipException
 from parladata.models.versionable_properties import OrganizationName
 from colorfield.fields import ColorField
 
@@ -251,3 +252,26 @@ class Organization(Timestampable, Taggable, Parsable, Sluggable, VersionableFiel
             organization__classification='root',
             member=self,
         ).first()
+
+    def get_last_playing_field_with_mandate(self, timestamp=None):
+        if not timestamp:
+            timestamp = datetime.now()
+
+        membership_at = OrganizationMembership.objects.active_at(
+            timestamp
+        ).filter(
+            member=self,
+            organization__classification='root'
+        ).order_by('end_time').last()
+
+        if membership_at:
+            return membership_at.organization, membership_at.mandate
+        else:
+            membership_at = OrganizationMembership.objects.filter(
+                member=self,
+                organization__classification='root'
+            ).order_by('end_time').last()
+            if membership_at:
+                return membership_at.organization, membership_at.mandate
+            else:
+                raise NoMembershipException(f'Organization {self.name} {self.id} has no membership in root organization')
