@@ -759,3 +759,8 @@ def delete_overlayed_memberships():
                         print(membership.organization)
                         next_memberships.delete()
         print()
+
+
+def fix_playing_fields_mandates():
+    for root in OrganizationMembership.objects.filter(member__classification="root"):
+        OrganizationMembership.objects.filter(organization=root.member).update(mandate=root.mandate)
