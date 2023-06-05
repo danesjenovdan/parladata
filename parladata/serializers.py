@@ -232,3 +232,17 @@ class MediaReportSerializer(serializers.ModelSerializer):
     class Meta:
         model = MediaReport
         fields = '__all__'
+
+
+class PublicPersonAnswerSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PublicPersonAnswer
+        fields = '__all__'
+
+class PublicPersonQuestionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PublicPersonQuestion
+        fields = '__all__'
+        extra_kwargs = {
+            'author_email': {'write_only': True}
+        }

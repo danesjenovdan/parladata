@@ -22,6 +22,7 @@ from parlacards.serializers.common import (
     CardSerializer,
     CommonPersonSerializer,
     CommonOrganizationSerializer,
+    MandateSerializer
 )
 
 from parlacards.pagination import create_paginator
@@ -58,7 +59,7 @@ class PersonAnalysesSerializer(CommonPersonSerializer):
         score_object = ScoreModel.objects.filter(
             person_id=person.id,
             playing_field=self.context['playing_field'],
-            timestamp__lte=self.context['date'],
+            timestamp__lte=self.context['request_date'],
         ).order_by('-timestamp').first()
 
         if score_object:
@@ -67,7 +68,7 @@ class PersonAnalysesSerializer(CommonPersonSerializer):
         return 0.0
 
     def _get_working_bodies(self, person):
-        memberships = PersonMembership.valid_at(self.context['date']).filter(member=person)
+        memberships = PersonMembership.valid_at(self.context['request_date']).filter(member=person)
         organizations = Organization.objects.filter(
             id__in=memberships.values_list('organization'),
             classification__in=('committee', 'commission', 'other'), # TODO: add other classifications?
@@ -323,16 +324,30 @@ class MiscMembersCardSerializer(CardSerializer):
 
     def get_results(self, parent_organization):
         return {
-            'groups': self._groups(parent_organization, self.context['date']),
-            'working_bodies': self._working_bodies(self.context['date']),
-            'districts': self._districts(self.context['date']),
-            'maximum_scores': self._maximum_scores(parent_organization, self.context['date']),
+            'groups': self._groups(parent_organization, self.context['request_date']),
+            'working_bodies': self._working_bodies(self.context['request_date']),
+            'districts': self._districts(self.context['request_date']),
+            'maximum_scores': self._maximum_scores(parent_organization, self.context['request_date']),
         }
+
+    def get_mandate(self, playing_field):
+        organization_membership = playing_field.organization_memberships.filter(
+            organization__classification=None
+        ).first()
+        if organization_membership:
+            mandate = organization_membership.mandate
+        else:
+            mandate = None
+        serializer = MandateSerializer(
+            mandate,
+            context=self.context
+        )
+        return serializer.data
 
     def to_representation(self, parent_organization):
         parent_data = super().to_representation(parent_organization)
 
-        ordered_people = self._filtered_and_ordered_people(parent_organization, self.context['date'])
+        ordered_people = self._filtered_and_ordered_people(parent_organization, self.context['request_date'])
 
         paged_object_list, pagination_metadata = create_paginator(self.context.get('GET', {}), ordered_people, prefix='members:')
 
