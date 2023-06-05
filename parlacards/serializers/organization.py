@@ -38,7 +38,7 @@ class OrganizationBasicInfoSerializer(CommonCachableSerializer):
         return serializer.data
 
     def get_number_of_members(self, obj):
-        return obj.number_of_members_at(self.context['date'])
+        return obj.number_of_members_at(self.context['request_date'])
 
     number_of_members = serializers.SerializerMethodField()
     social_networks = serializers.SerializerMethodField()
