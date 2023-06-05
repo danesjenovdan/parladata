@@ -25,6 +25,7 @@ user for login: parlauser:password
     *   `python manage.py migrate parlacards zero` (delete parlacards data)
     *   `python manage.py migrate` (remigrate parlacards)
     *   `python manage.py run_all_analyses --start_time 2022-11-30` (run analyses at the end of 1st mandate)
+    *   `python manage.py run_all_analyses --start_time 2022-12-13` (run analyses after session in 2nd mandate)
 *   or 
     *   `python manage.py flush` (flush your data (warning, irreversible deletion))
     *   `python manage.py loaddata tests/fixtures/test_db.json`
