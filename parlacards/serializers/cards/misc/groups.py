@@ -6,6 +6,7 @@ from rest_framework import serializers
 from parlacards.serializers.common import (
     CardSerializer,
     CommonOrganizationSerializer,
+    MandateSerializer,
 )
 
 from parlacards.models import (
@@ -42,7 +43,7 @@ class GroupAnalysesSerializer(CommonOrganizationSerializer):
 
         score_object = ScoreModel.objects.filter(
             group_id=group.id,
-            timestamp__lte=self.context['date']
+            timestamp__lte=self.context['request_date']
         ).order_by('-timestamp').first()
 
         if score_object:
@@ -51,7 +52,7 @@ class GroupAnalysesSerializer(CommonOrganizationSerializer):
 
     def get_results(self, obj):
         return {
-            'seat_count': obj.number_of_members_at(self.context['date']),
+            'seat_count': obj.number_of_members_at(self.context['request_date']),
             'intra_disunion': self.get_group_value(obj, 'GroupDiscord'),
             'number_of_amendments': None, # TODO
             'vocabulary_size': self.get_group_value(obj, 'GroupVocabularySize'),
@@ -65,8 +66,22 @@ class GroupAnalysesSerializer(CommonOrganizationSerializer):
 class MiscGroupsCardSerializer(CardSerializer):
     def get_results(self, parent_organization):
         serializer = GroupAnalysesSerializer(
-            parent_organization.query_parliamentary_groups(self.context['date']),
+            parent_organization.query_parliamentary_groups(self.context['request_date']),
             many=True,
+            context=self.context
+        )
+        return serializer.data
+
+    def get_mandate(self, playing_field):
+        organization_membership = playing_field.organization_memberships.filter(
+            organization__classification=None
+        ).first()
+        if organization_membership:
+            mandate = organization_membership.mandate
+        else:
+            mandate = None
+        serializer = MandateSerializer(
+            mandate,
             context=self.context
         )
         return serializer.data

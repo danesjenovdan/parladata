@@ -3,7 +3,7 @@ from django.db import models
 from django.db.models import Q
 
 from parladata.behaviors.models import Timestampable
-from parladata.models.memberships import OrganizationMembership
+from parladata.models.memberships import OrganizationMembership, PersonMembership
 
 
 class ActiveAtQuerySet(models.QuerySet):
@@ -29,17 +29,36 @@ class Mandate(models.Model):
         if not timestamp:
             timestamp = datetime.now()
 
-        try:
-            membership = OrganizationMembership.valid_at(timestamp).get(mandate=self)
-        except OrganizationMembership.DoesNotExist:
+        memberships = OrganizationMembership.valid_at(timestamp).filter(
+            mandate=self,
+            member__classification='root'
+        )
+        if not memberships:
             raise Exception(f'No root organization memberships exist for this mandate!')
-        except OrganizationMembership.MultipleObjectsReturned:
-            raise Exception(f'Multiple root organization memberships exist for this mandate!')
+        #raise Exception(f'Multiple root organization memberships exist for this mandate!')
 
-        playing_field = membership.member
-        root_organization = membership.organization
+        playing_field = memberships.first().member
+        root_organization = memberships.first().organization
 
         return root_organization, playing_field
+
+    # TODO fix this to use mandate for multiple root organizatuons
+    def query_person_root_organization(self, person, timestamp=None):
+        if timestamp:
+            valid_memberships = PersonMembership.valid_at(
+                timestamp
+            )
+        else:
+            valid_memberships = PersonMembership.objects.all()
+
+        person_memberships = valid_memberships.filter(
+            member=person,
+            organization__classification='root'
+        ).first()
+        if person_memberships:
+            return person_memberships.organization
+        else:
+            raise Exception('No root organization memberships exist for this person!')
 
     def __str__(self):
         return self.description

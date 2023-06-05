@@ -312,7 +312,7 @@ class QuestionView(viewsets.ModelViewSet):
     serializer_class = QuestionSerializer
     fields = '__all__'
     filter_backends = (DjangoFilterBackend, filters.OrderingFilter)
-    filterset_fields = ('person_authors',)
+    filterset_fields = ('person_authors', 'mandate')
     ordering_fields = ('date',)
 
 
@@ -378,3 +378,23 @@ class MediaReportView(viewsets.ModelViewSet):
     filter_backends = (DjangoFilterBackend, filters.OrderingFilter)
     filterset_fields = ('medium', 'mentioned_people', 'mentioned_organizations', 'mentioned_legislation', 'mentioned_motions', 'mentioned_votes')
     ordering_fields = ('report_date', 'retrieval_date')
+
+
+class PublicPersonQuestionView(viewsets.ModelViewSet):
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    queryset = PublicPersonQuestion.objects.all().order_by('id').exclude(approved_at=None)
+    serializer_class = PublicPersonQuestionSerializer
+    fields = '__all__'
+    filter_backends = (DjangoFilterBackend, filters.OrderingFilter)
+    filterset_fields = ('mandate',)
+    ordering_fields = ('date',)
+
+class PublicPersonAnswerView(viewsets.ModelViewSet):
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    queryset = PublicPersonAnswer.objects.all().order_by('id').exclude(approved_at=None)
+    serializer_class = PublicPersonAnswerSerializer
+    fields = '__all__'
+    filter_backends = (DjangoFilterBackend, filters.OrderingFilter)
+    filterset_fields = ('mandate',)
+    ordering_fields = ('date',)
+
