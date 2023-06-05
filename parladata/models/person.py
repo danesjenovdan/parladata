@@ -8,6 +8,7 @@ from parladata.behaviors.models import Timestampable, Parsable, Sluggable, Versi
 
 from parladata.models.memberships import PersonMembership
 from parladata.models.versionable_properties import PersonName
+from parladata.exceptions import NoMembershipException
 
 class ExtendedManager(models.Manager):
     """
@@ -162,13 +163,38 @@ class Person(Timestampable, Parsable, Sluggable, VersionableFieldsOwner):
                     f'Membership ids: {list(active_memberships.values_list("id", flat=True))}'
                 ]
             ))
-        
+
         active_membership = active_memberships.first()
 
         if not active_membership:
             return None
 
         return active_membership.organization
+
+    def get_last_playing_field_with_mandate(self, timestamp=None):
+        if not timestamp:
+            timestamp = datetime.now()
+
+        membership_at = PersonMembership.objects.active_at(
+            timestamp
+        ).filter(
+            member=self,
+            role='voter',
+            organization__classification='root'
+        ).order_by('end_time').last()
+
+        if membership_at:
+            return membership_at.organization, membership_at.mandate
+        else:
+            membership_at = PersonMembership.objects.filter(
+                member=self,
+                role='voter',
+                organization__classification='root'
+            ).order_by('end_time').last()
+            if membership_at:
+                return membership_at.organization, membership_at.mandate
+            else:
+                raise NoMembershipException(f'Person {self.name} {self.id} has no voter membership in root organization')
 
     def __str__(self):
         return f'{self.id}: {self.name}'

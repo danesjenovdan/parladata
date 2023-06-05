@@ -18,6 +18,14 @@ def run_test_urls(url, fixtures):
     for fixture in fixtures:
         single_test_url(url, fixture)
 
+def run_test_for_bicameral_system(url, result_length, params_1, params_2):
+    response2 = client.get(url, params_1)
+    response1 = client.get(url, params_2)
+    assert response1.status_code == 200
+    assert response2.status_code == 200
+    assert len(response1.json().get('results', [])) == result_length
+    assert len(response2.json().get('results', [])) == result_length
+
 # tests
 @pytest.mark.django_db()
 def test_misc_members():
@@ -82,6 +90,30 @@ def test_person_least_votes_in_common(first_mandate_member, all_mandate_member):
     run_test_urls('/v3/cards/person/least-votes-in-common/', [first_mandate_member, all_mandate_member])
 
 @pytest.mark.django_db()
+def test_person_least_votes_in_common_for_bicameral_systems(
+    bicameral_person_1,
+    bicameral_person_2
+):
+    run_test_for_bicameral_system(
+        '/v3/cards/person/least-votes-in-common/',
+        5,
+        bicameral_person_1,
+        bicameral_person_2
+    )
+
+@pytest.mark.django_db()
+def test_person_most_votes_in_common_for_bicameral_systems(
+    bicameral_person_1,
+    bicameral_person_2
+):
+    run_test_for_bicameral_system(
+        '/v3/cards/person/most-votes-in-common/',
+        5,
+        bicameral_person_1,
+        bicameral_person_2
+    )
+
+@pytest.mark.django_db()
 def test_person_deviation_from_group(first_mandate_member, all_mandate_member):
     run_test_urls('/v3/cards/person/deviation-from-group/', [first_mandate_member, all_mandate_member])
 
@@ -104,6 +136,18 @@ def test_person_recent_activity(first_mandate_member, all_mandate_member):
 @pytest.mark.django_db()
 def test_person_monthly_vote_attendance(first_mandate_member, all_mandate_member):
     run_test_urls('/v3/cards/person/monthly-vote-attendance/', [first_mandate_member, all_mandate_member])
+
+@pytest.mark.django_db()
+def test_person_monthly_vote_attendance_for_bicameral_systems(
+    bicameral_person_1,
+    bicameral_person_2
+):
+    run_test_for_bicameral_system(
+        '/v3/cards/person/monthly-vote-attendance/',
+        1,
+        bicameral_person_1,
+        bicameral_person_2
+    )
 
 @pytest.mark.django_db()
 def test_person_style_scores(first_mandate_member, all_mandate_member):
@@ -146,6 +190,18 @@ def test_group_number_of_questions(first_mandate_party, all_mandate_party):
 @pytest.mark.django_db()
 def test_group_monthly_vote_attendance(first_mandate_party, all_mandate_party):
     run_test_urls('/v3/cards/group/monthly-vote-attendance/', [first_mandate_party, all_mandate_party])
+
+@pytest.mark.django_db()
+def test_group_monthly_vote_attendance_for_bicameral_systems(
+    bicameral_org_1,
+    bicameral_org_2
+):
+    run_test_for_bicameral_system(
+        '/v3/cards/group/monthly-vote-attendance/',
+        1,
+        bicameral_org_1,
+        bicameral_org_2
+    )
 
 @pytest.mark.django_db()
 def test_group_questions(first_mandate_party, all_mandate_party):

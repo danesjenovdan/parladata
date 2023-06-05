@@ -1,6 +1,6 @@
 from parladata.models import Vote
 
-from parlacards.serializers.common import CardSerializer
+from parlacards.serializers.common import CardSerializer, MandateSerializer
 
 from parlacards.serializers.vote import BareVoteSerializer
 
@@ -13,6 +13,13 @@ class MandateVotesCardSerializer(CardSerializer):
         # this is implemented in to_representation for pagination
         return None
 
+    def get_mandate(self, mandate):
+        serializer = MandateSerializer(
+            mandate,
+            context=self.context
+        )
+        return serializer.data
+
     def to_representation(self, mandate):
         parent_data = super().to_representation(mandate)
 
@@ -23,7 +30,7 @@ class MandateVotesCardSerializer(CardSerializer):
             paged_object_list, pagination_metadata = create_solr_paginator(self.context.get('GET', {}), solr_params, document_type='vote')
         else:
             votes = Vote.objects.filter(
-                timestamp__lte=self.context['date'],
+                timestamp__lte=self.context['request_date'],
                 motion__session__mandate=mandate
             ).order_by('-timestamp')
             paged_object_list, pagination_metadata = create_paginator(self.context.get('GET', {}), votes)
