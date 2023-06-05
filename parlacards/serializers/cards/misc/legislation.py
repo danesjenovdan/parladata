@@ -1,6 +1,6 @@
 from django.db.models import Q
 from parlacards.pagination import create_paginator
-from parlacards.serializers.common import CardSerializer
+from parlacards.serializers.common import CardSerializer, MandateSerializer
 from parlacards.serializers.legislation import LegislationSerializer
 from parladata.models.legislation import Law, LegislationClassification
 
@@ -12,7 +12,7 @@ class LegislationMixin:
         classification_filter = params.get('classification', None)
 
         legislation = Law.objects.filter(
-            Q(timestamp__lte=self.context['date']) | Q(timestamp__isnull=True),
+            Q(timestamp__lte=self.context['request_date']) | Q(timestamp__isnull=True),
             text__icontains=text_filter,
         )
 
@@ -40,6 +40,13 @@ class LegislationCardSerializer(CardSerializer, LegislationMixin):
     def get_results(self, mandate):
         # this is implemented in to_representation for pagination
         return None
+
+    def get_mandate(self, mandate):
+        serializer = MandateSerializer(
+            mandate,
+            context=self.context
+        )
+        return serializer.data
 
     def to_representation(self, mandate):
         parent_data = super().to_representation(mandate)

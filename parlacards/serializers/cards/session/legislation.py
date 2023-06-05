@@ -1,6 +1,6 @@
 from parlacards.pagination import create_paginator
 from parlacards.serializers.cards.misc.legislation import LegislationMixin
-from parlacards.serializers.common import CardSerializer
+from parlacards.serializers.common import CardSerializer, MandateSerializer
 from parlacards.serializers.legislation import LegislationSerializer
 
 
@@ -8,6 +8,13 @@ class SessionLegislationCardSerializer(CardSerializer, LegislationMixin):
     def get_results(self, session):
         # this is implemented in to_representation for pagination
         return None
+
+    def get_mandate(self, session):
+        serializer = MandateSerializer(
+            session.mandate,
+            context=self.context
+        )
+        return serializer.data
 
     def to_representation(self, session):
         parent_data = super().to_representation(session)

@@ -9,7 +9,7 @@ class SessionTfidfCardSerializer(SessionScoreCardSerializer):
         # obj is the session
         latest_score = SessionTfidf.objects.filter(
             session=obj,
-            timestamp__lte=self.context['date'],
+            timestamp__lte=self.context['request_date'],
         ).order_by(
             '-timestamp'
         ).first()

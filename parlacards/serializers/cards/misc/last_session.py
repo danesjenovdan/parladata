@@ -8,7 +8,7 @@ from parlacards.models import SessionGroupAttendance
 
 from parlacards.serializers.common import (
     CardSerializer,
-    CommonOrganizationSerializer,
+    MandateSerializer
 )
 from parlacards.serializers.group_attendance import SessionGroupAttendanceSerializer
 from parlacards.serializers.session import SessionSerializer
@@ -24,6 +24,20 @@ class MiscLastSessionCardSerializer(CardSerializer):
             Q(motions__isnull=False) | Q(sessiontfidf_related__isnull=False)
         ).distinct('id', 'start_time').latest('start_time')
 
+    def get_mandate(self, playing_field):
+        organization_membership = playing_field.organization_memberships.filter(
+            organization__classification=None
+        ).first()
+        if organization_membership:
+            mandate = organization_membership.mandate
+        else:
+            mandate = None
+        serializer = MandateSerializer(
+            mandate,
+            context=self.context
+        )
+        return serializer.data
+
     def get_results(self, organization):
         last_session = self.get_last_session(organization)
 
@@ -37,7 +51,7 @@ class MiscLastSessionCardSerializer(CardSerializer):
         # attendance
         attendances = SessionGroupAttendance.objects.filter(
             session=last_session,
-            timestamp__lte=self.context['date'],
+            timestamp__lte=self.context['request_date'],
         )
         attendance_serializer = SessionGroupAttendanceSerializer(
             attendances,

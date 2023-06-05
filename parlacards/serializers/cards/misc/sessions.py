@@ -3,7 +3,11 @@ from django.db.models import Q, OuterRef, Subquery
 from rest_framework import serializers
 
 from parlacards.pagination import create_paginator
-from parlacards.serializers.common import CardSerializer, CommonOrganizationSerializer
+from parlacards.serializers.common import (
+    CardSerializer,
+    CommonOrganizationSerializer,
+    MandateSerializer
+)
 from parlacards.serializers.session import SessionSerializer
 from parladata.models.organization import Organization
 from parladata.models.session import Session
@@ -28,6 +32,13 @@ class SessionsCardSerializer(CardSerializer):
     def get_results(self, mandate):
         # this is implemented in to_representation for pagination
         return None
+
+    def get_mandate(self, mandate):
+        serializer = MandateSerializer(
+            mandate,
+            context=self.context
+        )
+        return serializer.data
 
     def _get_organizations(self, mandate):
         relevant_organizations = Organization.objects.exclude(
@@ -84,7 +95,7 @@ class SessionsCardSerializer(CardSerializer):
         organization_ids = list(filter(lambda x: x.isdigit(), organizations_filter.split(',')))
 
         sessions = mandate.sessions.filter(
-            Q(start_time__lte=self.context['date']) | Q(start_time__isnull=True),
+            Q(start_time__lte=self.context['request_date']) | Q(start_time__isnull=True),
             organizations__classification__in=classifications,
         )
 
@@ -98,7 +109,7 @@ class SessionsCardSerializer(CardSerializer):
             latest_org_name = Subquery(
                 OrganizationName.objects \
                     .filter(owner_id=OuterRef('organizations')) \
-                    .valid_at(self.context['date']) \
+                    .valid_at(self.context['request_date']) \
                     .order_by('-valid_from') \
                     .values('value')[:1]
             )
