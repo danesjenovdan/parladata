@@ -93,17 +93,24 @@ class AgendaItemsSerializer(CommonCachableSerializer):
 
     def calculate_cache_key(self, instance):
         # instance is the session
-        timestamp = instance.updated_at
+        times = [instance.updated_at]
 
         last_document = Link.objects.filter(agenda_item__session=instance).order_by("updated_at").last()
+
         if last_document:
-            timestamp = max([timestamp, last_document.updated_at])
+            times.append(last_document.updated_at)
+
+        agenda_items = instance.agenda_items.all()
+        if agenda_items:
+            times.append(agenda_items.latest('updated_at').updated_at)
+
+        timestamp = max(times)
         return f'AgendaItemSerializer{instance.id}_{timestamp.strftime("%Y-%m-%dT%H:%M:%S")}'
 
     def get_agenda_items(self, obj):
         agenda_item_serializer = AgendaItemSerializer(
             AgendaItem.objects.filter(
-                Q(datetime__lte=self.context['date']) | Q(datetime__isnull=True),
+                Q(datetime__lte=self.context['request_date']) | Q(datetime__isnull=True),
                 session=obj,
             ).order_by('order'),
             context=self.context,

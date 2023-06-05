@@ -21,11 +21,11 @@ class GroupVoteCardSerializer(GroupScoreCardSerializer):
         parent_data = super().to_representation(group)
 
         # get active madnate from timestamp and it's begining and ending/current timestamp
-        root_organization_membership = group.query_root_organization_on_date(self.context['date'])
+        root_organization_membership = group.query_root_organization_on_date(self.context['request_date'])
 
         if root_organization_membership:
             # group is active in mandate on current date.
-            mandate = Mandate.get_active_mandate_at(self.context['date'])
+            mandate = Mandate.get_active_mandate_at(self.context['request_date'])
             root_organization = root_organization_membership.organization
         else:
             # get last active mandate for organization which has not active membership on current mandate
@@ -34,7 +34,7 @@ class GroupVoteCardSerializer(GroupScoreCardSerializer):
             mandate = Mandate.get_active_mandate_at(organization_membership.end_time)
             root_organization = organization_membership.organization
 
-        from_timestamp, to_timestamp = mandate.get_time_range_from_mandate(self.context['date'])
+        from_timestamp, to_timestamp = mandate.get_time_range_from_mandate(self.context['request_date'])
 
         votes = Vote.objects.filter(
             timestamp__range=(from_timestamp, to_timestamp),
