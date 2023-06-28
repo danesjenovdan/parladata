@@ -186,15 +186,27 @@ class Person(Timestampable, Parsable, Sluggable, VersionableFieldsOwner):
         if membership_at:
             return membership_at.organization, membership_at.mandate
         else:
-            membership_at = PersonMembership.objects.filter(
+            # get leader membership
+            membership_at = PersonMembership.objects.active_at(
+                timestamp
+            ).filter(
                 member=self,
-                role='voter',
-                organization__classification='root'
+                role='leader',
+                organization__classification=None
             ).order_by('end_time').last()
+
             if membership_at:
                 return membership_at.organization, membership_at.mandate
             else:
-                raise NoMembershipException(f'Person {self.name} {self.id} has no voter membership in root organization')
+                membership_at = PersonMembership.objects.filter(
+                    member=self,
+                    role='voter',
+                    organization__classification='root'
+                ).order_by('end_time').last()
+                if membership_at:
+                    return membership_at.organization, membership_at.mandate
+                else:
+                    raise NoMembershipException(f'Person {self.name} {self.id} has no voter membership in root organization')
 
     def __str__(self):
         return f'{self.id}: {self.name}'
