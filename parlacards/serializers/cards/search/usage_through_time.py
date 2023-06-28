@@ -20,6 +20,9 @@ class BaseUsageThroughTimeCardSerializer(CardSerializer):
 
         return objects
 
+    def get_mandate(self, mandate):
+        return mandate
+
 
 class MandateUsageThroughTimeInSpeechesCardSerializer(BaseUsageThroughTimeCardSerializer):
     def get_results(self, mandate):
