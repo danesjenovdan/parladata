@@ -1,4 +1,4 @@
-from parlacards.serializers.common import CardSerializer
+from parlacards.serializers.common import CardSerializer, MandateSerializer
 from parlacards.solr import parse_search_query_params, solr_select
 
 
@@ -21,7 +21,12 @@ class BaseUsageThroughTimeCardSerializer(CardSerializer):
         return objects
 
     def get_mandate(self, mandate):
-        return mandate
+        serializer = MandateSerializer(
+            mandate,
+            context=self.context
+        )
+
+        return serializer.data
 
 
 class MandateUsageThroughTimeInSpeechesCardSerializer(BaseUsageThroughTimeCardSerializer):
