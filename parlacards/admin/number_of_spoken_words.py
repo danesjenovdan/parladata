@@ -2,7 +2,7 @@ from django.contrib import admin
 
 from import_export.admin import ExportMixin
 
-from export.resources import PersonNumberOfSpokenWordsResource
+from export.resources.person import PersonNumberOfSpokenWordsResource
 
 from parlacards.models import PersonNumberOfSpokenWords
 from parlacards.admin.common import LatestScoresAdmin

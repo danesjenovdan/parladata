@@ -17,7 +17,8 @@ class PersonSerializer(serializers.ModelSerializer):
             'name',
             'parser_names',
             'date_of_birth',
-            'image'
+            'image',
+            'districts'
         ]
 
 

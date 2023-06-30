@@ -8,7 +8,7 @@ from import_export.admin import ExportMixin
 
 from parladata.models import Vote
 
-from export.resources import VoteResource
+from export.resources.misc import VoteResource
 
 from collections import Counter
 

@@ -16,3 +16,4 @@ from parladata.models.public_question import PublicPersonQuestion, PublicPersonA
 from parladata.models.link import Link
 from parladata.models.document import Document
 from parladata.models.media import Medium, MediaReport
+from parladata.models.public_question import PublicPersonQuestion, PublicPersonAnswer

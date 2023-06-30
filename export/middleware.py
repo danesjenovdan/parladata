@@ -18,18 +18,27 @@ class ExportMiddleware:
             return self.get_response(request)
 
         # get params
-        request_id = request.GET.get('mandate_id', None)
+        mandate_id = request.GET.get('mandate_id', None)
+        request_id = request.GET.get('id', None)
+
+        if request_id:
+            request.request_id = request_id
+        else:
+            request.request_id = None
 
         # if no id was supplied, return
-        if not request_id:
+        if not mandate_id:
             content = {'error': '`mandate_id` is required.'}
             return JsonResponse(content, status=400)
+            #mandate_id = 1
+        
+
             # we return a JsonResponse instead of DRF's Response
             # return Response(content, status=status.HTTP_400_BAD_REQUEST)
 
         # if id is not an integer return
         try:
-            request.mandate_id = int(request_id)
+            request.mandate_id = int(mandate_id)
         except ValueError:
             content = {'error': '`mandate_id` needs to be an integer.'}
             return JsonResponse(content, status=400)
