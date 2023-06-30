@@ -1,14 +1,15 @@
 import pytest
 import json
 
-from export.resources import *
+from export.resources.misc import *
 
 from tests.fixtures.common import *
 
 @pytest.mark.django_db()
 def test_export_as_generator_json(first_mandate):
     resource = MPResource()
-    generator = resource.export_as_generator_json(mandate_id=first_mandate.id)
+    generator = resource.export_as_generator_json(
+        mandate_id=first_mandate.id)
     chunks = list(generator)
     chunks_joined = ''.join(chunks)
     res = json.loads(chunks_joined)

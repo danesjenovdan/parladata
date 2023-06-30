@@ -5,7 +5,7 @@ from import_export.resources import ModelResource
 from import_export.fields import Field
 from datetime import datetime, timedelta
 
-from parladata.models import Person, Mandate
+from parladata.models import Person, Mandate, Organization
 
 import tablib
 
@@ -17,6 +17,18 @@ def get_cached_person_name(id):
         print('get from DB')
         person = Person.objects.get(id=id)
         name = person.name
+        cache.set(cache_key, name, 60*60*24)
+    return name
+
+
+def get_cached_group_name(id):
+    cache_key = f'group_name_{id}'
+    name = cache.get(cache_key)
+    print(name)
+    if not name:
+        print('get from DB')
+        organization = Organization.objects.get(id=id)
+        name = organization.name
         cache.set(cache_key, name, 60*60*24)
     return name
 
