@@ -1,19 +1,21 @@
 import pytest
 import json
 
-from export.resources import *
+from export.resources.group import *
 
 from tests.fixtures.common import *
 
 @pytest.mark.django_db()
-def test_export_as_generator_json(first_mandate):
+def test_export_as_generator_json(first_mandate, first_group):
     resource = GroupDiscordResource()
-    generator = resource.export_as_generator_json(mandate_id=first_mandate.id)
+    generator = resource.export_as_generator_json(
+        mandate_id=first_mandate.id,
+        request_id=first_group.id)
     chunks = list(generator)
     chunks_joined = ''.join(chunks)
     res = json.loads(chunks_joined)
     # check num of results
-    assert len(res) == 7
+    assert len(res) == 1
     # check keys
     json_keys = res[0].keys()
     assert 'name' in json_keys
@@ -21,15 +23,18 @@ def test_export_as_generator_json(first_mandate):
     assert 'timestamp' in json_keys
 
 @pytest.mark.django_db()
-def test_export_as_generator_csv(first_mandate):
+def test_export_as_generator_csv(first_mandate, first_group):
     resource = GroupDiscordResource()
-    generator = resource.export_as_generator_csv(mandate_id=first_mandate.id)
+    generator = resource.export_as_generator_csv(
+        mandate_id=first_mandate.id,
+        request_id=first_group.id
+    )
     chunks = list(generator)
     chunks_joined = ''.join(chunks)
     lines = chunks_joined.splitlines()
     headers = lines[0].split(',')
     # check num of results
-    assert len(lines) == 9 # len(results) + headers + empty line
+    assert len(lines) == 3 # len(results) + headers + empty line
     # check headers
     assert 'name' in headers
     assert 'value' in headers

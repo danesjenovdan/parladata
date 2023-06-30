@@ -1,7 +1,7 @@
 import pytest
 import json
 
-from export.resources import *
+from export.resources.misc import *
 
 from tests.fixtures.common import *
 
@@ -12,7 +12,9 @@ from tests.fixtures.common import *
 @pytest.mark.django_db()
 def test_export_as_generator_json(first_mandate):
     resource = VoteResource()
-    generator = resource.export_as_generator_json(mandate_id=first_mandate.id)
+    generator = resource.export_as_generator_json(
+        mandate_id=first_mandate.id
+    )
     chunks = list(generator)
     chunks_joined = ''.join(chunks)
     res = json.loads(chunks_joined)
@@ -29,7 +31,9 @@ def test_export_as_generator_json(first_mandate):
 @pytest.mark.django_db()
 def test_export_as_generator_csv(first_mandate):
     resource = VoteResource()
-    generator = resource.export_as_generator_csv(mandate_id=first_mandate.id)
+    generator = resource.export_as_generator_csv(
+        mandate_id=first_mandate.id
+    )
     chunks = list(generator)
     chunks_joined = ''.join(chunks)
     lines = chunks_joined.splitlines()

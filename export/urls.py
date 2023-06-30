@@ -3,6 +3,7 @@ from django.urls import path
 from rest_framework.urlpatterns import format_suffix_patterns
 from export.views.person import *
 from export.views.misc import *
+from export.views.group import *
 
 
 urlpatterns = [
@@ -30,6 +31,25 @@ urlpatterns = [
     # # next two endpoints are duplicated because we need the same data on both cards
     path('person/public-questions/', ExportPersonPublicQuestionView.as_view()),
     path('person/public-answers/', ExportPersonPublicQuestionView.as_view()),
+
+    # groups
+    path('group/discord/', ExportGroupDiscord.as_view()),
+    # path('group/basic-information/', GroupInfo.as_view()),
+    # path('group/members/', GroupMembers.as_view()),
+    path('group/vocabulary-size/', ExportGroupVocabularySize.as_view()),
+    path('group/number-of-questions/', ExportGroupNumberOfQuestions.as_view()),
+    path('group/monthly-vote-attendance/', ExportGroupMonthlyVoteAttendance.as_view()),
+    # path('group/questions/', GroupQuestions.as_view()),
+    path('group/vote-attendance/', ExportGroupVoteAttendance.as_view()),
+    # path('group/votes/', GroupBallots.as_view()),
+    path('group/most-votes-in-common/', ExportGroupVotesInCommon.as_view()),
+    path('group/least-votes-in-common/', ExportGroupVotesInCommon.as_view()),
+    # path('group/deviation-from-group/', GroupDeviationFromGroup.as_view()),
+    path('group/tfidf/', ExportGroupTfidf.as_view()),
+    # path('group/style-scores/', GroupStyleScores.as_view()),
+    # path('group/speeches/', GroupSpeechesView.as_view()),
+    # path('group/media-reports/', GroupMediaReportsView.as_view()),
+
 ]
 
 urlpatterns = format_suffix_patterns(urlpatterns, allowed=['json', 'csv'])
