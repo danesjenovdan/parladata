@@ -73,7 +73,12 @@ class PersonInfoCardExport(CardExport):
         return get_cached_group_name(person.parliamentary_group_on_date().id)
 
     def get_queryset(self, mandate_id=None, request_id=None):
-        return Person.objects.filter(id=request_id)
+        person = Person.objects.filter(id=request_id)
+        if PersonMembership.objects.filter(member=person.first(), mandate_id=mandate_id).exists():
+            return person
+        else:
+            return Person.objects.none()
+
 
     class Meta:
         fields = (

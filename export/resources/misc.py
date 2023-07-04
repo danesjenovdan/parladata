@@ -85,7 +85,6 @@ class MPResource(ExportModelResource):
             'education_level',
             'preferred_pronoun',
             'number_of_mandates',
-
             'speeches_per_session',
             'number_of_questions',
             'mismatch_of_pg',
@@ -101,7 +100,6 @@ class MPResource(ExportModelResource):
             'education_level',
             'preferred_pronoun',
             'number_of_mandates',
-
             'speeches_per_session',
             'number_of_questions',
             'mismatch_of_pg',
@@ -277,7 +275,7 @@ class SessionResource(ExportModelResource):
         """
         if mandate_id:
             sessions = Session.objects.filter(
-                session__mandate=mandate_id
+                mandate=mandate_id
             )
             return sessions
         else:
@@ -294,31 +292,6 @@ class SessionResource(ExportModelResource):
         return ' & '.join(list(session.organizations.values_list('latest_name', flat=True)))
 
 
-class VoteResource(ExportModelResource):
-    def get_queryset(self, mandate_id=None, request_id=None):
-        """
-        Returns a queryset of all votes for given mandate id.
-        Or returns all votes if there is no mandate id.
-        """
-        if mandate_id:
-            votes = Vote.objects.filter(
-                motion__session__mandate_id=mandate_id
-            )
-            return votes
-        else:
-            return Vote.objects.all()
-
-    law_id = Field()
-
-    class Meta:
-        model = Vote
-        fields = ('id', 'name', 'motion__text', 'motion__summary', 'result', 'law_id')
-        export_order = ('id', 'name', 'motion__text', 'motion__summary', 'result', 'law_id')
-
-    def dehydrate_law_id(self, vote):
-        return vote.motion.law.id if vote.motion.law else None
-
-
 class LegislationResource(ExportModelResource):
     def get_queryset(self, mandate_id=None, request_id=None):
         """
@@ -330,6 +303,8 @@ class LegislationResource(ExportModelResource):
                 Q(legislationconsideration__session__mandate_id=mandate_id) |
                 Q(mandate_id=mandate_id)
             )
+            if request_id:
+                legislation = legislation.filter(legislationconsideration__session_id=request_id)
             return legislation
         else:
             return Law.objects.all()
