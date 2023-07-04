@@ -5,6 +5,7 @@ from parladata.models import (
     PublicPersonQuestion,
     Ballot,
     Question,
+    Person,
 )
 from parlacards.models import (
     DeviationFromGroup,
@@ -19,7 +20,7 @@ from parlacards.models import (
     PersonTfidf,
 )
 
-from export.resources.common import CardExport, get_cached_person_name
+from export.resources.common import CardExport, get_cached_person_name, get_cached_group_name
 
 
 class PersonCardExport(CardExport):
@@ -32,6 +33,75 @@ class PersonCardExport(CardExport):
     def dehydrate_name(self, score):
         return get_cached_person_name(score.person_id)
 
+    class Meta:
+        fields = ('name', 'value', 'timestamp',)
+        export_order = ('name', 'value', 'timestamp',)
+
+
+class PersonInfoCardExport(CardExport):
+    name = Field()
+    image = Field()
+    education = Field()
+    education_level = Field()
+    previous_occupation = Field()
+    number_of_mandates = Field()
+    number_of_voters = Field()
+    parliamentary_group = Field()
+
+    def dehydrate_name(self, person):
+        return get_cached_person_name(person.id)
+
+    def dehydrate_image(self, person):
+        return person.image.url
+
+    def dehydrate_education(self, person):
+        return person.education
+
+    def dehydrate_education_level(self, person):
+        return person.education_level
+
+    def dehydrate_previous_occupation(self, person):
+        return person.previous_occupation
+
+    def dehydrate_number_of_mandates(self, person):
+        return person.number_of_mandates
+
+    def dehydrate_number_of_voters(self, person):
+        return person.number_of_voters
+
+    def dehydrate_parliamentary_group(self, person):
+        return get_cached_group_name(person.parliamentary_group_on_date().id)
+
+    def get_queryset(self, mandate_id=None, request_id=None):
+        return Person.objects.filter(id=request_id)
+
+    class Meta:
+        fields = (
+            'name',
+            'date_of_birth',
+            'image',
+            'education',
+            'education_level',
+            'previous_occupation',
+            'number_of_mandates',
+            'number_of_voters',
+            'parliamentary_group'
+        )
+        export_order = (
+            'name',
+            'date_of_birth',
+            'image',
+            'education',
+            'education_level',
+            'previous_occupation',
+            'number_of_mandates',
+            'number_of_voters',
+            'parliamentary_group'
+        )
+        model = Person
+
+
+class PersonInfoResource(CardExport):
     class Meta:
         fields = ('name', 'value', 'timestamp',)
         export_order = ('name', 'value', 'timestamp',)
@@ -79,6 +149,7 @@ class ExportPersonAvgSpeechesPerSessionResource(PersonCardExport):
 
 class VotingDistanceResource(PersonCardExport):
     distance_with = Field()
+
     class Meta:
         model = VotingDistance
         fields = ('name', 'distance_with', 'value', 'timestamp',)
@@ -107,8 +178,10 @@ class PersonPublicQuestionsResource(CardExport):
 
     class Meta:
         model = PublicPersonQuestion
-        fields = ('name', 'created_at', 'approved_at', 'text', 'answer_text', 'answer_at')
-        export_order = ('name', 'created_at', 'approved_at', 'text', 'answer_text', 'answer_at')
+        fields = ('name', 'created_at', 'approved_at',
+                  'text', 'answer_text', 'answer_at')
+        export_order = ('name', 'created_at', 'approved_at',
+                        'text', 'answer_text', 'answer_at')
 
     def dehydrate_name(self, obj):
         return get_cached_person_name(obj.recipient_person_id)
@@ -128,6 +201,7 @@ class PersonPublicQuestionsResource(CardExport):
 
 class PersonTfidfResource(PersonCardExport):
     token = Field()
+
     class Meta:
         model = PersonTfidf
         fields = ('name', 'value', 'token', 'timestamp',)
@@ -144,7 +218,8 @@ class PersonMembershipResource(CardExport):
 
     def get_queryset(self, mandate_id=None, request_id=None):
         queryset = self._meta.model.objects.filter(mandate_id=mandate_id)
-        queryset = queryset.filter(member_id=request_id).order_by('-start_time')
+        queryset = queryset.filter(
+            member_id=request_id).order_by('-start_time')
         return queryset
 
     def dehydrate_name(self, membership):
@@ -167,8 +242,10 @@ class PersonMembershipResource(CardExport):
 
     class Meta:
         model = PersonMembership
-        fields = ('name', 'role', 'organization', 'on_behalf_of', 'start_time', 'end_time', 'mandate')
-        export_order = ('name', 'role', 'organization', 'on_behalf_of', 'start_time', 'end_time', 'mandate')
+        fields = ('name', 'role', 'organization', 'on_behalf_of',
+                  'start_time', 'end_time', 'mandate')
+        export_order = ('name', 'role', 'organization',
+                        'on_behalf_of', 'start_time', 'end_time', 'mandate')
 
 
 class PersonBallotsResource(CardExport):
@@ -178,8 +255,10 @@ class PersonBallotsResource(CardExport):
     passed = Field()
 
     def get_queryset(self, mandate_id=None, request_id=None):
-        queryset = self._meta.model.objects.filter(vote__motion__session__mandate_id=mandate_id)
-        queryset = queryset.filter(personvoter_id=request_id).order_by('-vote__timestamp')
+        queryset = self._meta.model.objects.filter(
+            vote__motion__session__mandate_id=mandate_id)
+        queryset = queryset.filter(
+            personvoter_id=request_id).order_by('-vote__timestamp')
         return queryset
 
     def dehydrate_name(self, ballot):
@@ -207,7 +286,8 @@ class PersonQuestionsResource(CardExport):
 
     def get_queryset(self, mandate_id=None, request_id=None):
         queryset = self._meta.model.objects.filter(mandate_id=mandate_id)
-        queryset = queryset.filter(person_authors__id=request_id).order_by('-timestamp')
+        queryset = queryset.filter(
+            person_authors__id=request_id).order_by('-timestamp')
         print(queryset)
         return queryset
 
@@ -220,8 +300,9 @@ class PersonQuestionsResource(CardExport):
     def dehydrate_timestamp(self, question):
         return question.timestamp.isoformat() if question.timestamp else None
 
-
     class Meta:
         model = Question
-        fields = ('authors', 'title', 'type_of_question', 'recipient_people', 'recipient_text', 'timestamp')
-        export_order = ('authors', 'title', 'type_of_question', 'recipient_people', 'recipient_text', 'timestamp')
+        fields = ('authors', 'title', 'type_of_question',
+                  'recipient_people', 'recipient_text', 'timestamp')
+        export_order = ('authors', 'title', 'type_of_question',
+                        'recipient_people', 'recipient_text', 'timestamp')

@@ -6,6 +6,10 @@ from export.resources.group import (
     GroupVoteAttendanceResource,
     GroupVotesInCommonResource,
     GroupTfidfResource,
+    GroupMembersResource,
+    GroupStyleScoresResource,
+    GroupDeviationFromGroupResource,
+    GroupInfoResource,
 )
 from export.views.common import ExportResourceView
 
@@ -64,3 +68,35 @@ class ExportGroupTfidf(ExportResourceView):
     """
     filename = "group_tfidf"
     resource = GroupTfidfResource()
+
+
+class ExportGroupMembers(ExportResourceView):
+    """
+    Export group's members from database and return them as a file in one of the allowed formats (json, csv).
+    """
+    filename = "group_members"
+    resource = GroupMembersResource()
+
+
+class ExportGroupStyleScores(ExportResourceView):
+    """
+    Export group's style scores from database and return them as a file in one of the allowed formats (json, csv).
+    """
+    filename = "group_style_scores"
+    resource = GroupStyleScoresResource()
+
+
+class ExportGroupDeviationFromGroup(ExportResourceView):
+    """
+    Export group's deviation from group from database and return them as a file in one of the allowed formats (json, csv).
+    """
+    filename = "group_deviation_from_group"
+    resource = GroupDeviationFromGroupResource()
+
+
+class ExportGroupInfo(ExportResourceView):
+    """
+    Export group's basic information from database and return them as a file in one of the allowed formats (json, csv).
+    """
+    filename = "group_basic_information"
+    resource = GroupInfoResource()
