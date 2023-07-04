@@ -4,14 +4,22 @@ from rest_framework.urlpatterns import format_suffix_patterns
 from export.views.person import *
 from export.views.misc import *
 from export.views.group import *
+from export.views.session import *
 
 
 urlpatterns = [
     # MISC
-    path('misc/votes', ExportVotesView.as_view()),
-    path('misc/members', ExportParliamentMembersView.as_view()),
-    path('misc/groups', ExportParliamentGroupsView.as_view()),
-    path('misc/legislation', ExportLegislationView.as_view()),
+    path('misc/members/', ExportParliamentMembersView.as_view()),
+    path('misc/groups/', ExportParliamentGroupsView.as_view()),
+    path('misc/sessions/', ExportSessionView.as_view()),
+    path('misc/legislation/', ExportLegislationView.as_view()),
+
+
+    # next misc endpoints are not implemented because they are not useful
+    #path('misc/last-session/', LastSession.as_view()),
+    #path('misc/search/', SearchDropdown.as_view()),
+    #path('misc/menu-search/', SearchDropdown.as_view()),
+    #path('misc/basic-information/', RootOrganization.as_view()),
 
     # PEOPLE
     path('person/basic-information/', ExportPersonInfo.as_view()),
@@ -61,6 +69,17 @@ urlpatterns = [
     # path('group/speeches/', GroupSpeechesView.as_view()),
     # group/media-reports it is not implemented because it is not useful
     # path('group/media-reports/', GroupMediaReportsView.as_view()),
+
+    # SESSIONS
+    path('session/votes/', ExportVotesView.as_view()),
+    path('session/legislation/', ExportLegislationView.as_view()),
+    # next endpoints it is not implemented because it is not useful and can be accessed through API
+    # path('session/speeches/', SessionSpeeches.as_view()),
+    # path('session/votes/', SessionVotes.as_view()),
+    # path('session/single/', SingleSession.as_view()),
+    # path('session/tfidf/', SessionTfidfView.as_view()),
+    # path('session/agenda-items/', SessionAgendaItemsView.as_view()),
+    # path('session/minutes/', SessionMinutesView.as_view()),
 
 ]
 urlpatterns = format_suffix_patterns(urlpatterns, allowed=['json', 'csv'])

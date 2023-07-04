@@ -1,18 +1,11 @@
 from export.resources.misc import (
-    VoteResource,
     MPResource,
     GroupsResource,
     LegislationResource,
+    SessionResource,
 )
 
 from export.views.common import ExportResourceView
-
-class ExportVotesView(ExportResourceView):
-    """
-    Export all votes from database and return them as a file in one of the allowed formats (json, csv).
-    """
-    filename = "votes"
-    resource = VoteResource()
 
 
 class ExportParliamentMembersView(ExportResourceView):
@@ -37,3 +30,11 @@ class ExportLegislationView(ExportResourceView):
     """
     filename = "legislation"
     resource = LegislationResource()
+
+
+class ExportSessionView(ExportResourceView):
+    """
+    Export all sessions from database and return them as a file in one of the allowed formats (json, csv).
+    """
+    filename = "sessions"
+    resource = SessionResource()
