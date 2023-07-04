@@ -12,7 +12,6 @@ import tablib
 def get_cached_person_name(id):
     cache_key = f'person_name_{id}'
     name = cache.get(cache_key)
-    print(name)
     if not name:
         print('get from DB')
         person = Person.objects.get(id=id)
@@ -24,7 +23,6 @@ def get_cached_person_name(id):
 def get_cached_group_name(id):
     cache_key = f'group_name_{id}'
     name = cache.get(cache_key)
-    print(name)
     if not name:
         print('get from DB')
         organization = Organization.objects.get(id=id)

@@ -86,7 +86,7 @@ class Person(Timestampable, Parsable, Sluggable, VersionableFieldsOwner):
             property_model_name='PersonHonorificSuffix',
             datetime=datetime.now()
         )
-    
+
     @property
     def preferred_pronoun(self):
         return self.versionable_property_value_on_date(
@@ -94,7 +94,7 @@ class Person(Timestampable, Parsable, Sluggable, VersionableFieldsOwner):
             property_model_name='PersonPreferredPronoun',
             datetime=datetime.now()
         )
-    
+
     @property
     def education(self):
         return self.versionable_property_value_on_date(
@@ -102,7 +102,7 @@ class Person(Timestampable, Parsable, Sluggable, VersionableFieldsOwner):
             property_model_name='PersonEducation',
             datetime=datetime.now()
         )
-    
+
     @property
     def education_level(self):
         return self.versionable_property_value_on_date(
@@ -110,7 +110,7 @@ class Person(Timestampable, Parsable, Sluggable, VersionableFieldsOwner):
             property_model_name='PersonEducationLevel',
             datetime=datetime.now()
         )
-    
+
     @property
     def previous_occupation(self):
         return self.versionable_property_value_on_date(
@@ -118,7 +118,7 @@ class Person(Timestampable, Parsable, Sluggable, VersionableFieldsOwner):
             property_model_name='PersonPreviousOccupation',
             datetime=datetime.now()
         )
-    
+
     @property
     def number_of_mandates(self):
         return self.versionable_property_value_on_date(
@@ -126,7 +126,7 @@ class Person(Timestampable, Parsable, Sluggable, VersionableFieldsOwner):
             property_model_name='PersonNumberOfMandates',
             datetime=datetime.now()
         )
-    
+
     @property
     def number_of_voters(self):
         return self.versionable_property_value_on_date(
@@ -134,7 +134,7 @@ class Person(Timestampable, Parsable, Sluggable, VersionableFieldsOwner):
             property_model_name='PersonNumberOfVoters',
             datetime=datetime.now()
         )
-    
+
     @property
     def email(self):
         return self.versionable_property_value_on_date(

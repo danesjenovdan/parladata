@@ -1,5 +1,8 @@
-from export.resources.common import CardExport, get_cached_group_name, get_cached_person_name
 from import_export.fields import Field
+from datetime import datetime
+from django.db.models import Q
+
+from export.resources.common import CardExport, get_cached_group_name, get_cached_person_name
 
 from parlacards.models import (
     GroupDiscord,
@@ -8,9 +11,12 @@ from parlacards.models import (
     GroupMonthlyVoteAttendance,
     GroupVoteAttendance,
     GroupTfidf,
-    GroupVotingDistance
-
+    GroupVotingDistance,
+    GroupStyleScore,
+    DeviationFromGroup,
 )
+from parladata.models import PersonMembership, Organization, Link
+from parladata.models.common import Mandate
 
 
 
@@ -69,3 +75,120 @@ class GroupTfidfResource(GroupCardExport):
         model = GroupTfidf
         fields = ('name', 'token', 'value', 'timestamp',)
         export_order = ('name', 'token', 'value', 'timestamp',)
+
+
+class GroupStyleScoresResource(GroupCardExport):
+    style = Field()
+
+    def dehydrate_style(self, score):
+        return score.style
+    class Meta:
+        model = GroupStyleScore
+        fields = ('name', 'style', 'value', 'timestamp',)
+        export_order = ('name', 'style', 'value', 'timestamp',)
+
+
+class GroupInfoResource(CardExport):
+    name = Field()
+    acronym = Field()
+    email = Field()
+    facebook = Field()
+    twitter = Field()
+
+    def dehydrate_style(self, group):
+        return group.name
+
+    def dehydrate_acronym(self, group):
+        return group.acronym
+
+    def dehydrate_email(self, group):
+        return group.email
+
+    def dehydrate_facebook(self, group):
+        fb_link = Link.objects.filter(organization=group, tags__name='fb').first()
+        return fb_link.url if fb_link else None
+
+    def dehydrate_twitter(self, group):
+        tw_link = Link.objects.filter(organization=group, tags__name='tw').first()
+        return tw_link.url if tw_link else None
+
+    def get_queryset(self, mandate_id=None, request_id=None):
+        return self._meta.model.objects.filter(id=request_id)
+    class Meta:
+        model = Organization
+        fields = ('name', 'acronym', 'email','facebook', 'twitter')
+        export_order = ('name', 'acronym', 'email', 'facebook', 'twitter')
+
+
+class GroupMembersResource(CardExport):
+    name = Field()
+    organization = Field()
+    on_behalf_of = Field()
+    start_time = Field()
+    end_time = Field()
+    mandate = Field()
+
+    def get_queryset(self, mandate_id=None, request_id=None):
+        queryset = self._meta.model.objects.filter(mandate_id=mandate_id)
+        queryset = queryset.filter(
+            Q(organization_id=request_id) | \
+            Q(on_behalf_of=request_id)).order_by('-start_time')
+        return queryset
+
+    def dehydrate_name(self, membership):
+        return get_cached_person_name(membership.member_id)
+
+    def dehydrate_organization(self, membership):
+        return membership.organization.name
+
+    def dehydrate_on_behalf_of(self, membership):
+        return membership.on_behalf_of.name if membership.on_behalf_of else None
+
+    def dehydrate_start_time(self, membership):
+        return membership.start_time.isoformat() if membership.start_time else None
+
+    def dehydrate_end_time(self, membership):
+        return membership.end_time.isoformat() if membership.end_time else None
+
+    def dehydrate_mandate(self, membership):
+        return membership.mandate.description if membership.mandate else None
+
+    class Meta:
+        model = PersonMembership
+        fields = ('name', 'role', 'organization', 'on_behalf_of', 'start_time', 'end_time', 'mandate')
+        export_order = ('name', 'role', 'organization', 'on_behalf_of', 'start_time', 'end_time', 'mandate')
+
+
+class GroupDeviationFromGroupResource(CardExport):
+    name = Field()
+    def get_queryset(self, mandate_id=None, request_id=None):
+        group = Organization.objects.filter(id=request_id).first()
+        mandate = Mandate.objects.filter(id=mandate_id).first()
+        people = group.query_members()
+        from_timestamp, to_timestamp = mandate.get_time_range_from_mandate(
+            datetime.now()
+        )
+
+        relevant_deviation_querysets = [
+            DeviationFromGroup.objects.filter(
+                timestamp__range=(from_timestamp, to_timestamp),
+                person=person
+            ) for person in people
+        ]
+        relevant_deviation_ids = DeviationFromGroup.objects.none().union(
+            *relevant_deviation_querysets
+        ).values(
+            'id'
+        )
+        relevant_deviations = DeviationFromGroup.objects.filter(
+            id__in=relevant_deviation_ids
+        ).order_by('-timestamp')
+        return relevant_deviations
+
+    def dehydrate_name(self, score):
+        return get_cached_person_name(score.person_id)
+
+    class Meta:
+        model = DeviationFromGroup
+        fields = ('name', 'value', 'timestamp',)
+        export_order = ('name', 'value', 'timestamp',)

@@ -13,6 +13,7 @@ from export.resources.person import (
     PersonMembershipResource,
     PersonBallotsResource,
     PersonQuestionsResource,
+    PersonInfoCardExport
 )
 
 from export.views.common import ExportResourceView
@@ -23,6 +24,11 @@ class ExportVocabularySize(ExportResourceView):
     """
     filename = "vocabulary_size"
     resource = VocabularySizeResource()
+
+
+class ExportPersonInfo(ExportResourceView):
+    filename = "person_info"
+    resource = PersonInfoCardExport()
 
 
 class ExportPersonNumberOfSpokenWords(ExportResourceView):
