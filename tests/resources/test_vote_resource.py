@@ -1,7 +1,7 @@
 import pytest
 import json
 
-from export.resources.misc import *
+from export.resources.session import VoteResource
 
 from tests.fixtures.common import *
 
