@@ -38,7 +38,7 @@ class PersonCardExport(CardExport):
         export_order = ('name', 'value', 'timestamp',)
 
 
-class PersonInfoCardExport(CardExport):
+class PersonInfoCardResource(CardExport):
     name = Field()
     image = Field()
     education = Field()
@@ -106,12 +106,6 @@ class PersonInfoCardExport(CardExport):
         model = Person
 
 
-class PersonInfoResource(CardExport):
-    class Meta:
-        fields = ('name', 'value', 'timestamp',)
-        export_order = ('name', 'value', 'timestamp',)
-
-
 class PersonNumberOfSpokenWordsResource(PersonCardExport):
     class Meta:
         model = PersonNumberOfSpokenWords
@@ -132,12 +126,12 @@ class PersonMonthlyVoteAttendanceResource(PersonCardExport):
         model = PersonMonthlyVoteAttendance
 
 
-class PersonPersonVoteAttendanceResource(PersonCardExport):
+class PersonVoteAttendanceResource(PersonCardExport):
     class Meta:
         model = PersonVoteAttendance
 
 
-class ExportPersonStyleScoresResource(PersonCardExport):
+class PersonStyleScoresResource(PersonCardExport):
     class Meta:
         model = PersonStyleScore
         fields = ('name', 'style', 'value', 'timestamp',)
@@ -147,7 +141,7 @@ class ExportPersonStyleScoresResource(PersonCardExport):
         return score.style
 
 
-class ExportPersonAvgSpeechesPerSessionResource(PersonCardExport):
+class PersonAvgSpeechesPerSessionResource(PersonCardExport):
     class Meta:
         model = PersonAvgSpeechesPerSession
 
@@ -179,7 +173,7 @@ class PersonPublicQuestionsResource(CardExport):
 
     def get_queryset(self, mandate_id=None, request_id=None):
         queryset = super().get_queryset(mandate_id=mandate_id)
-        return queryset.filter(recipient_person_id=request_id).order_by('-timestamp')
+        return queryset.filter(recipient_person_id=request_id).order_by('-created_at')
 
     class Meta:
         model = PublicPersonQuestion

@@ -13,7 +13,6 @@ def get_cached_person_name(id):
     cache_key = f'person_name_{id}'
     name = cache.get(cache_key)
     if not name:
-        print('get from DB')
         person = Person.objects.get(id=id)
         name = person.name
         cache.set(cache_key, name, 60*60*24)
@@ -24,12 +23,10 @@ def get_cached_group_name(id):
     cache_key = f'group_name_{id}'
     name = cache.get(cache_key)
     if not name:
-        print('get from DB')
         organization = Organization.objects.get(id=id)
         name = organization.name
         cache.set(cache_key, name, 60*60*24)
     return name
-
 
 
 class ExportModelResource(ModelResource):
