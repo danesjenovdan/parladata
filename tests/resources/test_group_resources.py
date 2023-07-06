@@ -6,7 +6,7 @@ from export.resources.group import *
 
 class GroupResourceExportTest:
     resource = None
-    headers = ['name', 'value', 'timestamp']
+    columns = ['name', 'value', 'timestamp']
     csv_results_count = 3
     json_results_count = 1
 
@@ -26,8 +26,8 @@ class GroupResourceExportTest:
         if self.json_results_count > 0:
             json_keys = res[0].keys()
 
-            for header in self.headers:
-                assert header in json_keys
+            for column in self.columns:
+                assert column in json_keys
 
     @pytest.mark.django_db()
     def test_export_as_generator_csv(self, first_mandate, first_group):
@@ -39,12 +39,12 @@ class GroupResourceExportTest:
         chunks = list(generator)
         chunks_joined = ''.join(chunks)
         lines = chunks_joined.splitlines()
-        headers = lines[0].split(',')
+        columns = lines[0].split(',')
         # check num of results
-        assert len(lines) == self.csv_results_count # len(results) + headers + empty line
-        # check headers
-        for header in self.headers:
-            assert header in headers
+        assert len(lines) == self.csv_results_count # len(results) + columns + empty line
+        # check columns
+        for column in self.columns:
+            assert column in columns
 
 
 class TestGroupDiscordResource(GroupResourceExportTest):
@@ -81,35 +81,35 @@ class TestGroupVotesInCommonResource(GroupResourceExportTest):
     resource = GroupVotesInCommonResource
     csv_results_count = 2
     json_results_count = 0
-    headers = ['name', 'target_person', 'value', 'timestamp']
+    columns = ['name', 'target_person', 'value', 'timestamp']
 
 
 class TestGroupTfidfResource(GroupResourceExportTest):
     resource = GroupTfidfResource
     csv_results_count = 2
     json_results_count = 0
-    headers = ['name', 'token', 'value', 'timestamp']
+    columns = ['name', 'token', 'value', 'timestamp']
 
 
 class TestGroupStyleScoresResource(GroupResourceExportTest):
     resource = GroupStyleScoresResource
     csv_results_count = 2
     json_results_count = 0
-    headers = ['name', 'style', 'value', 'timestamp']
+    columns = ['name', 'style', 'value', 'timestamp']
 
 
 class TestGroupInfoResource(GroupResourceExportTest):
     resource = GroupInfoResource
     csv_results_count = 3
     json_results_count = 1
-    headers = ['name', 'acronym', 'email','facebook', 'twitter']
+    columns = ['name', 'acronym', 'email','facebook', 'twitter']
 
 
 class TestGroupMembersResource(GroupResourceExportTest):
     resource = GroupMembersResource
     csv_results_count = 6
     json_results_count = 4
-    headers = ['name', 'role', 'organization', 'on_behalf_of', 'start_time', 'end_time', 'mandate']
+    columns = ['name', 'role', 'organization', 'on_behalf_of', 'start_time', 'end_time', 'mandate']
 
 
 class TestGroupDeviationFromGroupResource(GroupResourceExportTest):
