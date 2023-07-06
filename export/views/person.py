@@ -3,9 +3,9 @@ from export.resources.person import (
     PersonNumberOfSpokenWordsResource,
     DeviationFromGroupResource,
     PersonMonthlyVoteAttendanceResource,
-    PersonPersonVoteAttendanceResource,
-    ExportPersonStyleScoresResource,
-    ExportPersonAvgSpeechesPerSessionResource,
+    PersonVoteAttendanceResource,
+    PersonStyleScoresResource,
+    PersonAvgSpeechesPerSessionResource,
     VotingDistanceResource,
     PersonNumberOfQuestionsResource,
     PersonPublicQuestionsResource,
@@ -13,7 +13,7 @@ from export.resources.person import (
     PersonMembershipResource,
     PersonBallotsResource,
     PersonQuestionsResource,
-    PersonInfoCardExport
+    PersonInfoCardResource
 )
 
 from export.views.common import ExportResourceView
@@ -28,7 +28,7 @@ class ExportVocabularySize(ExportResourceView):
 
 class ExportPersonInfo(ExportResourceView):
     filename = "person_info"
-    resource = PersonInfoCardExport()
+    resource = PersonInfoCardResource()
 
 
 class ExportPersonNumberOfSpokenWords(ExportResourceView):
@@ -51,17 +51,17 @@ class ExportPersonMonthlyVoteAttendance(ExportResourceView):
 
 class ExportPersonVoteAttendance(ExportResourceView):
     filename = "person_vote_attendance"
-    resource = PersonPersonVoteAttendanceResource()
+    resource = PersonVoteAttendanceResource()
 
 
 class ExportPersonStyleScores(ExportResourceView):
     filename = "person_style_scores"
-    resource = ExportPersonStyleScoresResource()
+    resource = PersonStyleScoresResource()
 
 
 class ExportPersonAvgSpeechesPerSession(ExportResourceView):
     filename = "person_avg_speeches_per_session"
-    resource = ExportPersonAvgSpeechesPerSessionResource()
+    resource = PersonAvgSpeechesPerSessionResource()
 
 
 class ExportVotingDistance(ExportResourceView):
