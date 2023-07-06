@@ -7,6 +7,7 @@ from parlacards.scores.tfidf import calculate_people_tfidf, calculate_groups_tfi
 
 from tests.fixtures.common import *
 
+@pytest.mark.django_db()
 def test_stopwords():
     # TODO these should probably be globals
     languages = ['sl', 'ua']

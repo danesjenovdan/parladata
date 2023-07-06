@@ -13,7 +13,7 @@ class QuestionAdmin(admin.ModelAdmin):
         LinkQuestionInline
     ]
     list_filter = ('type_of_question', SessionListFilter, PersonAuthorsListFilter, OrganizationAuthorsListFilter)
-    fields = ['title', 'session', 'person_authors', 'organization_authors', 'recipient_people', 'recipient_organizations', 'recipient_text', 'type_of_question', 'timestamp', 'answer_timestamp', 'gov_id']
+    fields = ['title', 'mandate', 'session', 'person_authors', 'organization_authors', 'recipient_people', 'recipient_organizations', 'recipient_text', 'type_of_question', 'timestamp', 'answer_timestamp', 'gov_id']
     readonly_fields = ['created_at', 'updated_at']
 
 admin.site.register(Question, QuestionAdmin)
