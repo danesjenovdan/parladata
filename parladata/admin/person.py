@@ -5,7 +5,7 @@ from django.conf import settings
 
 from import_export.admin import ExportMixin
 
-from export.resources import MPResource
+from export.resources.misc import MPResource
 
 from parladata.models import Person, PersonMembership
 from parladata.models.versionable_properties import *

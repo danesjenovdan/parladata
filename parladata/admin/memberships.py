@@ -3,9 +3,14 @@ from django.contrib import admin
 from parladata.admin.link import *
 from parladata.models import *
 from parladata.admin.filters import AllOrganizationsListFilter, AllOnBehalfOfListFilter, MembershipMembersListFilter
+from export.resources.misc import MembershipResource
+
+from import_export.admin import ImportExportModelAdmin
 
 
-class MembershipAdmin(admin.ModelAdmin):
+class MembershipAdmin(ImportExportModelAdmin):
+    resource_classes = [MembershipResource]
+
     inlines = [
         LinkMembershipInline,
     ]
