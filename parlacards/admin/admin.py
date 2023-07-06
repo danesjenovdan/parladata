@@ -8,6 +8,7 @@ from django.shortcuts import redirect
 from parlacards.models import (SessionTfidf, PersonTfidf, GroupTfidf, Quote)
 from parladata.models.memberships import PersonMembership
 from parladata.admin.filters import MembersListFilter, OrganizationsListFilter, MembersAndLeaderListFilter, SessionListFilter
+from parlacards.admin.filters import MembersListFilter
 
 from django.contrib import admin
 
@@ -55,7 +56,7 @@ class SessionTfidfAdmin(admin.ModelAdmin):
 
 class PersonTfidfAdmin(admin.ModelAdmin):
     list_display = ( 'person', 'token', 'value', 'created_at', 'delete')
-    list_filter = (MembersAndLeaderListFilter, )
+    list_filter = (MembersAndLeaderListFilter, MembersListFilter)
     list_per_page = 20
     ordering = ['-timestamp', '-value']
     list_editable = ('token',)
@@ -88,7 +89,7 @@ class PersonTfidfAdmin(admin.ModelAdmin):
 
 class GroupTfidfAdmin(admin.ModelAdmin):
     list_display = ('group', 'token', 'value', 'created_at', 'delete')
-    list_filter = (OrganizationsListFilter, )
+    list_filter = (OrganizationsListFilter, MembersListFilter)
     list_per_page = 20
     ordering = ['-timestamp', '-value']
     list_editable = ('token',)
