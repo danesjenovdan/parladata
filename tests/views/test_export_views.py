@@ -16,7 +16,7 @@ client = APIClient()
 
 class ExportTestClass():
     endpoint = ''
-    headers = []
+    columns = []
 
     success_get_params = 'mandate_id=1'
     fail_get_params = 'mandate_id=3'
@@ -33,9 +33,9 @@ class ExportTestClass():
         # containts correct fields
         content = response.getvalue()
         lines = content.splitlines()
-        headers = lines[0].decode("utf-8").split(',')
-        for header in self.headers:
-            assert header in headers
+        columns = lines[0].decode("utf-8").split(',')
+        for column in self.columns:
+            assert column in columns
 
     @pytest.mark.django_db()
     def test_export_json(self):
@@ -50,8 +50,8 @@ class ExportTestClass():
             # empty json has not keys
             return
         json_keys = content[0].keys()
-        for header in self.headers:
-            assert header in json_keys
+        for column in self.columns:
+            assert column in json_keys
 
     @pytest.mark.django_db()
     def test_export_wrong_format(self):
@@ -78,10 +78,10 @@ class ExportTestClass():
         assert response.headers['content-type'] == 'text/csv'
         content = response.getvalue()
         lines = content.splitlines()
-        assert len(lines) == 2 # headers and empty line
-        headers = lines[0].decode("utf-8").split(',')
-        for header in self.headers:
-            assert header in headers
+        assert len(lines) == 2 # colimns and empty line
+        columns = lines[0].decode("utf-8").split(',')
+        for column in self.columns:
+            assert column in columns
 
     @pytest.mark.django_db()
     def test_export_json_no_mandate(self):
@@ -96,7 +96,7 @@ class ExportTestClass():
 # MISC TESTS
 class TestMembersView(ExportTestClass):
     endpoint = '/v3/export/misc/members'
-    headers = [
+    columns = [
         'id',
         'name',
         'date_of_birth',
@@ -114,7 +114,7 @@ class TestMembersView(ExportTestClass):
 
 class TestGroupsView(ExportTestClass):
     endpoint = '/v3/export/misc/groups'
-    headers = [
+    columns = [
         'id',
         'name',
         'acronym',
@@ -127,7 +127,7 @@ class TestGroupsView(ExportTestClass):
 
 class TestSessionsView(ExportTestClass):
     endpoint = '/v3/export/misc/sessions'
-    headers = [
+    columns = [
         'id',
         'name',
         'organizations',
@@ -138,7 +138,7 @@ class TestSessionsView(ExportTestClass):
 
 class TestLegislationView(ExportTestClass):
     endpoint = '/v3/export/misc/legislation'
-    headers = [
+    columns = [
         'id',
         'text',
         'epa',
@@ -154,7 +154,7 @@ class TestVotesView(ExportTestClass):
     endpoint = '/v3/export/session/votes'
     success_get_params = 'mandate_id=1&id=3782'
     fail_get_params = 'mandate_id=3&id=1'
-    headers = [
+    columns = [
         'id',
         'name',
         'motion__text',
@@ -166,7 +166,7 @@ class TestSessionsLegislationView(ExportTestClass):
     endpoint = '/v3/export/session/legislation'
     success_get_params = 'mandate_id=1&id=3782'
     fail_get_params = 'mandate_id=3&id=1'
-    headers = [
+    columns = [
         'id',
         'text',
         'epa',
@@ -185,7 +185,7 @@ class PersonCardTest(ExportTestClass):
     """
     success_get_params = 'mandate_id=2&id=245'
     fail_get_params = 'mandate_id=3&id=245'
-    headers = [
+    columns = [
         'name',
         'value',
         'timestamp'
@@ -196,7 +196,7 @@ class TestPersonVocabularySizeView(PersonCardTest):
 
 class TestPersonInfoView(PersonCardTest):
     endpoint = '/v3/export/person/basic-information'
-    headers = [
+    columns = [
         'name',
         'date_of_birth',
         'image',
@@ -210,7 +210,7 @@ class TestPersonInfoView(PersonCardTest):
 
 class TestPersonVotesView(PersonCardTest):
     endpoint = '/v3/export/person/votes'
-    headers = [
+    columns = [
         'name',
         'vote_text',
         'option',
@@ -221,7 +221,7 @@ class TestPersonVotesView(PersonCardTest):
 
 class TestPersonQuestionsView(PersonCardTest):
     endpoint = '/v3/export/person/questions'
-    headers = [
+    columns = [
         'authors',
         'title',
         'type_of_question',
@@ -234,7 +234,7 @@ class TestPersonQuestionsView(PersonCardTest):
 
 class TestPersonMembershipsView(PersonCardTest):
     endpoint = '/v3/export/person/memberships'
-    headers = [
+    columns = [
         'name',
         'role',
         'organization',
@@ -247,7 +247,7 @@ class TestPersonMembershipsView(PersonCardTest):
 
 class TestPersonVotesInCommonView(PersonCardTest):
     endpoint = '/v3/export/person/most-votes-in-common'
-    headers = [
+    columns = [
         'name',
         'distance_with',
         'value',
@@ -280,7 +280,7 @@ class TestPersonNumberOfSpokenWordsView(PersonCardTest):
 
 class TestPersonTfidfView(PersonCardTest):
     endpoint = '/v3/export/person/tfidf'
-    headers = [
+    columns = [
         'name',
         'value',
         'token',
@@ -291,7 +291,7 @@ class TestPersonTfidfView(PersonCardTest):
 
 class TestPersonStyleScoreView(PersonCardTest):
     endpoint = '/v3/export/person/style-scores'
-    headers = [
+    columns = [
         'name',
         'style',
         'value',
