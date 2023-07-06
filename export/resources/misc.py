@@ -39,6 +39,19 @@ from parladata.models.person import Person
 
 
 class MPResource(ExportModelResource):
+    name = Field()
+    age = Field()
+    education_level = Field()
+    preferred_pronoun = Field()
+    number_of_mandates = Field()
+
+    speeches_per_session = Field()
+    number_of_questions = Field()
+    mismatch_of_pg = Field()
+    presence_votes = Field()
+    spoken_words = Field()
+    vocabulary_size = Field()
+
     def get_queryset(self, mandate_id=None, request_id=None):
         """
         Returns a queryset of all parliament members for given mandate id.
@@ -60,20 +73,6 @@ class MPResource(ExportModelResource):
             self.people = None
             self.playing_field = None
             return Person.objects.none()
-
-
-    name = Field()
-    age = Field()
-    education_level = Field()
-    preferred_pronoun = Field()
-    number_of_mandates = Field()
-
-    speeches_per_session = Field()
-    number_of_questions = Field()
-    mismatch_of_pg = Field()
-    presence_votes = Field()
-    spoken_words = Field()
-    vocabulary_size = Field()
 
     class Meta:
         model = Person
@@ -155,8 +154,15 @@ class MPResource(ExportModelResource):
         return self.get_score(PersonVocabularySize, person)
 
 
-
 class GroupsResource(ExportModelResource):
+    name = Field()
+    acronym = Field()
+    number_of_organization_members_at = Field()
+    intra_disunion = Field()
+    vocabulary_size = Field()
+    number_of_questions = Field()
+    vote_attendance = Field()
+
     def get_queryset(self, mandate_id=None, request_id=None):
         """
         Returns a queryset of all parliament groups for given mandate id.
@@ -176,14 +182,6 @@ class GroupsResource(ExportModelResource):
         else:
             memberships = OrganizationMembership.objects.filter(organization__classification='root').values_list('member__id', flat=True)
             return Organization.objects.filter(id__in=memberships)
-
-    name = Field()
-    acronym = Field()
-    number_of_organization_members_at = Field()
-    intra_disunion = Field()
-    vocabulary_size = Field()
-    number_of_questions = Field()
-    vote_attendance = Field()
 
     class Meta:
         model = Organization
@@ -232,6 +230,13 @@ class GroupsResource(ExportModelResource):
 
 
 class MembershipResource(ExportModelResource):
+    member = Field()
+    start_time = Field()
+    end_time = Field()
+    organization = Field()
+    on_behalf_of = Field()
+    role = Field()
+
     def get_queryset(self, mandate_id=None, request_id=None):
         """
         Returns a queryset of all memberships for given mandate id.
@@ -244,13 +249,6 @@ class MembershipResource(ExportModelResource):
             return votes
         else:
             return PersonMembership.objects.all()
-
-    member = Field()
-    start_time = Field()
-    end_time = Field()
-    organization = Field()
-    on_behalf_of = Field()
-    role = Field()
 
     class Meta:
         model = PersonMembership
@@ -268,6 +266,8 @@ class MembershipResource(ExportModelResource):
 
 
 class SessionResource(ExportModelResource):
+    organizations = Field()
+
     def get_queryset(self, mandate_id=None, request_id=None):
         """
         Returns a queryset of all sessions for given mandate id.
@@ -281,8 +281,6 @@ class SessionResource(ExportModelResource):
         else:
             return Session.objects.all()
 
-    organizations = Field()
-
     class Meta:
         model = Session
         fields = ('id', 'name', 'organizations', 'start_time', 'classification', 'in_review')
@@ -293,6 +291,14 @@ class SessionResource(ExportModelResource):
 
 
 class LegislationResource(ExportModelResource):
+    classification = Field()
+    procedure_phase = Field()
+    text = Field()
+    epa = Field()
+    passed = Field()
+    timestamp = Field()
+    classification = Field()
+
     def get_queryset(self, mandate_id=None, request_id=None):
         """
         Returns a queryset of legislation for given mandate id.
@@ -308,14 +314,6 @@ class LegislationResource(ExportModelResource):
             return legislation
         else:
             return Law.objects.all()
-
-    classification = Field()
-    procedure_phase = Field()
-    text = Field()
-    epa = Field()
-    passed = Field()
-    timestamp = Field()
-    classification = Field()
 
     class Meta:
         model = Law

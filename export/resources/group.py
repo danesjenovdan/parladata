@@ -27,9 +27,6 @@ class GroupCardExport(CardExport):
         queryset = super().get_queryset(mandate_id=mandate_id)
         return queryset.filter(group_id=request_id).order_by('-timestamp')
 
-    def dehydrate_name(self, score):
-        return get_cached_group_name(score.group_id)
-
     class Meta:
         fields = ('name', 'value', 'timestamp',)
         export_order = ('name', 'value', 'timestamp',)
@@ -62,12 +59,13 @@ class GroupVoteAttendanceResource(GroupCardExport):
 class GroupVotesInCommonResource(GroupCardExport):
     target_person = Field()
 
-    def dehydrate_target_person(self, score):
-        return get_cached_person_name(score.target_id)
     class Meta:
         model = GroupVotingDistance
         fields = ('name', 'target_person', 'value', 'timestamp',)
         export_order = ('name', 'target_person', 'value', 'timestamp',)
+
+    def dehydrate_target_person(self, score):
+        return get_cached_person_name(score.target_id)
 
 
 class GroupTfidfResource(GroupCardExport):
@@ -80,13 +78,13 @@ class GroupTfidfResource(GroupCardExport):
 class GroupStyleScoresResource(GroupCardExport):
     style = Field()
 
-    def dehydrate_style(self, score):
-        return score.style
     class Meta:
         model = GroupStyleScore
         fields = ('name', 'style', 'value', 'timestamp',)
         export_order = ('name', 'style', 'value', 'timestamp',)
 
+    def dehydrate_style(self, score):
+        return score.style
 
 class GroupInfoResource(CardExport):
     name = Field()
@@ -94,6 +92,14 @@ class GroupInfoResource(CardExport):
     email = Field()
     facebook = Field()
     twitter = Field()
+
+    def get_queryset(self, mandate_id=None, request_id=None):
+        return self._meta.model.objects.filter(id=request_id)
+
+    class Meta:
+        model = Organization
+        fields = ('name', 'acronym', 'email','facebook', 'twitter')
+        export_order = ('name', 'acronym', 'email', 'facebook', 'twitter')
 
     def dehydrate_style(self, group):
         return group.name
@@ -112,13 +118,6 @@ class GroupInfoResource(CardExport):
         tw_link = Link.objects.filter(organization=group, tags__name='tw').first()
         return tw_link.url if tw_link else None
 
-    def get_queryset(self, mandate_id=None, request_id=None):
-        return self._meta.model.objects.filter(id=request_id)
-    class Meta:
-        model = Organization
-        fields = ('name', 'acronym', 'email','facebook', 'twitter')
-        export_order = ('name', 'acronym', 'email', 'facebook', 'twitter')
-
 
 class GroupMembersResource(CardExport):
     name = Field()
@@ -134,6 +133,11 @@ class GroupMembersResource(CardExport):
             Q(organization_id=request_id) | \
             Q(on_behalf_of=request_id)).order_by('-start_time')
         return queryset
+
+    class Meta:
+        model = PersonMembership
+        fields = ('name', 'role', 'organization', 'on_behalf_of', 'start_time', 'end_time', 'mandate')
+        export_order = ('name', 'role', 'organization', 'on_behalf_of', 'start_time', 'end_time', 'mandate')
 
     def dehydrate_name(self, membership):
         return get_cached_person_name(membership.member_id)
@@ -153,14 +157,10 @@ class GroupMembersResource(CardExport):
     def dehydrate_mandate(self, membership):
         return membership.mandate.description if membership.mandate else None
 
-    class Meta:
-        model = PersonMembership
-        fields = ('name', 'role', 'organization', 'on_behalf_of', 'start_time', 'end_time', 'mandate')
-        export_order = ('name', 'role', 'organization', 'on_behalf_of', 'start_time', 'end_time', 'mandate')
-
 
 class GroupDeviationFromGroupResource(CardExport):
     name = Field()
+
     def get_queryset(self, mandate_id=None, request_id=None):
         group = Organization.objects.filter(id=request_id).first()
         mandate = Mandate.objects.filter(id=mandate_id).first()
@@ -185,10 +185,10 @@ class GroupDeviationFromGroupResource(CardExport):
         ).order_by('-timestamp')
         return relevant_deviations
 
-    def dehydrate_name(self, score):
-        return get_cached_person_name(score.person_id)
-
     class Meta:
         model = DeviationFromGroup
         fields = ('name', 'value', 'timestamp',)
         export_order = ('name', 'value', 'timestamp',)
+
+    def dehydrate_name(self, score):
+        return get_cached_person_name(score.person_id)
