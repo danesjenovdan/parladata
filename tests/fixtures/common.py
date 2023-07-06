@@ -105,6 +105,7 @@ def bicameral_org_1():
     return {
         'id': '18',
     }
+
 @pytest.fixture
 def bicameral_org_2():
     return {
