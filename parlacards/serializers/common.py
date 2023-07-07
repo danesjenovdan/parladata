@@ -205,7 +205,6 @@ class CommonCachableSerializer(CommonSerializer):
 
 
 class MandateSerializer(CommonSerializer):
-    id = serializers.IntegerField()
     description = serializers.CharField()
     beginning = serializers.DateTimeField()
 
