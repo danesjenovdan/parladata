@@ -361,7 +361,15 @@ class VoteSerializer(CommonSerializer):
 
     def get_documents(self, vote):
         serializer = LinkSerializer(
-            vote.motion.links.all().exclude(tags__name='vote-pdf').order_by('id'),
+            vote.motion.links.all().exclude(tags__name='vote-pdf').exclude(note='analyse').order_by('id'),
+            many=True,
+            context=self.context,
+        )
+        return serializer.data
+
+    def get_external_analyses(self, vote):
+        serializer = LinkSerializer(
+            vote.motion.links.filter(note='analyse').order_by('id'),
             many=True,
             context=self.context,
         )
@@ -387,6 +395,7 @@ class VoteSerializer(CommonSerializer):
     id = serializers.IntegerField()
     agenda_items = serializers.SerializerMethodField() # TODO this is faked
     documents = serializers.SerializerMethodField()
+    external_analyses = serializers.SerializerMethodField()
     title = serializers.CharField(source='name')
     legislation = serializers.SerializerMethodField() # TODO this is faked
 
