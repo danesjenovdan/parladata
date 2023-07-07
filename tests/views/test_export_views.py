@@ -118,7 +118,7 @@ class TestGroupsView(ExportTestClass):
         'id',
         'name',
         'acronym',
-        'number_of_organization_members_at',
+        'number_of_members_at',
         'intra_disunion',
         'vocabulary_size',
         'number_of_questions',
