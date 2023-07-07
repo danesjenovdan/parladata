@@ -157,7 +157,7 @@ class MPResource(ExportModelResource):
 class GroupsResource(ExportModelResource):
     name = Field()
     acronym = Field()
-    number_of_organization_members_at = Field()
+    number_of_members_at = Field()
     intra_disunion = Field()
     vocabulary_size = Field()
     number_of_questions = Field()
@@ -189,21 +189,19 @@ class GroupsResource(ExportModelResource):
             'id',
             'name',
             'acronym',
-            'number_of_organization_members_at',
+            'number_of_members_at',
             'intra_disunion',
             'vocabulary_size',
             'number_of_questions',
             'vote_attendance',)
-        export_order = ('id', 'name', 'acronym', 'number_of_organization_members_at')
+        export_order = ('id', 'name', 'acronym', 'number_of_members_at')
 
     def get_group_score(self, ScoreModel, group):
-        latest_scores = ScoreModel.objects.filter(
+        scores = ScoreModel.objects.filter(
             group_id=group.id
-        ) \
-        .order_by('-timestamp') \
-        .latest('created_at')
-
-        if latest_scores:
+        )
+        if scores:
+            latest_scores = scores.order_by('-timestamp').latest('created_at')
             return latest_scores.value
         return None
 
@@ -213,8 +211,8 @@ class GroupsResource(ExportModelResource):
     def dehydrate_acronym(self, organization):
         return organization.acronym
 
-    def dehydrate_number_of_organization_members_at(self, organization):
-        return organization.number_of_organization_members_at()
+    def dehydrate_number_of_members_at(self, organization):
+        return organization.number_of_members_at()
 
     def dehydrate_intra_disunion(self, organization):
         return self.get_group_score(GroupDiscord, organization)
