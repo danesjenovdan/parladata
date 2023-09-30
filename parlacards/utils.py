@@ -9,15 +9,16 @@ from icu import Collator, Locale
 
 local_collator = Collator.createInstance(Locale(settings.LANGUAGE_CODE))
 
+
 def get_playing_fields(timestamp):
-    person_memberships = PersonMembership.valid_at(timestamp).filter(
-        role='voter'
-    ).distinct('organization')
+    organization_memberships = OrganizationMembership.valid_at(timestamp).filter(
+        member__classification='root'
+    ).distinct('member')
 
     return [
-        person_membership.organization
-        for person_membership
-        in person_memberships
+        organization_membership.member
+        for organization_membership
+        in organization_memberships
     ]
 
 
