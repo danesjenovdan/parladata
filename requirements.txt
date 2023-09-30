@@ -32,7 +32,7 @@ martor
 django-colorfield
 django-admin-sortable2
 pyicu
-sentry-sdk
+sentry-sdk[django]
 eventregistry
 tablib
 django-import-export
