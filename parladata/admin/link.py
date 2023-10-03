@@ -17,6 +17,11 @@ ORGANIZATION_LINK_CHOICES =(
     ("website", "website"),
 )
 
+MOTION_LINK_CHOICES =(
+    ("", ""),
+    ("analyse", "analyse"),
+)
+
 class SocialForm(ModelForm):
     note = ChoiceField(choices = PERSON_SOCIAL_NETWORK_CHOICES)
     class Meta:
@@ -29,6 +34,13 @@ class OrganizationLinkForm(ModelForm):
     class Meta:
         model = Link
         exclude = ['person', 'membership', 'motion', 'question', 'session', 'agenda_item', 'legislation_consideration']
+
+
+class MotionLinkForm(ModelForm):
+    note = ChoiceField(choices = MOTION_LINK_CHOICES)
+    class Meta:
+        model = Link
+        exclude = ['person', 'membership', 'organization', 'session', 'question', 'agenda_item', 'legislation_consideration']
 
 
 class LinkOrganizationInline(admin.TabularInline):
@@ -48,6 +60,7 @@ class LinkMembershipInline(admin.TabularInline):
 
 class LinkMotionInline(admin.TabularInline):
     model = Link
+    form = MotionLinkForm
     fk_name = 'motion'
     exclude = ['person', 'membership', 'organization', 'session', 'question', 'agenda_item', 'legislation_consideration']
     extra = 0
