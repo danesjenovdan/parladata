@@ -171,10 +171,12 @@ def solr_select(
     except Exception as e:
         # if the request goes completely wrong, we should also warn
         # and return an empty response but structured response
-        capture_message(
-            f'Solr does not resolve at: {settings.SOLR_URL}. Exception {e}.',
-            level="warning"
-        )
+
+        # TODO dont send to sentry for every exception
+        # capture_message(
+        #     f'Solr does not resolve at: {settings.SOLR_URL}. Exception {e}.',
+        #     level="warning"
+        # )
         return {
             'response': {
                 'docs': [],
