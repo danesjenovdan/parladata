@@ -18,7 +18,7 @@ env = dict(
     SOLR_URL=os.getenv('PARLAMETER_SOLR_URL', 'http://solr:8983/solr/parlasearch'),
     ER_API_KEY=os.getenv('EVENTREGISTRY_API_KEY', ''),
     INSTALATION_NAME=os.getenv('INSTALATION_NAME', ''),
-    PARSER_INTERVAL_HOURS=os.getenv('PARSER_INTERVAL_HOURS', 24),
+    PARSER_INTERVAL_HOURS=int(os.getenv('PARSER_INTERVAL_HOURS', 24)),
 )
 
 
