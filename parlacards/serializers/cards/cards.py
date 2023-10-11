@@ -73,6 +73,8 @@ from parlacards.serializers.public_question import PublicPersonQuestionSerialize
 from parlacards.solr import parse_search_query_params, solr_select
 from parlacards.pagination import calculate_cache_key_for_page, create_paginator, create_solr_paginator
 from parlacards.recaptcha import recaptcha_data
+from parladata.exceptions import NoMembershipException
+from rest_framework.exceptions import NotFound
 
 #
 # PERSON
@@ -632,7 +634,10 @@ class GroupDiscordCardSerializer(GroupScoreCardSerializer):
 
 class RootGroupBasicInfoCardSerializer(CardSerializer):
     def get_results(self, mandate):
-        root_organization, playing_field = mandate.query_root_organizations(self.context['request_date'])
+        try:
+            root_organization, playing_field = mandate.query_root_organizations(self.context['request_date'])
+        except NoMembershipException as e:
+            raise NotFound(detail=str(e), code=404)
 
         serializer = RootOrganizationBasicInfoSerializer(
             root_organization,
@@ -1012,7 +1017,10 @@ class SearchDropdownSerializer(CardSerializer):
         return serializer.data
 
     def get_results(self, mandate):
-        root_organization, playing_field = mandate.query_root_organizations(self.context['request_date'])
+        try:
+            root_organization, playing_field = mandate.query_root_organizations(self.context['request_date'])
+        except NoMembershipException as e:
+            raise NotFound(detail=str(e), code=404)
 
         people_data = []
         groups_data = []
