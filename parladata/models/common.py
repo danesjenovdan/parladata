@@ -5,6 +5,8 @@ from django.db.models import Q
 from parladata.behaviors.models import Timestampable
 from parladata.models.memberships import OrganizationMembership, PersonMembership
 
+from parladata.exceptions import NoMembershipException
+
 
 class ActiveAtQuerySet(models.QuerySet):
     def active_at(self, timestamp):
@@ -34,7 +36,7 @@ class Mandate(models.Model):
             member__classification='root'
         )
         if not memberships:
-            raise Exception(f'No root organization memberships exist for this mandate!')
+            raise NoMembershipException(f'No root organization memberships exist for mandate {self.description}!')
         #raise Exception(f'Multiple root organization memberships exist for this mandate!')
 
         playing_field = memberships.first().member
