@@ -85,20 +85,4 @@ class MotionAdmin(admin.ModelAdmin):
     get_abstain.short_description = 'abstain'
     get_not.short_description = 'absent'
 
-    def get_search_results(self, request, queryset, search_term):
-        url = request.META.get('HTTP_REFERER', '')
-
-        # if autocompelte calls from speech admin then filter motions by speech session
-        if '/admin/parladata/speech/' in url:
-            speech_id = url.split('/')[-3]
-            session = Speech.objects.get(id=speech_id).session
-            queryset = queryset.filter(session=session)
-
-        results = super().get_search_results(
-            request,
-            queryset,
-            search_term
-        )
-        return results
-
 admin.site.register(Motion, MotionAdmin)
