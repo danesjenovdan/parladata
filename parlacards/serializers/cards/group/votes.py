@@ -1,4 +1,5 @@
 from django.db.models import Max
+from rest_framework.exceptions import NotFound
 
 from parladata.models.vote import Vote
 from parladata.models.ballot import Ballot
@@ -28,9 +29,15 @@ class GroupVoteCardSerializer(GroupScoreCardSerializer):
             mandate = Mandate.get_active_mandate_at(self.context['request_date'])
             root_organization = root_organization_membership.organization
         else:
+            # TODO reconsider if this is necessary or if we should just raise exception
+
             # get last active mandate for organization which has not active membership on current mandate
             organization_membership = group.organization_memberships.latest('end_time')
             # organization membership has end time for last mandate
+            if not organization_membership.end_time:
+                msg = f'Organization {organization_membership.member.name} has not membership on requested date {self.context["request_date"]}!'
+                raise NotFound(detail=msg, code=404)
+
             mandate = Mandate.get_active_mandate_at(organization_membership.end_time)
             root_organization = organization_membership.organization
 
