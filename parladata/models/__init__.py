@@ -11,7 +11,7 @@ from parladata.models.vote import Vote
 from parladata.models.ballot import Ballot
 from parladata.models.legislation import Law, Procedure, ProcedurePhase, LegislationConsideration, LegislationStatus, LegislationClassification
 from parladata.models.agenda_item import AgendaItem
-from parladata.models.question import Question
+from parladata.models.question import Question, Answer
 from parladata.models.public_question import PublicPersonQuestion, PublicPersonAnswer
 from parladata.models.link import Link
 from parladata.models.document import Document
