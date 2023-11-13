@@ -14,7 +14,7 @@ resources:
 images:
   - name: parladata-ajdovscina
     newName: rg.fr-par.scw.cloud/djnd/parladata-ajdovscina
-    newTag: '1467f92b511d44fcbdb4cd936646b6a5bfe3790b'
+    newTag: '48583e7c0bcd351c0f45474358173570a7832139'
   - name: parlasolr-ajdovscina
     newName: rg.fr-par.scw.cloud/djnd/parlasolr-ajdovscina
-    newTag: '1467f92b511d44fcbdb4cd936646b6a5bfe3790b'
+    newTag: '48583e7c0bcd351c0f45474358173570a7832139'
