@@ -14,7 +14,7 @@ resources:
 images:
   - name: parladata-ljubljana
     newName: rg.fr-par.scw.cloud/djnd/parladata-ljubljana
-    newTag: '48a6eb76742acb6f1ef55c990f70ce67fdd4278b'
+    newTag: 'b937fa08424a525769cacdacb08ad7ceb4a7dbe2'
   - name: parlasolr-ljubljana
     newName: rg.fr-par.scw.cloud/djnd/parlasolr-ljubljana
-    newTag: '48a6eb76742acb6f1ef55c990f70ce67fdd4278b'
+    newTag: 'b937fa08424a525769cacdacb08ad7ceb4a7dbe2'
