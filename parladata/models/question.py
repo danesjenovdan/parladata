@@ -97,3 +97,46 @@ class Question(Timestampable):
         organization_author_names = " ".join([author.name for author in self.organization_authors.all()])
         author = person_author_names if person_author_names else organization_author_names
         return f'{self.type_of_question}: {self.title} - {author}'
+
+
+class Answer(Timestampable):
+    """All questions from members of parlament."""
+
+    question = models.ForeignKey(
+        'Question',
+        on_delete=models.CASCADE,
+        help_text='The question this answer belongs to.',
+        related_name='answers'
+        )
+
+    timestamp = models.DateTimeField(
+        blank=True,
+        null=True,
+        help_text='Date of the question.'
+    )
+
+    text = models.TextField(
+        blank=True,
+        null=True,
+        help_text='Title name as written on dz-rs.si'
+    )
+
+    person_authors = models.ManyToManyField(
+        'Person',
+        blank=True,
+        related_name='authored_ansewrs',
+        help_text='The persons (MP) who asked the question.'
+    )
+
+    organization_authors = models.ManyToManyField(
+        'Organization',
+        blank=True,
+        help_text='Recipient organization (if it\'s an organization).',
+        related_name='answers_org_author'
+    )
+
+    def __str__(self):
+        person_author_names = " ".join([author.name for author in self.person_authors.all()])
+        organization_author_names = " ".join([author.name for author in self.organization_authors.all()])
+        author = person_author_names if person_author_names else organization_author_names
+        return f'{self.question.title} - {author}'
