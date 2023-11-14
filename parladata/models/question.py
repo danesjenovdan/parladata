@@ -136,7 +136,4 @@ class Answer(Timestampable):
     )
 
     def __str__(self):
-        person_author_names = " ".join([author.name for author in self.person_authors.all()])
-        organization_author_names = " ".join([author.name for author in self.organization_authors.all()])
-        author = person_author_names if person_author_names else organization_author_names
-        return f'{self.question.title} - {author}'
+        return self.text[:50]
