@@ -35,11 +35,11 @@ class QuestionSerializer(CommonSerializer):
         return obj.type_of_question
 
     def get_answer(self, obj):
-        obj.answers.first()
+        answer = obj.answers.first()
         return AnswerSerializer(
-            obj.answers.first(),
+            answer,
             context=self.context
-        ).data
+        ).data if answer else None
 
     # TODO check which fields we need
     timestamp = serializers.DateTimeField()
