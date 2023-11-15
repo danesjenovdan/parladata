@@ -10,7 +10,7 @@ class AnswerInline(admin.TabularInline):
     autocomplete_fields = ['person_authors', 'organization_authors']
     fk_name = 'question'
     exclude = []
-    extra = 1
+    extra = 0
 
 
 class QuestionAdmin(admin.ModelAdmin):
