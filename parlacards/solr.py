@@ -371,8 +371,10 @@ def get_agenda_items_from_solr(
             agenda_item.text = '[...]'.join(
                 solr_response['highlighting'][f'agenda_item_{agenda_item.id}']['content']
             )
-
-        agenda_item.text = shorten_highlighted_content(agenda_item.text)
+        if agenda_item.text:
+            agenda_item.text = shorten_highlighted_content(agenda_item.text)
+        else:
+            agenda_item.text = ''
 
     return (agenda_items, solr_response['response']['numFound'])
 
