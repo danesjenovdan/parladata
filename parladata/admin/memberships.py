@@ -1,4 +1,6 @@
 from django.contrib import admin
+from django import forms
+from django.db.models import Q
 
 from parladata.admin.link import *
 from parladata.models import *
@@ -8,8 +10,67 @@ from export.resources.misc import MembershipResource
 from import_export.admin import ImportExportModelAdmin
 
 
+
+
+
+class PersonMembershipForm(forms.ModelForm):
+    class Meta:
+        model = PersonMembership
+        exclude = []
+
+    def clean(self):
+        start_time = self.cleaned_data.get('start_time')
+        end_time = self.cleaned_data.get('end_time')
+        member = self.cleaned_data.get('member')
+        organization = self.cleaned_data.get('organization')
+        memberships = PersonMembership.objects.filter(
+            member=member,
+            organization=organization,
+        )
+        print('CLEAN')
+        # check for overlapping memberships
+        if end_time:
+            # check if new membership ends inside existing membership
+            if memberships.filter(
+                    Q(start_time__lte=end_time) |
+                    Q(start_time=None),
+                    Q(end_time__gte=end_time) |
+                    Q(end_time=None)
+                ).exclude(
+                    pk=self.instance.pk
+                ).exists():
+                raise forms.ValidationError("This membership ends inside existing membership")
+
+            if start_time:
+                # check new membership starts before and end afret existing membership
+                if memberships.filter(
+                        start_time__lte=start_time,
+                        end_time__gte=end_time
+                    ).exclude(
+                        pk=self.instance.pk
+                    ).exists():
+                    raise forms.ValidationError("Membership is around existing membership")
+
+        if start_time:
+            if memberships.filter(
+                    Q(start_time__lte=start_time) |
+                    Q(start_time=None),
+                    Q(end_time__gte=start_time) |
+                    Q(end_time=None)
+                ).exclude(
+                    pk=self.instance.pk
+                ).exists():
+                raise forms.ValidationError("This membership starts inside existing membership")
+
+        if not start_time and not end_time and memberships.exists():
+            raise forms.ValidationError("Membership must have start or end time if there is membership with same member and organization")
+
+        return self.cleaned_data
+
 class MembershipAdmin(ImportExportModelAdmin):
     resource_classes = [MembershipResource]
+
+    form = PersonMembershipForm
 
     inlines = [
         LinkMembershipInline,
@@ -40,9 +101,11 @@ class MembershipAdmin(ImportExportModelAdmin):
         qs = super().get_queryset(request)
         return qs.prefetch_related('member', 'organization', 'member__personname')
 
+
 class OrganizationMembershipAdmin(admin.ModelAdmin):
     autocomplete_fields = ('member', 'organization')
     readonly_fields = ['created_at', 'updated_at']
+    search_fields = ['member__organizationname__value', 'organization__organizationname__value']
     list_filter = ['mandate', AllOrganizationsListFilter]
 
 
