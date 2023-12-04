@@ -42,7 +42,7 @@ class PersonMembershipForm(forms.ModelForm):
                 raise forms.ValidationError("This membership ends inside existing membership")
 
             if start_time:
-                # check new membership starts before and end afret existing membership
+                # check if new membership starts before and ends after existing membership
                 if memberships.filter(
                         start_time__lte=start_time,
                         end_time__gte=end_time
@@ -50,7 +50,7 @@ class PersonMembershipForm(forms.ModelForm):
                         pk=self.instance.pk
                     ).exists():
                     raise forms.ValidationError("Membership is around existing membership")
-
+        # check if new membership starts inside existing membership
         if start_time:
             if memberships.filter(
                     Q(start_time__lte=start_time) |
