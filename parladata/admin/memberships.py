@@ -10,9 +10,6 @@ from export.resources.misc import MembershipResource
 from import_export.admin import ImportExportModelAdmin
 
 
-
-
-
 class PersonMembershipForm(forms.ModelForm):
     class Meta:
         model = PersonMembership
@@ -27,7 +24,7 @@ class PersonMembershipForm(forms.ModelForm):
             member=member,
             organization=organization,
         )
-        print('CLEAN')
+
         # check for overlapping memberships
         if end_time:
             # check if new membership ends inside existing membership
@@ -38,8 +35,9 @@ class PersonMembershipForm(forms.ModelForm):
                     Q(end_time=None)
                 ).exclude(
                     pk=self.instance.pk
-                ).exists():
-                raise forms.ValidationError("This membership ends inside existing membership")
+            ).exists():
+                raise forms.ValidationError(
+                    "This membership ends while a previously existing membership for this person in this organisation already begun. Memberships (by same people in same ogranisations) should not overlap, please fix the end time.")
 
             if start_time:
                 # check if new membership starts before and ends after existing membership
@@ -48,8 +46,9 @@ class PersonMembershipForm(forms.ModelForm):
                         end_time__gte=end_time
                     ).exclude(
                         pk=self.instance.pk
-                    ).exists():
-                    raise forms.ValidationError("Membership is around existing membership")
+                ).exists():
+                    raise forms.ValidationError(
+                        "This membership begins while a previously existing membership for this person in this organisation is active. Memberships (by same people in same ogranisations) should not overlap, please fix the start and end times.")
         # check if new membership starts inside existing membership
         if start_time:
             if memberships.filter(
@@ -59,13 +58,16 @@ class PersonMembershipForm(forms.ModelForm):
                     Q(end_time=None)
                 ).exclude(
                     pk=self.instance.pk
-                ).exists():
-                raise forms.ValidationError("This membership starts inside existing membership")
+            ).exists():
+                raise forms.ValidationError(
+                    "This membership begins while a previously existing membership for this person in this organisation is still active. Memberships (by same people in same ogranisations) should not overlap, please fix the start time.")
 
         if not start_time and not end_time and memberships.exists():
-            raise forms.ValidationError("Membership must have start or end time if there is membership with same member and organization")
+            raise forms.ValidationError(
+                "A membership for this person in this organisation already exists. In this case, start and end times are required properties. Please fill the corresponding fields before saving.")
 
         return self.cleaned_data
+
 
 class MembershipAdmin(ImportExportModelAdmin):
     resource_classes = [MembershipResource]
@@ -75,13 +77,17 @@ class MembershipAdmin(ImportExportModelAdmin):
     inlines = [
         LinkMembershipInline,
     ]
-    list_filter = ['role', 'mandate', MembershipMembersListFilter, AllOrganizationsListFilter, AllOnBehalfOfListFilter]
-    search_fields = ['member__personname__value', 'role', 'on_behalf_of__organizationname__value', 'organization__organizationname__value']
+    list_filter = ['role', 'mandate', MembershipMembersListFilter,
+                   AllOrganizationsListFilter, AllOnBehalfOfListFilter]
+    search_fields = ['member__personname__value', 'role',
+                     'on_behalf_of__organizationname__value', 'organization__organizationname__value']
     autocomplete_fields = ('member', 'organization', 'on_behalf_of')
-    list_display = ['member_name', 'organization_name', 'role', 'start_time', 'end_time']
+    list_display = ['member_name', 'organization_name',
+                    'role', 'start_time', 'end_time']
 
     # set order of fields in the dashboard
-    fields = ['member', 'role', 'organization', 'on_behalf_of', 'start_time', 'end_time', 'mandate']
+    fields = ['member', 'role', 'organization',
+              'on_behalf_of', 'start_time', 'end_time', 'mandate']
     readonly_fields = ['created_at', 'updated_at']
     list_per_page = 15
 
@@ -105,7 +111,8 @@ class MembershipAdmin(ImportExportModelAdmin):
 class OrganizationMembershipAdmin(admin.ModelAdmin):
     autocomplete_fields = ('member', 'organization')
     readonly_fields = ['created_at', 'updated_at']
-    search_fields = ['member__organizationname__value', 'organization__organizationname__value']
+    search_fields = ['member__organizationname__value',
+                     'organization__organizationname__value']
     list_filter = ['mandate', AllOrganizationsListFilter]
 
 
