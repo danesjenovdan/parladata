@@ -17,9 +17,9 @@ import requests
 import xmltodict
 
 VOTE_OPTIONS = {
-    '0': 'for',
-    '1': 'against',
-    '2': 'abstain'
+    '0': 'abstain',
+    '1': 'for',
+    '2': 'against'
 }
 
 class Command(BaseCommand):
@@ -30,7 +30,7 @@ class Command(BaseCommand):
 
         # self.create_memberships_from_xml()
 
-        documents = Document.objects.filter(tags__name='TRBOVLJE').exclude(tags__name='parsed')
+        documents = Document.objects.filter(tags__name='Optimu').exclude(tags__name='parsed')
         for document in documents:
             file_path = self.download_file(document.file)
             self.parse(file_path)
@@ -83,11 +83,12 @@ class Command(BaseCommand):
             playing_field.save()
             OrganizationName(
                 owner=playing_field,
-                value='Občina Trbovle',
+                value='Občina XXX',
             ).save()
             OrganizationMembership(
                 member=playing_field,
-                organization=default
+                organization=default,
+                mandate=mandate
             )
 
 
@@ -116,22 +117,24 @@ class Command(BaseCommand):
                 ).save()
                 OrganizationMembership(
                     member=group,
-                    organization=playing_field
+                    organization=playing_field,
+                    mandate=mandate
                 ).save()
 
             PersonMembership(
                 member=person,
                 organization=group,
-                role='member'
+                role='member',
+                mandate=mandate
             ).save()
 
             PersonMembership(
                 member=person,
                 on_behalf_of=group,
                 organization=playing_field,
-                role='voter'
+                role='voter',
+                mandate=mandate
             ).save()
-            print('loaded', self.people)
 
     def load_people(self):
         for participant in self.data['NewDataSet']['Participant']:
@@ -188,8 +191,10 @@ class Command(BaseCommand):
         except ObjectDoesNotExist:
             ai_order = 0
 
+        if isinstance(self.data['NewDataSet']['PointOfDiscussion'], dict):
+            self.data['NewDataSet']['PointOfDiscussion'] = [self.data['NewDataSet']['PointOfDiscussion']]
         for point in self.data['NewDataSet']['PointOfDiscussion']:
-            description = point['Description'].strip()
+            description = point.get('Description', '').strip()
             description_items = description.split('\n\n')
             if len(description_items) == 3:
                 title = description_items[1]
@@ -207,6 +212,8 @@ class Command(BaseCommand):
             self.agenda_items[point['PointOfDiscussionID']] = agenda_item
 
         # update agenda items with conclusions
+        if isinstance(self.data['NewDataSet']['Conclusion'], dict):
+            self.data['NewDataSet']['Conclusion'] = [self.data['NewDataSet']['Conclusion']]
         for conclusion in self.data['NewDataSet']['Conclusion']:
             this_agenda_item = self.agenda_items[conclusion['PointOfDiscussionID']]
             if this_agenda_item.text:
@@ -226,6 +233,8 @@ class Command(BaseCommand):
             pass
 
         # Motion and Vote
+        if isinstance(self.data['NewDataSet']['Session'], dict):
+            self.data['NewDataSet']['Session'] = [self.data['NewDataSet']['Session']]
         for xml_session in self.data['NewDataSet']['Session']:
             name = xml_session.get('CopyParticipantRegistrationObjectName', None)
             if not name:
