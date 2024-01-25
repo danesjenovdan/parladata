@@ -38,6 +38,7 @@ tablib
 django-import-export
 djangorestframework-csv
 drf-recaptcha
+xmltodict==0.12.0
 
 # tagger/lemmatizer
 scikit-learn==1.1.3

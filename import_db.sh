@@ -1,9 +1,9 @@
 #!/bin/bash
 
 # EDIT DATABASE NAME TO CHOOSE WHICH ONE YOU WANT
-DATABASE_NAME="parladata_slovenija_8"
-K8S_NAMESPACE="parlameter-slovenija"
-SECRETS_NAME="parladata-slovenija-credentials"
+DATABASE_NAME="parlameter_hrvaska"
+K8S_NAMESPACE="parlameter-hrvaska"
+SECRETS_NAME="parladata-credentials"
 
 # DATABASE PASSWORD IS DYNAMICALLY RETRIEVED FROM THE CLUSTER
 DATABASE_USER=$(kubectl get secret $SECRETS_NAME -n $K8S_NAMESPACE -o jsonpath="{.data.DJANGO_DATABASE_USERNAME}" | base64 --decode)
@@ -37,7 +37,7 @@ PGPASSWORD=$DATABASE_PASSWORD \
 
 # echo
 # echo "LOADING DB INTO CONTAINER"
-# sudo docker container exec -i $(sudo docker-compose ps -q db) psql -U postgres parladata < db.dump
+# docker container exec -i $(dc ps -q db) psql -U postgres parladata < db.dump
 
 # sudo docker-compose down
 
