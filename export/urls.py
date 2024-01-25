@@ -74,12 +74,13 @@ urlpatterns = [
     path('session/votes/', ExportVotesView.as_view()),
     path('session/legislation/', ExportLegislationView.as_view()),
     # next endpoints it is not implemented because it is not useful and can be accessed through API
-    # path('session/speeches/', SessionSpeeches.as_view()),
+    path('session/speeches/', ExportSessionSpeeches.as_view()),
     # path('session/votes/', SessionVotes.as_view()),
     # path('session/single/', SingleSession.as_view()),
     # path('session/tfidf/', SessionTfidfView.as_view()),
     # path('session/agenda-items/', SessionAgendaItemsView.as_view()),
     # path('session/minutes/', SessionMinutesView.as_view()),
 
+    path('vote/single/', ExportSingleVote.as_view()),
 ]
 urlpatterns = format_suffix_patterns(urlpatterns, allowed=['json', 'csv'])

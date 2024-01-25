@@ -31,6 +31,9 @@ class GroupCardExport(CardExport):
         fields = ('name', 'value', 'timestamp',)
         export_order = ('name', 'value', 'timestamp',)
 
+    def dehydrate_name(self, score):
+        return get_cached_group_name(score.group_id)
+
 class GroupDiscordResource(GroupCardExport):
     class Meta:
         model = GroupDiscord
