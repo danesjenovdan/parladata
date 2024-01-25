@@ -119,10 +119,10 @@ class MPResource(ExportModelResource):
         latest_scores = ScoreModel.objects.filter(
                 person=person,
             ) \
-            .order_by('-timestamp') \
-            .latest('created_at')
-        if latest_scores:
-            return latest_scores.value
+            .order_by('-timestamp')
+        if latest_scores.exists():
+            latest_score = latest_scores.latest('created_at')
+            return latest_score.value
         else:
             return None
 
