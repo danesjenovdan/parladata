@@ -20,9 +20,19 @@ class PersonMembershipForm(forms.ModelForm):
         end_time = self.cleaned_data.get('end_time')
         member = self.cleaned_data.get('member')
         organization = self.cleaned_data.get('organization')
+        role = self.cleaned_data.get('role')
+        # added roles logic to check for overlapping memberships
+        if role in ['member', 'deputy member', 'president', 'deputy', 'leader']:
+            roles = ['member', 'deputy member', 'president', 'deputy', 'leader']
+
+        elif role == 'voter':
+            roles = ['voter']
+        else:
+            roles = [role]
         memberships = PersonMembership.objects.filter(
             member=member,
             organization=organization,
+            role__in=roles,
         )
 
         # check for overlapping memberships
