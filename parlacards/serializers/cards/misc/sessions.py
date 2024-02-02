@@ -47,9 +47,8 @@ class SessionsCardSerializer(CardSerializer):
 
         mandate_start, mandate_end = mandate.get_time_range_from_mandate(mandate.ending)
 
-        relevant_organizations = relevant_organizations.filter(
-            Q(founding_date__range=(mandate_start, mandate_end)) | Q(dissolution_date__range=(mandate_start, mandate_end)) | Q(dissolution_date__isnull=True)
-        )
+        relevant_organizations_ids = mandate.sessions.all().distinct('organizations').values_list('organizations', flat=True)
+        relevant_organizations = Organization.objects.filter(id__in=relevant_organizations_ids)
 
         # cache whole list of organizations
         timestamp = relevant_organizations.order_by('-updated_at').first().updated_at
