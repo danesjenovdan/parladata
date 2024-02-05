@@ -265,6 +265,9 @@ class Command(BaseCommand):
             option = VOTE_OPTIONS[xml_ballot['Response']]
             person = self.people[xml_ballot['DeviceID']]
             vote = self.votes[xml_ballot['SessionID']]
+            registered = xml_ballot['Registered']
+            if option == 'abstain' and registered == 'false':
+                option = 'absent'
             Ballot(
                 vote=vote,
                 personvoter=person,
