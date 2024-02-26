@@ -41,7 +41,7 @@ def calculate_person_monthly_vote_attendance(person, playing_field, timestamp=No
 
     votes = Vote.objects.filter(
         timestamp__lte=timestamp,
-        motion__session__organizations=playing_field,
+        # motion__session__organizations=playing_field,
         motion__session__mandate=mandate,
     ).exclude(
         ballots__isnull=True
@@ -72,7 +72,7 @@ def calculate_person_monthly_vote_attendance(person, playing_field, timestamp=No
 
         membership_anonymous_votes = Vote.objects.filter(
             timestamp__lte=end_time,
-            motion__session__organizations=playing_field,
+            # motion__session__organizations=playing_field,
             motion__session__mandate=mandate,
             ballots__personvoter__isnull=True,
         ).exclude(
