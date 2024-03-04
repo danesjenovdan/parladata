@@ -1,5 +1,6 @@
 
 from django.core.management.base import BaseCommand
+from django.core import management
 from django.utils.translation import gettext as _
 from django.core.exceptions import ObjectDoesNotExist
 from django.conf import settings
@@ -35,6 +36,8 @@ class Command(BaseCommand):
             file_path = self.download_file(document.file)
             self.parse(file_path)
             document.tags.add('parsed')
+
+        management.call_command("set_votes_result", "--majority", "relative_normal", verbosity=0)
 
     def parse(self, file_path):
 
