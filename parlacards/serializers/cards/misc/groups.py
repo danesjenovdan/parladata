@@ -35,7 +35,9 @@ class GroupAnalysesSerializer(CommonOrganizationSerializer):
 
         timestamp = max([group.updated_at, last_membership.updated_at, *analysis_timestamps])
 
-        return f'GroupAnalysesSerializer_{group.id}_{timestamp.isoformat()}'
+        playing_field = self.context['playing_field']
+
+        return f'GroupAnalysesSerializer_{group.id}_{playing_field.id}_{timestamp.isoformat()}'
 
     def get_group_value(self, group, property_model_name):
         scores_module = import_module('parlacards.models')
@@ -65,10 +67,13 @@ class GroupAnalysesSerializer(CommonOrganizationSerializer):
 
 class MiscGroupsCardSerializer(CardSerializer):
     def get_results(self, parent_organization):
+        new_context = dict.copy(self.context)
+        new_context['playing_field'] = parent_organization
+
         serializer = GroupAnalysesSerializer(
             parent_organization.query_parliamentary_groups(self.context['request_date']),
             many=True,
-            context=self.context
+            context=new_context
         )
         return serializer.data
 
