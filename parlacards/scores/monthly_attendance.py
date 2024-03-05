@@ -26,7 +26,8 @@ def calculate_person_monthly_vote_attendance(person, playing_field, timestamp=No
     ballots = Ballot.objects.filter(
         personvoter=person,
         vote__timestamp__lte=timestamp,
-        vote__motion__session__mandate=mandate
+        vote__motion__session__mandate=mandate,
+        vote__motion__session__organizations=playing_field,
     ).annotate(
         month=TruncMonth('vote__timestamp')
     ).values(
