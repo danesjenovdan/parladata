@@ -153,11 +153,12 @@ def reset_order_on_speech():
     now = datetime.now()
     previous_parse = now - timedelta(hours=settings.PARSER_INTERVAL_HOURS)
     with transaction.atomic():
-        new_speeches = Speech.objects.filter(created_at__gte=previous_parse)
+        new_speeches = Speech.objects.filter(updated_at__gte=previous_parse)
         sessions = [s.session for s in new_speeches.distinct('session')]
         for session in sessions:
             print('update session: ', session)
             speeches = Speech.objects.filter(session=session).order_by(
+                'agenda_items__gov_id',
                 'agenda_items__order',
                 'order',
                 'id'
