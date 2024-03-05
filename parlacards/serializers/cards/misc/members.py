@@ -49,8 +49,8 @@ class PersonAnalysesSerializer(CommonPersonSerializer):
         last_membership = PersonMembership.objects.filter(member=person).latest('updated_at')
 
         timestamp = max([person.updated_at, last_membership.updated_at, *analysis_timestamps])
-
-        return f'PersonAnalysesSerializer_{person.id}_{timestamp.isoformat()}'
+        playing_field = self.context['playing_field']
+        return f'PersonAnalysesSerializer_{person.id}_{playing_field.id}_{timestamp.isoformat()}'
 
     def _get_person_value(self, person, property_model_name):
         scores_module = import_module('parlacards.models')
