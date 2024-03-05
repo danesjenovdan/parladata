@@ -9,12 +9,16 @@ PERSON_SOCIAL_NETWORK_CHOICES =(
     ("", ""),
     ("facebook", "facebook"),
     ("twitter", "twitter"),
+    ("linkedin", "linkedin"),
 )
 
 ORGANIZATION_LINK_CHOICES =(
     ("", ""),
     ("budget", "budget"),
     ("website", "website"),
+    ("facebook", "facebook"),
+    ("twitter", "twitter"),
+    ("linkedin", "linkedin"),
 )
 
 MOTION_LINK_CHOICES =(
