@@ -118,6 +118,7 @@ class MPResource(ExportModelResource):
     def get_score(self, ScoreModel, person):
         latest_scores = ScoreModel.objects.filter(
                 person=person,
+                playing_field=self.playing_field,
             ) \
             .order_by('-timestamp')
         if latest_scores.exists():
@@ -175,6 +176,7 @@ class GroupsResource(ExportModelResource):
                 before_end = to_timestamp-timedelta(minutes=1)
                 root_organization, playing_field = mandate.query_root_organizations(before_end)
                 organizations = playing_field.query_organization_members(before_end)
+                self.playing_field = playing_field
                 return organizations
             # if mandate does not exist return empty queryset
             except:
@@ -198,7 +200,8 @@ class GroupsResource(ExportModelResource):
 
     def get_group_score(self, ScoreModel, group):
         scores = ScoreModel.objects.filter(
-            group_id=group.id
+            group_id=group.id,
+            playing_field=self.playing_field,
         )
         if scores:
             latest_scores = scores.order_by('-timestamp').latest('created_at')
