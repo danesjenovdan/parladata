@@ -233,14 +233,14 @@ def calculate_group_monthly_vote_attendance(group, playing_field, timestamp=None
 
         member_ballots = Ballot.objects.filter(
             vote__timestamp__lte=timestamp,
-            # vote__motion__session__organizations=playing_field,
+            vote__motion__session__organizations=playing_field,
             vote__motion__session__mandate=mandate,
             personvoter__id=member_id,
         ).filter(ballot_q_object)
 
         member_anonymous_votes = Vote.objects.filter(
             timestamp__lte=timestamp,
-            # motion__session__organizations=playing_field,
+            motion__session__organizations=playing_field,
             motion__session__mandate=mandate,
             ballots__personvoter__isnull=True,
         ).exclude(
@@ -265,7 +265,7 @@ def calculate_group_monthly_vote_attendance(group, playing_field, timestamp=None
     annotated_ballots = list(annotated_ballots) # force db lookup here to prevent lookups later and speed up code in loop
 
     annotated_anonymous_votes = Vote.objects.filter(
-        id__in= all_anonymous_votes.values('id')
+        id__in=all_anonymous_votes.values('id')
     ).annotate(
         month=TruncMonth('timestamp'),
     ).values(
@@ -293,10 +293,12 @@ def calculate_group_monthly_vote_attendance(group, playing_field, timestamp=None
         if monthly_anon_votes:
             end_of_month = datetime(month.year, (month.month + 1) if month.month < 12 else 1, 1) - timedelta(seconds=1)
             start_of_month = datetime(month.year, month.month, 1)
-            num_memberships = memberships.filter(
-                Q(start_time__date__lte=end_of_month) | Q(start_time__isnull=True),
-                Q(end_time__date__gte=start_of_month) | Q(end_time__isnull=True),
-            ).count()
+
+            num_memberships = memberships.active_at(start_of_month).count()
+            if not num_memberships:
+                # if there are no memberships at the start of the month, we assume there are memberships at the end of the month
+                num_memberships = memberships.active_at(end_of_month).count()
+
             num_anon_ballots = monthly_anon_votes['total_votes'] * num_memberships
             total_ballots += num_anon_ballots
 
