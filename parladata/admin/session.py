@@ -10,7 +10,7 @@ from parladata.admin.filters import SessionOrganizationsListFilter
 class SessionLinkInline(admin.TabularInline):
     model = Link
     fk_name = 'session'
-    exclude = ['person', 'membership', 'motion', 'question', 'organization', 'agenda_item']
+    exclude = ['person', 'membership', 'motion', 'question', 'organization', 'agenda_item', 'answer', 'legislation_consideration']
     extra = 0
 
 class SessionAdmin(admin.ModelAdmin):
