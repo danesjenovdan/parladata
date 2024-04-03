@@ -275,7 +275,7 @@ def calculate_group_monthly_vote_attendance(group, playing_field, timestamp=None
 
     months = sorted(set([
         *map(lambda v: v['month'], annotated_ballots),
-        *map(lambda v: v['month'], annotated_anonymous_votes),
+        *map(lambda v: v['month'], all_annotated_anonymous_votes),
     ]))
 
     for month in months:
