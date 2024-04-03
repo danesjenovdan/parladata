@@ -1,5 +1,5 @@
 from django.conf.urls import include
-from django.urls import re_path
+from django.urls import re_path, path
 from rest_framework import routers
 
 from parladata.api_views import *
@@ -39,4 +39,5 @@ urlpatterns = [
     re_path(r'^merge-people', merge_people),
     re_path(r'^merge-organizations', merge_organizations),
     re_path(r'^add-ballots', add_ballots),
+    path('end_mandate/<int:mandate_id>/', end_mandate),
 ]

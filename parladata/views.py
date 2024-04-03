@@ -11,6 +11,8 @@ from parladata.models.vote import Vote
 from parladata.models.task import Task
 from parladata.models.common import Mandate
 
+from datetime import datetime
+
 import collections
 
 
@@ -340,3 +342,16 @@ def add_anonymous_ballots(request):
             'opts': {'app_label': 'parladata', 'app_config': {'verbose_name': 'vote'}}
         }
     )
+
+
+def end_mandate(request, mandate_id):
+    if request.user.is_superuser:
+        mandate = Mandate.objects.get(id=mandate_id)
+        if not mandate.ending:
+            mandate.ending = datetime.now()
+            mandate.save()
+        end_time = mandate.ending
+        mandate.personmemberships.filter(end_time__isnull=True).update(end_time=end_time)
+        mandate.organizationmemberships.filter(end_time__isnull=True).update(end_time=end_time)
+
+    return redirect(reverse("admin:parladata_mandate_changelist"))
