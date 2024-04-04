@@ -1,13 +1,12 @@
-from django.core.management.base import BaseCommand, CommandError
+from django.core.management.base import BaseCommand
 
 from parladata.update_utils import set_vote_session
 
 
 class Command(BaseCommand):
-    help = 'Set session to votes '
+    help = "Set session to votes "
 
     def handle(self, *args, **options):
-        self.stdout.write('Start setting session to votes')
+        self.stdout.write("Start setting session to votes")
 
         set_vote_session(self.stdout.write)
-

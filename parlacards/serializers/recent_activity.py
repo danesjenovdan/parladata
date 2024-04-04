@@ -11,7 +11,7 @@ from parlacards.serializers.session import SessionSerializer
 
 
 class RecentActivitySpeechSerializer(CommonSerializer):
-    speech_id = serializers.IntegerField(source='id')
+    speech_id = serializers.IntegerField(source="id")
     start_time = serializers.DateTimeField()
     session = SessionSerializer()
 
@@ -22,22 +22,22 @@ class EventSerializer(CommonSerializer):
         if isinstance(obj, Speech):
             serializer = RecentActivitySpeechSerializer(
                 obj,
-                context=self.context
+                context=self.context,
             )
-            return { 'type': 'speech', **serializer.data }
+            return {"type": "speech", **serializer.data}
 
         if isinstance(obj, Ballot):
             serializer = BallotSerializer(
                 obj,
-                context=self.context
+                context=self.context,
             )
-            return { 'type': 'ballot', **serializer.data }
+            return {"type": "ballot", **serializer.data}
 
         if isinstance(obj, Question):
             serializer = QuestionSerializer(
                 obj,
-                context=self.context
+                context=self.context,
             )
-            return serializer.data # type is included in QuestionSerializer
+            return serializer.data  # type is included in QuestionSerializer
 
-        raise ValueError(f'Cannot serialize {obj} as activity.')
+        raise ValueError(f"Cannot serialize {obj} as activity.")

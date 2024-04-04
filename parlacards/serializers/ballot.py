@@ -16,11 +16,12 @@ from parlacards.serializers.vote import BareVoteSerializer
 #         timestamp = max([vote_timestamp, person_timestamp, ballot_timestamp, session_timestamp])
 #         return f'BallotSerializer_{instance.id}_{instance.personvoter.id}_{timestamp.strftime("%Y-%m-%dT%H:%M:%S")}'
 
+
 class BallotSerializer(CommonSerializer):
     def get_vote(self, obj):
         vote_serializer = BareVoteSerializer(
             obj.vote,
-            context=self.context
+            context=self.context,
         )
         return vote_serializer.data
 

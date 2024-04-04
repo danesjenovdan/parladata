@@ -1,4 +1,8 @@
-from export.resources.common import ExportModelResource, get_cached_person_name, get_cached_group_name
+from export.resources.common import (
+    ExportModelResource,
+    get_cached_person_name,
+    get_cached_group_name,
+)
 from parladata.models import Vote, Ballot, Speech
 
 from import_export.fields import Field
@@ -23,8 +27,22 @@ class VoteResource(ExportModelResource):
 
     class Meta:
         model = Vote
-        fields = ('id', 'name', 'motion__text', 'motion__summary', 'result', 'law_id')
-        export_order = ('id', 'name', 'motion__text', 'motion__summary', 'result', 'law_id')
+        fields = (
+            "id",
+            "name",
+            "motion__text",
+            "motion__summary",
+            "result",
+            "law_id",
+        )
+        export_order = (
+            "id",
+            "name",
+            "motion__text",
+            "motion__summary",
+            "result",
+            "law_id",
+        )
 
     def dehydrate_law_id(self, vote):
         return vote.motion.law.id if vote.motion.law else None
@@ -47,8 +65,24 @@ class SessionSpeechesResource(ExportModelResource):
 
     class Meta:
         model = Speech
-        fields = ('id', 'speaker__id', 'speaker_name', 'content', 'start_time', 'session__id', 'session__name')
-        export_order = ('id', 'speaker__id', 'speaker_name', 'content', 'start_time', 'session__id', 'session__name')
+        fields = (
+            "id",
+            "speaker__id",
+            "speaker_name",
+            "content",
+            "start_time",
+            "session__id",
+            "session__name",
+        )
+        export_order = (
+            "id",
+            "speaker__id",
+            "speaker_name",
+            "content",
+            "start_time",
+            "session__id",
+            "session__name",
+        )
 
     def dehydrate_speaker_name(self, speech):
         return get_cached_person_name(speech.speaker.id)
@@ -58,9 +92,12 @@ class SingleVoteResource(ExportModelResource):
     """
     Returns a queryset of all ballots for given vote id.
     """
+
     def get_queryset(self, mandate_id=None, request_id=None):
         if request_id:
-            if vote := Vote.objects.filter(id=request_id).first():
+            if vote := Vote.objects.filter(
+                id=request_id,
+            ).first():
                 return vote.ballots.all()
         return Ballot.objects.none()
 
@@ -69,8 +106,24 @@ class SingleVoteResource(ExportModelResource):
 
     class Meta:
         model = Ballot
-        fields = ('id', 'personvoter__id', 'personvoter_name', 'personvoter_group', 'option', 'vote__motion__id', 'vote__motion__title')
-        export_order = ('id', 'personvoter__id', 'personvoter_name', 'personvoter_group', 'option', 'vote__motion__id', 'vote__motion__title')
+        fields = (
+            "id",
+            "personvoter__id",
+            "personvoter_name",
+            "personvoter_group",
+            "option",
+            "vote__motion__id",
+            "vote__motion__title",
+        )
+        export_order = (
+            "id",
+            "personvoter__id",
+            "personvoter_name",
+            "personvoter_group",
+            "option",
+            "vote__motion__id",
+            "vote__motion__title",
+        )
 
     def dehydrate_personvoter_name(self, ballot):
         return get_cached_person_name(ballot.personvoter.id)

@@ -10,6 +10,7 @@ from parladata.models.memberships import PersonMembership
 from parlacards.models import GroupDiscord
 from parlacards.scores.common import get_dates_between, get_fortnights_between
 
+
 def calculate_group_discord(group, timestamp=None):
     if not timestamp:
         timestamp = datetime.now()
@@ -18,11 +19,8 @@ def calculate_group_discord(group, timestamp=None):
 
     # get all relevant votes
     votes = Vote.objects.filter(
-        timestamp__lte=timestamp,
-        motion__session__mandate=mandate
-    ).order_by(
-        '-timestamp'
-    )
+        timestamp__lte=timestamp, motion__session__mandate=mandate
+    ).order_by("-timestamp")
 
     vote_discords = []
     # calculate party_ballots and excluded_vote_ids
@@ -30,29 +28,32 @@ def calculate_group_discord(group, timestamp=None):
         # get relevant voters
         voters = PersonMembership.valid_at(vote.timestamp).filter(
             on_behalf_of=group,
-            role='voter'
+            role="voter",
         )
 
         ballots = Ballot.objects.filter(
             vote=vote,
-            personvoter__in=voters.values_list('member_id', flat=True)
+            personvoter__in=voters.values_list(
+                "member_id",
+                flat=True,
+            ),
         )
 
-        options_aggregated = ballots.values(
-            'option'
-        ).annotate(
-            dcount=Count('option')
-        ).annotate(
-            dcount=Count('option')
-        ).order_by().aggregate(Max('option'))
+        options_aggregated = (
+            ballots.values("option")
+            .annotate(dcount=Count("option"))
+            .annotate(dcount=Count("option"))
+            .order_by()
+            .aggregate(Max("option"))
+        )
 
         ballots_count = ballots.count()
 
         if ballots_count > 0:
             vote_discords.append(
-                ballots.exclude(
-                    option=options_aggregated['option__max']
-                ).count() / ballots_count * 100
+                ballots.exclude(option=options_aggregated["option__max"]).count()
+                / ballots_count
+                * 100
             )
 
     if len(vote_discords) == 0:
@@ -61,6 +62,7 @@ def calculate_group_discord(group, timestamp=None):
     average_discord = sum(vote_discords) / len(vote_discords)
     return average_discord
 
+
 def save_group_discord(group, playing_field, timestamp=None):
     if not timestamp:
         timestamp = datetime.now()
@@ -68,11 +70,9 @@ def save_group_discord(group, playing_field, timestamp=None):
     discord = calculate_group_discord(group)
 
     GroupDiscord(
-        group=group,
-        value=discord,
-        timestamp=timestamp,
-        playing_field=playing_field
+        group=group, value=discord, timestamp=timestamp, playing_field=playing_field
     ).save()
+
 
 def save_groups_discords(playing_field, timestamp=None):
     if not timestamp:
@@ -81,6 +81,7 @@ def save_groups_discords(playing_field, timestamp=None):
     groups = playing_field.query_parliamentary_groups(timestamp)
     for group in groups:
         save_group_discord(group, playing_field, timestamp)
+
 
 def save_groups_discords_between(playing_field, datetime_from=None, datetime_to=None):
     if not datetime_from:
@@ -91,7 +92,10 @@ def save_groups_discords_between(playing_field, datetime_from=None, datetime_to=
     for day in get_dates_between(datetime_from, datetime_to):
         save_groups_discords(playing_field, timestamp=day)
 
-def save_sparse_groups_discords_between(playing_field, datetime_from=None, datetime_to=None):
+
+def save_sparse_groups_discords_between(
+    playing_field, datetime_from=None, datetime_to=None
+):
     if not datetime_from:
         datetime_from = datetime.now()
     if not datetime_to:
@@ -99,4 +103,3 @@ def save_sparse_groups_discords_between(playing_field, datetime_from=None, datet
 
     for day in get_fortnights_between(datetime_from, datetime_to):
         save_groups_discords(playing_field, timestamp=day)
-

@@ -7,4 +7,3 @@ from rest_framework import serializers
 class SessionGroupAttendanceSerializer(CommonSerializer):
     value = serializers.FloatField()
     group = CommonOrganizationSerializer()
-

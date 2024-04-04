@@ -1,13 +1,10 @@
-from django.core.management.base import BaseCommand, CommandError
+from django.core.management.base import BaseCommand
 
 
 class Command(BaseCommand):
-    help = 'Set motion tags'
+    help = "Set motion tags"
 
     def handle(self, *args, **options):
-        self.stdout.write('Start setting motion tags')
+        self.stdout.write("Start setting motion tags")
 
-        self.stdout.write('PASS')
-
-
-
+        self.stdout.write("PASS")

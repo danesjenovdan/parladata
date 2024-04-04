@@ -1,21 +1,19 @@
-from django.core.management.base import BaseCommand, CommandError
+from django.core.management.base import BaseCommand
 
 from parlacards.scores.update import force_run_person_analyses
 
 from datetime import datetime
 
+
 class Command(BaseCommand):
-    help = 'Seeds sparse scores'
+    help = "Run people analyses for a given time."
 
     def add_arguments(self, parser):
-        parser.add_argument(
-            '--start_time',
-            type=str,
-            default='')
+        parser.add_argument("--start_time", type=str, default="")
 
     def handle(self, *args, **options):
 
-        input_timestamp = options['start_time']
+        input_timestamp = options["start_time"]
         if input_timestamp:
             timestamp = datetime.fromisoformat(input_timestamp)
         else:

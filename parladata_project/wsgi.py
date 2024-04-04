@@ -1,4 +1,5 @@
 from __future__ import absolute_import, unicode_literals
+
 """
 WSGI config for parladata project.
 
@@ -9,7 +10,8 @@ https://docs.djangoproject.com/en/1.8/howto/deployment/wsgi/
 """
 
 import os
-#import arguments
+
+# import arguments
 
 from django.core.wsgi import get_wsgi_application
 
