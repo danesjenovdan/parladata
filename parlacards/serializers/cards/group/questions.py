@@ -83,7 +83,10 @@ class GroupQuestionCardSerializer(GroupScoreCardSerializer):
                     q_params["timestamp__gte"] = membership["start_time"]
                 if membership["end_time"]:
                     q_params["timestamp__lte"] = membership["end_time"]
-                q_objects.add(Q(**q_params), Q.OR)
+                q_objects.add(
+                    Q(**q_params),
+                    Q.OR,
+                )
 
             # add the filtered questions to the (once empty) questions queryset
             questions = questions.union(member_questions.filter(q_objects))
