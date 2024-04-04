@@ -9,21 +9,35 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ('parladata', '0025_alter_session_mandate'),
+        ("parladata", "0025_alter_session_mandate"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='PersonVocabularySize',
+            name="PersonVocabularySize",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('created_at', models.DateTimeField(auto_now_add=True, db_index=True)),
-                ('updated_at', models.DateTimeField(auto_now=True, db_index=True)),
-                ('value', models.FloatField()),
-                ('person', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='parladata.person')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True, db_index=True)),
+                ("updated_at", models.DateTimeField(auto_now=True, db_index=True)),
+                ("value", models.FloatField()),
+                (
+                    "person",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="parladata.person",
+                    ),
+                ),
             ],
             options={
-                'abstract': False,
+                "abstract": False,
             },
         ),
     ]

@@ -7,13 +7,20 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('parladata', '0066_task_email_msg'),
+        ("parladata", "0066_task_email_msg"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='question',
-            name='mandate',
-            field=models.ForeignKey(blank=True, help_text='The mandate of this question.', null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='questions', to='parladata.mandate'),
+            model_name="question",
+            name="mandate",
+            field=models.ForeignKey(
+                blank=True,
+                help_text="The mandate of this question.",
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="questions",
+                to="parladata.mandate",
+            ),
         ),
     ]

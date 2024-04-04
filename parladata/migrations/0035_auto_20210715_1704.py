@@ -7,33 +7,62 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('parladata', '0034_auto_20210623_1051'),
+        ("parladata", "0034_auto_20210623_1051"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='ballot',
-            name='personvoter',
-            field=models.ForeignKey(blank=True, help_text='The voter', null=True, on_delete=django.db.models.deletion.CASCADE, related_name='ballots', to='parladata.person'),
+            model_name="ballot",
+            name="personvoter",
+            field=models.ForeignKey(
+                blank=True,
+                help_text="The voter",
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="ballots",
+                to="parladata.person",
+            ),
         ),
         migrations.AlterField(
-            model_name='question',
-            name='authors',
-            field=models.ManyToManyField(blank=True, help_text='The persons (MP) who asked the question.', related_name='authored_questions', to='parladata.Person'),
+            model_name="question",
+            name="authors",
+            field=models.ManyToManyField(
+                blank=True,
+                help_text="The persons (MP) who asked the question.",
+                related_name="authored_questions",
+                to="parladata.Person",
+            ),
         ),
         migrations.AlterField(
-            model_name='question',
-            name='recipient_people',
-            field=models.ManyToManyField(blank=True, help_text="Recipient person (if it's a person).", related_name='received_questions', to='parladata.Person'),
+            model_name="question",
+            name="recipient_people",
+            field=models.ManyToManyField(
+                blank=True,
+                help_text="Recipient person (if it's a person).",
+                related_name="received_questions",
+                to="parladata.Person",
+            ),
         ),
         migrations.AlterField(
-            model_name='speech',
-            name='session',
-            field=models.ForeignKey(blank=True, help_text='Speech session', null=True, on_delete=django.db.models.deletion.CASCADE, related_name='speeches', to='parladata.session'),
+            model_name="speech",
+            name="session",
+            field=models.ForeignKey(
+                blank=True,
+                help_text="Speech session",
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="speeches",
+                to="parladata.session",
+            ),
         ),
         migrations.AlterField(
-            model_name='speech',
-            name='speaker',
-            field=models.ForeignKey(help_text='Person making the speech', on_delete=django.db.models.deletion.CASCADE, related_name='speeches', to='parladata.person'),
+            model_name="speech",
+            name="speaker",
+            field=models.ForeignKey(
+                help_text="Person making the speech",
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="speeches",
+                to="parladata.person",
+            ),
         ),
     ]

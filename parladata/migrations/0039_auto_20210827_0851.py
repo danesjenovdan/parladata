@@ -7,23 +7,43 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('parladata', '0038_auto_20210817_1812'),
+        ("parladata", "0038_auto_20210817_1812"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='link',
-            name='membership',
-            field=models.ForeignKey(blank=True, help_text='The membership of this link.', null=True, on_delete=django.db.models.deletion.CASCADE, related_name='links', to='parladata.personmembership'),
+            model_name="link",
+            name="membership",
+            field=models.ForeignKey(
+                blank=True,
+                help_text="The membership of this link.",
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="links",
+                to="parladata.personmembership",
+            ),
         ),
         migrations.AlterField(
-            model_name='link',
-            name='person',
-            field=models.ForeignKey(blank=True, help_text='The person of this link.', null=True, on_delete=django.db.models.deletion.CASCADE, related_name='links', to='parladata.person'),
+            model_name="link",
+            name="person",
+            field=models.ForeignKey(
+                blank=True,
+                help_text="The person of this link.",
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="links",
+                to="parladata.person",
+            ),
         ),
         migrations.AlterField(
-            model_name='link',
-            name='session',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='links', to='parladata.session'),
+            model_name="link",
+            name="session",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="links",
+                to="parladata.session",
+            ),
         ),
     ]

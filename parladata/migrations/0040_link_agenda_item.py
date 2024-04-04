@@ -7,13 +7,20 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('parladata', '0039_auto_20210827_0851'),
+        ("parladata", "0039_auto_20210827_0851"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='link',
-            name='agenda_item',
-            field=models.ForeignKey(blank=True, help_text='The agenda item this link belongs to.', null=True, on_delete=django.db.models.deletion.CASCADE, related_name='links', to='parladata.agendaitem'),
+            model_name="link",
+            name="agenda_item",
+            field=models.ForeignKey(
+                blank=True,
+                help_text="The agenda item this link belongs to.",
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="links",
+                to="parladata.agendaitem",
+            ),
         ),
     ]

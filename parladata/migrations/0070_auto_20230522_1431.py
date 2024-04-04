@@ -7,28 +7,52 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('parladata', '0069_auto_20221221_1227'),
+        ("parladata", "0069_auto_20221221_1227"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='publicpersonanswer',
-            name='mandate',
-            field=models.ForeignKey(blank=True, help_text='The mandate of this public question.', null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='public_answers', to='parladata.mandate'),
+            model_name="publicpersonanswer",
+            name="mandate",
+            field=models.ForeignKey(
+                blank=True,
+                help_text="The mandate of this public question.",
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="public_answers",
+                to="parladata.mandate",
+            ),
         ),
         migrations.AddField(
-            model_name='publicpersonquestion',
-            name='mandate',
-            field=models.ForeignKey(blank=True, help_text='The mandate of this public question.', null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='public_questions', to='parladata.mandate'),
+            model_name="publicpersonquestion",
+            name="mandate",
+            field=models.ForeignKey(
+                blank=True,
+                help_text="The mandate of this public question.",
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="public_questions",
+                to="parladata.mandate",
+            ),
         ),
         migrations.AlterField(
-            model_name='agendaitem',
-            name='session',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='agenda_items', to='parladata.session'),
+            model_name="agendaitem",
+            name="session",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="agenda_items",
+                to="parladata.session",
+            ),
         ),
         migrations.AlterField(
-            model_name='legislationconsideration',
-            name='legislation',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='legislation_considerations', to='parladata.law'),
+            model_name="legislationconsideration",
+            name="legislation",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="legislation_considerations",
+                to="parladata.law",
+            ),
         ),
     ]

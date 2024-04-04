@@ -7,14 +7,16 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('parlacards', '0001_initial'),
+        ("parlacards", "0001_initial"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='personvocabularysize',
-            name='timestamp',
-            field=models.DateTimeField(default=datetime.datetime(2021, 5, 19, 21, 7, 34, 60103)),
+            model_name="personvocabularysize",
+            name="timestamp",
+            field=models.DateTimeField(
+                default=datetime.datetime(2021, 5, 19, 21, 7, 34, 60103)
+            ),
             preserve_default=False,
         ),
     ]

@@ -7,22 +7,29 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('parladata', '0061_auto_20220309_1151'),
+        ("parladata", "0061_auto_20220309_1151"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='law',
-            options={'verbose_name': 'Law', 'verbose_name_plural': 'Legislation'},
+            name="law",
+            options={"verbose_name": "Law", "verbose_name_plural": "Legislation"},
         ),
         migrations.AddField(
-            model_name='mandate',
-            name='ending',
+            model_name="mandate",
+            name="ending",
             field=models.DateTimeField(blank=True, null=True),
         ),
         migrations.AlterField(
-            model_name='legislationconsideration',
-            name='session',
-            field=models.ForeignKey(blank=True, help_text='Session at which the legislation was discussed', null=True, on_delete=django.db.models.deletion.CASCADE, related_name='legislation_considerations', to='parladata.session'),
+            model_name="legislationconsideration",
+            name="session",
+            field=models.ForeignKey(
+                blank=True,
+                help_text="Session at which the legislation was discussed",
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="legislation_considerations",
+                to="parladata.session",
+            ),
         ),
     ]

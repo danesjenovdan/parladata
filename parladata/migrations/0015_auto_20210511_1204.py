@@ -7,42 +7,53 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('parladata', '0014_auto_20210511_1155'),
+        ("parladata", "0014_auto_20210511_1155"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='session',
-            name='organization',
+            model_name="session",
+            name="organization",
         ),
         migrations.RemoveField(
-            model_name='session',
-            name='tags',
+            model_name="session",
+            name="tags",
         ),
         migrations.AlterField(
-            model_name='session',
-            name='gov_id',
-            field=models.TextField(blank=True, help_text='Gov website ID.', null=True),
+            model_name="session",
+            name="gov_id",
+            field=models.TextField(blank=True, help_text="Gov website ID.", null=True),
         ),
         migrations.AlterField(
-            model_name='session',
-            name='in_review',
-            field=models.BooleanField(default=False, help_text='Is session still in review?'),
+            model_name="session",
+            name="in_review",
+            field=models.BooleanField(
+                default=False, help_text="Is session still in review?"
+            ),
         ),
         migrations.AlterField(
-            model_name='session',
-            name='mandate',
-            field=models.ForeignKey(default=1, help_text='The mandate of this session.', on_delete=django.db.models.deletion.CASCADE, to='parladata.mandate'),
+            model_name="session",
+            name="mandate",
+            field=models.ForeignKey(
+                default=1,
+                help_text="The mandate of this session.",
+                on_delete=django.db.models.deletion.CASCADE,
+                to="parladata.mandate",
+            ),
             preserve_default=False,
         ),
         migrations.AlterField(
-            model_name='session',
-            name='name',
-            field=models.TextField(help_text='Session name'),
+            model_name="session",
+            name="name",
+            field=models.TextField(help_text="Session name"),
         ),
         migrations.AlterField(
-            model_name='session',
-            name='organizations',
-            field=models.ManyToManyField(help_text='The organization(s) in session', related_name='sessions', to='parladata.Organization'),
+            model_name="session",
+            name="organizations",
+            field=models.ManyToManyField(
+                help_text="The organization(s) in session",
+                related_name="sessions",
+                to="parladata.Organization",
+            ),
         ),
     ]

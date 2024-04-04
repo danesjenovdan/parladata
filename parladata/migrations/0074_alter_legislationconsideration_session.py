@@ -7,13 +7,20 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('parladata', '0073_auto_20230524_1219'),
+        ("parladata", "0073_auto_20230524_1219"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='legislationconsideration',
-            name='session',
-            field=models.ForeignKey(blank=True, help_text='Session at which the legislation was discussed', null=True, on_delete=django.db.models.deletion.CASCADE, related_name='legislation_considerations', to='parladata.session'),
+            model_name="legislationconsideration",
+            name="session",
+            field=models.ForeignKey(
+                blank=True,
+                help_text="Session at which the legislation was discussed",
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="legislation_considerations",
+                to="parladata.session",
+            ),
         ),
     ]

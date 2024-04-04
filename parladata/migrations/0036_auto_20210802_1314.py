@@ -7,26 +7,60 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('parladata', '0035_auto_20210715_1704'),
+        ("parladata", "0035_auto_20210715_1704"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='personmembership',
-            name='role',
-            field=models.TextField(choices=[('member', 'member'), ('voter', 'voter'), ('persident', 'president'), ('deputy', 'deputy')], default='member', help_text='The role that the person fulfills in the organization', verbose_name='role'),
+            model_name="personmembership",
+            name="role",
+            field=models.TextField(
+                choices=[
+                    ("member", "member"),
+                    ("voter", "voter"),
+                    ("persident", "president"),
+                    ("deputy", "deputy"),
+                ],
+                default="member",
+                help_text="The role that the person fulfills in the organization",
+                verbose_name="role",
+            ),
         ),
         migrations.CreateModel(
-            name='OrganizationEmail',
+            name="OrganizationEmail",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('valid_from', models.DateTimeField(blank=True, default=None, help_text='row valid from', null=True)),
-                ('valid_to', models.DateTimeField(blank=True, default=None, help_text='row valid to', null=True)),
-                ('value', models.TextField()),
-                ('owner', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='parladata.organization')),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "valid_from",
+                    models.DateTimeField(
+                        blank=True, default=None, help_text="row valid from", null=True
+                    ),
+                ),
+                (
+                    "valid_to",
+                    models.DateTimeField(
+                        blank=True, default=None, help_text="row valid to", null=True
+                    ),
+                ),
+                ("value", models.TextField()),
+                (
+                    "owner",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="parladata.organization",
+                    ),
+                ),
             ],
             options={
-                'abstract': False,
+                "abstract": False,
             },
         ),
     ]

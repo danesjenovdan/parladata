@@ -7,24 +7,44 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('parladata', '0030_speech_lemmatized_content'),
-        ('parlacards', '0016_merge_20210601_1653'),
+        ("parladata", "0030_speech_lemmatized_content"),
+        ("parlacards", "0016_merge_20210601_1653"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='PersonNumberOfSpokenWords',
+            name="PersonNumberOfSpokenWords",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('created_at', models.DateTimeField(auto_now_add=True, db_index=True)),
-                ('updated_at', models.DateTimeField(auto_now=True, db_index=True)),
-                ('timestamp', models.DateTimeField()),
-                ('value', models.FloatField()),
-                ('person', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='parladata.person')),
-                ('playing_field', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='parladata.organization')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True, db_index=True)),
+                ("updated_at", models.DateTimeField(auto_now=True, db_index=True)),
+                ("timestamp", models.DateTimeField()),
+                ("value", models.FloatField()),
+                (
+                    "person",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="parladata.person",
+                    ),
+                ),
+                (
+                    "playing_field",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="parladata.organization",
+                    ),
+                ),
             ],
             options={
-                'abstract': False,
+                "abstract": False,
             },
         ),
     ]

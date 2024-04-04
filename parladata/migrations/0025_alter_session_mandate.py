@@ -7,13 +7,18 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('parladata', '0024_alter_motion_champions'),
+        ("parladata", "0024_alter_motion_champions"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='session',
-            name='mandate',
-            field=models.ForeignKey(help_text='The mandate of this session.', on_delete=django.db.models.deletion.CASCADE, related_name='sessions', to='parladata.mandate'),
+            model_name="session",
+            name="mandate",
+            field=models.ForeignKey(
+                help_text="The mandate of this session.",
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="sessions",
+                to="parladata.mandate",
+            ),
         ),
     ]

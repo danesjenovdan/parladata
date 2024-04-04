@@ -7,13 +7,15 @@ import parladata.models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('parladata', '0001_initial'),
+        ("parladata", "0001_initial"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='question',
-            name='date_of_answer',
-            field=models.DateTimeField(blank=True, help_text='Date of answer the question.', null=True),
+            model_name="question",
+            name="date_of_answer",
+            field=models.DateTimeField(
+                blank=True, help_text="Date of answer the question.", null=True
+            ),
         ),
     ]

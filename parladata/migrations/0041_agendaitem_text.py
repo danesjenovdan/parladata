@@ -7,13 +7,13 @@ import martor.models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('parladata', '0040_link_agenda_item'),
+        ("parladata", "0040_link_agenda_item"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='agendaitem',
-            name='text',
+            model_name="agendaitem",
+            name="text",
             field=martor.models.MartorField(blank=True, null=True),
         ),
     ]

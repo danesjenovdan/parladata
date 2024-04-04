@@ -7,18 +7,23 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('parladata', '0076_auto_20231109_2117'),
+        ("parladata", "0076_auto_20231109_2117"),
     ]
 
     operations = [
         migrations.RenameField(
-            model_name='answer',
-            old_name='content',
-            new_name='text',
+            model_name="answer",
+            old_name="content",
+            new_name="text",
         ),
         migrations.AlterField(
-            model_name='answer',
-            name='question',
-            field=models.ForeignKey(help_text='The question this answer belongs to.', on_delete=django.db.models.deletion.CASCADE, related_name='answers', to='parladata.question'),
+            model_name="answer",
+            name="question",
+            field=models.ForeignKey(
+                help_text="The question this answer belongs to.",
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="answers",
+                to="parladata.question",
+            ),
         ),
     ]

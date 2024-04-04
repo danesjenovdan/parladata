@@ -7,32 +7,42 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('parladata', '0011_organization_parser_names'),
+        ("parladata", "0011_organization_parser_names"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='personmembership',
-            name='label',
+            model_name="personmembership",
+            name="label",
         ),
         migrations.AlterField(
-            model_name='personmembership',
-            name='organization',
-            field=models.ForeignKey(help_text='The organization that is a party to the relationship', on_delete=django.db.models.deletion.CASCADE, related_name='memberships', to='parladata.organization'),
+            model_name="personmembership",
+            name="organization",
+            field=models.ForeignKey(
+                help_text="The organization that is a party to the relationship",
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="memberships",
+                to="parladata.organization",
+            ),
         ),
         migrations.AlterField(
-            model_name='personmembership',
-            name='person',
-            field=models.ForeignKey(help_text='The person who is a party to the relationship', on_delete=django.db.models.deletion.CASCADE, related_name='memberships', to='parladata.person'),
+            model_name="personmembership",
+            name="person",
+            field=models.ForeignKey(
+                help_text="The person who is a party to the relationship",
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="memberships",
+                to="parladata.person",
+            ),
         ),
         migrations.AlterField(
-            model_name='personnumberofpoints',
-            name='value',
+            model_name="personnumberofpoints",
+            name="value",
             field=models.IntegerField(),
         ),
         migrations.AlterField(
-            model_name='personnumberofvoters',
-            name='value',
+            model_name="personnumberofvoters",
+            name="value",
             field=models.IntegerField(),
         ),
     ]

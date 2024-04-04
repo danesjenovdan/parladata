@@ -7,23 +7,32 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('parladata', '0032_auto_20210617_1551'),
+        ("parladata", "0032_auto_20210617_1551"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='ballot',
-            name='vote',
-            field=models.ForeignKey(help_text='The vote event', on_delete=django.db.models.deletion.CASCADE, related_name='ballots', to='parladata.vote'),
+            model_name="ballot",
+            name="vote",
+            field=models.ForeignKey(
+                help_text="The vote event",
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="ballots",
+                to="parladata.vote",
+            ),
         ),
         migrations.AlterField(
-            model_name='motion',
-            name='result',
-            field=models.BooleanField(blank=True, help_text='Did the motion pass?', null=True),
+            model_name="motion",
+            name="result",
+            field=models.BooleanField(
+                blank=True, help_text="Did the motion pass?", null=True
+            ),
         ),
         migrations.AlterField(
-            model_name='vote',
-            name='result',
-            field=models.BooleanField(blank=True, help_text='The result of the vote', null=True),
+            model_name="vote",
+            name="result",
+            field=models.BooleanField(
+                blank=True, help_text="The result of the vote", null=True
+            ),
         ),
     ]

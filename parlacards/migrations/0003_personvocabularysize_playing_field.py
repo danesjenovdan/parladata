@@ -7,15 +7,19 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('parladata', '0025_alter_session_mandate'),
-        ('parlacards', '0002_personvocabularysize_timestamp'),
+        ("parladata", "0025_alter_session_mandate"),
+        ("parlacards", "0002_personvocabularysize_timestamp"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='personvocabularysize',
-            name='playing_field',
-            field=models.ForeignKey(default=1, on_delete=django.db.models.deletion.CASCADE, to='parladata.organization'),
+            model_name="personvocabularysize",
+            name="playing_field",
+            field=models.ForeignKey(
+                default=1,
+                on_delete=django.db.models.deletion.CASCADE,
+                to="parladata.organization",
+            ),
             preserve_default=False,
         ),
     ]
