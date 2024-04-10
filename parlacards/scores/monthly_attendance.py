@@ -275,7 +275,7 @@ def calculate_group_monthly_vote_attendance(group, playing_field, timestamp=None
 
     months = sorted(set([
         *map(lambda v: v['month'], annotated_ballots),
-        *map(lambda v: v['month'], annotated_anonymous_votes),
+        *map(lambda v: v['month'], all_annotated_anonymous_votes),
     ]))
 
     for month in months:
@@ -287,8 +287,7 @@ def calculate_group_monthly_vote_attendance(group, playing_field, timestamp=None
         if monthly_ballots:
             total_ballots += sum(map(lambda v: v['ballot_count'], monthly_ballots))
         if monthly_anon_votes:
-            #num_anon_ballots = monthly_anon_votes['total_votes']
-            total_ballots += sum(map(lambda v: v['total_votes'], monthly_anon_votes))
+            num_anon_ballots += sum(map(lambda v: v['total_votes'], monthly_anon_votes))
 
         temp_data = {
             'timestamp': month.isoformat(),
@@ -297,7 +296,7 @@ def calculate_group_monthly_vote_attendance(group, playing_field, timestamp=None
             'for': 0,
             'against': 0,
             'no_data': num_anon_ballots,
-            'total': total_ballots,
+            'total': total_ballots + num_anon_ballots,
         }
 
         for sums in monthly_ballots:
