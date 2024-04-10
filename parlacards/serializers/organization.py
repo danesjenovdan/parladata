@@ -18,7 +18,7 @@ class OrganizationBasicInfoSerializer(CommonCachableSerializer):
         except:
             # if there is organization without memberships
             cache_date = instance.updated_at
-        return f'OrganizationBasicInfoSerializer_{instance.id}_{cache_date.strftime("%Y-%m-%dT%H:%M:%S")}'
+        return f'OrganizationBasicInfoSerializer_{instance.id}_{self.context["request_date"].strftime("%Y-%m-%dT%H:%M:%S")}_{cache_date.strftime("%Y-%m-%dT%H:%M:%S")}'
 
     # TODO this will return all links they
     # should be filtered to only contain
