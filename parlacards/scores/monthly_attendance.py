@@ -206,7 +206,7 @@ def calculate_group_monthly_vote_attendance(group, playing_field, timestamp=None
     member_ids = memberships.values_list('member_id', flat=True).distinct('member_id')
 
     all_valid_ballots = Ballot.objects.none()
-    all_anonymous_votes = Vote.objects.none()
+    all_annotated_anonymous_votes = []
 
     for member_id in member_ids:
         member_memberships = memberships.filter(
@@ -242,13 +242,22 @@ def calculate_group_monthly_vote_attendance(group, playing_field, timestamp=None
             timestamp__lte=timestamp,
             motion__session__organizations=playing_field,
             motion__session__mandate=mandate,
-            ballots__personvoter__isnull=True,
         ).exclude(
-            ballots__isnull=True
-        ).filter(vote_q_object).distinct('id')
+            id__in=member_ballots.distinct('vote').values('vote__id')
+        ).filter(vote_q_object)
 
         all_valid_ballots = all_valid_ballots.union(member_ballots)
-        all_anonymous_votes = all_anonymous_votes.union(member_anonymous_votes)
+
+        annotated_anonymous_votes = member_anonymous_votes.annotate(
+            month=TruncMonth('timestamp'),
+        ).values(
+            'month',
+        ).annotate(
+            total_votes=Count('id'), # len(member_ids)
+        ).order_by(
+            'month',
+        )
+        all_annotated_anonymous_votes = all_annotated_anonymous_votes + list(annotated_anonymous_votes)
 
     annotated_ballots = Ballot.objects.filter(
         id__in=all_valid_ballots.values('id')
@@ -264,26 +273,13 @@ def calculate_group_monthly_vote_attendance(group, playing_field, timestamp=None
     )
     annotated_ballots = list(annotated_ballots) # force db lookup here to prevent lookups later and speed up code in loop
 
-    annotated_anonymous_votes = Vote.objects.filter(
-        id__in=all_anonymous_votes.values('id')
-    ).annotate(
-        month=TruncMonth('timestamp'),
-    ).values(
-        'month',
-    ).annotate(
-        total_votes=Count('id'),
-    ).order_by(
-        'month',
-    )
-    annotated_anonymous_votes = list(annotated_anonymous_votes) # force db lookup here to prevent lookups later and speed up code in loop
-
     months = sorted(set([
         *map(lambda v: v['month'], annotated_ballots),
-        *map(lambda v: v['month'], annotated_anonymous_votes),
+        *map(lambda v: v['month'], all_annotated_anonymous_votes),
     ]))
 
     for month in months:
-        monthly_anon_votes = next(filter(lambda v: v['month'] == month, annotated_anonymous_votes), None)
+        monthly_anon_votes = list(filter(lambda v: v['month'] == month, all_annotated_anonymous_votes))
         monthly_ballots = list(filter(lambda v: v['month'] == month, annotated_ballots))
 
         total_ballots = 0
@@ -291,16 +287,7 @@ def calculate_group_monthly_vote_attendance(group, playing_field, timestamp=None
         if monthly_ballots:
             total_ballots += sum(map(lambda v: v['ballot_count'], monthly_ballots))
         if monthly_anon_votes:
-            end_of_month = datetime(month.year, (month.month + 1) if month.month < 12 else 1, 1) - timedelta(seconds=1)
-            start_of_month = datetime(month.year, month.month, 1)
-
-            num_memberships = memberships.active_at(start_of_month).count()
-            if not num_memberships:
-                # if there are no memberships at the start of the month, we assume there are memberships at the end of the month
-                num_memberships = memberships.active_at(end_of_month).count()
-
-            num_anon_ballots = monthly_anon_votes['total_votes'] * num_memberships
-            total_ballots += num_anon_ballots
+            num_anon_ballots += sum(map(lambda v: v['total_votes'], monthly_anon_votes))
 
         temp_data = {
             'timestamp': month.isoformat(),
@@ -309,7 +296,7 @@ def calculate_group_monthly_vote_attendance(group, playing_field, timestamp=None
             'for': 0,
             'against': 0,
             'no_data': num_anon_ballots,
-            'total': total_ballots,
+            'total': total_ballots + num_anon_ballots,
         }
 
         for sums in monthly_ballots:
