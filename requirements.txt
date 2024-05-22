@@ -1,6 +1,6 @@
 Django==3.2.12
 django-autoslug
-psycopg2-binary
+psycopg2-binary==2.9.9
 djangorestframework
 django-filter
 gunicorn
@@ -35,7 +35,7 @@ pyicu
 sentry-sdk[django]
 eventregistry
 tablib
-django-import-export
+django-import-export==3.3.7
 djangorestframework-csv
 drf-recaptcha
 xmltodict==0.12.0
