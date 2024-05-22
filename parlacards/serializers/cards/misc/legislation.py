@@ -10,6 +10,7 @@ class LegislationMixin:
         text_filter = params.get('text', '')
         order = params.get('order_by', '-timestamp')
         classification_filter = params.get('classification', None)
+        organization_filter = params.get('organization', None)
 
         legislation = Law.objects.filter(
             Q(timestamp__lte=self.context['request_date']) | Q(timestamp__isnull=True),
@@ -20,6 +21,8 @@ class LegislationMixin:
             legislation = legislation.filter(mandate=mandate)
         if session:
             legislation = legislation.filter(legislationconsideration__session=session)
+        if organization_filter:
+            legislation = legislation.filter(legislationconsideration__organization=organization_filter)
 
         legislation = legislation.distinct('id')
 
