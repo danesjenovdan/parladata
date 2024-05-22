@@ -1,6 +1,6 @@
 Django==3.2.12
 django-autoslug
-psycopg2-binary
+psycopg2-binary==2.9.9
 djangorestframework
 django-filter
 gunicorn
