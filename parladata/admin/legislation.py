@@ -17,7 +17,7 @@ class LegislationConsiderationInline(admin.TabularInline):
 class LawAdmin(admin.ModelAdmin):
     list_display = ('text', 'get_sessions', 'status', 'epa')
     list_filter = (SessionLegislationListFilter,)
-    search_fields = ('text',)
+    search_fields = ('text', 'epa')
     exclude = ('session',)
     readonly_fields = ['created_at', 'updated_at']
     list_per_page = 20
