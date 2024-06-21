@@ -9,6 +9,7 @@ from django.utils.translation import gettext as _
 from parlanotifications.models import Keyword, NotificationUser
 from parlanotifications.serializers import KeywordSerializer
 from parladata.update_utils import send_email
+
 # Create your views here.
 
 # TODO
@@ -17,7 +18,7 @@ from parladata.update_utils import send_email
 
 class KewordView(viewsets.ModelViewSet):
     permission_classes = []
-    queryset = Keyword.objects.all().order_by('id')
+    queryset = Keyword.objects.all().order_by("id")
     serializer_class = KeywordSerializer
 
     def create(self, request, *args, **kwargs):
@@ -32,7 +33,7 @@ class KewordView(viewsets.ModelViewSet):
                     {
                         "keyword": keyword.keyword,
                         "uuid": keyword.user.uuid,
-                        "kid": keyword.id
+                        "kid": keyword.id,
                     },
                 )
             return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -40,7 +41,7 @@ class KewordView(viewsets.ModelViewSet):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def list(self, request, *args, **kwargs):
-        uuid = request.GET.get('uuid')
+        uuid = request.GET.get("uuid")
         queryset = self.filter_queryset(self.get_queryset())
         queryset = queryset.filter(user__uuid=uuid)
 
@@ -54,16 +55,16 @@ class KewordView(viewsets.ModelViewSet):
 
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
-        uuid = request.GET.get('uuid')
+        uuid = request.GET.get("uuid")
         if str(instance.user.uuid) == uuid:
             self.perform_destroy(instance)
             return Response(status=status.HTTP_204_NO_CONTENT)
         else:
             return Response(status=status.HTTP_403_FORBIDDEN)
 
-    @action(detail=True, methods=['get'])
+    @action(detail=True, methods=["get"])
     def confirm(self, request, pk):
-        uuid = request.GET.get('uuid')
+        uuid = request.GET.get("uuid")
         print(uuid)
         instance = get_object_or_404(Keyword, pk=pk)
         print(instance.user.uuid)

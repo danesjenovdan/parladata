@@ -4,18 +4,13 @@ from parladata.behaviors.models import Timestampable
 
 import uuid
 
+
 # Create your models here.
 class NotificationUser(Timestampable):
     email = models.EmailField()
     hash = models.CharField(max_length=255)
-    uuid = models.UUIDField(
-        default=uuid.uuid4,
-        unique=True,
-        editable=False
-    )
-    latest_notification_sent_at = models.DateTimeField(
-        null=True, blank=True
-    )
+    uuid = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
+    latest_notification_sent_at = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
         return self.email
@@ -38,9 +33,7 @@ class Keyword(Timestampable):
     }
     keyword = models.CharField(max_length=255)
     user = models.ForeignKey(
-        NotificationUser,
-        related_name="keywords",
-        on_delete=models.CASCADE
+        NotificationUser, related_name="keywords", on_delete=models.CASCADE
     )
     matching_method = models.CharField(
         max_length=10,
@@ -53,9 +46,7 @@ class Keyword(Timestampable):
         choices=FREQUENCY_CHOICES.items(),
         default=DAILY,
     )
-    latest_notification_sent_at = models.DateTimeField(
-        null=True, blank=True
-    )
+    latest_notification_sent_at = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
         return self.keyword + " for " + self.user.email
