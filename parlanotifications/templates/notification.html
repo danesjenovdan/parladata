@@ -1,0 +1,27 @@
+{% load i18n %}
+
+<!DOCTYPE html>
+<html lang="si">
+<head>
+    <meta charset="UTF-8">
+    <title>{% trans 'Obvestila' %}</title>
+</head>
+<body>
+{% for key, value in data.items %}
+<b style="color: #222222; font-family: Arial; font-size: 13px;">{{key.keyword}}</b><br/>
+	{% for data in value %}
+	<div class="dndkeywordalert" style="padding-left: 40px; padding-bottom: 20px;">
+	<div class="dndkeyworddate" style="color: #999999; font-family: Arial; font-size: 11px;">{{ data.date|date:"d. m. Y"}}</div>
+	<div class="dndkeywordauthorsession" style="color: #999999; font-family: Arial; font-size: 14px;">{{ data.speaker_name }}, {{ data.session_name }}</div><br/>
+	<div style="color: #222222; font-family: Arial; font-size: 12px; text-decoration: underline;"><a href="{% trans 'https://parlametar.hr/sjednica/' %}{{data.session_id}}/{% trans 'transkript-url' %}/{{ data.order }}#{{data.speech_id}}">{{data.content|safe}}</a></div><br/>
+	</div>
+	<p>
+	{% endfor %}
+{% endfor %}
+<div class="dndborder" style="padding: 10px 0 15px 0; margin: 10px 0; border-top: 1px solid #cccccc; width: 50%;">&nbsp;</div>
+	<div class="footer" style="color: #222222; font-family: Arial; font-size: 10px;">
+	{% trans 'Uredi svoje nastavitve' %} <a href="{% trans 'https://obvestila.parlameter.si/settings/?uid' %}={{uid}}" style="color: #222222; font-family: Arial; font-size: 10px;">{% trans 'tukaj' %}</a>.
+	</div>
+</div>
+</body>
+</html>
