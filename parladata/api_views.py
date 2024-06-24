@@ -285,7 +285,7 @@ class LegislationView(viewsets.ModelViewSet):
     serializer_class = LawSerializer
     fields = '__all__'
     filter_backends = (DjangoFilterBackend,)
-    filterset_fields = ('session', 'epa',)
+    filterset_fields = ('session', 'epa', 'mandate')
 
 
 # TODO rewrite this so it works
