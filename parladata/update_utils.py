@@ -14,6 +14,7 @@ from parladata.models.motion import Motion
 from parladata.models.speech import Speech
 from parladata.models.person import Person
 from parladata.models.public_question import PublicPersonQuestion
+from parladata.models.legislation import LegislationConsideration
 
 from parlacards.models import SessionTfidf
 
@@ -89,12 +90,13 @@ def notify_editors_for_new_data():
     sessions = [speech.session for  speech in new_speeches.distinct('session') if speech.session not in new_tfidf_sessions]
     new_people = Person.objects.filter(created_at__gte=previous_parse)
     new_voters = Person.objects.filter(ballots__isnull=False, person_memberships__isnull=True).distinct('id')
+    new_legislation_considered = LegislationConsideration.objects.filter(created_at__gte=previous_parse)
 
     new_votes_need_editing = Vote.objects.filter(created_at__gte=previous_parse, needs_editing=True)
 
     assert bool(editor_permission_group), 'There\'s no editor permission group'
 
-    if new_motions or new_speeches or new_people or fresh_speeches:
+    if new_motions or new_speeches or new_people or fresh_speeches or new_legislation_considered:
         for editor in editor_permission_group.user_set.all():
             send_email(
                 _('New data for edit in parlameter ') + settings.INSTALATION_NAME,
@@ -109,6 +111,7 @@ def notify_editors_for_new_data():
                     'new_voters': new_voters,
                     'new_people': new_people,
                     'new_votes_need_editing': new_votes_need_editing,
+                    'new_legislation_considered': new_legislation_considered,
                     'instalation_name': settings.INSTALATION_NAME
                 }
             )

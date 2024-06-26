@@ -12,10 +12,10 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         orgs = Organization.objects.filter(personmemberships_children__role='voter').distinct('id')
-        votes = Vote.objects.annotate(ballots_count=Count('ballots'))
+        annotated_votes = Vote.objects.annotate(ballots_count=Count('ballots'))
         for org in orgs:
             voter_count = org.query_voters().count()
-            votes = votes.filter(motion__session__organizations=org)
+            votes = annotated_votes.filter(motion__session__organizations=org)
             # exclude votes with correct or zero ballots
             false_votes = votes.exclude(ballots_count=voter_count).exclude(ballots_count=0)
             for false_vote in false_votes:
