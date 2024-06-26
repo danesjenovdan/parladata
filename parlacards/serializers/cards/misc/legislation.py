@@ -2,7 +2,7 @@ from django.db.models import Q
 from parlacards.pagination import create_paginator
 from parlacards.serializers.common import CardSerializer, MandateSerializer
 from parlacards.serializers.legislation import LegislationSerializer
-from parladata.models.legislation import Law, LegislationClassification
+from parladata.models.legislation import Law, LegislationClassification, LegislationStatus
 
 
 class LegislationMixin:
@@ -11,6 +11,7 @@ class LegislationMixin:
         order = params.get('order_by', '-timestamp')
         classification_filter = params.get('classification', None)
         organization_filter = params.get('organization', None)
+        status_filter = params.get('status', None)
 
         legislation = Law.objects.filter(
             Q(timestamp__lte=self.context['request_date']) | Q(timestamp__isnull=True),
@@ -29,6 +30,9 @@ class LegislationMixin:
         if classification_filter:
             classifications = classification_filter.split(',')
             legislation = legislation.filter(classification__name__in=classifications)
+        if status_filter:
+            statuses = status_filter.split(',')
+            legislation = legislation.filter(status__name__in=statuses)
 
         # needs to be a new query because distinct and order_by need the same field as first param
         legislation = Law.objects.filter(id__in=legislation).order_by(order, 'id')
@@ -37,6 +41,9 @@ class LegislationMixin:
 
     def _get_classifications(self):
         return LegislationClassification.objects.all().distinct('name').values_list('name', flat=True)
+
+    def _get_statuses(self):
+        return LegislationStatus.objects.all().distinct('name').values_list('name', flat=True)
 
 
 class LegislationCardSerializer(CardSerializer, LegislationMixin):
@@ -66,6 +73,7 @@ class LegislationCardSerializer(CardSerializer, LegislationMixin):
 
         # TODO standardize this and more importantly, cache it!
         classifications = self._get_classifications()
+        statuses = self._get_statuses()
 
         return {
             **parent_data,
@@ -73,5 +81,6 @@ class LegislationCardSerializer(CardSerializer, LegislationMixin):
             'results': {
                 'legislation': legislation_serializer.data,
                 'classifications': classifications,
+                'statuses': statuses,
             },
         }
