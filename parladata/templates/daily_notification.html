@@ -72,6 +72,26 @@
         </br></br>
         {% endif %}
 
+        {% if new_legislation_considered %}
+        There are consideration of legislation:
+        {% for consideration in new_legislation_considered %}
+            <p>
+                <a href="{{ base_url }}{% url 'admin:parladata_law_change' consideration.legislation.id %}"><h4>Law:</h4></a><br>
+                Number: {{ consideration.legislation.epa }}<br>
+                Text: {{ consideration.legislation.text }}<br>
+                Status {{ consideration.legislation.status }}<br><br>
+                Consideration:<br>
+                Oragnization: {{ consideration.organization.name }}<br>
+                Session: {{ consideration.session.name }}<br>
+                Time: {{ consideration.timestamp }}<br>
+                <hr>
+            </p>
+        {% endfor %}
+        </br></br>
+        {% endif %}
+
+        
+
 
 
 
