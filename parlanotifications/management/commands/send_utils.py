@@ -80,7 +80,10 @@ def send_notification_email(user, users_docs, keyword_ids, sending_date):
         _("Parlameter notification"),
         user.email,
         "notification.html",
-        {"data": users_docs},
+        {
+            "data": users_docs,
+            "uuid": user.uuid
+        },
     )
     user.notification_sent_at = sending_date
     Keyword.objects.filter(id__in=keyword_ids).update(

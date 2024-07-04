@@ -17,34 +17,29 @@ class NotificationUser(Timestampable):
 
 
 class Keyword(Timestampable):
-    WIDE = "WIDE"
-    NARROW = "NARROW"
-    MATCHING_METHOD_CHOICES = {
-        WIDE: "wide",
-        NARROW: "narrow",
-    }
-    DAILY = "DAILY"
-    WEEKLY = "WEEKLY"
-    MONTHLY = "MONTHLY"
-    FREQUENCY_CHOICES = {
-        DAILY: "daily",
-        WEEKLY: "weekly",
-        MONTHLY: "monthly",
-    }
+    class Frequency(models.TextChoices):
+        DAILY = 'DAILY', 'Daily'
+        WEEKLY = 'WEEKLY', 'Weekly'
+        MONTHLY = 'MONTHLY', 'Monthly'
+
+    class MatchingMethods(models.TextChoices):
+        WIDE = 'WIDE', 'Wide'
+        NARROW = 'NARROW', 'Narrow'
+
     keyword = models.CharField(max_length=255)
     user = models.ForeignKey(
         NotificationUser, related_name="keywords", on_delete=models.CASCADE
     )
     matching_method = models.CharField(
         max_length=10,
-        choices=MATCHING_METHOD_CHOICES.items(),
-        default=WIDE,
+        choices=MatchingMethods.choices,
+        default=MatchingMethods.WIDE,
     )
     accepted_at = models.DateTimeField(null=True, blank=True)
     notification_frequency = models.CharField(
         max_length=10,
-        choices=FREQUENCY_CHOICES.items(),
-        default=DAILY,
+        choices=Frequency.choices,
+        default=Frequency.DAILY,
     )
     latest_notification_sent_at = models.DateTimeField(null=True, blank=True)
 

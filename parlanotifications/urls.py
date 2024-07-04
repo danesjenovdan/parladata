@@ -2,10 +2,10 @@ from django.conf.urls import include
 from django.urls import re_path
 from rest_framework import routers
 
-from parlanotifications.views import KewordView
+from parlanotifications.views import KeywordView
 
 router = routers.DefaultRouter()
-router.register(r"keywords", KewordView)
+router.register(r"keywords", KeywordView)
 
 
 urlpatterns = [

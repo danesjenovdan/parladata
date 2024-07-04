@@ -16,7 +16,7 @@ from parladata.update_utils import send_email
 # naredi da bo kul pošiljanje emailov
 
 
-class KewordView(viewsets.ModelViewSet):
+class KeywordView(viewsets.ModelViewSet):
     permission_classes = []
     queryset = Keyword.objects.all().order_by("id")
     serializer_class = KeywordSerializer
