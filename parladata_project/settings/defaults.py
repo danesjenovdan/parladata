@@ -25,7 +25,6 @@ INSTALLED_APPS = (
     'corsheaders',
     'oauth2_provider',
     'rest_framework',
-    'taggit_serializer',
     'django_filters',
     'drf_spectacular',
     'parlacards',

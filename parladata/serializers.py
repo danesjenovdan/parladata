@@ -1,6 +1,8 @@
 from rest_framework import serializers
-from taggit_serializer.serializers import (TagListSerializerField,
-                                           TaggitSerializer)
+from taggit.serializers import (
+    TagListSerializerField,
+    TaggitSerializer
+)
 from taggit.models import Tag
 
 from parladata.models import *
