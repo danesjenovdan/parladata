@@ -15,7 +15,7 @@ resources:
 images:
   - name: parladata-trbovlje
     newName: rg.fr-par.scw.cloud/djnd/parladata-trbovlje
-    newTag: 'c359a619db5b309be541af84ac8eba09519d8ab1'
+    newTag: '41beeca4d4d8d0a04b25e6cb388eda0329922809'
   - name: parlasolr-trbovlje
     newName: rg.fr-par.scw.cloud/djnd/parlasolr-trbovlje
-    newTag: 'c359a619db5b309be541af84ac8eba09519d8ab1'
+    newTag: '41beeca4d4d8d0a04b25e6cb388eda0329922809'
