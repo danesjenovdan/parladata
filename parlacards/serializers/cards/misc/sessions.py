@@ -101,7 +101,7 @@ class SessionsCardSerializer(CardSerializer):
         if len(organization_ids):
             sessions = sessions.filter(organizations__id__in=organization_ids)
 
-        if order_by in ('name', 'start_time'):
+        if order_by in ('name', 'start_time', 'end_time'):
             order_string = f'-{order_by}' if order_reverse else order_by
             sessions = sessions.order_by(order_string, 'id')
         elif order_by in ('workingBody', 'organization'):
