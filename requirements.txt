@@ -1,10 +1,10 @@
-Django==3.2.12
+Django==5.0.7
 django-autoslug
-psycopg2-binary==2.9.9
+psycopg==3.2.1
 djangorestframework
 django-filter
 gunicorn
-django-taggit==1.5.1
+django-taggit
 django-oauth-toolkit
 django-extensions
 ipython
@@ -12,7 +12,6 @@ raven
 regex
 requests
 django-cors-headers
-django-taggit-serializer
 django-model-utils
 django-tinymce
 nltk
@@ -25,9 +24,9 @@ drf-spectacular
 pytest-xdist
 python-memcached
 django-debug-toolbar
-boto3
+boto3==1.34.144
 django-storages
-pylibmc==1.6.1
+pylibmc==1.6.3
 martor
 django-colorfield
 django-admin-sortable2
@@ -35,13 +34,13 @@ pyicu
 sentry-sdk[django]
 eventregistry
 tablib
-django-import-export==3.3.7
-djangorestframework-csv
-drf-recaptcha
-xmltodict==0.12.0
+django-import-export==4.1.1
+djangorestframework-csv==3.0.2
+drf-recaptcha==3.1.0
+xmltodict==0.13.0
 
 # tagger/lemmatizer
-scikit-learn==1.1.3
+scikit-learn==1.5.1
 python-crfsuite
 marisa-trie
 git+https://github.com/Desklop/Uk_Stemmer
