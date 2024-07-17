@@ -31,6 +31,7 @@ class SessionLegislationCardSerializer(CardSerializer, LegislationMixin):
 
         # TODO standardize this and more importantly, cache it!
         classifications = self._get_classifications()
+        statuses = self._get_statuses()
 
         return {
             **parent_data,
@@ -38,5 +39,6 @@ class SessionLegislationCardSerializer(CardSerializer, LegislationMixin):
             'results': {
                 'legislation': legislation_serializer.data,
                 'classifications': classifications,
+                'statuses': statuses,
             },
         }
