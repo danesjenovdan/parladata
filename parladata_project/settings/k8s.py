@@ -19,6 +19,7 @@ env = dict(
     ER_API_KEY=os.getenv('EVENTREGISTRY_API_KEY', ''),
     INSTALATION_NAME=os.getenv('INSTALATION_NAME', ''),
     PARSER_INTERVAL_HOURS=int(os.getenv('PARSER_INTERVAL_HOURS', 24)),
+    DJANGO_BASE_URL=os.getenv('DJANGO_BASE_URL', 'http://localhost:8000')
 )
 
 
@@ -27,6 +28,8 @@ env = dict(
 SECRET_KEY = env['SECRET_KEY']
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env['DEBUG']
+
+CSRF_TRUSTED_ORIGINS = [env['DJANGO_BASE_URL']]
 
 DATABASES = {
     'default': {
@@ -65,7 +68,7 @@ else:
         }
     }
 
-BASE_URL = os.getenv('DJANGO_BASE_URL', 'http://localhost:8000')
+BASE_URL = env['DJANGO_BASE_URL']
 
 # static files for development
 #STATIC_URL = '/static/'
