@@ -316,6 +316,15 @@ class QuestionView(viewsets.ModelViewSet):
     ordering_fields = ('date',)
 
 
+class AnswerView(viewsets.ModelViewSet):
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    queryset = Answer.objects.all().order_by('id')
+    serializer_class = AnswerSerializer
+    fields = '__all__'
+    filter_backends = (DjangoFilterBackend, filters.OrderingFilter)
+    ordering_fields = ('timestamp',)
+
+
 class OrganizationMembershipsViewSet(viewsets.ModelViewSet):
     queryset = OrganizationMembership.objects.all().order_by('id')
     serializer_class = OrganizationMembershipSerializer
