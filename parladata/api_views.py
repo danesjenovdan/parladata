@@ -231,6 +231,11 @@ class VoteView(viewsets.ModelViewSet):
     ordering_fields = ('start_time',)
     search_fields = ('name', 'tags__name',)
 
+    @action(detail=True, methods=['delete'])
+    def delete_ballots(self, request, pk=None):
+        vote = self.get_object()
+        vote.ballots.all().delete()
+        return Response({}, status=status.HTTP_204_NO_CONTENT)
 
 class BallotView(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
