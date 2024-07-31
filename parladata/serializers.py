@@ -99,6 +99,7 @@ class VoteSerializer(TaggitSerializer, serializers.ModelSerializer):
     tags = TagListSerializerField(required=False)
     results = serializers.SerializerMethodField()
     has_ballots = serializers.SerializerMethodField()
+    has_anonymous_ballots = serializers.SerializerMethodField()
     class Meta:
         model = Vote
         fields = '__all__'
@@ -108,6 +109,9 @@ class VoteSerializer(TaggitSerializer, serializers.ModelSerializer):
 
     def get_has_ballots(self, obj):
         return bool(obj.ballots.count())
+    
+    def get_has_anonymous_ballots(self, obj):
+        return obj.ballots.filter(personvoter=None).exists()
 
 class BallotSerializer(serializers.ModelSerializer):
     class Meta:
