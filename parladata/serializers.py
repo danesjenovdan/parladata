@@ -155,6 +155,12 @@ class QuestionSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+class AnswerSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Answer
+        fields = '__all__'
+
+
 class EpaSerializer(serializers.ModelSerializer):
     class Meta:
         model = Motion
