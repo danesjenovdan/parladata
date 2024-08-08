@@ -28,6 +28,7 @@ INSTALLED_APPS = (
     'django_filters',
     'drf_spectacular',
     'parlacards',
+    'parlanotifications',
     'debug_toolbar',
     'martor',
     'colorfield',
