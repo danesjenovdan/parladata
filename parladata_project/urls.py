@@ -38,6 +38,9 @@ urlpatterns = [
     # card export api
     path('v3/export/', include('export.urls')),
 
+    # notifications api
+    path('v1/notifications/', include('parlanotifications.urls')),
+
     # Django debug toolbar
     path('__debug__/', include(debug_toolbar.urls)),
 
