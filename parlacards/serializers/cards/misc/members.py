@@ -73,7 +73,7 @@ class PersonAnalysesSerializer(CommonPersonSerializer):
         memberships = PersonMembership.valid_at(self.context['request_date']).filter(member=person)
         organizations = Organization.objects.filter(
             id__in=memberships.values_list('organization'),
-            classification__in=('committee', 'commission', 'other'), # TODO: add other classifications?
+            classification__in=('committee', 'commission', 'council', 'investigative_commission'),
         )
         organization_serializer = CommonOrganizationSerializer(
             organizations,
@@ -141,7 +141,7 @@ class MiscMembersCardSerializer(CardSerializer):
         memberships = PersonMembership.valid_at(timestamp)
         organizations = Organization.objects.filter(
             id__in=memberships.values_list('organization'),
-            classification__in=('committee', 'commission', 'other'), # TODO: add other classifications?
+            classification__in=('committee', 'commission', 'council', 'investigative_commission'),
         )
         organization_serializer = CommonOrganizationSerializer(
             organizations,
