@@ -231,6 +231,11 @@ class VoteView(viewsets.ModelViewSet):
     ordering_fields = ('start_time',)
     search_fields = ('name', 'tags__name',)
 
+    @action(detail=True, methods=['delete'])
+    def delete_ballots(self, request, pk=None):
+        vote = self.get_object()
+        vote.ballots.all().delete()
+        return Response({}, status=status.HTTP_204_NO_CONTENT)
 
 class BallotView(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
@@ -314,6 +319,15 @@ class QuestionView(viewsets.ModelViewSet):
     filter_backends = (DjangoFilterBackend, filters.OrderingFilter)
     filterset_fields = ('person_authors', 'mandate')
     ordering_fields = ('date',)
+
+
+class AnswerView(viewsets.ModelViewSet):
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    queryset = Answer.objects.all().order_by('id')
+    serializer_class = AnswerSerializer
+    fields = '__all__'
+    filter_backends = (DjangoFilterBackend, filters.OrderingFilter)
+    ordering_fields = ('timestamp',)
 
 
 class OrganizationMembershipsViewSet(viewsets.ModelViewSet):
