@@ -1,0 +1,17 @@
+{% load i18n %}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>{% trans 'Obvestila' %}</title>
+</head>
+<body>
+<div class="dndkeywordauthorsession" style="color: #222222; font-family: Arial; font-size: 14px; line-height: 18px;">
+	{% trans 'Živjo' %}, <br/><br/>
+	{% trans 'Na ta e-naslov je nekdo prijavil Parlameter obvestila za ključno besedo' %} "<strong>{{ keyword }}</strong>". {% trans 'Če si bil/-a to ti, potrdi naročilo s klikom na povezavo:' %} <br/>
+	<a href="{% trans 'https://obvestila.parlameter.si/settings/' %}?uuid={{ uuid }}&kid={{ kid }}" style="color: #222222; font-family: Arial; font-size: 14px;"><u>{% trans 'https://obvestila.parlameter.si/' %}{{ keyword }}</u></a> <br/><br/>
+	{% trans 'Srečno' %},<br/>
+	{% trans 'ekipa Parlametra' %}
+</div>
+</body>
+</html>
