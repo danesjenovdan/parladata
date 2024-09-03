@@ -227,7 +227,7 @@ class VoteView(viewsets.ModelViewSet):
     queryset = Vote.objects.all().order_by("id")
     serializer_class = VoteSerializer
     filter_backends = (DjangoFilterBackend, filters.SearchFilter, UntaggedVotesFilter)
-    filterset_fields = ('tags__name',)
+    filterset_fields = ('tags__name', 'motion__session')
     ordering_fields = ('start_time',)
     search_fields = ('name', 'tags__name',)
 
