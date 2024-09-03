@@ -361,6 +361,8 @@ class LegislationConsiderationViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     queryset = LegislationConsideration.objects.all().order_by('id')
     serializer_class = LegislationConsiderationSerializer
+    filter_backends = (DjangoFilterBackend,)
+    filterset_fields = ('legislation__mandate',)
 
 
 class LegislationStatusViewSet(viewsets.ModelViewSet):
