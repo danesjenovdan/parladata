@@ -3,10 +3,12 @@ from django.core.management.base import BaseCommand
 from django.utils.translation import gettext as _
 from django.core.exceptions import ObjectDoesNotExist
 from django.conf import settings
+from django.contrib.auth.models import Group
 
 from parladata.models import (Person, Session, Organization, AgendaItem,
     Motion, Vote, Ballot, Document)
 from parladata.models.common import Mandate
+from parladata.update_utils import send_email
 
 from datetime import datetime, timedelta
 
@@ -43,6 +45,8 @@ class Command(BaseCommand):
 
         print('loaded', people)
 
+        errors = []
+
 
         session_type = data['export']['session']['type']
         session_date = data['export']['session']['participantList']['dateOfLastChange']
@@ -55,7 +59,7 @@ class Command(BaseCommand):
         organization = mandate.query_root_organizations(start_time)[1]
 
         if Session.objects.filter(gov_id=session_id).exists():
-            print(f'skip parsing {session_name}')
+            print(f'skip parsing {session_id}')
             return
 
         try:
@@ -99,7 +103,11 @@ class Command(BaseCommand):
 
                 )
                 motion.save()
-                motion.agenda_items.add(agenda_items[item['parentNo']])
+                if item['parentNo']:
+                    motion.agenda_items.add(agenda_items[item['parentNo']])
+                else:
+                    errors.append(f'Glasovanje {item["description"]} nima točke dnevnega reda')
+                    print(f'Glasovanje {item["description"]} nima točke dnevnega reda')
                 vote = Vote(
                     name=item['description'],
                     motion=motion,
@@ -126,6 +134,22 @@ class Command(BaseCommand):
                     personvoter=people[ballot['participantNo']],
                     option=self.get_option(ballot, options)
                 ).save()
+
+        if errors:
+            editor_permission_group = Group.objects.filter(name__icontains="editor").first()
+            for editor in editor_permission_group.user_set.all():
+                print("Send error email to", editor.email)
+                send_email(
+                    _('Pri parsanju sentio datoteke smo naleteli na potencialne napake'),
+                    editor.email,
+                    'error_notification.html',
+                    {
+                        'base_url': settings.BASE_URL,
+                        'errors': errors,
+                        'session': session
+                    }
+                )
+
 
     def get_option(self, ballot, options):
         if ballot['voted']:

@@ -10,6 +10,8 @@ PERSON_SOCIAL_NETWORK_CHOICES =(
     ("facebook", "facebook"),
     ("twitter", "twitter"),
     ("linkedin", "linkedin"),
+    ("instagram", "instagram"),
+    ("tiktok", "tiktok"),
 )
 
 ORGANIZATION_LINK_CHOICES =(
