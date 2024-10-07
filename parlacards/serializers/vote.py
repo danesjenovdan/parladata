@@ -28,8 +28,14 @@ class VoteBallotSerializer(CommonCachableSerializer):
 
         return f'VoteBallotSerializer_{ballot.id}_{ballot.updated_at.strftime("%Y-%m-%dT%H:%M:%S")}'
 
-    person = CommonPersonSerializer(source='personvoter')
+    person = serializers.SerializerMethodField()
     option = serializers.CharField()
+    def get_person(self, ballot):
+        serializer = CommonPersonSerializer(
+            ballot.personvoter,
+            context=self.context,
+        )
+        return serializer.data
 
 
 class VoteGroupSerializer(CommonCachableSerializer):
@@ -229,6 +235,7 @@ class VoteSerializer(CommonSerializer):
         new_context = dict.copy(self.context)
         new_context['vote'] = vote
         new_context['date'] = vote.timestamp
+        new_context['request_date'] = vote.timestamp
         return new_context
 
     def get_government_sides(self, vote):
