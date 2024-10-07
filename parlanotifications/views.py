@@ -71,6 +71,9 @@ class KeywordView(viewsets.ModelViewSet):
         if str(instance.user.uuid) == uuid:
             instance.accepted_at = timezone.now()
             instance.save()
-            return Response(status=status.HTTP_200_OK)
+            return Response({
+                "keyword": instance.keyword,
+                "email": instance.user.email,
+            }, status=status.HTTP_200_OK)
         else:
             return Response(status=status.HTTP_403_FORBIDDEN)
