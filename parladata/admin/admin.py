@@ -18,7 +18,7 @@ class MandateAdmin(admin.ModelAdmin):
 
 
 class DocumentAdmin(admin.ModelAdmin):
-    list_display = ['name', 'file_url']
+    list_display = ['name', 'file_url', 'tag']
     list_filter = ()
 
     readonly_fields = ['created_at', 'updated_at']
@@ -26,6 +26,9 @@ class DocumentAdmin(admin.ModelAdmin):
 
     def file_url(self, obj):
         return obj.file.url
+    
+    def tag(self, obj):
+        return ', '.join(obj.tags.all().values_list('name', flat=True))
 
 
 class ContactAdmin(admin.ModelAdmin):
