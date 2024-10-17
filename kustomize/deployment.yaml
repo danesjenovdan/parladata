@@ -107,11 +107,11 @@ spec:
               value: Bosna
           resources:
             requests:
-              memory: 400Mi
-              cpu: 400m
+              memory: 300Mi
+              cpu: 300m
             limits:
               memory: 400Mi
-              cpu: 400m
+              cpu: 600m
         - name: parladata-nginx
           ports:
             - name: http
