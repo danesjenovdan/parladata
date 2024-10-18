@@ -44,4 +44,3 @@ scikit-learn==1.5.1
 python-crfsuite
 marisa-trie
 git+https://github.com/Desklop/Uk_Stemmer
-git+https://github.com/danesjenovdan/classla.git@upgrade-numpy
