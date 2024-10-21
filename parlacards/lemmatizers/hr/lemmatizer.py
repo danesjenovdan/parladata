@@ -6,7 +6,7 @@ def get_stopwords():
     return STOPWORDS
 
 # initialize the lemmatizer class only once
-lemmatiser = ClasslaLemmatizer("sl")
+lemmatiser = ClasslaLemmatizer("hr")
 
 def lemmatize_many(speech):
     return " ".join(lemmatiser.lemmatize(speech))
